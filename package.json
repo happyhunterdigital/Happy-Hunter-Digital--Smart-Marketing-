@@ -1,0 +1,24 @@
+{
+  "name": "happy-hunter-smart-marketing",
+  "version": "1.0.0",
+  "description": "Happy Hunter - Smart Marketing Systems",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "@google/genai": "^1.32.0",
+    "lucide-react": "^0.556.0",
+    "recharts": "^3.5.1"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0",
+    "typescript": "^5.7.3",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}
