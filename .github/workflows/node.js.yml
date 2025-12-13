@@ -24,14 +24,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+      
       - name: Install dependencies
-        # installing firebase manually here to fix the crash
+        # This installs the tools AND Firebase
         run: npm install && npm install firebase
-     - name: Build (Skip Strict Checks)
+
+      - name: Build (Skip Strict Checks)
         env:
+           # This injects the API Key you saved in Secrets
            VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
            API_KEY: ${{ secrets.API_KEY }}
         run: npx vite build
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
