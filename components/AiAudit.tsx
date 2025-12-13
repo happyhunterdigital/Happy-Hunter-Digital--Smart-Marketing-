@@ -4,6 +4,9 @@ import { AuditResult, LoadingState } from '../types';
 import { RadialBarChart, RadialBar, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 import { Search, MapPin, AlertCircle, CheckCircle, BarChart2, Loader2, ExternalLink, ArrowRight } from 'lucide-react';
 import { CALENDLY_LINK } from '../constants';
+// --- NEW IMPORTS FOR FIREBASE ---
+import { db } from '../firebaseConfig';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export const AiAudit: React.FC = () => {
   const [businessName, setBusinessName] = useState('');
@@ -20,6 +23,22 @@ export const AiAudit: React.FC = () => {
     setResult(null);
     setErrorMsg('');
 
+    // --- CAPTURE LEAD (FIREBASE) ---
+    // This runs silently in the background. Even if the audit fails, you get the lead.
+    try {
+      await addDoc(collection(db, "leads"), {
+        businessName: businessName,
+        location: location,
+        timestamp: serverTimestamp(), // Saves the exact time
+        type: 'audit_request'
+      });
+      console.log("Lead captured successfully");
+    } catch (err) {
+      console.error("Error saving lead:", err);
+      // We do not stop the audit if this fails, we just log the error.
+    }
+
+    // --- RUN AUDIT ---
     try {
       const data = await performAudit(businessName, location);
       setResult(data);
@@ -142,8 +161,8 @@ export const AiAudit: React.FC = () => {
                   "{result.winStrategy}"
                 </p>
                 <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 mb-4">
-                   <h4 className="text-sm font-semibold text-gray-400 mb-1">Competitor Gap</h4>
-                   <p className="text-gray-300 text-sm">{result.competitorGap}</p>
+                    <h4 className="text-sm font-semibold text-gray-400 mb-1">Competitor Gap</h4>
+                    <p className="text-gray-300 text-sm">{result.competitorGap}</p>
                 </div>
                 <a 
                   href={CALENDLY_LINK}
