@@ -26,12 +26,11 @@ jobs:
           node-version: "20"
       
       - name: Install dependencies
-        # This installs the tools AND Firebase
-        run: npm install && npm install firebase
+        # FIXED: Installing Firebase AND the missing React Plugin
+        run: npm install && npm install firebase @vitejs/plugin-react
 
       - name: Build (Skip Strict Checks)
         env:
-           # This injects the API Key you saved in Secrets
            VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
            API_KEY: ${{ secrets.API_KEY }}
         run: npx vite build
