@@ -10,7 +10,6 @@ export default {
     './*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    // 1. Fix Layout Spacing (Centers content like the screenshots)
     container: {
       center: true,
       padding: "2rem",
@@ -19,56 +18,35 @@ export default {
       },
     },
     extend: {
-      fontFamily: {
-        sans: ['Inter', 'sans-serif'], // Restores the Premium Font
-      },
       colors: {
-        // 2. Map Colors to the CSS Variables (The System)
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))", // Deep Navy
-        foreground: "hsl(var(--foreground))", // White Text
-        
+        // FORCE THE GOLD (Yellow-400 from your screenshot)
         primary: {
-          DEFAULT: "hsl(var(--primary))", // The Happy Hunter Gold
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: '#FACC15', 
+          foreground: '#000000',
         },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+        // FORCE THE NAVY (Slate-950)
+        background: '#020617', 
+        foreground: '#F8FAFC',
+        
+        // Cards need to be slightly lighter to be visible
+        card: {
+          DEFAULT: '#0f172a', // Slate-900
+          foreground: '#F8FAFC',
         },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
+        
+        // Secondary elements
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: '#1e293b',
+          foreground: '#94a3b8',
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: '#1e293b',
+          foreground: '#F8FAFC',
         },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))", // Lighter Navy for Cards
-          foreground: "hsl(var(--card-foreground))",
-        },
-        
-        // 3. Hardcoded Fallbacks (Just in case)
-        dark: {
-          DEFAULT: '#0f172a',
-          lighter: '#1e293b',
-        }
+        border: '#1e293b',
       },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
       },
     },
   },
