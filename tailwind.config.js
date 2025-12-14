@@ -1,58 +1,74 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: ["class"],
   content: [
-    "./index.html",
-    "./*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-    "./pages/**/*.{js,ts,jsx,tsx}"
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+    './index.html',
+    './*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    // 1. Centers everything automatically (Matches your layout screenshots)
+    // 1. Fix Layout Spacing (Centers content like the screenshots)
     container: {
       center: true,
-      padding: {
-        DEFAULT: '1rem',
-        sm: '2rem',
-        lg: '4rem',
-        xl: '5rem',
-        '2xl': '6rem',
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
       },
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'], // Restores the Premium Font
       },
       colors: {
+        // 2. Map Colors to the CSS Variables (The System)
         border: "hsl(var(--border))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))", // Deep Navy
+        foreground: "hsl(var(--foreground))", // White Text
         
-        // The "Happy Hunter" Gold (Extracted from your Buttons)
         primary: {
-          DEFAULT: '#FACC15', // Vibrant Yellow-400
-          hover: '#EAB308',   // Yellow-500
-          foreground: '#000000', // Black text on Gold
+          DEFAULT: "hsl(var(--primary))", // The Happy Hunter Gold
+          foreground: "hsl(var(--primary-foreground))",
         },
-        
-        // The "Premium Dark" Palette (Extracted from your Backgrounds)
-        dark: {
-          DEFAULT: '#0f172a', // Slate-900 (Main Background)
-          lighter: '#1e293b', // Slate-800 (Card Background)
-          border: '#334155',  // Slate-700 (Subtle Borders)
-          muted: '#94a3b8',   // Slate-400 (Body Text)
-        },
-        
-        // Secondary Accents (For badges/icons)
         secondary: {
-          DEFAULT: '#1e293b',
-          foreground: '#f8fafc',
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))", // Lighter Navy for Cards
+          foreground: "hsl(var(--card-foreground))",
+        },
+        
+        // 3. Hardcoded Fallbacks (Just in case)
+        dark: {
+          DEFAULT: '#0f172a',
+          lighter: '#1e293b',
+        }
       },
-      // 2. Custom Border Radius for that smooth button look
       borderRadius: {
-        lg: "0.5rem",
-        md: "calc(0.5rem - 2px)",
-        sm: "calc(0.5rem - 4px)",
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
     },
   },
