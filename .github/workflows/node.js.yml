@@ -20,20 +20,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-      
-      - name: Install dependencies
-        # FIXED: Installing Firebase AND the missing React Plugin
-        run: npm install && npm install firebase @vitejs/plugin-react
 
-      - name: Build (Skip Strict Checks)
+      # FIXED: Only run npm install. It will read your corrected package.json automatically.
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
         env:
            VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
            API_KEY: ${{ secrets.API_KEY }}
-        run: npx vite build
+        run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
