@@ -1,15 +1,36 @@
+/* 1. Import the Premium Font (Inter) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* This forces the site to be Dark Navy with White text by default */
 @layer base {
+  :root {
+    /* These match your original Gold/Navy branding exactly */
+    --background: 15 23 42; /* Deep Navy */
+    --foreground: 255 255 255; /* White Text */
+    --primary: 250 204 21; /* Vibrant Gold */
+  }
+
   body {
-    @apply bg-[#0f172a] text-white;
+    /* Forces the Dark Navy Background immediately */
+    @apply bg-[#0f172a] text-white font-sans antialiased;
   }
-  
-  /* Optional: Makes headings slightly brighter/bolder */
+
+  /* Restores the clean headings */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold text-gray-100;
+    @apply font-bold tracking-tight text-white;
   }
+}
+
+/* 2. Custom Scrollbar to match the dark theme */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-[#0f172a];
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-[#1e293b] rounded-full;
 }
