@@ -1,4 +1,4 @@
-/* 1. Import the Premium Font (Inter) from Google */
+/* 1. Import the Font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -7,24 +7,35 @@
 
 @layer base {
   :root {
-    /* Define the variables to match the Tailwind config */
-    --background: 15 23 42; 
-    --foreground: 255 255 255;
-    --primary: 250 204 21;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
   }
 
   body {
-    /* FORCE the Dark Navy Background and White Text globally */
-    @apply bg-[#0f172a] text-white font-sans antialiased;
+    /* FORCE Dark Navy Background */
+    @apply bg-[#0f172a] text-slate-100 font-sans antialiased;
   }
 
-  /* Restore the clean, bold headings */
+  /* 2. Typography Rules (Matches your screenshots) */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight text-white;
+    /* Headings are Pure White and Bold */
+    @apply text-white font-bold tracking-tight;
+  }
+  
+  p {
+    /* Body text is slightly muted (Gray) for readability */
+    @apply text-slate-400 leading-relaxed;
+  }
+
+  /* 3. Card Styling (Matches image_5e703f.png) */
+  /* This ensures any div with 'bg-dark-lighter' gets the right border */
+  .card-premium {
+    @apply bg-[#1e293b] border border-slate-700/50 shadow-xl;
   }
 }
 
-/* 2. Custom Scrollbar (To match the dark theme) */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -32,5 +43,5 @@
   @apply bg-[#0f172a];
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#1e293b] rounded-full;
+  @apply bg-[#1e293b] rounded-full hover:bg-slate-600;
 }
