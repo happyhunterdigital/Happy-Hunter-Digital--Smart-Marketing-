@@ -26,12 +26,14 @@ jobs:
         with:
           node-version: "20"
 
-      # FIXED: Only run npm install. It will read your corrected package.json automatically.
+      # THE FIX: This command builds a fresh lock file.
+      # It solves the "Missing package-lock.json" error.
       - name: Install dependencies
         run: npm install
 
       - name: Build
         env:
+           # These keys are read by your vite.config.ts
            VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
            API_KEY: ${{ secrets.API_KEY }}
         run: npm run build
