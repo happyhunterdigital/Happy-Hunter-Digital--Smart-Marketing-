@@ -7,37 +7,52 @@ export default {
     "./pages/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
+    // 1. Centers everything automatically (Matches your layout screenshots)
+    container: {
+      center: true,
+      padding: {
+        DEFAULT: '1rem',
+        sm: '2rem',
+        lg: '4rem',
+        xl: '5rem',
+        '2xl': '6rem',
+      },
+    },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'], // This restores the clean, premium font
+        sans: ['Inter', 'sans-serif'],
       },
       colors: {
-        // The "Happy Hunter" Brand Colors
+        border: "hsl(var(--border))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        
+        // The "Happy Hunter" Gold (Extracted from your Buttons)
         primary: {
-          DEFAULT: '#FACC15', // Vibrant Gold (matches your buttons)
-          hover: '#EAB308',   // Slightly darker Gold for hover states
-          foreground: '#000000', // Black text on Gold buttons
+          DEFAULT: '#FACC15', // Vibrant Yellow-400
+          hover: '#EAB308',   // Yellow-500
+          foreground: '#000000', // Black text on Gold
         },
+        
+        // The "Premium Dark" Palette (Extracted from your Backgrounds)
         dark: {
-          DEFAULT: '#0f172a', // Deep Navy (Main Background)
-          lighter: '#1e293b', // Lighter Navy (For your Service Cards)
-          accent: '#334155',  // Slate Blue (For borders/lines)
+          DEFAULT: '#0f172a', // Slate-900 (Main Background)
+          lighter: '#1e293b', // Slate-800 (Card Background)
+          border: '#334155',  // Slate-700 (Subtle Borders)
+          muted: '#94a3b8',   // Slate-400 (Body Text)
         },
-        // Neutral Grays for text hierarchy
-        gray: {
-          100: '#f3f4f6',
-          200: '#e5e7eb',
-          300: '#d1d5db', // Secondary text
-          400: '#9ca3af',
-          500: '#6b7280',
-          800: '#1f2937',
-          900: '#111827',
-        }
+        
+        // Secondary Accents (For badges/icons)
+        secondary: {
+          DEFAULT: '#1e293b',
+          foreground: '#f8fafc',
+        },
       },
-      backgroundImage: {
-        // This adds the subtle glow effect seen in your original hero section
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'hero-glow': 'conic-gradient(from 180deg at 50% 50%, #1e293b 0deg, #0f172a 360deg)',
+      // 2. Custom Border Radius for that smooth button look
+      borderRadius: {
+        lg: "0.5rem",
+        md: "calc(0.5rem - 2px)",
+        sm: "calc(0.5rem - 4px)",
       },
     },
   },
