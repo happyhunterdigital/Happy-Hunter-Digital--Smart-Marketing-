@@ -1,4 +1,4 @@
-/* 1. Import the Premium Font (Inter) */
+/* 1. Import the Premium Font (Inter) from Google */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -7,24 +7,24 @@
 
 @layer base {
   :root {
-    /* These match your original Gold/Navy branding exactly */
-    --background: 15 23 42; /* Deep Navy */
-    --foreground: 255 255 255; /* White Text */
-    --primary: 250 204 21; /* Vibrant Gold */
+    /* Define the variables to match the Tailwind config */
+    --background: 15 23 42; 
+    --foreground: 255 255 255;
+    --primary: 250 204 21;
   }
 
   body {
-    /* Forces the Dark Navy Background immediately */
+    /* FORCE the Dark Navy Background and White Text globally */
     @apply bg-[#0f172a] text-white font-sans antialiased;
   }
 
-  /* Restores the clean headings */
+  /* Restore the clean, bold headings */
   h1, h2, h3, h4, h5, h6 {
     @apply font-bold tracking-tight text-white;
   }
 }
 
-/* 2. Custom Scrollbar to match the dark theme */
+/* 2. Custom Scrollbar (To match the dark theme) */
 ::-webkit-scrollbar {
   width: 10px;
 }
