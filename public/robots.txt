@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://happyhunterdigital.com/sitemap.xml
+
+# Explicitly welcome AI Bots (Crucial for LLMO)
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
