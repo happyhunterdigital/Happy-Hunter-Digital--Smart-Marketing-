@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Activity } from 'lucide-react';
+import { ArrowRight, Sparkles, CheckCircle } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   return (
@@ -10,39 +10,51 @@ export const Hero: React.FC = () => {
           
           {/* Left Column: Text */}
           <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
-            <div className="inline-flex items-center gap-2 bg-gray-800 rounded-full px-4 py-1.5 mb-8 border border-gray-700 justify-center lg:justify-start">
-              <Activity size={16} className="text-brand-yellow" />
+            
+            {/* 1. New "Wake Up" Badge */}
+            <div className="inline-flex items-center gap-2 bg-gray-800 rounded-full px-4 py-1.5 mb-8 border border-gray-700 justify-center lg:justify-start animate-fadeIn">
+              <Sparkles size={16} className="text-brand-yellow" />
               <span className="text-xs font-semibold tracking-wide text-gray-300 uppercase">
-                Stop Guessing, Start Scaling
+                Is your business invisible to Google Gemini?
               </span>
             </div>
             
+            {/* 2. New Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
-              You Don't Need More Marketing. <br/>
+              Stop Guessing. <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow to-yellow-200">
-                You Need a System.
+                Start Winning Smart.
               </span>
             </h1>
             
+            {/* 3. New "Threat & Solution" Sub-headline */}
             <p className="mt-4 text-xl text-gray-300 mb-10 leading-relaxed font-light">
-              We help South African SMEs build predictable growth engines using AI-driven automation and conversion engineering.
+              We help South African businesses survive the <strong className="text-white font-semibold">"Great AI Filter."</strong> Stop being invisible to the algorithm and start building a <span className="text-brand-yellow">Trusted Digital Entity</span> that Google recommends.
             </p>
             
+            {/* 4. New CTA Button (Lead Magnet) */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <a 
-                href="#audit"
-                className="flex items-center justify-center gap-2 bg-brand-yellow text-brand-dark px-8 py-4 rounded-lg font-bold text-lg hover:bg-yellow-300 transition-all shadow-xl shadow-yellow-500/20"
+                href="#audit" // Update this link to your Quiz/Typeform when ready
+                className="group flex items-center justify-center gap-3 bg-brand-yellow text-brand-dark px-8 py-4 rounded-lg font-bold text-lg hover:bg-yellow-300 transition-all shadow-xl shadow-yellow-500/20"
               >
-                Audit My Business for Free
-                <ArrowRight size={20} />
+                <CheckCircle size={20} className="text-brand-dark/80" />
+                <span>Get Your 2026 Readiness Scorecard</span>
+                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </a>
+              
               <a 
-                href="#portfolio"
+                href="#services"
                 className="flex items-center justify-center gap-2 bg-transparent border-2 border-gray-700 text-white px-8 py-4 rounded-lg font-bold text-lg hover:border-gray-500 hover:bg-gray-800 transition-all"
               >
-                View Case Studies
+                Explore The Ecosystem
               </a>
             </div>
+
+            {/* Micro-Copy Trust Signal */}
+            <p className="mt-6 text-sm text-gray-500 flex items-center justify-center lg:justify-start gap-2">
+               <span>Powered by <strong>Google Gemini</strong> data logic.</span>
+            </p>
           </div>
 
           {/* Right Column: Image */}
@@ -51,20 +63,22 @@ export const Hero: React.FC = () => {
                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/90 via-transparent to-transparent z-10"></div>
                <img 
                  src="https://res.cloudinary.com/dka0498ns/image/upload/v1762926940/Gemini_Generated_Image_n574un574un574un_ylitql.png" 
-                 alt="Thabo Leslie Motsumi - Founder of Happy Hunter"
+                 alt="Thabo Leslie Motsumi - Digital Entity Specialist"
                  className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700"
                />
                
-               {/* Founder Name Overlay */}
+               {/* 5. Updated Founder Title Overlay */}
                <div className="absolute bottom-0 right-0 z-20">
                  <div className="backdrop-blur-md bg-gray-900/85 py-4 px-6 rounded-tl-2xl border-t border-l border-gray-700/50 text-right">
                     <p className="text-white font-bold text-lg leading-none mb-1.5">Thabo Leslie Motsumi</p>
-                    <p className="text-brand-yellow text-xs font-bold uppercase tracking-wider">Founder & Strategy Lead</p>
+                    <p className="text-brand-yellow text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                      Digital Entity Specialist &<br/>Compliance Guardian
+                    </p>
                  </div>
                </div>
             </div>
             
-            {/* Decorative Elements around image */}
+            {/* Decorative Elements */}
             <div className="absolute -top-10 -right-10 w-24 h-24 bg-brand-yellow/20 rounded-full blur-2xl animate-pulse"></div>
             <div className="absolute -bottom-5 -left-5 w-32 h-32 bg-blue-600/20 rounded-full blur-3xl"></div>
           </div>
