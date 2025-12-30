@@ -2,28 +2,27 @@ import React from 'react';
 import { ShieldCheck, Cpu, BrainCircuit, Zap, BarChart3, Users } from 'lucide-react';
 
 export const Services: React.FC = () => {
-  // We define the 2026 Strategy directly here to override the old "generic" constants
   const services = [
     {
       id: 'trust-anchor',
       title: 'The Trust Anchor',
       subtitle: '(Compliance & Verification)',
       icon: <ShieldCheck size={32} className="text-brand-yellow" />,
-      description: 'Prevent digital eviction. We enforce the "Mirror Rule" and manage your Google Profile as a high-security Digital Passport to ensure you pass the AI Trust Filter.',
+      description: 'Prevent digital eviction. We enforce the "Mirror Rule" and manage your Google Profile as a high-security Digital Passport to ensure you pass the Smart Trust Filter.',
     },
     {
       id: 'megaphone',
       title: 'The Megaphone (LLMO)',
       subtitle: '(Large Language Model Ops)',
       icon: <Cpu size={32} className="text-blue-400" />,
-      description: 'Stop writing blog fluff. We create Data-Rich content and Schema that teaches AI models (Gemini, ChatGPT) to cite YOU as the primary authority.',
+      description: 'Stop writing blog fluff. We create Data-Rich content and Schema that teaches Smart Marketing engines to cite YOU as the primary authority.',
     },
     {
       id: 'revenue-brain',
       title: 'The Revenue Brain',
       subtitle: '(Agentic Automation)',
       icon: <BrainCircuit size={32} className="text-purple-400" />,
-      description: 'Fix the leaky bucket. We deploy 24/7 AI Agents that answer queries, book appointments, and capture revenue while you sleep.',
+      description: 'Fix the leaky bucket. We deploy 24/7 Smart Agents that answer queries, book appointments, and capture revenue while you sleep.',
     },
     {
       id: 'performance',
@@ -37,7 +36,7 @@ export const Services: React.FC = () => {
       title: 'Community Engineering',
       subtitle: '(Social Brand Signals)',
       icon: <Users size={32} className="text-pink-400" />,
-      description: 'AI looks for "Brand Signals" on social platforms. We build an engaged community that proves to the algorithm that you are culturally relevant.',
+      description: 'The algorithm looks for "Brand Signals" on social platforms. We build an engaged community that proves you are culturally relevant.',
     },
     {
       id: 'truth-ledger',
@@ -52,7 +51,6 @@ export const Services: React.FC = () => {
     <section id="services" className="bg-brand-dark py-20 lg:py-32 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16 lg:mb-24">
           <h2 className="text-brand-yellow font-bold tracking-wider uppercase text-sm mb-3 animate-fadeIn">
             Our Core Service
@@ -64,26 +62,22 @@ export const Services: React.FC = () => {
             </span>
           </h3>
           <p className="text-gray-400 text-lg leading-relaxed">
-            We don't just "do ads." We build an interconnected <strong>Digital Entity</strong> designed to survive the 2026 AI Filter, specifically solving Invisibility, Trust Deficits, and Conversion Disconnects.
+            We don't just "do ads." We build an interconnected <strong>Digital Entity</strong> designed to survive the 2026 Smart Filter, specifically solving Invisibility, Trust Deficits, and Conversion Disconnects.
           </p>
         </div>
 
-        {/* Services Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service) => (
             <div 
               key={service.id}
               className="group relative bg-gray-900 p-8 rounded-2xl border border-gray-800 hover:border-brand-yellow/50 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-brand-yellow/10 cursor-pointer"
             >
-              {/* Icon Container */}
               <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center mb-6 group-hover:bg-brand-yellow transition-colors duration-300">
-                {/* Clone the icon element to add generic hover classes if needed, or rely on parent group hover */}
                 <div className="group-hover:text-brand-dark transition-colors duration-300">
                    {service.icon}
                 </div>
               </div>
 
-              {/* Text Content */}
               <div className="relative">
                 <h4 className="text-xl font-bold text-white mb-1 group-hover:text-brand-yellow transition-colors">
                   {service.title}
