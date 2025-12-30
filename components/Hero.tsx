@@ -11,15 +11,15 @@ export const Hero: React.FC = () => {
           {/* Left Column: Text */}
           <div className="text-center lg:text-left max-w-2xl mx-auto lg:mx-0">
             
-            {/* 1. New "Wake Up" Badge */}
+            {/* 1. Updated Badge */}
             <div className="inline-flex items-center gap-2 bg-gray-800 rounded-full px-4 py-1.5 mb-8 border border-gray-700 justify-center lg:justify-start animate-fadeIn">
               <Sparkles size={16} className="text-brand-yellow" />
               <span className="text-xs font-semibold tracking-wide text-gray-300 uppercase">
-                Is your business invisible to Google Gemini?
+                Is your business invisible to the Smart Algorithm?
               </span>
             </div>
             
-            {/* 2. New Headline */}
+            {/* 2. Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
               Stop Guessing. <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-yellow to-yellow-200">
@@ -27,15 +27,15 @@ export const Hero: React.FC = () => {
               </span>
             </h1>
             
-            {/* 3. New "Threat & Solution" Sub-headline */}
+            {/* 3. Sub-headline */}
             <p className="mt-4 text-xl text-gray-300 mb-10 leading-relaxed font-light">
-              We help South African businesses survive the <strong className="text-white font-semibold">"Great AI Filter."</strong> Stop being invisible to the algorithm and start building a <span className="text-brand-yellow">Trusted Digital Entity</span> that Google recommends.
+              We help South African businesses survive the <strong className="text-white font-semibold">"Great AI Filter."</strong> Stop being invisible and start building a <span className="text-brand-yellow">Trusted Digital Entity</span> that Smart Marketing engines recommend.
             </p>
             
-            {/* 4. New CTA Button (Lead Magnet) */}
+            {/* 4. CTA Button */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <a 
-                href="#audit" // Update this link to your Quiz/Typeform when ready
+                href="#audit" 
                 className="group flex items-center justify-center gap-3 bg-brand-yellow text-brand-dark px-8 py-4 rounded-lg font-bold text-lg hover:bg-yellow-300 transition-all shadow-xl shadow-yellow-500/20"
               >
                 <CheckCircle size={20} className="text-brand-dark/80" />
@@ -51,9 +51,9 @@ export const Hero: React.FC = () => {
               </a>
             </div>
 
-            {/* Micro-Copy Trust Signal */}
+            {/* Updated Trust Signal */}
             <p className="mt-6 text-sm text-gray-500 flex items-center justify-center lg:justify-start gap-2">
-               <span>Powered by <strong>Google Gemini</strong> data logic.</span>
+               <span>Powered by <strong>Smart Marketing</strong> logic.</span>
             </p>
           </div>
 
@@ -63,11 +63,11 @@ export const Hero: React.FC = () => {
                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/90 via-transparent to-transparent z-10"></div>
                <img 
                  src="https://res.cloudinary.com/dka0498ns/image/upload/v1762926940/Gemini_Generated_Image_n574un574un574un_ylitql.png" 
-                 alt="Thabo Leslie Motsumi - Digital Entity Specialist"
+                 alt="Thabo Leslie Motsumi - Smart Marketing Specialist"
                  className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700"
                />
                
-               {/* 5. Updated Founder Title Overlay */}
+               {/* Founder Title Overlay */}
                <div className="absolute bottom-0 right-0 z-20">
                  <div className="backdrop-blur-md bg-gray-900/85 py-4 px-6 rounded-tl-2xl border-t border-l border-gray-700/50 text-right">
                     <p className="text-white font-bold text-lg leading-none mb-1.5">Thabo Leslie Motsumi</p>
