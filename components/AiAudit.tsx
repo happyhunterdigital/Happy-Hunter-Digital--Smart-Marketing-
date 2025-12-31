@@ -4,10 +4,8 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Sparkles, Lock, ArrowRight, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
 
 export const AiAudit: React.FC = () => {
-  // STEPS: input -> analyzing -> gate -> results
   const [step, setStep] = useState<'input' | 'analyzing' | 'gate' | 'results'>('input');
   
-  // FORM DATA STATE
   const [formData, setFormData] = useState({
     businessName: '',
     location: '',
@@ -19,13 +17,11 @@ export const AiAudit: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [riskResult, setRiskResult] = useState('');
 
-  // SIMULATE SMART MARKETING LOGIC
   const calculateRisk = () => {
     const risks = ['High Risk (Ghost Entity)', 'Medium Risk (Invisible)', 'Low Risk (Trusted Entity)'];
     return risks[Math.floor(Math.random() * risks.length)];
   };
 
-  // STEP 1: START THE SCAN
   const handleRunAudit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.businessName || !formData.location) {
@@ -33,14 +29,11 @@ export const AiAudit: React.FC = () => {
       return;
     }
     setStep('analyzing');
-    
-    // Fake delay to build anticipation (Psychological trigger)
     setTimeout(() => {
       setStep('gate');
     }, 2500);
   };
 
-  // STEP 2: CAPTURE THE LEAD & UNLOCK
   const handleUnlock = async () => {
     if (!formData.name || !formData.email || !formData.whatsapp) {
       alert("Please fill in all details to unlock your report.");
@@ -52,21 +45,44 @@ export const AiAudit: React.FC = () => {
       const calculatedRisk = calculateRisk();
       setRiskResult(calculatedRisk);
       
-      // SAVE TO FIREBASE (The "Gold" for your business)
+      // 1. SAVE LEAD TO DATABASE (For your Admin Dashboard)
       await addDoc(collection(db, "audit_leads"), {
         ...formData,
         segment: calculatedRisk,
         timestamp: serverTimestamp(),
-        status: 'new', // For your Admin Dashboard
+        status: 'new',
         source: 'Smart Marketing Audit'
       });
 
+      // 2. TRIGGER EMAIL (Via Firebase "mail" collection)
+      // This works if you have the 'Trigger Email' extension installed in Firebase
+      await addDoc(collection(db, "mail"), {
+        to: [formData.email],
+        message: {
+          subject: `Your 2026 Readiness Scorecard: ${formData.businessName}`,
+          html: `
+            <h2>Audit Result for ${formData.businessName}</h2>
+            <p><strong>Location:</strong> ${formData.location}</p>
+            <p><strong>Status:</strong> ${calculatedRisk}</p>
+            <br/>
+            <p>Hi ${formData.name},</p>
+            <p>We have received your audit request. A Smart Marketing Agent will contact you on WhatsApp (${formData.whatsapp}) shortly with your detailed PDF report.</p>
+            <br/>
+            <p>Regards,</p>
+            <p><strong>Happy Hunter Digital</strong></p>
+          `
+        }
+      });
+
+      console.log("Lead saved & Email trigger queued.");
+
       setLoading(false);
       setStep('results');
+
     } catch (e) {
-      console.error("Error saving lead: ", e);
+      console.error("Error processing lead: ", e);
       setLoading(false);
-      // Fallback: Show result even if DB fails, so user experience isn't broken
+      // Fallback: Show result even if DB fails
       setRiskResult('Medium Risk (Invisible)'); 
       setStep('results');
     }
@@ -85,7 +101,7 @@ export const AiAudit: React.FC = () => {
           </p>
         </div>
 
-        {/* --- PHASE 1: INITIAL INPUT --- */}
+        {/* INPUT PHASE */}
         {step === 'input' && (
           <div className="bg-gray-800/50 p-8 rounded-2xl border border-gray-700 shadow-2xl animate-fadeIn">
             <div className="grid md:grid-cols-2 gap-4 mb-6">
@@ -113,7 +129,7 @@ export const AiAudit: React.FC = () => {
           </div>
         )}
 
-        {/* --- PHASE 2: ANALYZING ANIMATION --- */}
+        {/* ANALYZING PHASE */}
         {step === 'analyzing' && (
           <div className="bg-gray-800/50 p-12 rounded-2xl border border-gray-700 shadow-2xl flex flex-col items-center animate-fadeIn">
              <Loader2 size={48} className="text-brand-yellow animate-spin mb-4" />
@@ -125,7 +141,7 @@ export const AiAudit: React.FC = () => {
           </div>
         )}
 
-        {/* --- PHASE 3: THE LEAD GATE (LOCK) --- */}
+        {/* GATE PHASE */}
         {step === 'gate' && (
           <div className="bg-gray-800 p-8 rounded-2xl border border-brand-yellow/30 shadow-2xl relative overflow-hidden animate-fade-in-up">
             <div className="absolute top-0 left-0 w-full h-1 bg-brand-yellow"></div>
@@ -156,7 +172,7 @@ export const AiAudit: React.FC = () => {
               />
               <input 
                 type="tel" 
-                placeholder="WhatsApp Number (We send the PDF here)" 
+                placeholder="WhatsApp Number" 
                 className="w-full bg-gray-900 border border-gray-700 text-white p-4 rounded-lg focus:border-brand-yellow focus:outline-none"
                 onChange={(e) => setFormData({...formData, whatsapp: e.target.value})}
               />
@@ -175,7 +191,7 @@ export const AiAudit: React.FC = () => {
           </div>
         )}
 
-        {/* --- PHASE 4: RESULTS --- */}
+        {/* RESULTS PHASE */}
         {step === 'results' && (
           <div className="bg-gray-800 p-8 rounded-2xl border border-gray-700 shadow-2xl relative overflow-hidden animate-fadeIn">
              <div className="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
@@ -183,10 +199,9 @@ export const AiAudit: React.FC = () => {
             <h3 className="text-2xl font-bold text-white mb-2">Access Granted</h3>
             <p className="text-gray-300 mb-8">
               Thank you, <span className="text-white font-bold">{formData.name}</span>. <br/>
-              Your <strong>Smart Marketing Agent</strong> is generating the report and will send it to <span className="text-brand-yellow font-mono">{formData.whatsapp}</span> shortly.
+              A copy of this report has been emailed to <span className="text-brand-yellow">{formData.email}</span>.
             </p>
             
-            {/* The Result Card */}
             <div className="bg-black/40 p-6 rounded-xl text-left border border-gray-700 max-w-md mx-auto hover:border-brand-yellow/50 transition-colors">
               <p className="text-gray-500 text-xs uppercase font-bold tracking-wider mb-3">Preliminary Status:</p>
               <div className="flex items-center gap-3 mb-4">
