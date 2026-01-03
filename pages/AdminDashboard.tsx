@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { db, auth, googleProvider } from "../firebaseConfig";
 import { collection, getDocs, query, orderBy, doc, updateDoc } from "firebase/firestore";
-import { signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth"; // BACK TO POPUP
-import { Shield, LogOut, Eye, CheckCircle, AlertTriangle, AlertOctagon } from "lucide-react";
+// We use signInWithRedirect because your browser blocks Popups
+import { signInWithRedirect, signOut, onAuthStateChanged, User } from "firebase/auth"; 
+import { Shield, LogOut, Eye, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface Lead {
   id: string;
@@ -20,28 +21,24 @@ const AdminDashboard = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null); // To show errors on screen
 
+  // 1. Listen for Auth State
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        setErrorMsg(null); // Clear errors on success
-        fetchLeads();
-      }
+      if (currentUser) fetchLeads();
     });
     return () => unsubscribe();
   }, []);
 
+  // 2. LOGIN FUNCTION (Redirect Mode)
   const handleGoogleLogin = async () => {
-    setErrorMsg(null); // Reset error
     try {
-      // We use Popup because it gives immediate feedback
-      await signInWithPopup(auth, googleProvider);
-    } catch (error: any) {
+      // This bypasses the "auth/popup-blocked" error by redirecting the whole tab
+      await signInWithRedirect(auth, googleProvider);
+    } catch (error) {
       console.error("Login failed:", error);
-      // SHOW THE EXACT ERROR ON THE SCREEN
-      setErrorMsg(`Error Code: ${error.code} \nMessage: ${error.message}`);
+      alert("Login failed. Check console for details.");
     }
   };
 
@@ -67,7 +64,7 @@ const AdminDashboard = () => {
     try {
       const leadRef = doc(db, "mail", id);
       await updateDoc(leadRef, { status: "contacted" });
-      fetchLeads();
+      fetchLeads(); 
       if (selectedLead?.id === id) setSelectedLead({ ...selectedLead, status: "contacted" });
     } catch (error) {
       console.error("Error updating status:", error);
@@ -85,21 +82,11 @@ const AdminDashboard = () => {
           
           <button 
             onClick={handleGoogleLogin}
-            className="flex items-center justify-center gap-3 w-full bg-white text-gray-900 font-bold py-4 rounded-lg hover:bg-gray-100 transition-all mb-4"
+            className="flex items-center justify-center gap-3 w-full bg-white text-gray-900 font-bold py-4 rounded-lg hover:bg-gray-100 transition-all"
           >
             <span className="font-bold text-xl">G</span>
             Sign in with Google
           </button>
-
-          {/* --- ERROR BOX: THIS WILL TELL US THE TRUTH --- */}
-          {errorMsg && (
-            <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded text-left text-sm mt-4 break-words">
-              <div className="flex items-center gap-2 mb-1 font-bold">
-                <AlertOctagon size={16} /> Login Failed:
-              </div>
-              <pre className="whitespace-pre-wrap font-mono">{errorMsg}</pre>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -169,26 +156,43 @@ const AdminDashboard = () => {
 
             <div className="p-8">
               <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <AlertTriangle className="text-red-500" /> Audit Findings
+                <AlertTriangle className="text-red-500" /> Detected Gaps (Problems)
               </h3>
-              <div className="bg-red-50 p-4 rounded-lg border border-red-100 mb-6">
-                 <p><strong>1. Visibility Gap:</strong> Competitors in {selectedLead.location} are outranking this business on Maps.</p>
+              <div className="grid gap-4 mb-8">
+                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                  <h4 className="font-bold text-red-800 mb-1">Local Visibility</h4>
+                  <p className="text-sm text-gray-700">Business is likely missing from the "Local Pack" (Top 3 Map results) in {selectedLead.location}. Competitors are capturing high-intent traffic.</p>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                  <h4 className="font-bold text-red-800 mb-1">Trust Architecture</h4>
+                  <p className="text-sm text-gray-700">Website or profile lacks immediate "Social Proof" triggers (Review velocity, recent updates) required to convert cold traffic.</p>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <CheckCircle className="text-green-500" /> Recommended Strategy
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <CheckCircle className="text-green-500" /> Recommended Solutions
               </h3>
-               <div className="space-y-4">
-                <div className="flex gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="space-y-4">
+                <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
                   <div className="bg-blue-100 p-2 rounded text-blue-600 font-bold">01</div>
-                  <div><h4 className="font-bold">GMB Optimization</h4><p className="text-sm text-gray-600">Update Products & Services.</p></div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">GMB Optimization "Surge"</h4>
+                    <p className="text-sm text-gray-600">Update service categories to "Products", seed Q&A section with keywords, and enable messaging.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
+                  <div className="bg-blue-100 p-2 rounded text-blue-600 font-bold">02</div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">Review Automation</h4>
+                    <p className="text-sm text-gray-600">Implement SMS-based review request system to increase review velocity by 300% in 30 days.</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-400">
+          <div className="h-full flex flex-col items-center justify-center text-gray-400">
             <Eye size={48} className="mb-4 opacity-20" />
-            <p>Select a lead to view details.</p>
+            <p>Select a lead from the left to view the Detailed Audit.</p>
           </div>
         )}
       </div>
