@@ -1,8 +1,9 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; // <--- NEW
+import { getFirestore } from "firebase/firestore"; 
+import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
 
+// Your exact configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAZHcYL0_NP0teaUOT60YeZbfQUzk8KfEk",
   authDomain: "happy-hunter-systems.firebaseapp.com",
@@ -15,9 +16,9 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// Initialize Services
-export const db = getFirestore(app);
-export const auth = getAuth(app); // <--- NEW: Export Authentication
-export const googleProvider = new GoogleAuthProvider(); // <--- NEW: Setup Google Login
 const analytics = getAnalytics(app);
+
+// Export the tools so the app can use them
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
