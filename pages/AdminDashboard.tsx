@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { db, auth, googleProvider } from "../firebaseConfig";
 import { collection, getDocs, query, orderBy, doc, updateDoc } from "firebase/firestore";
-// We use signInWithRedirect because your browser blocks Popups
-import { signInWithRedirect, signOut, onAuthStateChanged, User } from "firebase/auth"; 
-import { Shield, LogOut, Eye, CheckCircle, AlertTriangle } from "lucide-react";
+import { signInWithRedirect, signOut, onAuthStateChanged, User } from "firebase/auth";
+import { Shield, LogOut, Eye, CheckCircle, AlertTriangle, Loader } from "lucide-react";
 
 interface Lead {
   id: string;
@@ -21,6 +20,9 @@ const AdminDashboard = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
+  
+  // NEW: Tracks if we are currently trying to login
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // 1. Listen for Auth State
   useEffect(() => {
@@ -31,14 +33,18 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // 2. LOGIN FUNCTION (Redirect Mode)
+  // 2. LOGIN FUNCTION (With Visual Feedback)
   const handleGoogleLogin = async () => {
+    // IMMEDIATE VISUAL FEEDBACK
+    setIsRedirecting(true);
+    
     try {
-      // This bypasses the "auth/popup-blocked" error by redirecting the whole tab
+      // This will redirect the page. It might take 1-2 seconds.
       await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Login failed. Check console for details.");
+      alert("Login failed. Check console.");
+      setIsRedirecting(false); // Reset button if it fails
     }
   };
 
@@ -82,10 +88,24 @@ const AdminDashboard = () => {
           
           <button 
             onClick={handleGoogleLogin}
-            className="flex items-center justify-center gap-3 w-full bg-white text-gray-900 font-bold py-4 rounded-lg hover:bg-gray-100 transition-all"
+            disabled={isRedirecting} // Prevent double clicks
+            className={`flex items-center justify-center gap-3 w-full font-bold py-4 rounded-lg transition-all ${
+              isRedirecting 
+                ? "bg-gray-600 text-gray-300 cursor-wait" 
+                : "bg-white text-gray-900 hover:bg-gray-100"
+            }`}
           >
-            <span className="font-bold text-xl">G</span>
-            Sign in with Google
+            {isRedirecting ? (
+              <>
+                <Loader className="animate-spin" size={20} />
+                Redirecting to Google...
+              </>
+            ) : (
+              <>
+                <span className="font-bold text-xl">G</span>
+                Sign in with Google
+              </>
+            )}
           </button>
         </div>
       </div>
