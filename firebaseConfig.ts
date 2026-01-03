@@ -1,9 +1,9 @@
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore"; 
+// 1. We import the Auth tools
 import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
 
-// Your exact configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAZHcYL0_NP0teaUOT60YeZbfQUzk8KfEk",
   authDomain: "happy-hunter-systems.firebaseapp.com",
@@ -18,7 +18,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-// Export the tools so the app can use them
+// 2. CRITICAL: We must EXPORT these so AdminDashboard can use them
 export const db = getFirestore(app);
-export const auth = getAuth(app);
+export const auth = getAuth(app); 
 export const googleProvider = new GoogleAuthProvider();
