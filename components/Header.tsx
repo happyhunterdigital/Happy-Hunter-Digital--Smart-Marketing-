@@ -36,12 +36,15 @@ export const Header: React.FC = () => {
           <button onClick={() => handleScrollLink('portfolio')} className="text-gray-300 hover:text-brand-yellow transition-colors">Case Studies</button>
           <Link to="/earned-media" className="text-gray-300 hover:text-brand-yellow transition-colors">Earned Media</Link>
           
-          <button 
-            onClick={() => handleScrollLink('audit')}
+          {/* UPDATED: Direct Calendly Link */}
+          <a 
+            href="https://calendly.com/motsumitl/30min"
+            target="_blank"
+            rel="noopener noreferrer"
             className="bg-brand-yellow text-brand-dark px-6 py-2 rounded font-bold hover:bg-white transition-all flex items-center gap-2"
           >
             Book Discovery Call <ArrowRight size={18} />
-          </button>
+          </a>
         </nav>
 
         {/* Mobile Menu Button */}
@@ -55,12 +58,16 @@ export const Header: React.FC = () => {
             <button onClick={() => handleScrollLink('services')} className="text-left text-gray-300 hover:text-brand-yellow py-2">Services</button>
             <button onClick={() => handleScrollLink('portfolio')} className="text-left text-gray-300 hover:text-brand-yellow py-2">Case Studies</button>
             <Link to="/earned-media" className="text-gray-300 hover:text-brand-yellow py-2" onClick={() => setIsMenuOpen(false)}>Earned Media</Link>
-            <button 
-              onClick={() => handleScrollLink('audit')}
-              className="bg-brand-yellow text-brand-dark px-6 py-3 rounded font-bold text-center"
+            
+            {/* UPDATED: Direct Calendly Link (Mobile) */}
+            <a 
+              href="https://calendly.com/motsumitl/30min"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-brand-yellow text-brand-dark px-6 py-3 rounded font-bold text-center block"
             >
               Book Discovery Call
-            </button>
+            </a>
           </div>
         )}
       </div>
