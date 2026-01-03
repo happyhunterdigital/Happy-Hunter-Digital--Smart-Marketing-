@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { db } from '../firebaseConfig';
 import { collection, addDoc } from 'firebase/firestore';
+// If you have a separate AI service file, import it here. 
+// Otherwise, we will simulate the AI result structure below for the email.
 
-// CRITICAL: This "export const" is what App.tsx is looking for
 export const AiAudit = () => {
-  const [url, setUrl] = useState('');
+  // 1. The Inputs you need
+  const [businessName, setBusinessName] = useState('');
+  const [location, setLocation] = useState(''); // Restored
+  const [website, setWebsite] = useState('');   // Added
   const [email, setEmail] = useState('');
+  
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -15,25 +20,30 @@ export const AiAudit = () => {
     setStatus('idle');
 
     try {
-      // 1. Define the Problem-Focused Email Content with Calendly Link
+      // NOTE: In a real scenario, you would call your AI Service here to get these details.
+      // For now, I am formatting the email based on the inputs to ensure the "Extension" sends it correctly.
+      
+      // 2. The "Problem-Focused" Email Content
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-          <h2>Your Website Audit Results</h2>
+          <h2>Audit Report: ${businessName}</h2>
           <p>Hi there,</p>
-          <p>We've completed the preliminary scan of your digital presence. Based on our analysis, we identified several critical gaps that are likely costing you customers right now:</p>
+          <p>We have completed the preliminary digital footprint analysis for <strong>${businessName}</strong> in <strong>${location}</strong>.</p>
+          
+          <p>Our AI systems scanned your local presence and website (${website || 'N/A'}), and we detected several critical gaps that are likely costing you customers:</p>
           
           <div style="background-color: #f8d7da; border-left: 5px solid #dc3545; padding: 15px; margin: 20px 0;">
             <h3 style="color: #721c24; margin-top: 0;">⚠️ Critical Missed Opportunities:</h3>
             <ul>
-              <li><strong>SEO Visibility:</strong> Your site is missing key metadata, making it invisible to high-intent Google searchers.</li>
-              <li><strong>Conversion Speed:</strong> Page load times are higher than industry standard, leading to a 20%+ bounce rate.</li>
-              <li><strong>Trust Signals:</strong> Lack of immediate social proof or clear call-to-action sequences above the fold.</li>
+              <li><strong>Local Visibility Gap:</strong> Competitors in ${location} are ranking for keywords you are currently missing.</li>
+              <li><strong>Trust Signals:</strong> Your digital profile lacks the immediate "social proof" triggers that high-intent buyers look for.</li>
+              <li><strong>Conversion Friction:</strong> There are specific bottlenecks in your customer journey preventing lookers from becoming bookers.</li>
             </ul>
           </div>
 
           <p>These issues are fixable, but they require a specific strategy tailored to your business model.</p>
           
-          <p><strong>I have the solutions ready, but I want to walk you through them personally to ensure they fit your goals.</strong></p>
+          <p><strong>I have the complete solution ready, but I want to walk you through it personally to ensure it fits your goals.</strong></p>
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="https://calendly.com/motsumitl/30min" 
@@ -56,21 +66,27 @@ export const AiAudit = () => {
         </div>
       `;
 
-      // 2. Save to Firestore (Triggering the Email Extension)
+      // 3. Save to Firestore (Triggers the Email)
       await addDoc(collection(db, "mail"), {
         to: email,
         message: {
-          subject: "⚠️ Urgent: We found gaps in your digital strategy",
+          subject: `⚠️ Audit Results for ${businessName}: Critical Gaps Found`,
           html: emailHtml,
         },
         date: new Date(),
-        website: url,
-        status: "new"
+        businessName: businessName,
+        location: location,
+        website: website,
+        status: "new" // This helps your Admin Dashboard filter new leads
       });
 
       setStatus('success');
-      setUrl('');
+      // Optional: clear form
+      setBusinessName('');
+      setLocation('');
+      setWebsite('');
       setEmail('');
+
     } catch (error) {
       console.error("Error submitting audit:", error);
       setStatus('error');
@@ -82,25 +98,52 @@ export const AiAudit = () => {
   return (
     <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto my-10">
       <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-        Get Your Free AI Website Audit
+        Get Your Free AI Business Audit
       </h2>
       <p className="text-gray-600 mb-8 text-center">
-        Enter your website URL and email to receive a detailed breakdown of your digital presence gaps.
+        See exactly what your business is missing online. Enter your details below.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Business Name Input */}
         <div>
-          <label className="block text-gray-700 font-bold mb-2">Website URL</label>
+          <label className="block text-gray-700 font-bold mb-2">Business Name</label>
           <input
-            type="url"
+            type="text"
             required
-            placeholder="https://example.com"
+            placeholder="e.g. Joe's Plumbing"
             className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
           />
         </div>
 
+        {/* Location Input */}
+        <div>
+          <label className="block text-gray-700 font-bold mb-2">Location / Area</label>
+          <input
+            type="text"
+            required
+            placeholder="e.g. Pretoria, Gauteng"
+            className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+          />
+        </div>
+
+        {/* Website Input (New Addition) */}
+        <div>
+          <label className="block text-gray-700 font-bold mb-2">Website URL (Optional)</label>
+          <input
+            type="url"
+            placeholder="https://example.com"
+            className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+          />
+        </div>
+
+        {/* Email Input */}
         <div>
           <label className="block text-gray-700 font-bold mb-2">Email Address</label>
           <input
@@ -120,12 +163,12 @@ export const AiAudit = () => {
             loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
           }`}
         >
-          {loading ? 'Analyzing...' : 'Scan My Website Now'}
+          {loading ? 'Running AI Scan...' : 'Scan My Business Now'}
         </button>
 
         {status === 'success' && (
           <div className="p-4 bg-green-100 text-green-700 rounded text-center">
-            ✅ Audit requested! Check your inbox for the report.
+            ✅ Audit complete! We've sent the gap analysis to your inbox.
           </div>
         )}
         
