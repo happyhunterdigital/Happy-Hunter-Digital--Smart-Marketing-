@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { db } from '../firebaseConfig';
 import { collection, addDoc } from 'firebase/firestore';
-// If you have a separate AI service file, import it here. 
-// Otherwise, we will simulate the AI result structure below for the email.
 
 export const AiAudit = () => {
-  // 1. The Inputs you need
+  // 1. The Inputs
   const [businessName, setBusinessName] = useState('');
-  const [location, setLocation] = useState(''); // Restored
-  const [website, setWebsite] = useState('');   // Added
+  const [location, setLocation] = useState('');
+  const [website, setWebsite] = useState('');
   const [email, setEmail] = useState('');
   
   const [loading, setLoading] = useState(false);
@@ -20,10 +18,8 @@ export const AiAudit = () => {
     setStatus('idle');
 
     try {
-      // NOTE: In a real scenario, you would call your AI Service here to get these details.
-      // For now, I am formatting the email based on the inputs to ensure the "Extension" sends it correctly.
-      
       // 2. The "Problem-Focused" Email Content
+      // (This remains the same logic as before, sending the analysis)
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
           <h2>Audit Report: ${businessName}</h2>
@@ -66,7 +62,7 @@ export const AiAudit = () => {
         </div>
       `;
 
-      // 3. Save to Firestore (Triggers the Email)
+      // 3. Save to Firestore
       await addDoc(collection(db, "mail"), {
         to: email,
         message: {
@@ -77,11 +73,10 @@ export const AiAudit = () => {
         businessName: businessName,
         location: location,
         website: website,
-        status: "new" // This helps your Admin Dashboard filter new leads
+        status: "new"
       });
 
       setStatus('success');
-      // Optional: clear form
       setBusinessName('');
       setLocation('');
       setWebsite('');
@@ -96,23 +91,27 @@ export const AiAudit = () => {
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto my-10">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+    <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl max-w-2xl mx-auto my-10 relative overflow-hidden">
+      {/* Decorative Glow Effect */}
+      <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 to-yellow-600"></div>
+
+      <h2 className="text-3xl font-bold text-white mb-4 text-center">
         Get Your Free AI Business Audit
       </h2>
-      <p className="text-gray-600 mb-8 text-center">
-        See exactly what your business is missing online. Enter your details below.
+      <p className="text-gray-400 mb-8 text-center">
+        See exactly what <strong>{businessName || 'your business'}</strong> is missing online.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        
         {/* Business Name Input */}
         <div>
-          <label className="block text-gray-700 font-bold mb-2">Business Name</label>
+          <label className="block text-yellow-500 font-bold mb-2 text-sm uppercase tracking-wide">Business Name</label>
           <input
             type="text"
             required
             placeholder="e.g. Joe's Plumbing"
-            className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-gray-800 border border-gray-700 text-white p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 placeholder-gray-500 transition-all"
             value={businessName}
             onChange={(e) => setBusinessName(e.target.value)}
           />
@@ -120,24 +119,27 @@ export const AiAudit = () => {
 
         {/* Location Input */}
         <div>
-          <label className="block text-gray-700 font-bold mb-2">Location / Area</label>
+          <label className="block text-yellow-500 font-bold mb-2 text-sm uppercase tracking-wide">Location / Area</label>
           <input
             type="text"
             required
             placeholder="e.g. Pretoria, Gauteng"
-            className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-gray-800 border border-gray-700 text-white p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 placeholder-gray-500 transition-all"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
         </div>
 
-        {/* Website Input (New Addition) */}
+        {/* Website Input (TRULY OPTIONAL NOW) */}
         <div>
-          <label className="block text-gray-700 font-bold mb-2">Website URL (Optional)</label>
+          <label className="block text-gray-400 font-bold mb-2 text-sm uppercase tracking-wide">
+            Website URL <span className="text-gray-600 normal-case">(Optional - leave blank if none)</span>
+          </label>
           <input
-            type="url"
-            placeholder="https://example.com"
-            className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="text" 
+            /* Changed from type="url" to type="text" to prevent browser validation errors on empty fields */
+            placeholder="happyhunterdigital.com"
+            className="w-full bg-gray-800 border border-gray-700 text-white p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 placeholder-gray-500 transition-all"
             value={website}
             onChange={(e) => setWebsite(e.target.value)}
           />
@@ -145,12 +147,12 @@ export const AiAudit = () => {
 
         {/* Email Input */}
         <div>
-          <label className="block text-gray-700 font-bold mb-2">Email Address</label>
+          <label className="block text-yellow-500 font-bold mb-2 text-sm uppercase tracking-wide">Email Address</label>
           <input
             type="email"
             required
             placeholder="you@company.com"
-            className="w-full border border-gray-300 p-3 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-gray-800 border border-gray-700 text-white p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 placeholder-gray-500 transition-all"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -159,22 +161,24 @@ export const AiAudit = () => {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full text-white font-bold py-4 rounded transition duration-300 ${
-            loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+          className={`w-full font-bold py-4 rounded-lg text-lg shadow-lg transform hover:-translate-y-1 transition duration-300 ${
+            loading 
+              ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+              : 'bg-yellow-500 text-gray-900 hover:bg-yellow-400 hover:shadow-yellow-500/50'
           }`}
         >
-          {loading ? 'Running AI Scan...' : 'Scan My Business Now'}
+          {loading ? 'Running AI Scan...' : '🚀 Scan My Business Now'}
         </button>
 
         {status === 'success' && (
-          <div className="p-4 bg-green-100 text-green-700 rounded text-center">
-            ✅ Audit complete! We've sent the gap analysis to your inbox.
+          <div className="p-4 bg-green-900/50 border border-green-500 text-green-200 rounded-lg text-center animate-fade-in">
+            ✅ <strong>Audit Sent!</strong> Check your inbox for the gap analysis.
           </div>
         )}
         
         {status === 'error' && (
-          <div className="p-4 bg-red-100 text-red-700 rounded text-center">
-            ❌ Something went wrong. Please try again.
+          <div className="p-4 bg-red-900/50 border border-red-500 text-red-200 rounded-lg text-center animate-fade-in">
+            ❌ Something went wrong. Please check your connection and try again.
           </div>
         )}
       </form>
