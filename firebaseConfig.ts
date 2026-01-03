@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"; // Required for the database
-import { getAnalytics } from "firebase/analytics"; // Optional, but good to have
+import { getFirestore } from "firebase/firestore";
+import { getAnalytics } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider } from "firebase/auth"; // <--- NEW
 
 const firebaseConfig = {
   apiKey: "AIzaSyAZHcYL0_NP0teaUOT60YeZbfQUzk8KfEk",
@@ -16,5 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 // Initialize Services
-export const db = getFirestore(app); // <--- CRITICAL: This allows us to save leads
+export const db = getFirestore(app);
+export const auth = getAuth(app); // <--- NEW: Export Authentication
+export const googleProvider = new GoogleAuthProvider(); // <--- NEW: Setup Google Login
 const analytics = getAnalytics(app);
