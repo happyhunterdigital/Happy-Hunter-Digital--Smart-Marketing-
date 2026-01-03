@@ -1,4 +1,3 @@
-
 export interface ServiceItem {
   id: string;
   title: string;
@@ -52,4 +51,5 @@ export interface BlogPost {
   qa: { question: string; answer: string }[];
 }
 
-export type ViewState = 'HOME' | 'EARNED_MEDIA' | 'BLOG_READER' | 'PRIVACY_POLICY';
+// Updated ViewState to include 'ADMIN'
+export type ViewState = 'HOME' | 'EARNED_MEDIA' | 'BLOG_READER' | 'PRIVACY_POLICY' | 'ADMIN';
