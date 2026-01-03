@@ -36,6 +36,7 @@ const AdminDashboard = () => {
   const handleGoogleLogin = async () => {
     setErrorMsg(null);
     try {
+      // CLEAN POPUP: No alerts, no delays. 
       await signInWithPopup(auth, googleProvider);
     } catch (error: any) {
       console.error("Login failed:", error);
