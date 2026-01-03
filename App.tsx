@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React from 'react';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { AiAudit } from './components/AiAudit';
@@ -11,71 +11,52 @@ import { EarnedMedia } from './components/EarnedMedia';
 import { BlogReader } from './components/BlogReader';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { CookieConsent } from './components/CookieConsent';
-import { ViewState } from './types';
+import AdminDashboard from './pages/AdminDashboard'; 
 
-const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<ViewState>('HOME');
-  const [selectedBlogId, setSelectedBlogId] = useState<string | null>(null);
-
-  const handleNavigate = (view: ViewState, blogId?: string) => {
-    setCurrentView(view);
-    if (blogId) {
-      setSelectedBlogId(blogId);
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleHomeScroll = (sectionId: string) => {
-    setCurrentView('HOME');
-    // Allow state update to propagate before scrolling
-    setTimeout(() => {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
+// Layout wrapper to hide Header/Footer on Admin page
+const Layout = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const isAdmin = location.pathname === '/admin';
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-brand-yellow selection:text-brand-dark">
-      <Header onNavigate={handleNavigate} onScroll={handleHomeScroll} />
-      
+      {!isAdmin && <Header />}
       <main className="flex-grow">
-        {currentView === 'HOME' && (
-          <div className="animate-fade-in">
-            <Hero />
-            <div id="audit" className="scroll-mt-24">
-              <AiAudit />
-            </div>
-            <div id="services" className="scroll-mt-24">
-              <Services />
-            </div>
-            <div id="portfolio" className="scroll-mt-24">
-              <Portfolio />
-            </div>
-          </div>
-        )}
-
-        {currentView === 'EARNED_MEDIA' && (
-          <EarnedMedia onReadBlog={(id) => handleNavigate('BLOG_READER', id)} />
-        )}
-
-        {currentView === 'BLOG_READER' && selectedBlogId && (
-          <BlogReader 
-            blogId={selectedBlogId} 
-            onBack={() => handleNavigate('EARNED_MEDIA')} 
-          />
-        )}
-
-        {currentView === 'PRIVACY_POLICY' && (
-          <PrivacyPolicy onBack={() => handleNavigate('HOME')} />
-        )}
+        {children}
       </main>
-      
-      <Footer onNavigate={handleNavigate} />
+      {!isAdmin && <Footer />}
       <WhatsAppWidget />
       <CookieConsent />
     </div>
+  );
+};
+
+// The Home Page (All sections in one scrollable page)
+const HomePage = () => (
+  <div className="animate-fade-in">
+    <Hero />
+    <div id="audit" className="scroll-mt-24"><AiAudit /></div>
+    <div id="services" className="scroll-mt-24"><Services /></div>
+    <div id="portfolio" className="scroll-mt-24"><Portfolio /></div>
+  </div>
+);
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <Layout>
+        <Routes>
+          {/* Main Website Routes */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/earned-media" element={<EarnedMedia />} />
+          <Route path="/blog/:id" element={<BlogReader />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          
+          {/* The Hidden Admin Route */}
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Routes>
+      </Layout>
+    </Router>
   );
 };
 
