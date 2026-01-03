@@ -30,13 +30,18 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // 2. Google Login Function (Using Redirect to fix popup blocker)
+  // 2. DEBUG LOGIN FUNCTION
   const handleGoogleLogin = async () => {
+    // --- DEBUG STEP 1: PROVE THE BUTTON WAS CLICKED ---
+    alert("System: Attempting to redirect to Google...");
+    console.log("Button clicked. Starting redirect...");
+
     try {
       await signInWithRedirect(auth, googleProvider);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login failed:", error);
-      alert("Login failed. Check console for details.");
+      // --- DEBUG STEP 2: SHOW ERROR ON SCREEN ---
+      alert("Login Error: " + error.message);
     }
   };
 
@@ -62,7 +67,7 @@ const AdminDashboard = () => {
     try {
       const leadRef = doc(db, "mail", id);
       await updateDoc(leadRef, { status: "contacted" });
-      fetchLeads(); // Refresh list
+      fetchLeads(); 
       if (selectedLead?.id === id) setSelectedLead({ ...selectedLead, status: "contacted" });
     } catch (error) {
       console.error("Error updating status:", error);
@@ -79,7 +84,8 @@ const AdminDashboard = () => {
           <p className="text-gray-400 mb-8">Happy Hunter Staff Only</p>
           <button 
             onClick={handleGoogleLogin}
-            className="flex items-center justify-center gap-3 w-full bg-white text-gray-900 font-bold py-4 rounded-lg hover:bg-gray-100 transition-all"
+            className="flex items-center justify-center gap-3 w-full bg-white text-gray-900 font-bold py-4 rounded-lg hover:bg-gray-100 transition-all cursor-pointer active:scale-95"
+            style={{ cursor: 'pointer' }}
           >
             <span className="font-bold text-xl">G</span>
             Sign in with Google
@@ -92,8 +98,6 @@ const AdminDashboard = () => {
   // --- DASHBOARD SCREEN ---
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-      
-      {/* Sidebar / List View */}
       <div className="w-full md:w-1/3 bg-white border-r border-gray-200 h-screen overflow-y-auto">
         <div className="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center sticky top-0 z-10">
           <div>
@@ -131,11 +135,9 @@ const AdminDashboard = () => {
         )}
       </div>
 
-      {/* Main Content / Detailed View */}
       <div className="w-full md:w-2/3 p-8 h-screen overflow-y-auto bg-gray-50">
         {selectedLead ? (
           <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-            {/* Header */}
             <div className="bg-gray-900 p-8 text-white">
               <div className="flex justify-between items-start">
                 <div>
@@ -158,12 +160,10 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Analysis Section */}
             <div className="p-8">
               <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <AlertTriangle className="text-red-500" /> Detected Gaps (Problems)
               </h3>
-              
               <div className="grid gap-4 mb-8">
                 <div className="bg-red-50 p-4 rounded-lg border border-red-100">
                   <h4 className="font-bold text-red-800 mb-1">Local Visibility</h4>
@@ -174,11 +174,9 @@ const AdminDashboard = () => {
                   <p className="text-sm text-gray-700">Website or profile lacks immediate "Social Proof" triggers (Review velocity, recent updates) required to convert cold traffic.</p>
                 </div>
               </div>
-
               <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <CheckCircle className="text-green-500" /> Recommended Solutions
               </h3>
-
               <div className="space-y-4">
                 <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
                   <div className="bg-blue-100 p-2 rounded text-blue-600 font-bold">01</div>
@@ -194,15 +192,7 @@ const AdminDashboard = () => {
                     <p className="text-sm text-gray-600">Implement SMS-based review request system to increase review velocity by 300% in 30 days.</p>
                   </div>
                 </div>
-                <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
-                  <div className="bg-blue-100 p-2 rounded text-blue-600 font-bold">03</div>
-                  <div>
-                    <h4 className="font-bold text-gray-800">Authority Content</h4>
-                    <p className="text-sm text-gray-600">Create 3-5 "Location + Service" pages (e.g., "Plumber in Centurion") to capture specific search intent.</p>
-                  </div>
-                </div>
               </div>
-
             </div>
           </div>
         ) : (
