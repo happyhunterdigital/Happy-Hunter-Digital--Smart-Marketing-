@@ -6,7 +6,7 @@ import { blogPosts } from '../constants';
 export const EarnedMedia = () => {
   return (
     <section className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4 pt-20"> {/* Added pt-20 for header spacing */}
+      <div className="container mx-auto px-4 pt-20">
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Newspaper className="text-brand-blue" size={24} />
@@ -25,9 +25,11 @@ export const EarnedMedia = () => {
                 <div className="text-xs font-bold text-brand-blue uppercase tracking-wide mb-2">
                   {post.category}
                 </div>
+                {/* --- FIX WAS HERE: Changed </div> to </h3> --- */}
                 <h3 className="text-xl font-bold text-brand-dark mb-3 line-clamp-2">
                   {post.title}
-                </div>
+                </h3>
+                {/* --------------------------------------------- */}
                 <p className="text-gray-600 mb-4 line-clamp-3">
                   {post.summary}
                 </p>
