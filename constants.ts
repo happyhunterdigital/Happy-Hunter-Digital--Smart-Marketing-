@@ -1,9 +1,9 @@
 import { ServiceItem, PortfolioItem, BlogPost } from './types';
 import { Search, Globe, Users, BarChart, Zap, Target } from 'lucide-react';
 
-// --- CRITICAL FIX: This was missing ---
-export const CONTACT_PHONE = "27763660308"; 
-// --------------------------------------
+// --- YOUR CORRECT CONTACT DETAILS ---
+export const CONTACT_PHONE = "27601016673"; 
+export const CONTACT_EMAIL = "motsumitl@happyhunterdigital.com";
 
 export const services: ServiceItem[] = [
   {
@@ -15,41 +15,43 @@ export const services: ServiceItem[] = [
   {
     id: 'seo',
     title: 'Smart SEO Systems',
-    description: 'Not just keywords. We build an ecosystem of content that positions your brand as the only logical choice in your area.',
+    description: 'We build "Entity Authority." We teach Google WHO you are, not just WHAT you do, so you dominate local search.',
     icon: 'Globe'
   },
   {
-    id: 'funnels',
-    title: 'Conversion Funnels',
-    description: 'We turn "just looking" traffic into paying appointments with automated lead nurturing systems.',
-    icon: 'Users'
+    id: 'automation',
+    title: 'Automation Ecosystems',
+    description: 'We implement workflows (N8N + WhatsApp) to automate repetitive tasks like CRM updates and customer notifications.',
+    icon: 'Zap'
   }
 ];
 
+// --- YOUR REAL CASE STUDIES ---
 export const portfolioItems: PortfolioItem[] = [
   {
-    id: 'plumber-pretoria',
-    client: 'Apex Plumbing',
-    outcome: '+340% Leads',
-    description: 'From 3 calls a week to fully booked. We fixed their GMB profile and automated their review requests.',
-    imageUrl: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&q=80&w=800'
+    id: 'township-construction',
+    client: 'Township Construction SME',
+    outcome: '+40% Visibility',
+    description: 'Optimized Google Business Profile and integrated N8N + WhatsApp lead capture. Doubled inbound inquiries in 3 months.',
+    imageUrl: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=800'
   },
   {
-    id: 'law-firm-sandton',
-    client: 'Sandton Legal',
-    outcome: 'Ranked #1',
-    description: 'Displaced a 10-year incumbent on Google Maps within 90 days using our "Local Authority" protocol.',
-    imageUrl: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800'
+    id: 'profuse-beauty',
+    client: 'Profuse Beauty',
+    outcome: '30% More Bookings',
+    description: 'Crafted ambassador bios and optimized Instagram/WhatsApp commerce flows. Converted engagement into confidence-driven bookings.',
+    imageUrl: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&q=80&w=800'
   },
   {
-    id: 'solar-kzn',
-    client: 'Durban Solar',
-    outcome: 'R2.5M Revenue',
-    description: 'Generated high-ticket solar installs using targeted AI-driven content campaigns.',
-    imageUrl: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&q=80&w=800'
+    id: 'yoga-startup',
+    client: 'Youth-Owned Retail Startup',
+    outcome: '50% Engagement',
+    description: 'Developed cultural storytelling content for Kemetic Yoga. Automated social campaigns increased class attendance and brand trust.',
+    imageUrl: 'https://images.unsplash.com/photo-1599447421405-0c323d14bc68?auto=format&fit=crop&q=80&w=800'
   }
 ];
 
+// --- BLOG POSTS (Required for Earned Media Page) ---
 export const blogPosts: BlogPost[] = [
   {
     id: 'ai-vs-traditional-seo',
@@ -63,7 +65,7 @@ export const blogPosts: BlogPost[] = [
       <p>At Happy Hunter, we build "Entity Authority." We teach Google <em>who</em> you are, not just <em>what</em> you do.</p>
     `,
     qa: [
-      { question: 'Does keywords still matter?', answer: 'Yes, but context matters more. You need to answer the questions your customers are asking.' },
+      { question: 'Do keywords still matter?', answer: 'Yes, but context matters more. You need to answer the questions your customers are asking.' },
       { question: 'How fast can I see results?', answer: 'With our AI-alignment strategy, we often see movement in the Local Pack within 30-45 days.' }
     ]
   },
