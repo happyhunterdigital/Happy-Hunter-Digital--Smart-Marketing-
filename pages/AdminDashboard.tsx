@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db, auth, googleProvider } from "../firebaseConfig";
 import { collection, getDocs, query, orderBy, doc, updateDoc } from "firebase/firestore";
-// CHANGED: Added signInWithRedirect, removed signInWithPopup
 import { signInWithRedirect, signOut, onAuthStateChanged, User } from "firebase/auth";
 import { Shield, LogOut, Eye, CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -31,11 +30,9 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // 2. Google Login Function (UPDATED to Redirect)
+  // 2. Google Login Function (Using Redirect to fix popup blocker)
   const handleGoogleLogin = async () => {
     try {
-      // This will redirect the whole page to Google, then back here.
-      // It solves the "Popup Blocked" error.
       await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error("Login failed:", error);
@@ -84,7 +81,6 @@ const AdminDashboard = () => {
             onClick={handleGoogleLogin}
             className="flex items-center justify-center gap-3 w-full bg-white text-gray-900 font-bold py-4 rounded-lg hover:bg-gray-100 transition-all"
           >
-            {/* Simple Google Icon */}
             <span className="font-bold text-xl">G</span>
             Sign in with Google
           </button>
@@ -159,3 +155,65 @@ const AdminDashboard = () => {
                     Mark as Contacted
                   </button>
                 )}
+              </div>
+            </div>
+
+            {/* Analysis Section */}
+            <div className="p-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <AlertTriangle className="text-red-500" /> Detected Gaps (Problems)
+              </h3>
+              
+              <div className="grid gap-4 mb-8">
+                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                  <h4 className="font-bold text-red-800 mb-1">Local Visibility</h4>
+                  <p className="text-sm text-gray-700">Business is likely missing from the "Local Pack" (Top 3 Map results) in {selectedLead.location}. Competitors are capturing high-intent traffic.</p>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                  <h4 className="font-bold text-red-800 mb-1">Trust Architecture</h4>
+                  <p className="text-sm text-gray-700">Website or profile lacks immediate "Social Proof" triggers (Review velocity, recent updates) required to convert cold traffic.</p>
+                </div>
+              </div>
+
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <CheckCircle className="text-green-500" /> Recommended Solutions
+              </h3>
+
+              <div className="space-y-4">
+                <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
+                  <div className="bg-blue-100 p-2 rounded text-blue-600 font-bold">01</div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">GMB Optimization "Surge"</h4>
+                    <p className="text-sm text-gray-600">Update service categories to "Products", seed Q&A section with keywords, and enable messaging.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
+                  <div className="bg-blue-100 p-2 rounded text-blue-600 font-bold">02</div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">Review Automation</h4>
+                    <p className="text-sm text-gray-600">Implement SMS-based review request system to increase review velocity by 300% in 30 days.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
+                  <div className="bg-blue-100 p-2 rounded text-blue-600 font-bold">03</div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">Authority Content</h4>
+                    <p className="text-sm text-gray-600">Create 3-5 "Location + Service" pages (e.g., "Plumber in Centurion") to capture specific search intent.</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-gray-400">
+            <Eye size={48} className="mb-4 opacity-20" />
+            <p>Select a lead from the left to view the Detailed Audit.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;
