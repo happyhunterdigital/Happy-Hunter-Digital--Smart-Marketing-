@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { db, auth, googleProvider } from "../firebaseConfig";
 import { collection, getDocs, query, orderBy, doc, updateDoc } from "firebase/firestore";
-import { signInWithRedirect, signOut, onAuthStateChanged, User } from "firebase/auth";
-import { Shield, LogOut, Eye, CheckCircle, AlertTriangle, Loader } from "lucide-react";
+import { signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
+import { Shield, LogOut, Eye, CheckCircle, AlertTriangle, AlertOctagon } from "lucide-react";
 
 interface Lead {
   id: string;
@@ -20,31 +20,28 @@ const AdminDashboard = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
-  
-  // NEW: Tracks if we are currently trying to login
-  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // 1. Listen for Auth State
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) fetchLeads();
+      if (currentUser) {
+        setErrorMsg(null);
+        fetchLeads();
+      }
     });
     return () => unsubscribe();
   }, []);
 
-  // 2. LOGIN FUNCTION (With Visual Feedback)
   const handleGoogleLogin = async () => {
-    // IMMEDIATE VISUAL FEEDBACK
-    setIsRedirecting(true);
-    
+    setErrorMsg(null);
     try {
-      // This will redirect the page. It might take 1-2 seconds.
-      await signInWithRedirect(auth, googleProvider);
-    } catch (error) {
+      // CLEAN LOGIN: No alerts, no delays. This prevents the "Popup Blocked" error.
+      await signInWithPopup(auth, googleProvider);
+    } catch (error: any) {
       console.error("Login failed:", error);
-      alert("Login failed. Check console.");
-      setIsRedirecting(false); // Reset button if it fails
+      // If blocked, we show the message on screen so you can try again
+      setErrorMsg(error.message || "Login failed");
     }
   };
 
@@ -70,7 +67,7 @@ const AdminDashboard = () => {
     try {
       const leadRef = doc(db, "mail", id);
       await updateDoc(leadRef, { status: "contacted" });
-      fetchLeads(); 
+      fetchLeads();
       if (selectedLead?.id === id) setSelectedLead({ ...selectedLead, status: "contacted" });
     } catch (error) {
       console.error("Error updating status:", error);
@@ -88,25 +85,24 @@ const AdminDashboard = () => {
           
           <button 
             onClick={handleGoogleLogin}
-            disabled={isRedirecting} // Prevent double clicks
-            className={`flex items-center justify-center gap-3 w-full font-bold py-4 rounded-lg transition-all ${
-              isRedirecting 
-                ? "bg-gray-600 text-gray-300 cursor-wait" 
-                : "bg-white text-gray-900 hover:bg-gray-100"
-            }`}
+            className="flex items-center justify-center gap-3 w-full bg-white text-gray-900 font-bold py-4 rounded-lg hover:bg-gray-100 transition-all mb-4"
           >
-            {isRedirecting ? (
-              <>
-                <Loader className="animate-spin" size={20} />
-                Redirecting to Google...
-              </>
-            ) : (
-              <>
-                <span className="font-bold text-xl">G</span>
-                Sign in with Google
-              </>
-            )}
+            <span className="font-bold text-xl">G</span>
+            Sign in with Google
           </button>
+
+          {/* Error Message Display */}
+          {errorMsg && (
+            <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded text-left text-sm mt-4">
+              <div className="flex items-center gap-2 mb-1 font-bold">
+                <AlertOctagon size={16} /> Login Failed
+              </div>
+              <p>{errorMsg}</p>
+              {errorMsg.includes("popup") && (
+                <p className="mt-2 text-xs">Tip: Check the address bar for a "Pop-up blocked" icon and allow it.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     );
