@@ -1,6 +1,10 @@
 import { ServiceItem, PortfolioItem, BlogPost } from './types';
 import { Search, Globe, Users, BarChart, Zap, Target } from 'lucide-react';
 
+// --- CRITICAL FIX: This was missing ---
+export const CONTACT_PHONE = "27763660308"; 
+// --------------------------------------
+
 export const services: ServiceItem[] = [
   {
     id: 'ai-audit',
@@ -46,7 +50,6 @@ export const portfolioItems: PortfolioItem[] = [
   }
 ];
 
-// --- THIS WAS MISSING ---
 export const blogPosts: BlogPost[] = [
   {
     id: 'ai-vs-traditional-seo',
