@@ -25,11 +25,11 @@ export const EarnedMedia = () => {
                 <div className="text-xs font-bold text-brand-blue uppercase tracking-wide mb-2">
                   {post.category}
                 </div>
-                {/* --- FIX WAS HERE: Changed </div> to </h3> --- */}
+                {/* --- THIS WAS THE ERROR: It is now corrected to </h3> --- */}
                 <h3 className="text-xl font-bold text-brand-dark mb-3 line-clamp-2">
                   {post.title}
                 </h3>
-                {/* --------------------------------------------- */}
+                {/* ------------------------------------------------------- */}
                 <p className="text-gray-600 mb-4 line-clamp-3">
                   {post.summary}
                 </p>
