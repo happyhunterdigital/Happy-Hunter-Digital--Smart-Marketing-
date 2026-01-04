@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Megaphone, BrainCircuit, AlertTriangle, CheckCircle2, ArrowRight, Activity } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ArrowRight, Activity } from 'lucide-react';
 
 export const CoreServices = () => {
   return (
@@ -35,66 +35,95 @@ export const CoreServices = () => {
         </div>
       </section>
 
-      {/* --- THE 3 PILLARS --- */}
+      {/* --- THE SMART AUTHORITY ECOSYSTEM --- */}
       <section className="py-24 px-6 max-w-7xl mx-auto bg-white">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-black mb-6 text-gray-900">The Smart Authority Ecosystem</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-12">
             Our done-for-you service transforms your business into a Verified, Recommended Authority built on three essential pillars:
           </p>
+          
+          {/* CENTRAL METAPHOR IMAGE */}
+          <div className="flex justify-center mb-16">
+            <img 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551392/The_Central_Metaphor_Smart_Authority_Engine_yyhbgv.png" 
+              alt="The Smart Authority Engine"
+              className="w-full max-w-4xl h-auto rounded-2xl shadow-2xl border border-gray-100"
+            />
+          </div>
         </div>
 
+        {/* --- THE 3 PILLARS GRID --- */}
         <div className="grid md:grid-cols-3 gap-8">
+          
           {/* Pillar 1: Trust Anchor */}
-          <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 hover:border-yellow-400 hover:shadow-xl transition-all duration-300">
-            <div className="w-16 h-16 bg-yellow-100 text-yellow-700 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-              <ShieldCheck size={32} />
+          <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden hover:border-yellow-400 hover:shadow-xl transition-all duration-300 flex flex-col">
+            <div className="h-48 bg-gray-100 flex items-center justify-center p-6 border-b border-gray-100">
+              <img 
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551391/Pillar_1_The_Trust_Anchor_dutu1i.png" 
+                alt="Pillar 1: The Trust Anchor"
+                className="h-full w-auto object-contain hover:scale-105 transition-transform duration-500"
+              />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 1: The Trust Anchor</h3>
-            <div className="space-y-4">
-              <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
-                <p className="text-xs font-bold text-red-800 uppercase mb-1">The Challenge</p>
-                <p className="text-sm text-gray-700">Inconsistent information and poor review management make your business appear unreliable to intelligent systems.</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                <p className="text-xs font-bold text-green-800 uppercase mb-1">Our Solution</p>
-                <p className="text-sm text-gray-700"><strong>Your Digital Passport.</strong> We optimize your profiles with real-time updates and precise local signals to prove your business is reliable.</p>
+            <div className="p-8 flex-grow">
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 1: The Trust Anchor</h3>
+              <div className="space-y-4">
+                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                  <p className="text-xs font-bold text-red-800 uppercase mb-1">The Challenge</p>
+                  <p className="text-sm text-gray-700">Inconsistent information and poor review management make your business appear unreliable to intelligent systems.</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <p className="text-xs font-bold text-green-800 uppercase mb-1">Our Solution</p>
+                  <p className="text-sm text-gray-700"><strong>Your Digital Passport.</strong> We optimize your profiles with real-time updates and precise local signals to prove your business is reliable.</p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Pillar 2: AI Megaphone */}
-          <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 hover:border-yellow-400 hover:shadow-xl transition-all duration-300">
-            <div className="w-16 h-16 bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-              <Megaphone size={32} />
+          <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden hover:border-yellow-400 hover:shadow-xl transition-all duration-300 flex flex-col">
+            <div className="h-48 bg-gray-100 flex items-center justify-center p-6 border-b border-gray-100">
+              <img 
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551963/The_happyhunterdigital_AI_Megaphone_r0fgvq.png" 
+                alt="Pillar 2: The AI Megaphone"
+                className="h-full w-auto object-contain hover:scale-105 transition-transform duration-500"
+              />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 2: The AI Megaphone</h3>
-            <div className="space-y-4">
-              <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
-                <p className="text-xs font-bold text-red-800 uppercase mb-1">The Challenge</p>
-                <p className="text-sm text-gray-700">Traditional marketing is obsolete. AI assistants only cite sources they recognize as authoritative entities.</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                <p className="text-xs font-bold text-green-800 uppercase mb-1">Our Solution</p>
-                <p className="text-sm text-gray-700"><strong>Citable Content.</strong> We create content specifically for entities, ensuring intelligent systems choose YOU as the trusted answer.</p>
+            <div className="p-8 flex-grow">
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 2: The AI Megaphone</h3>
+              <div className="space-y-4">
+                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                  <p className="text-xs font-bold text-red-800 uppercase mb-1">The Challenge</p>
+                  <p className="text-sm text-gray-700">Traditional marketing is obsolete. AI assistants only cite sources they recognize as authoritative entities.</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <p className="text-xs font-bold text-green-800 uppercase mb-1">Our Solution</p>
+                  <p className="text-sm text-gray-700"><strong>Citable Content.</strong> We create content specifically for entities, ensuring intelligent systems choose YOU as the trusted answer.</p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Pillar 3: Conversion Brain */}
-          <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200 hover:border-yellow-400 hover:shadow-xl transition-all duration-300">
-            <div className="w-16 h-16 bg-purple-100 text-purple-700 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
-              <BrainCircuit size={32} />
+          <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden hover:border-yellow-400 hover:shadow-xl transition-all duration-300 flex flex-col">
+            <div className="h-48 bg-gray-100 flex items-center justify-center p-6 border-b border-gray-100">
+               <img 
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551962/The_happyhunterdigital_Conversion_Brain_unercw.png" 
+                alt="Pillar 3: The Conversion Brain"
+                className="h-full w-auto object-contain hover:scale-105 transition-transform duration-500"
+              />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 3: The Conversion Brain</h3>
-            <div className="space-y-4">
-              <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
-                <p className="text-xs font-bold text-red-800 uppercase mb-1">The Challenge</p>
-                <p className="text-sm text-gray-700">Small businesses lose customers because they cannot handle inquiries and bookings 24/7.</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                <p className="text-xs font-bold text-green-800 uppercase mb-1">Our Solution</p>
-                <p className="text-sm text-gray-700"><strong>Intelligent Automation.</strong> Our systems work 24/7—handling inquiries and qualifying leads so you only speak to buyers.</p>
+            <div className="p-8 flex-grow">
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 3: The Conversion Brain</h3>
+              <div className="space-y-4">
+                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
+                  <p className="text-xs font-bold text-red-800 uppercase mb-1">The Challenge</p>
+                  <p className="text-sm text-gray-700">Small businesses lose customers because they cannot handle inquiries and bookings 24/7.</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <p className="text-xs font-bold text-green-800 uppercase mb-1">Our Solution</p>
+                  <p className="text-sm text-gray-700"><strong>Intelligent Automation.</strong> Our systems work 24/7—handling inquiries and qualifying leads so you only speak to buyers.</p>
+                </div>
               </div>
             </div>
           </div>
