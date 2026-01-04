@@ -6,17 +6,15 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // 1. Force the bundler to use our local shim instead of the broken package path
-      'firebase/vertexai': path.resolve(__dirname, './src/shims/firebase-vertexai.ts') 
+      // POINT DIRECTLY TO THE ROOT FILE
+      'firebase/vertexai': path.resolve(__dirname, './firebaseShim.ts') 
     }
   },
   optimizeDeps: {
-    // 2. Stop Vite from trying to pre-bundle Firebase (avoids the scanning error)
     exclude: ['firebase', '@google/genai']
   },
   build: {
     commonjsOptions: {
-      // 3. Help Vite convert CommonJS modules if needed
       transformMixedEsModules: true,
     },
   }
