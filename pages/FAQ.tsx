@@ -82,7 +82,6 @@ export const FAQ = () => {
   };
 
   return (
-    // FORCED WHITE BACKGROUND and Z-INDEX to prevent transparency issues
     <div className="min-h-screen bg-white font-sans text-gray-900 pt-28 relative z-10">
       
       {/* HERO HEADER */}
@@ -140,11 +139,11 @@ export const FAQ = () => {
         ))}
       </div>
 
-      {/* CTA FOOTER */}
+      {/* CTA FOOTER WITH NEW LINK */}
       <section className="bg-yellow-400 py-16 px-6 text-center">
         <h3 className="text-2xl md:text-3xl font-black text-gray-900 mb-6">Still have questions?</h3>
         <a 
-          href="https://calendly.com/happyhunterdigital/discovery"
+          href="https://calendly.com/motsumitl/30min"
           target="_blank"
           rel="noreferrer" 
           className="inline-block bg-gray-900 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all shadow-xl"
