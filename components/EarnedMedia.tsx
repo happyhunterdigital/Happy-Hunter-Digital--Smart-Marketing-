@@ -26,6 +26,7 @@ const ARTICLES: Article[] = [
           <h3 className="text-xl font-bold text-gray-900 mb-2">The Challenge</h3>
           <p>Profuse Beauty had incredible service but zero digital footprint. Their Google Business Profile was unverified, and they were losing high-intent traffic to inferior competitors simply because they weren't visible.</p>
         </div>
+        
         <div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">The Strategy</h3>
           <ul className="list-disc pl-5 space-y-2">
@@ -34,6 +35,7 @@ const ARTICLES: Article[] = [
             <li><strong>Keyword Injection:</strong> Optimized their service menu with high-volume search terms like "Microblading Centurion" and "Lash Lifts."</li>
           </ul>
         </div>
+
         <div className="bg-yellow-50 p-6 rounded-lg border-l-4 border-yellow-500">
           <h3 className="text-lg font-bold text-yellow-900 mb-2">The Results (90 Days)</h3>
           <ul className="list-disc pl-5 text-yellow-800 space-y-1">
@@ -58,6 +60,7 @@ const ARTICLES: Article[] = [
           <h3 className="text-xl font-bold text-gray-900 mb-2">The Problem</h3>
           <p>In the construction industry, trust is everything. This client had a generic website that looked like a template. High-value clients were landing on the page and leaving instantly because it didn't scream 'Competence'.</p>
         </div>
+        
         <div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">The Fix: Trust Architecture</h3>
           <p>We didn't just redesign the site; we engineered it for trust.</p>
@@ -67,6 +70,7 @@ const ARTICLES: Article[] = [
             <li><strong>Transparency:</strong> Added a 'Live Project Tracker' feature for clients.</li>
           </ul>
         </div>
+
         <div className="bg-gray-100 p-6 rounded-lg border-l-4 border-gray-900">
           <h3 className="text-lg font-bold text-gray-900 mb-2">Outcome</h3>
           <p>Within 4 weeks of launch, they secured a <strong>R2.5M residential development contract</strong>. The client specifically mentioned the "professionalism of the website" as a deciding factor.</p>
@@ -115,7 +119,6 @@ const ARTICLES: Article[] = [
   }
 ];
 
-// CORRECTLY EXPORTED COMPONENT (Prevents Build Crash)
 export const EarnedMedia = () => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
@@ -126,27 +129,27 @@ export const EarnedMedia = () => {
       <div className="bg-gray-900 text-white pt-32 pb-20 px-6">
         <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
           
-          {/* --- NEW BRANDING HEADER --- */}
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-10">
-            {/* 1. Logo Image */}
+          {/* --- BRANDING BLOCK --- */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-12">
+            {/* 1. New Logo Image */}
             <img 
-              src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1762761701/Logo_mock1_jmjuoe.png" 
               alt="Happy Hunter Logo" 
-              className="h-24 w-auto rounded-xl shadow-lg border border-gray-800"
+              className="h-24 w-auto drop-shadow-2xl"
             />
             
-            {/* 2. Text Branding */}
-            <div className="flex flex-col md:flex-row items-baseline gap-3 text-center md:text-left">
-              <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white lowercase">
+            {/* 2. Text Branding (Yellow & Bold, Not White) */}
+            <div className="flex flex-col items-center md:items-start">
+              <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-yellow-400 lowercase leading-none">
                 happyhunterdigital
               </h1>
-              <span className="text-xl md:text-3xl font-bold text-yellow-400 italic whitespace-nowrap">
+              <span className="text-xl md:text-2xl font-bold text-yellow-500/90 italic tracking-wider -mt-1">
                 -Smart Marketing-
               </span>
             </div>
           </div>
 
-          <h2 className="text-3xl md:text-5xl font-bold mb-6 text-gray-200">
+          <h2 className="text-2xl md:text-4xl font-bold mb-6 text-gray-200">
             Earned Media & Knowledge Base
           </h2>
           <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
