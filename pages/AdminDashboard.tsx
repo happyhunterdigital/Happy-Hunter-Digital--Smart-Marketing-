@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db, auth } from "../firebaseConfig";
 import { collection, getDocs, query, orderBy, doc, updateDoc } from "firebase/firestore";
-// CHANGED: We now use signInWithEmailAndPassword
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from "firebase/auth";
 import { Shield, LogOut, Eye, CheckCircle, AlertTriangle, AlertOctagon, Lock, Mail } from "lucide-react";
 
@@ -22,7 +21,7 @@ const AdminDashboard = () => {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
   
-  // NEW: Form State
+  // Login Form State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -39,12 +38,10 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  // NEW: Handle Email/Password Login
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // Stop page refresh
+    e.preventDefault();
     setIsLoggingIn(true);
     setErrorMsg(null);
-
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
@@ -87,7 +84,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // --- LOGIN SCREEN (UPDATED) ---
+  // --- LOGIN SCREEN ---
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
@@ -119,7 +116,6 @@ const AdminDashboard = () => {
                 required
               />
             </div>
-
             <button 
               type="submit"
               disabled={isLoggingIn}
@@ -129,7 +125,6 @@ const AdminDashboard = () => {
             </button>
           </form>
 
-          {/* Error Message Display */}
           {errorMsg && (
             <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded text-left text-sm mt-4 break-words">
               <div className="flex items-center gap-2 mb-1 font-bold">
@@ -154,7 +149,6 @@ const AdminDashboard = () => {
           </div>
           <button onClick={handleLogout} className="p-2 text-gray-500 hover:text-red-500"><LogOut size={20} /></button>
         </div>
-        
         {loading ? (
           <div className="p-10 text-center text-gray-400">Loading leads...</div>
         ) : (
@@ -204,7 +198,6 @@ const AdminDashboard = () => {
                 )}
               </div>
             </div>
-
             <div className="p-8">
               <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <AlertTriangle className="text-red-500" /> Detected Gaps (Problems)
@@ -212,30 +205,7 @@ const AdminDashboard = () => {
               <div className="grid gap-4 mb-8">
                 <div className="bg-red-50 p-4 rounded-lg border border-red-100">
                   <h4 className="font-bold text-red-800 mb-1">Local Visibility</h4>
-                  <p className="text-sm text-gray-700">Business is likely missing from the "Local Pack" (Top 3 Map results) in {selectedLead.location}. Competitors are capturing high-intent traffic.</p>
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg border border-red-100">
-                  <h4 className="font-bold text-red-800 mb-1">Trust Architecture</h4>
-                  <p className="text-sm text-gray-700">Website or profile lacks immediate "Social Proof" triggers (Review velocity, recent updates) required to convert cold traffic.</p>
-                </div>
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                <CheckCircle className="text-green-500" /> Recommended Solutions
-              </h3>
-              <div className="space-y-4">
-                <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
-                  <div className="bg-blue-100 p-2 rounded text-blue-600 font-bold">01</div>
-                  <div>
-                    <h4 className="font-bold text-gray-800">GMB Optimization "Surge"</h4>
-                    <p className="text-sm text-gray-600">Update service categories to "Products", seed Q&A section with keywords, and enable messaging.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg">
-                  <div className="bg-blue-100 p-2 rounded text-blue-600 font-bold">02</div>
-                  <div>
-                    <h4 className="font-bold text-gray-800">Review Automation</h4>
-                    <p className="text-sm text-gray-600">Implement SMS-based review request system to increase review velocity by 300% in 30 days.</p>
-                  </div>
+                  <p className="text-sm text-gray-700">Business is likely missing from the "Local Pack" in {selectedLead.location}.</p>
                 </div>
               </div>
             </div>
