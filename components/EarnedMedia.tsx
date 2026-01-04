@@ -119,7 +119,8 @@ const ARTICLES: Article[] = [
   }
 ];
 
-const EarnedMedia = () => {
+// Changed to 'export const' to match your App.tsx import style
+export const EarnedMedia = () => {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
   return (
@@ -270,5 +271,3 @@ const EarnedMedia = () => {
     </div>
   );
 };
-
-export default EarnedMedia;
