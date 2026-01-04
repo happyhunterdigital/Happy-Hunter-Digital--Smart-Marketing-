@@ -3,7 +3,6 @@ import { AlertTriangle, CheckCircle2, ArrowRight, Activity } from 'lucide-react'
 
 export const CoreServices = () => {
   return (
-    // Added 'relative z-10' to ensure it sits above any other layers
     <div className="min-h-screen bg-white font-sans text-gray-900 pt-28 relative z-10">
       
       {/* --- HERO SECTION --- */}
@@ -43,13 +42,19 @@ export const CoreServices = () => {
             Our done-for-you service transforms your business into a Verified, Recommended Authority built on three essential pillars:
           </p>
           
-          {/* CENTRAL METAPHOR IMAGE */}
+          {/* CENTRAL METAPHOR IMAGE + LABEL */}
           <div className="flex justify-center mb-16">
-            <img 
-              src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551392/The_Central_Metaphor_Smart_Authority_Engine_yyhbgv.png" 
-              alt="The Smart Authority Engine"
-              className="w-full max-w-4xl h-auto rounded-2xl shadow-2xl border border-gray-100"
-            />
+            <div className="relative group rounded-2xl overflow-hidden shadow-2xl border border-gray-100 max-w-4xl mx-auto">
+              <img 
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551392/The_Central_Metaphor_Smart_Authority_Engine_yyhbgv.png" 
+                alt="The Smart Authority Engine"
+                className="w-full h-auto"
+              />
+              {/* EMBEDDED TITLE */}
+              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-6 py-2 rounded-tl-2xl font-black text-sm md:text-base uppercase tracking-wider shadow-lg">
+                The Smart Authority Engine
+              </div>
+            </div>
           </div>
         </div>
 
@@ -58,12 +63,16 @@ export const CoreServices = () => {
           
           {/* Pillar 1: Trust Anchor */}
           <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden hover:border-yellow-400 hover:shadow-xl transition-all duration-300 flex flex-col">
-            <div className="h-48 bg-gray-100 flex items-center justify-center p-6 border-b border-gray-100">
+            <div className="h-48 bg-gray-100 relative border-b border-gray-100">
               <img 
                 src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551391/Pillar_1_The_Trust_Anchor_dutu1i.png" 
                 alt="Pillar 1: The Trust Anchor"
-                className="h-full w-auto object-contain hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-contain p-4"
               />
+              {/* EMBEDDED TITLE */}
+              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-tl-xl font-bold text-xs uppercase tracking-wide shadow-md">
+                Trust Anchor
+              </div>
             </div>
             <div className="p-8 flex-grow">
               <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 1: The Trust Anchor</h3>
@@ -82,12 +91,16 @@ export const CoreServices = () => {
 
           {/* Pillar 2: AI Megaphone */}
           <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden hover:border-yellow-400 hover:shadow-xl transition-all duration-300 flex flex-col">
-            <div className="h-48 bg-gray-100 flex items-center justify-center p-6 border-b border-gray-100">
+            <div className="h-48 bg-gray-100 relative border-b border-gray-100">
               <img 
                 src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551963/The_happyhunterdigital_AI_Megaphone_r0fgvq.png" 
                 alt="Pillar 2: The AI Megaphone"
-                className="h-full w-auto object-contain hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-contain p-4"
               />
+              {/* EMBEDDED TITLE */}
+              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-tl-xl font-bold text-xs uppercase tracking-wide shadow-md">
+                AI Megaphone
+              </div>
             </div>
             <div className="p-8 flex-grow">
               <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 2: The AI Megaphone</h3>
@@ -106,12 +119,16 @@ export const CoreServices = () => {
 
           {/* Pillar 3: Conversion Brain */}
           <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden hover:border-yellow-400 hover:shadow-xl transition-all duration-300 flex flex-col">
-            <div className="h-48 bg-gray-100 flex items-center justify-center p-6 border-b border-gray-100">
+            <div className="h-48 bg-gray-100 relative border-b border-gray-100">
                <img 
                 src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551962/The_happyhunterdigital_Conversion_Brain_unercw.png" 
                 alt="Pillar 3: The Conversion Brain"
-                className="h-full w-auto object-contain hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-contain p-4"
               />
+              {/* EMBEDDED TITLE */}
+              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-tl-xl font-bold text-xs uppercase tracking-wide shadow-md">
+                Conversion Brain
+              </div>
             </div>
             <div className="p-8 flex-grow">
               <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 3: The Conversion Brain</h3>
