@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { db, auth, googleProvider } from "../firebaseConfig";
+import { db, auth } from "../firebaseConfig";
 import { collection, getDocs, query, orderBy, doc, updateDoc } from "firebase/firestore";
-import { signInWithPopup, signOut, onAuthStateChanged, User } from "firebase/auth";
-import { Shield, LogOut, Eye, CheckCircle, AlertTriangle, AlertOctagon } from "lucide-react";
+// CHANGED: We now use signInWithEmailAndPassword
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from "firebase/auth";
+import { Shield, LogOut, Eye, CheckCircle, AlertTriangle, AlertOctagon, Lock, Mail } from "lucide-react";
 
 interface Lead {
   id: string;
@@ -20,7 +21,12 @@ const AdminDashboard = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
+  
+  // NEW: Form State
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -33,18 +39,26 @@ const AdminDashboard = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleGoogleLogin = async () => {
+  // NEW: Handle Email/Password Login
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault(); // Stop page refresh
+    setIsLoggingIn(true);
     setErrorMsg(null);
+
     try {
-      // CLEAN POPUP: No alerts, no delays. 
-      await signInWithPopup(auth, googleProvider);
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
       console.error("Login failed:", error);
-      setErrorMsg(error.message || "Login failed");
+      setErrorMsg(error.message);
     }
+    setIsLoggingIn(false);
   };
 
-  const handleLogout = () => signOut(auth);
+  const handleLogout = () => {
+    signOut(auth);
+    setEmail("");
+    setPassword("");
+  };
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -73,35 +87,55 @@ const AdminDashboard = () => {
     }
   };
 
-  // --- LOGIN SCREEN ---
+  // --- LOGIN SCREEN (UPDATED) ---
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
         <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700 text-center max-w-md w-full">
           <Shield size={64} className="text-yellow-500 mx-auto mb-6" />
           <h2 className="text-3xl font-bold mb-2">Admin Access</h2>
-          <p className="text-gray-400 mb-8">Happy Hunter Staff Only</p>
+          <p className="text-gray-400 mb-6">Enter your credentials</p>
           
-          <button 
-            onClick={handleGoogleLogin}
-            className="flex items-center justify-center gap-3 w-full bg-white text-gray-900 font-bold py-4 rounded-lg hover:bg-gray-100 transition-all mb-4"
-          >
-            <span className="font-bold text-xl">G</span>
-            Sign in with Google
-          </button>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 text-gray-400" size={20} />
+              <input 
+                type="email" 
+                placeholder="Admin Email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:border-yellow-500"
+                required
+              />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
+              <input 
+                type="password" 
+                placeholder="Password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg py-3 pl-10 pr-4 text-white focus:outline-none focus:border-yellow-500"
+                required
+              />
+            </div>
+
+            <button 
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full bg-yellow-500 text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-400 transition-all mt-2 disabled:opacity-50"
+            >
+              {isLoggingIn ? "Verifying..." : "Login"}
+            </button>
+          </form>
 
           {/* Error Message Display */}
           {errorMsg && (
-            <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded text-left text-sm mt-4">
+            <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded text-left text-sm mt-4 break-words">
               <div className="flex items-center gap-2 mb-1 font-bold">
                 <AlertOctagon size={16} /> Login Failed
               </div>
               <p>{errorMsg}</p>
-              {errorMsg.includes("popup") && (
-                <p className="mt-2 text-xs font-bold text-yellow-300">
-                  ⚠️ LOOK UP: Check your address bar for a "Popup blocked" icon and click it to allow popups.
-                </p>
-              )}
             </div>
           )}
         </div>
