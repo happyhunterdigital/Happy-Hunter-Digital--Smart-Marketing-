@@ -42,16 +42,16 @@ export const CoreServices = () => {
             Our done-for-you service transforms your business into a Verified, Recommended Authority built on three essential pillars:
           </p>
           
-          {/* CENTRAL METAPHOR IMAGE + LABEL */}
+          {/* CENTRAL METAPHOR IMAGE + EMBEDDED LABEL */}
           <div className="flex justify-center mb-16">
             <div className="relative group rounded-2xl overflow-hidden shadow-2xl border border-gray-100 max-w-4xl mx-auto">
               <img 
                 src="https://res.cloudinary.com/dka0498ns/image/upload/v1767551392/The_Central_Metaphor_Smart_Authority_Engine_yyhbgv.png" 
                 alt="The Smart Authority Engine"
-                className="w-full h-auto"
+                className="w-full h-auto block"
               />
-              {/* EMBEDDED TITLE */}
-              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-6 py-2 rounded-tl-2xl font-black text-sm md:text-base uppercase tracking-wider shadow-lg">
+              {/* LABEL: Touches bottom-right walls exactly */}
+              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-6 py-2 rounded-tl-xl font-black text-sm md:text-base uppercase tracking-wider">
                 The Smart Authority Engine
               </div>
             </div>
@@ -69,8 +69,8 @@ export const CoreServices = () => {
                 alt="Pillar 1: The Trust Anchor"
                 className="w-full h-full object-contain p-4"
               />
-              {/* EMBEDDED TITLE */}
-              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-tl-xl font-bold text-xs uppercase tracking-wide shadow-md">
+              {/* LABEL: Touches bottom-right walls exactly */}
+              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-tl-lg font-bold text-xs uppercase tracking-wide">
                 Trust Anchor
               </div>
             </div>
@@ -97,8 +97,8 @@ export const CoreServices = () => {
                 alt="Pillar 2: The AI Megaphone"
                 className="w-full h-full object-contain p-4"
               />
-              {/* EMBEDDED TITLE */}
-              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-tl-xl font-bold text-xs uppercase tracking-wide shadow-md">
+              {/* LABEL: Touches bottom-right walls exactly */}
+              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-tl-lg font-bold text-xs uppercase tracking-wide">
                 AI Megaphone
               </div>
             </div>
@@ -125,8 +125,8 @@ export const CoreServices = () => {
                 alt="Pillar 3: The Conversion Brain"
                 className="w-full h-full object-contain p-4"
               />
-              {/* EMBEDDED TITLE */}
-              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-tl-xl font-bold text-xs uppercase tracking-wide shadow-md">
+              {/* LABEL: Touches bottom-right walls exactly */}
+              <div className="absolute bottom-0 right-0 bg-yellow-400 text-gray-900 px-4 py-1.5 rounded-tl-lg font-bold text-xs uppercase tracking-wide">
                 Conversion Brain
               </div>
             </div>
