@@ -9,31 +9,35 @@ import { Services } from './components/Services';
 import { Portfolio } from './components/Portfolio';
 import { Footer } from './components/Footer';
 import { WhatsAppWidget } from './components/WhatsAppWidget';
-import { EarnedMedia } from './components/EarnedMedia'; // Check path: might be ./pages/EarnedMedia
+import { EarnedMedia } from './components/EarnedMedia'; 
 import { BlogReader } from './components/BlogReader';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { CookieConsent } from './components/CookieConsent';
 
 // --- PAGE IMPORTS ---
 import { CoreServices } from './pages/CoreServices';
-import { FAQ } from './pages/FAQ'; // Import the FAQ page
+import { FAQ } from './pages/FAQ'; 
 import AdminDashboard from './pages/AdminDashboard';
 
 // --- LAYOUT WRAPPER ---
-// Handles hiding the Navbar/Footer when on the Admin Dashboard
+// This handles showing/hiding the Navbar & Footer automatically
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
+  // Check if we are on the admin dashboard to hide nav/footer
   const isAdmin = location.pathname === '/admin';
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-brand-yellow selection:text-brand-dark">
+      {/* Show Navbar only if NOT on admin page */}
       {!isAdmin && <Navbar />}
       
       <main className="flex-grow">
         {children}
       </main>
       
+      {/* Show Footer only if NOT on admin page */}
       {!isAdmin && <Footer />}
+      
       <WhatsAppWidget />
       <CookieConsent />
     </div>
@@ -41,6 +45,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 };
 
 // --- HOME PAGE COMPONENT ---
+// Combines the sections that appear on the main scrollable homepage
 const HomePage = () => (
   <div className="animate-fade-in">
     <Hero />
@@ -60,7 +65,10 @@ const App: React.FC = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/core-services" element={<CoreServices />} />
           <Route path="/earned-media" element={<EarnedMedia />} />
-          <Route path="/faq" element={<FAQ />} />
+          
+          {/* This Route was missing before, causing the empty FAQ page */}
+          <Route path="/faq" element={<FAQ />} /> 
+          
           <Route path="/blog/:id" element={<BlogReader />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           
