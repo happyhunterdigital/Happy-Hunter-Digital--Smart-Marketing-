@@ -1,11 +1,10 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
-// 1. IMPORT AUTHENTICATION TOOLS
-import { getAuth, GoogleAuthProvider } from "firebase/auth"; 
+import { getAuth } from "firebase/auth"; 
 
+// Your NEW Unrestricted Key
 const firebaseConfig = {
-  apiKey: "AIzaSyAZHcYL0_NP0teaUOT60YeZbfQUzk8KfEk",
+  apiKey: "AIzaSyCqCYLwHtmlJHVVkDckpr_S1o4QKgFyN-M",
   authDomain: "happy-hunter-systems.firebaseapp.com",
   projectId: "happy-hunter-systems",
   storageBucket: "happy-hunter-systems.firebasestorage.app",
@@ -16,9 +15,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 
-// 2. EXPORT THE TOOLS (Critical for Login)
+// Export the tools so the app can use them
 export const db = getFirestore(app);
-export const auth = getAuth(app); 
-export const googleProvider = new GoogleAuthProvider();
+export const auth = getAuth(app);
