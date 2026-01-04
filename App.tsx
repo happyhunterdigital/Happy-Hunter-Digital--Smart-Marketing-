@@ -1,7 +1,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 
-// --- COMPONENTS ---
+// --- COMPONENT IMPORTS ---
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { AiAudit } from './components/AiAudit';
@@ -9,16 +9,18 @@ import { Services } from './components/Services';
 import { Portfolio } from './components/Portfolio';
 import { Footer } from './components/Footer';
 import { WhatsAppWidget } from './components/WhatsAppWidget';
+import { EarnedMedia } from './components/EarnedMedia'; // Check path: might be ./pages/EarnedMedia
 import { BlogReader } from './components/BlogReader';
 import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { CookieConsent } from './components/CookieConsent';
 
-// --- PAGES ---
-import { EarnedMedia } from './components/EarnedMedia'; // Note: Check if this is in components or pages folder in your structure
+// --- PAGE IMPORTS ---
 import { CoreServices } from './pages/CoreServices';
+import { FAQ } from './pages/FAQ'; // Import the FAQ page
 import AdminDashboard from './pages/AdminDashboard';
 
-// --- LAYOUT WRAPPER (Hides Nav/Footer on Admin) ---
+// --- LAYOUT WRAPPER ---
+// Handles hiding the Navbar/Footer when on the Admin Dashboard
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isAdmin = location.pathname === '/admin';
@@ -58,6 +60,7 @@ const App: React.FC = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/core-services" element={<CoreServices />} />
           <Route path="/earned-media" element={<EarnedMedia />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/blog/:id" element={<BlogReader />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           
