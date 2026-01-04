@@ -20,16 +20,16 @@ export const CoreServices = () => {
           
           <div className="max-w-3xl mx-auto space-y-4 text-lg md:text-xl text-gray-300 leading-relaxed">
             <p>
-              In 2026, the biggest threat to your business isn't competition—it's <strong>invisibility</strong>[cite: 4].
+              In 2026, the biggest threat to your business isn't competition—it's <strong>invisibility</strong>.
             </p>
             <p>
-              When customers ask their smart assistants to find services like yours, will your business be recommended? Or will you be filtered out before they ever know you exist? [cite: 5, 6]
+              When customers ask their smart assistants to find services like yours, will your business be recommended? Or will you be filtered out before they ever know you exist?
             </p>
           </div>
 
           <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 mt-8">
             <p className="font-medium text-yellow-400">
-              Happy Hunter's Digital Entity Management & Optimization ensures you're not just found—you're trusted, verified, and recommended by the intelligent systems shaping customer decisions[cite: 7].
+              Happy Hunter's Digital Entity Management & Optimization ensures you're not just found—you're trusted, verified, and recommended by the intelligent systems shaping customer decisions.
             </p>
           </div>
         </div>
@@ -38,9 +38,9 @@ export const CoreServices = () => {
       {/* --- THE 3 PILLARS --- */}
       <section className="py-24 px-6 max-w-7xl mx-auto bg-white">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-black mb-6 text-gray-900">The Smart Authority Ecosystem [cite: 8]</h2>
+          <h2 className="text-3xl md:text-4xl font-black mb-6 text-gray-900">The Smart Authority Ecosystem</h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Our done-for-you service transforms your business into a Verified, Recommended Authority built on three essential pillars[cite: 9]:
+            Our done-for-you service transforms your business into a Verified, Recommended Authority built on three essential pillars:
           </p>
         </div>
 
@@ -50,15 +50,15 @@ export const CoreServices = () => {
             <div className="w-16 h-16 bg-yellow-100 text-yellow-700 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
               <ShieldCheck size={32} />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 1: The Trust Anchor [cite: 10]</h3>
+            <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 1: The Trust Anchor</h3>
             <div className="space-y-4">
               <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
                 <p className="text-xs font-bold text-red-800 uppercase mb-1">The Challenge</p>
-                <p className="text-sm text-gray-700">Inconsistent information and poor review management make your business appear unreliable to intelligent systems[cite: 11].</p>
+                <p className="text-sm text-gray-700">Inconsistent information and poor review management make your business appear unreliable to intelligent systems.</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
                 <p className="text-xs font-bold text-green-800 uppercase mb-1">Our Solution</p>
-                <p className="text-sm text-gray-700"><strong>Your Digital Passport.</strong> We optimize your profiles with real-time updates and precise local signals to prove your business is reliable[cite: 13].</p>
+                <p className="text-sm text-gray-700"><strong>Your Digital Passport.</strong> We optimize your profiles with real-time updates and precise local signals to prove your business is reliable.</p>
               </div>
             </div>
           </div>
@@ -68,15 +68,15 @@ export const CoreServices = () => {
             <div className="w-16 h-16 bg-blue-100 text-blue-700 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
               <Megaphone size={32} />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 2: The AI Megaphone [cite: 14]</h3>
+            <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 2: The AI Megaphone</h3>
             <div className="space-y-4">
               <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
                 <p className="text-xs font-bold text-red-800 uppercase mb-1">The Challenge</p>
-                <p className="text-sm text-gray-700">Traditional marketing is obsolete. AI assistants only cite sources they recognize as authoritative entities[cite: 15].</p>
+                <p className="text-sm text-gray-700">Traditional marketing is obsolete. AI assistants only cite sources they recognize as authoritative entities.</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
                 <p className="text-xs font-bold text-green-800 uppercase mb-1">Our Solution</p>
-                <p className="text-sm text-gray-700"><strong>Citable Content.</strong> We create content specifically for entities, ensuring intelligent systems choose YOU as the trusted answer[cite: 17].</p>
+                <p className="text-sm text-gray-700"><strong>Citable Content.</strong> We create content specifically for entities, ensuring intelligent systems choose YOU as the trusted answer.</p>
               </div>
             </div>
           </div>
@@ -86,15 +86,15 @@ export const CoreServices = () => {
             <div className="w-16 h-16 bg-purple-100 text-purple-700 rounded-2xl flex items-center justify-center mb-6 shadow-sm">
               <BrainCircuit size={32} />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 3: The Conversion Brain [cite: 18]</h3>
+            <h3 className="text-2xl font-bold mb-4 text-gray-900">Pillar 3: The Conversion Brain</h3>
             <div className="space-y-4">
               <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-400">
                 <p className="text-xs font-bold text-red-800 uppercase mb-1">The Challenge</p>
-                <p className="text-sm text-gray-700">Small businesses lose customers because they cannot handle inquiries and bookings 24/7[cite: 19].</p>
+                <p className="text-sm text-gray-700">Small businesses lose customers because they cannot handle inquiries and bookings 24/7.</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
                 <p className="text-xs font-bold text-green-800 uppercase mb-1">Our Solution</p>
-                <p className="text-sm text-gray-700"><strong>Intelligent Automation.</strong> Our systems work 24/7—handling inquiries and qualifying leads so you only speak to buyers[cite: 20].</p>
+                <p className="text-sm text-gray-700"><strong>Intelligent Automation.</strong> Our systems work 24/7—handling inquiries and qualifying leads so you only speak to buyers.</p>
               </div>
             </div>
           </div>
@@ -105,7 +105,7 @@ export const CoreServices = () => {
       <section className="bg-gray-900 text-white py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-5xl font-black mb-4">Why Businesses Fail in 2026 [cite: 22]</h2>
+            <h2 className="text-3xl md:text-5xl font-black mb-4">Why Businesses Fail in 2026</h2>
             <p className="text-gray-400">(And How We Prevent It)</p>
           </div>
           
@@ -116,51 +116,51 @@ export const CoreServices = () => {
               <div>The Happy Hunter Solution</div>
             </div>
 
-            {/* Row 1: The Ghost Effect [cite: 23] */}
+            {/* Row 1: The Ghost Effect */}
             <div className="grid md:grid-cols-2 gap-6 p-8 bg-gray-800 rounded-2xl border border-gray-700 hover:bg-gray-750 transition-colors">
               <div>
                 <div className="flex items-center gap-3 text-red-400 font-bold text-xl mb-3">
                   <AlertTriangle size={24} /> The "Ghost" Effect
                 </div>
-                <p className="text-gray-300 leading-relaxed">Your business exists, but intelligent search systems don't recognize it, so they never recommend you[cite: 23].</p>
+                <p className="text-gray-300 leading-relaxed">Your business exists, but intelligent search systems don't recognize it, so they never recommend you.</p>
               </div>
               <div className="border-t md:border-t-0 md:border-l border-gray-700 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
                  <div className="flex items-center gap-2 text-yellow-400 font-bold text-lg mb-2">
                   <CheckCircle2 size={24} /> We make you the "Answer"
                 </div>
-                <p className="text-gray-300">We structure your digital presence so you're consistently recognized and recommended[cite: 23].</p>
+                <p className="text-gray-300">We structure your digital presence so you're consistently recognized and recommended.</p>
               </div>
             </div>
 
-            {/* Row 2: The Trust Deficit [cite: 23] */}
+            {/* Row 2: The Trust Deficit */}
             <div className="grid md:grid-cols-2 gap-6 p-8 bg-gray-800 rounded-2xl border border-gray-700 hover:bg-gray-750 transition-colors">
               <div>
                 <div className="flex items-center gap-3 text-red-400 font-bold text-xl mb-3">
                   <AlertTriangle size={24} /> The Trust Deficit
                 </div>
-                <p className="text-gray-300 leading-relaxed">Inconsistent business information and weak reputation signals cause automated systems to filter you out[cite: 23].</p>
+                <p className="text-gray-300 leading-relaxed">Inconsistent business information and weak reputation signals cause automated systems to filter you out.</p>
               </div>
               <div className="border-t md:border-t-0 md:border-l border-gray-700 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
                  <div className="flex items-center gap-2 text-yellow-400 font-bold text-lg mb-2">
                   <CheckCircle2 size={24} /> We build your "Digital Passport"
                 </div>
-                <p className="text-gray-300">We ensure your profiles and local signals are flawless, so verification happens instantly[cite: 23].</p>
+                <p className="text-gray-300">We ensure your profiles and local signals are flawless, so verification happens instantly.</p>
               </div>
             </div>
 
-             {/* Row 3: The Silent Website [cite: 23] */}
+             {/* Row 3: The Silent Website */}
              <div className="grid md:grid-cols-2 gap-6 p-8 bg-gray-800 rounded-2xl border border-gray-700 hover:bg-gray-750 transition-colors">
               <div>
                 <div className="flex items-center gap-3 text-red-400 font-bold text-xl mb-3">
                   <AlertTriangle size={24} /> The Silent Website
                 </div>
-                <p className="text-gray-300 leading-relaxed">Static websites that don't engage visitors or respond to inquiries lose customers to competitors[cite: 23].</p>
+                <p className="text-gray-300 leading-relaxed">Static websites that don't engage visitors or respond to inquiries lose customers to competitors.</p>
               </div>
               <div className="border-t md:border-t-0 md:border-l border-gray-700 pt-6 md:pt-0 md:pl-8 flex flex-col justify-center">
                  <div className="flex items-center gap-2 text-yellow-400 font-bold text-lg mb-2">
                   <CheckCircle2 size={24} /> We turn your site into an "Employee"
                 </div>
-                <p className="text-gray-300">We transform your site into an intelligent conversion hub that engages customers around the clock[cite: 23].</p>
+                <p className="text-gray-300">We transform your site into an intelligent conversion hub that engages customers around the clock.</p>
               </div>
             </div>
           </div>
@@ -171,7 +171,7 @@ export const CoreServices = () => {
       <section className="bg-yellow-400 text-gray-900 py-24 px-6 text-center">
         <div className="max-w-4xl mx-auto">
           <p className="text-3xl md:text-5xl font-black mb-10 leading-tight">
-            "In a world of noise, Happy Hunter makes sure you are the Signal." [cite: 25]
+            "In a world of noise, Happy Hunter makes sure you are the Signal."
           </p>
           <a 
             href="https://calendly.com/happyhunterdigital/discovery" 
