@@ -17,6 +17,7 @@ interface Lead {
 
 const AdminDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(false);
@@ -27,12 +28,29 @@ const AdminDashboard = () => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // Admin email whitelist
+  const ADMIN_EMAILS = ["happyhunterdigital@gmail.com"];
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      
       if (currentUser) {
+        // Check if logged-in user is an admin
+        const userIsAdmin = ADMIN_EMAILS.includes(currentUser.email || "");
+        setIsAdmin(userIsAdmin);
+        
+        if (!userIsAdmin) {
+          // Auto-logout non-admin users
+          signOut(auth);
+          setErrorMsg("This account doesn't have admin access.");
+          return;
+        }
+        
         setErrorMsg(null);
         fetchLeads();
+      } else {
+        setIsAdmin(false);
       }
     });
     return () => unsubscribe();
@@ -40,14 +58,39 @@ const AdminDashboard = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // First check if email is in admin list
+    if (!ADMIN_EMAILS.includes(email)) {
+      setErrorMsg("This email doesn't have admin access.");
+      return;
+    }
+    
     setIsLoggingIn(true);
     setErrorMsg(null);
+    
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // Note: onAuthStateChanged will handle the rest
     } catch (error: any) {
       console.error("Login failed:", error);
-      setErrorMsg(error.message);
+      
+      // Firebase error handling
+      switch (error.code) {
+        case "auth/invalid-credential":
+        case "auth/wrong-password":
+          setErrorMsg("Invalid email or password.");
+          break;
+        case "auth/user-not-found":
+          setErrorMsg("No account found with this email.");
+          break;
+        case "auth/too-many-requests":
+          setErrorMsg("Too many failed attempts. Try again later.");
+          break;
+        default:
+          setErrorMsg("Login failed. Please try again.");
+      }
     }
+    
     setIsLoggingIn(false);
   };
 
@@ -55,6 +98,7 @@ const AdminDashboard = () => {
     signOut(auth);
     setEmail("");
     setPassword("");
+    setIsAdmin(false);
   };
 
   const fetchLeads = async () => {
@@ -84,6 +128,33 @@ const AdminDashboard = () => {
     }
   };
 
+  // --- ACCESS DENIED SCREEN (for non-admin users) ---
+  if (user && !isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+        <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700 text-center max-w-md w-full">
+          <AlertOctagon size={64} className="text-red-500 mx-auto mb-6" />
+          <h2 className="text-3xl font-bold mb-2">Access Denied</h2>
+          <p className="text-gray-400 mb-6">This account doesn't have admin privileges.</p>
+          
+          {errorMsg && (
+            <div className="bg-red-500/20 border border-red-500 text-red-100 p-4 rounded text-left text-sm mb-6 break-words">
+              <p className="font-bold mb-1">Error:</p>
+              <p>{errorMsg}</p>
+            </div>
+          )}
+          
+          <button 
+            onClick={handleLogout}
+            className="w-full bg-red-500 text-white font-bold py-3 rounded-lg hover:bg-red-600 transition-all"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // --- LOGIN SCREEN ---
   if (!user) {
     return (
@@ -91,7 +162,7 @@ const AdminDashboard = () => {
         <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-700 text-center max-w-md w-full">
           <Shield size={64} className="text-yellow-500 mx-auto mb-6" />
           <h2 className="text-3xl font-bold mb-2">Admin Access</h2>
-          <p className="text-gray-400 mb-6">Enter your credentials</p>
+          <p className="text-gray-400 mb-6">Enter admin credentials</p>
           
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="relative">
@@ -138,7 +209,7 @@ const AdminDashboard = () => {
     );
   }
 
-  // --- DASHBOARD SCREEN ---
+  // --- DASHBOARD SCREEN (only shown for admins) ---
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
       <div className="w-full md:w-1/3 bg-white border-r border-gray-200 h-screen overflow-y-auto">
