@@ -1,13 +1,23 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "/",
-  define: {
-    // This takes the key from GitHub and "Stamps" it into the browser code
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY),
-    'process.env.VITE_API_KEY': JSON.stringify(process.env.VITE_API_KEY),
+  resolve: {
+    alias: {
+      // 1. Force the bundler to use our local shim instead of the broken package path
+      'firebase/vertexai': path.resolve(__dirname, './src/shims/firebase-vertexai.ts') 
+    }
   },
+  optimizeDeps: {
+    // 2. Stop Vite from trying to pre-bundle Firebase (avoids the scanning error)
+    exclude: ['firebase', '@google/genai']
+  },
+  build: {
+    commonjsOptions: {
+      // 3. Help Vite convert CommonJS modules if needed
+      transformMixedEsModules: true,
+    },
+  }
 });
