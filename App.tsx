@@ -1,6 +1,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { Header } from './components/Header';
+// 1. CHANGED: Import the new Navbar instead of Header
+import { Navbar } from './components/Navbar'; 
 import { Hero } from './components/Hero';
 import { AiAudit } from './components/AiAudit';
 import { Services } from './components/Services';
@@ -13,17 +14,20 @@ import { PrivacyPolicy } from './components/PrivacyPolicy';
 import { CookieConsent } from './components/CookieConsent';
 import AdminDashboard from './pages/AdminDashboard'; 
 
-// Layout wrapper to hide Header/Footer on Admin page
+// Layout wrapper to hide Navbar/Footer on Admin page
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const isAdmin = location.pathname === '/admin';
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-brand-yellow selection:text-brand-dark">
-      {!isAdmin && <Header />}
+      {/* 2. CHANGED: Use the new Navbar component here */}
+      {!isAdmin && <Navbar />} 
+      
       <main className="flex-grow">
         {children}
       </main>
+      
       {!isAdmin && <Footer />}
       <WhatsAppWidget />
       <CookieConsent />
