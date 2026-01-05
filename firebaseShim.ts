@@ -9,8 +9,7 @@ export const getGenerativeModel = () => {
         const API_KEY = import.meta.env.VITE_API_KEY || "AIzaSyAfVpx7lJKmmngbeu54Br5avFYvjrpiqc8"; 
         
         try {
-          // CRITICAL FIX: Using v1 API (not v1beta) with gemini-pro
-          // This is the stable endpoint that works with your API key
+          // CRITICAL FIX: Using v1 API (stable) with gemini-pro
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`,
             {
@@ -36,7 +35,6 @@ export const getGenerativeModel = () => {
             };
           }
           
-          // Extract the AI response
           const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 
                          "I'm here but didn't get a clear response. Try asking again or use WhatsApp!";
           
@@ -57,12 +55,19 @@ export const getGenerativeModel = () => {
   };
 };
 
-// Minimal shims for firebase/vertexai to satisfy bundler
+// --- MINIMAL SHIMS TO SATISFY THE BUILDER ---
 export default {};
+
 export const initializeVertexAI = () => {
   console.warn("Vertex AI shim used - this should only happen during build.");
   return null;
 };
+
+// This is the one that was missing causing the error!
+export const getVertexAI = () => {
+  return null;
+};
+
 export const getVertexAIClient = () => {
   return null;
 };
