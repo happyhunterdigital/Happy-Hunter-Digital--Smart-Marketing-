@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, Sparkles } from 'lucide-react';
-// FIX: Use one dot (.) to go up one level, not two
-import { getGenerativeModel } from '../firebaseShim'; 
+// FIX: Import 'model' from the config, not the shim directly
+import { model } from '../firebaseConfig'; 
 
 interface Message {
   id: number;
@@ -38,9 +38,9 @@ export const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      // Connect to Real AI
-      const model = getGenerativeModel();
+      // FIX: Use the model imported from firebaseConfig
       const chat = model.startChat();
+      
       const result = await chat.sendMessage(userMsg.text);
       const response = result.response.text();
 
