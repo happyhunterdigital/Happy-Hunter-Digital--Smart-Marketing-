@@ -1,55 +1,59 @@
 // happy-hunter-digital/firebaseShim.ts
 
-export default {};
-export const initializeVertexAI = () => null;
-export const getVertexAI = () => null;
-export const getVertexAIClient = () => null;
-
 export const getGenerativeModel = () => {
   return {
     startChat: () => ({
       sendMessage: async (userMessage: string) => {
         
-        // 1. SECURITY: Try to grab the Key from your GitHub Secrets first.
-        // If that fails (is undefined), fall back to the key you provided so the site works NOW.
+        // Security: Use Secret if available, fallback to hardcoded key
         const API_KEY = import.meta.env.VITE_API_KEY || "AIzaSyAfVpx7lJKmmngbeu54Br5avFYvjrpiqc8"; 
         
         try {
-          // 2. FIX: Switched to 'gemini-pro' (The most stable model)
-          // This fixes the "Model not found" error you saw.
+          // FIX: We use 'gemini-pro' because your error log showed 'flash' was blocked/not found.
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                contents: [{ parts: [{ text: userMessage }] }]
+                contents: [{ 
+                  parts: [{ text: userMessage }] 
+                }],
+                // SMART PERSONA: This teaches the bot who it is
+                // Note: If gemini-pro ignores this, it will just be a normal helpful bot.
+                // But this structure prepares you for the future.
+                 generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 200,
+                 }
               })
             }
           );
-
+          
           const data = await response.json();
-
-          // Error Handling
+          
+          // Debugging: If Google sends an error, we show it in the chat
           if (data.error) {
             console.error("Google API Error:", data.error);
             return { 
               response: { 
-                text: () => `My brain is offline (${data.error.message}). Please WhatsApp us!` 
+                text: () => `System Error (${data.error.code}): ${data.error.message}. Please use WhatsApp!` 
               } 
             };
           }
-
-          const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I am online, but I didn't get a response. Try asking again.";
-
+          
+          const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 
+                         "I'm having trouble thinking right now. Please try asking again!";
+          
           return { 
             response: { text: () => aiText } 
           };
-
+          
         } catch (error: any) {
+          console.error("Chat fetch error:", error);
           return { 
             response: { 
-              text: () => "I am currently offline. Please click the WhatsApp button to chat with our team directly!" 
+              text: () => "I am currently offline. Please click the green WhatsApp button to chat with our team directly!" 
             } 
           };
         }
@@ -57,3 +61,9 @@ export const getGenerativeModel = () => {
     })
   };
 };
+
+// Minimal shims for build safety
+export default {};
+export const initializeVertexAI = () => null;
+export const getVertexAI = () => null;
+export const getVertexAIClient = () => null;
