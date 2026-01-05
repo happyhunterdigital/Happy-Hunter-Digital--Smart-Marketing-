@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, Sparkles } from 'lucide-react';
-// We use the shim we just updated
-import { getGenerativeModel } from '../../firebaseShim'; 
+// FIX: Use one dot (.) to go up one level, not two
+import { getGenerativeModel } from '../firebaseShim'; 
 
 interface Message {
   id: number;
@@ -15,7 +15,7 @@ export const Chatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // 1. UPDATED GREETING
+  // 1. GREETING
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: "Welcome — we help local businesses get noticed and trusted on Google. Need a quick audit? 🚀", sender: 'bot' }
   ]);
@@ -38,7 +38,7 @@ export const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      // Use our new Direct Connection Shim
+      // Connect to Real AI
       const model = getGenerativeModel();
       const chat = model.startChat();
       const result = await chat.sendMessage(userMsg.text);
@@ -47,6 +47,7 @@ export const Chatbot = () => {
       const botMsg: Message = { id: Date.now() + 1, text: response, sender: 'bot' };
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
+      console.error("Chat Error", error);
       const fallbackMsg: Message = { 
         id: Date.now() + 1, 
         text: "Please click the green WhatsApp button to chat with our experts directly!", 
@@ -67,7 +68,7 @@ export const Chatbot = () => {
               <div className="bg-yellow-400 p-1.5 rounded-lg text-gray-900 shadow-lg"><Bot size={20} /></div>
               <div>
                 <h3 className="text-white font-bold text-sm">Hunter AI</h3>
-                {/* 2. UPDATED BRANDING */}
+                {/* BRANDING */}
                 <div className="flex items-center gap-2">
                   <span className="flex items-center gap-1 text-xs text-blue-400 font-medium">
                     <Sparkles size={10} />
@@ -97,7 +98,6 @@ export const Chatbot = () => {
           </form>
         </div>
       )}
-      {/* Minimized Button */}
       {!isOpen && (
       <button onClick={() => setIsOpen(true)} className="group flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white p-4 rounded-full shadow-2xl transition-all hover:scale-105 border border-gray-700/50">
         <span className="hidden group-hover:block font-bold text-sm pl-1">Ask Hunter AI</span>
