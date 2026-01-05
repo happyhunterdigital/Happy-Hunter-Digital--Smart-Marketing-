@@ -1,51 +1,56 @@
 // happy-hunter-digital/firebaseShim.ts
+// SELF-HEALING AI: Finds the correct model automatically.
 
 export const getGenerativeModel = () => {
   return {
     startChat: () => ({
       sendMessage: async (userMessage: string) => {
         
-        // 1. API KEY SETUP
-        // Checks your environment variables first, falls back to the hardcoded key if needed.
-        // NOTE: Ensure this key is valid and has Gemini API access enabled.
-        const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || 
-                        import.meta.env.VITE_API_KEY || 
-                        "AIzaSyAfVpx7lJKmmngbeu54Br5avFYvjrpiqc8"; 
+        // 1. SECURITY: Use the environment variable first.
+        // If VITE_API_KEY is not set in GitHub Secrets yet, it falls back to the key you provided.
+        const API_KEY = import.meta.env.VITE_API_KEY || "AIzaSyAfVpx7lJKmmngbeu54Br5avFYvjrpiqc8"; 
         
+        const BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
+
         try {
-          // 2. THE SMART REQUEST (Using v1 stable endpoint)
+          // --- STEP 1: AUTO-DETECT MODEL ---
+          // Ask Google: "Which models does this key have access to?"
+          let selectedModel = "models/gemini-1.5-flash"; // Default assumption
+          
+          try {
+            const modelsReq = await fetch(`${BASE_URL}/models?key=${API_KEY}`);
+            const modelsData = await modelsReq.json();
+            
+            if (modelsData.models) {
+              // Find the first model that works
+              const validModel = modelsData.models.find((m: any) => 
+                m.name.includes("gemini") && 
+                m.supportedGenerationMethods?.includes("generateContent")
+              );
+              if (validModel) {
+                selectedModel = validModel.name;
+                console.log("Auto-detected Best Model:", selectedModel);
+              }
+            }
+          } catch (e) {
+            console.warn("Model detection failed, using fallback.");
+          }
+
+          // --- STEP 2: SEND MESSAGE ---
           const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${API_KEY}`,
+            `${BASE_URL}/${selectedModel}:generateContent?key=${API_KEY}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 contents: [{ 
                   parts: [{ 
-                    // 3. THE SYSTEM PROMPT (Injecting Intelligence)
-                    text: `You are 'Hunter AI', the intelligent digital assistant for Happy Hunter Digital, a South African digital marketing agency.
-                    
-YOUR IDENTITY:
-- Professional, confident, and strategic.
-- Expert in "Digital Entity Management" and helping businesses get noticed by AI search engines.
-
-YOUR KNOWLEDGE BASE:
-1. THE PROBLEM: The "Ghost Effect" - Businesses exist but are invisible to AI-powered search.
-2. OUR SOLUTION: "Digital Entity Management" built on 3 pillars:
-   - Pillar 1: The Trust Anchor (Google Business Profile Optimization)
-   - Pillar 2: The AI Megaphone (Getting cited by smart search assistants)
-   - Pillar 3: The Conversion Brain (24/7 AI-powered customer engagement)
-3. PROOF:
-   - Case Study: Profuse Beauty (310% call increase)
-   - Case Study: Construction Firm (R2.5M contract via Trust Architecture)
-
-YOUR INSTRUCTIONS:
-- Keep answers concise (2-3 sentences max unless asked for detail).
-- Be friendly but professional.
-- If asked about pricing or audits, suggest booking a call: https://calendly.com/motsumitl/30min
-- Focus on helping businesses understand why AI visibility matters.
-
-USER QUESTION: ${userMessage}` 
+                    // SYSTEM PROMPT
+                    text: `You are Hunter AI, the assistant for Happy Hunter Digital.
+IDENTITY: Professional, confident, expert in "Digital Entity Management".
+GOAL: Help businesses get noticed on Google.
+IMPORTANT: If asked for prices or audits, ALWAYS direct them to: https://calendly.com/motsumitl/30min
+USER SAYS: ${userMessage}` 
                   }] 
                 }]
               })
@@ -54,28 +59,28 @@ USER QUESTION: ${userMessage}`
           
           const data = await response.json();
           
-          // 4. ERROR HANDLING
+          // --- STEP 3: HANDLE ERRORS ---
           if (data.error) {
             console.error("Google API Error:", data.error);
             return { 
               response: { 
-                text: () => `I'm having trouble connecting right now. Please book a call directly: https://calendly.com/motsumitl/30min or use WhatsApp! 💬` 
+                text: () => `System Error (${data.error.code}): ${data.error.message}. Please use WhatsApp!` 
               } 
             };
           }
           
           const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 
-                         "I'm here to help! Try asking about our Digital Entity Management services or book a call: https://calendly.com/motsumitl/30min";
+                         "I'm thinking, but got no response. Try asking again!";
           
           return { 
             response: { text: () => aiText } 
           };
           
         } catch (error: any) {
-          console.error("Chat fetch error:", error);
+          console.error("Network Error:", error);
           return { 
             response: { 
-              text: () => "I'm currently offline 😔. Book a call at https://calendly.com/motsumitl/30min or use the WhatsApp button!" 
+              text: () => "I am currently offline. Please click the green WhatsApp button to chat with our team!" 
             } 
           };
         }
@@ -84,8 +89,7 @@ USER QUESTION: ${userMessage}`
   };
 };
 
-// --- MINIMAL SHIMS TO SATISFY THE BUNDLER ---
-// These empty functions prevent the build from crashing
+// --- BUILD SHIMS (DO NOT REMOVE) ---
 export default {};
 export const initializeVertexAI = () => null;
 export const getVertexAI = () => null;
