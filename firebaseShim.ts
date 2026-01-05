@@ -1,6 +1,4 @@
 // happy-hunter-digital/firebaseShim.ts
-// DIRECT CONNECTION TO GOOGLE GEMINI (Bypassing Firebase SDK)
-
 export default {};
 export const initializeVertexAI = () => null;
 export const getVertexAI = () => null;
@@ -14,7 +12,6 @@ export const getGenerativeModel = () => {
         const API_KEY = "AIzaSyAfVpx7lJKmmngbeu54Br5avFYvjrpiqc8"; 
         
         try {
-          // Send message directly to Google REST API
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
             {
@@ -27,21 +24,29 @@ export const getGenerativeModel = () => {
           );
 
           const data = await response.json();
-          
-          // Extract the answer
-          const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having a little trouble connecting. Please try again or use WhatsApp!";
+
+          // --- DEBUG BLOCK: CATCH GOOGLE ERRORS ---
+          if (data.error) {
+            console.error("Google API Error:", data.error);
+            return { 
+              response: { 
+                // This will show the REAL error in the chat bubble
+                text: () => `Setup Error: ${data.error.message}` 
+              } 
+            };
+          }
+
+          // If success, get the answer
+          const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "I am online, but I didn't get a response. Try asking again.";
 
           return { 
-            response: { 
-              text: () => aiText 
-            } 
+            response: { text: () => aiText } 
           };
 
-        } catch (error) {
-          console.error("AI Error:", error);
+        } catch (error: any) {
           return { 
             response: { 
-              text: () => "I am currently offline. Please click the WhatsApp button to chat with our team directly!" 
+              text: () => `Connection Failed: ${error.message}` 
             } 
           };
         }
