@@ -3,14 +3,18 @@
 
 export default {};
 
-export const initializeVertexAI = () => {
-  return null;
-};
+export const initializeVertexAI = () => null;
 
-export const getVertexAIClient = () => {
-  return null;
-};
+export const getVertexAI = () => null;
 
-export const getVertexAI = () => {
-    return null;
-}
+export const getVertexAIClient = () => null;
+
+// --- THIS WAS MISSING ---
+export const getGenerativeModel = () => {
+  // Return a safe dummy object so the build doesn't crash
+  return {
+    startChat: () => ({
+      sendMessage: async () => ({ response: { text: () => "AI Offline" } })
+    })
+  };
+};
