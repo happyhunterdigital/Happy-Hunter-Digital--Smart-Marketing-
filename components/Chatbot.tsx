@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Bot, Sparkles, Loader2 } from 'lucide-react';
-import { model } from '../firebaseConfig';
+import { X, Send, Bot, Sparkles } from 'lucide-react';
+// We use the shim we just updated
+import { getGenerativeModel } from '../../firebaseShim'; 
 
 interface Message {
   id: number;
@@ -14,7 +15,7 @@ export const Chatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // --- 1. UPDATED GREETING ---
+  // 1. UPDATED GREETING
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: "Welcome — we help local businesses get noticed and trusted on Google. Need a quick audit? 🚀", sender: 'bot' }
   ]);
@@ -37,23 +38,18 @@ export const Chatbot = () => {
     setIsTyping(true);
 
     try {
-      const chat = model.startChat({
-        history: messages.map(m => ({
-          role: m.sender === 'user' ? 'user' : 'model',
-          parts: [{ text: m.text }],
-        })),
-      });
-
+      // Use our new Direct Connection Shim
+      const model = getGenerativeModel();
+      const chat = model.startChat();
       const result = await chat.sendMessage(userMsg.text);
       const response = result.response.text();
 
       const botMsg: Message = { id: Date.now() + 1, text: response, sender: 'bot' };
       setMessages(prev => [...prev, botMsg]);
     } catch (error) {
-      // Fallback if AI is still shimmed
       const fallbackMsg: Message = { 
         id: Date.now() + 1, 
-        text: "That's a great question. For a detailed audit, the best next step is to click the green WhatsApp button to chat with our experts directly!", 
+        text: "Please click the green WhatsApp button to chat with our experts directly!", 
         sender: 'bot' 
       };
       setMessages(prev => [...prev, fallbackMsg]);
@@ -71,7 +67,7 @@ export const Chatbot = () => {
               <div className="bg-yellow-400 p-1.5 rounded-lg text-gray-900 shadow-lg"><Bot size={20} /></div>
               <div>
                 <h3 className="text-white font-bold text-sm">Hunter AI</h3>
-                {/* --- 2. UPDATED BRANDING --- */}
+                {/* 2. UPDATED BRANDING */}
                 <div className="flex items-center gap-2">
                   <span className="flex items-center gap-1 text-xs text-blue-400 font-medium">
                     <Sparkles size={10} />
@@ -101,10 +97,13 @@ export const Chatbot = () => {
           </form>
         </div>
       )}
-      <button onClick={() => setIsOpen(!isOpen)} className="group flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white p-4 rounded-full shadow-2xl transition-all hover:scale-105 border border-gray-700/50">
+      {/* Minimized Button */}
+      {!isOpen && (
+      <button onClick={() => setIsOpen(true)} className="group flex items-center gap-3 bg-gray-900 hover:bg-gray-800 text-white p-4 rounded-full shadow-2xl transition-all hover:scale-105 border border-gray-700/50">
         <span className="hidden group-hover:block font-bold text-sm pl-1">Ask Hunter AI</span>
-        <div className="relative">{isOpen ? <X size={24} /> : <Sparkles size={24} className="text-yellow-400" />}</div>
+        <div className="relative"><Sparkles size={24} className="text-yellow-400" /></div>
       </button>
+      )}
     </div>
   );
 };
