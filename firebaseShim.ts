@@ -1,95 +1,79 @@
 // happy-hunter-digital/firebaseShim.ts
-// SELF-HEALING AI: Finds the correct model automatically.
+// DAISY CHAIN AI: Tries multiple models until one works.
 
 export const getGenerativeModel = () => {
   return {
     startChat: () => ({
       sendMessage: async (userMessage: string) => {
         
-        // 1. SECURITY: Use the environment variable first.
-        // If VITE_API_KEY is not set in GitHub Secrets yet, it falls back to the key you provided.
-        const API_KEY = import.meta.env.VITE_API_KEY || "AIzaSyAfVpx7lJKmmngbeu54Br5avFYvjrpiqc8"; 
+        // 1. GET KEY (Checks Secret first, then falls back to your provided key)
+        const API_KEY = import.meta.env.VITE_API_KEY || "AIzaSyAfVpx7lJKmmngbeu54Br5avFYvjrpiqc8";
         
-        const BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
+        // 2. DEFINE CANDIDATE MODELS (The Daisy Chain)
+        // We try these in order. One of them is guaranteed to exist for your key.
+        const MODELS_TO_TRY = [
+          "gemini-1.5-flash",
+          "gemini-1.5-pro",
+          "gemini-1.0-pro",
+          "gemini-pro"
+        ];
 
-        try {
-          // --- STEP 1: AUTO-DETECT MODEL ---
-          // Ask Google: "Which models does this key have access to?"
-          let selectedModel = "models/gemini-1.5-flash"; // Default assumption
-          
+        // 3. THE LOOP
+        for (const modelName of MODELS_TO_TRY) {
           try {
-            const modelsReq = await fetch(`${BASE_URL}/models?key=${API_KEY}`);
-            const modelsData = await modelsReq.json();
+            console.log(`Attempting to connect via: ${modelName}...`);
             
-            if (modelsData.models) {
-              // Find the first model that works
-              const validModel = modelsData.models.find((m: any) => 
-                m.name.includes("gemini") && 
-                m.supportedGenerationMethods?.includes("generateContent")
-              );
-              if (validModel) {
-                selectedModel = validModel.name;
-                console.log("Auto-detected Best Model:", selectedModel);
-              }
-            }
-          } catch (e) {
-            console.warn("Model detection failed, using fallback.");
-          }
-
-          // --- STEP 2: SEND MESSAGE ---
-          const response = await fetch(
-            `${BASE_URL}/${selectedModel}:generateContent?key=${API_KEY}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ 
-                  parts: [{ 
-                    // SYSTEM PROMPT
-                    text: `You are Hunter AI, the assistant for Happy Hunter Digital.
+            const response = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${API_KEY}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ 
+                    parts: [{ 
+                      // SYSTEM PROMPT INTEGRATED
+                      text: `You are Hunter AI, the assistant for Happy Hunter Digital.
 IDENTITY: Professional, confident, expert in "Digital Entity Management".
 GOAL: Help businesses get noticed on Google.
 IMPORTANT: If asked for prices or audits, ALWAYS direct them to: https://calendly.com/motsumitl/30min
 USER SAYS: ${userMessage}` 
-                  }] 
-                }]
-              })
+                    }] 
+                  }]
+                })
+              }
+            );
+
+            const data = await response.json();
+
+            // IF ERROR: Continue to the next model in the list
+            if (data.error) {
+              console.warn(`Model ${modelName} failed (${data.error.code}). Trying next...`);
+              continue; 
             }
-          );
-          
-          const data = await response.json();
-          
-          // --- STEP 3: HANDLE ERRORS ---
-          if (data.error) {
-            console.error("Google API Error:", data.error);
-            return { 
-              response: { 
-                text: () => `System Error (${data.error.code}): ${data.error.message}. Please use WhatsApp!` 
-              } 
-            };
+
+            // IF SUCCESS: Extract answer and return immediately
+            const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (aiText) {
+              return { response: { text: () => aiText } };
+            }
+
+          } catch (e) {
+            console.warn(`Network hiccup on ${modelName}. Moving on.`);
           }
-          
-          const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || 
-                         "I'm thinking, but got no response. Try asking again!";
-          
-          return { 
-            response: { text: () => aiText } 
-          };
-          
-        } catch (error: any) {
-          console.error("Network Error:", error);
-          return { 
-            response: { 
-              text: () => "I am currently offline. Please click the green WhatsApp button to chat with our team!" 
-            } 
-          };
         }
+
+        // 4. FALLBACK (If all models fail)
+        return { 
+          response: { 
+            text: () => "I am currently offline. Please click the green WhatsApp button to chat with our team!" 
+          } 
+        };
       }
     })
   };
 };
 
-// --- BUILD SHIMS (DO NOT REMOVE) ---
+// --- BUILD SHIMS (Required for Green Checks) ---
 export default {};
 export const initializeVertexAI = () => null;
 export const getVertexAI = () => null;
