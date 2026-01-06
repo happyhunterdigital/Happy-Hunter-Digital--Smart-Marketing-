@@ -1,84 +1,43 @@
 // happy-hunter-digital/firebaseShim.ts
-// DAISY CHAIN AI: Tries multiple models until one works.
 
 export const getGenerativeModel = () => {
   return {
     startChat: () => ({
       sendMessage: async (userMessage: string) => {
+        // Priority: Use the Secret from GitHub. 
+        // Fallback: If local, use the hardcoded key (Update this string if you want local testing)
+        const API_KEY = import.meta.env.VITE_API_KEY || "PASTE_YOUR_NEW_KEY_HERE_IF_TESTING_LOCALLY";
         
-        // 1. GET KEY (Checks Secret first, then falls back to your provided key)
-        const API_KEY = import.meta.env.VITE_API_KEY || "AIzaSyAfVpx7lJKmmngbeu54Br5avFYvjrpiqc8";
-        
-        // 2. DEFINE CANDIDATE MODELS (The Daisy Chain)
-        // We try these in order. We toggle between v1beta and v1 to ensure we hit the right endpoint.
-        const MODELS_TO_TRY = [
-          { name: "gemini-1.5-flash", version: "v1beta" },
-          { name: "gemini-1.5-pro", version: "v1beta" },
-          { name: "gemini-1.0-pro", version: "v1beta" },
-          { name: "gemini-pro", version: "v1" } // The old reliable fallback
-        ];
-
-        // 3. THE LOOP
-        for (const model of MODELS_TO_TRY) {
-          try {
-            console.log(`🔌 Attempting to connect via: ${model.name} (${model.version})...`);
-            
-            const response = await fetch(
-              `https://generativelanguage.googleapis.com/${model.version}/models/${model.name}:generateContent?key=${API_KEY}`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  contents: [{ 
-                    parts: [{ 
-                      // SYSTEM PROMPT INTEGRATED INTO MESSAGE
-                      // This ensures it works on all model versions (v1 and v1beta)
-                      text: `SYSTEM INSTRUCTIONS:
-You are Hunter AI, the assistant for Happy Hunter Digital.
-IDENTITY: Professional, confident, expert in "Digital Entity Management".
-GOAL: Help businesses get noticed on Google.
-IMPORTANT: If asked for prices or audits, ALWAYS direct them to: https://calendly.com/motsumitl/30min
-
-USER MESSAGE: ${userMessage}` 
-                    }] 
-                  }]
-                })
-              }
-            );
-
-            const data = await response.json();
-
-            // IF ERROR: Log it and try the next model
-            if (data.error) {
-              console.warn(`❌ Model ${model.name} failed (${data.error.code}). Switching to next...`);
-              continue; 
+        try {
+          // Using the stable Gemini 1.5 Flash model
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: userMessage }] }]
+              })
             }
+          );
 
-            // IF SUCCESS: Extract answer and return immediately
-            const aiText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (aiText) {
-              console.log(`✅ Connected successfully to: ${model.name}`);
-              return { response: { text: () => aiText } };
-            }
+          const data = await response.json();
+          if (data.error) throw new Error(data.error.message);
 
-          } catch (e) {
-            console.warn(`⚠️ Network hiccup on ${model.name}. Moving on.`);
-          }
+          return { 
+            response: { text: () => data?.candidates?.[0]?.content?.parts?.[0]?.text || "I'm ready to help!" } 
+          };
+        } catch (error) {
+          console.error("Chat error:", error);
+          return { response: { text: () => "I'm having a brief sync issue. Please use the WhatsApp button! 💬" } };
         }
-
-        // 4. FALLBACK (If all 4 models fail)
-        return { 
-          response: { 
-            text: () => "I am currently offline. Please click the green WhatsApp button to chat with our team!" 
-          } 
-        };
       }
     })
   };
 };
 
-// --- BUILD SHIMS (Required for Green Checks) ---
-export default {};
-export const initializeVertexAI = () => null;
+// --- CRITICAL FIX: These exports prevent the build from crashing ---
 export const getVertexAI = () => null;
+export const initializeVertexAI = () => null;
 export const getVertexAIClient = () => null;
+export default {};
