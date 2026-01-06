@@ -5,12 +5,12 @@ export const getGenerativeModel = () => {
     startChat: () => ({
       sendMessage: async (userMessage: string) => {
         
-        // FIX: We are IGNORING the GitHub Secret for now to force the new key to work.
-        // Use the new key "AlzaSyCdm..." directly.
-        const API_KEY = "AlzaSyCdmPzVLVkOs7prinSgvxulfBZxLBTsA6U";
+        // NUCLEAR OPTION: We removed "import.meta.env.VITE_API_KEY"
+        // This forces the app to use YOUR NEW WORKING KEY.
+        const API_KEY = "AlzaSyCdmPzVLVkOs7prinSgvxulfBZxLBTsA6U"; 
         
         try {
-          // Using the stable Gemini 1.5 Flash model
+          // Using the specific model that works with new keys
           const response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
             {
@@ -26,9 +26,8 @@ export const getGenerativeModel = () => {
           
           if (data.error) {
             console.error("API Error:", data.error);
-            // If it fails, we show the error code so we know why
             return { 
-              response: { text: () => `Connection Error (${data.error.code}): ${data.error.message}` } 
+              response: { text: () => `Connection Error (${data.error.code}). Please use WhatsApp.` } 
             };
           }
 
@@ -44,7 +43,7 @@ export const getGenerativeModel = () => {
   };
 };
 
-// --- BUILD FIX ---
+// --- KEEP THESE TO PREVENT BUILD ERRORS ---
 export const getVertexAI = () => null;
 export const initializeVertexAI = () => null;
 export const getVertexAIClient = () => null;
