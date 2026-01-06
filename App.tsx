@@ -12,8 +12,7 @@ import { Footer } from './components/Footer';
 // --- BOTS & TOOLS ---
 import { WhatsAppWidget } from './components/WhatsAppWidget';
 import { Chatbot } from './components/Chatbot'; 
-// FIX: Import the API Test Component
-import { ApiTest } from './components/ApiTest';
+// NOTE: We removed the ApiTest import to clean up the site
 
 // --- PAGES ---
 import { EarnedMedia } from './components/EarnedMedia'; 
@@ -30,11 +29,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-brand-yellow selection:text-brand-dark">
-      {/* 1. API TEST PANEL 
-          Placed here so it floats above everything on every page.
-          You can remove this line once testing is complete.
-      */}
-      <ApiTest />
+      {/* API Test Panel Removed - Site is now Live */}
 
       {!isAdmin && <Navbar />}
       <main className="flex-grow">{children}</main>
