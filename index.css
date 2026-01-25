@@ -1,42 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #0F172A; /* Slate 900 */
-  color: #F8FAFC; /* Slate 50 */
-  font-family: 'Inter', sans-serif;
+@layer base {
+  /* War Room: Forced Contrast to prevent Invisible Text */
+  body {
+    @apply bg-[#0F172A] text-slate-50; 
+  }
+  
+  /* War Room: Ensure headers are always visible */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-white font-bold tracking-tight;
+  }
+
+  /* War Room: Paragraph text override for legibility */
+  p {
+    @apply text-slate-300;
+  }
 }
 
-.scroll-smooth {
-  scroll-behavior: smooth;
-}
-
-/* Custom Utilities safe for CDN usage */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
+/* Animations from PDF */
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
