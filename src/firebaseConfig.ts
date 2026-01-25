@@ -1,0 +1,4 @@
+import { initializeApp } from "firebase/app"; import { getFirestore } from "firebase/firestore"; import { getAuth } from "firebase/auth";
+const firebaseConfig = { apiKey: import.meta.env.VITE_FIREBASE_API_KEY, authDomain: "happy-hunter-digital.firebaseapp.com", projectId: "happy-hunter-digital", storageBucket: "happy-hunter-digital.appspot.com", messagingSenderId: "000000000", appId: "1:00000000:web:00000000" };
+const app = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("PLACEHOLDER") ? initializeApp(firebaseConfig) : undefined;
+export const db = app ? getFirestore(app) : null; export const auth = app ? getAuth(app) : null;

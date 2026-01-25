@@ -1,0 +1,2 @@
+import React from 'react'; import { AiAudit } from '../components/AiAudit';
+export const HomePage = () => ( <div className="animate-fade-in"> <section className="pt-32 pb-20 px-4 text-center"> <h1 className="text-5xl md:text-7xl font-extrabold mb-6 tracking-tighter"> Stop Guessing. <br /> <span className="text-brand-yellow">Start Winning.</span> </h1> <p className="text-xl max-w-2xl mx-auto mb-12 text-slate-300">We help South African businesses survive the Great AI Filter.</p> <AiAudit /> </section> </div> );

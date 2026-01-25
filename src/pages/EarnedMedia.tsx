@@ -1,0 +1,2 @@
+import React from 'react';
+export const EarnedMedia = () => ( <div className="pt-20 px-4 max-w-4xl mx-auto text-white"> <h1 className="text-4xl font-bold mb-8">Earned Media</h1> <div className="space-y-8"> <div className="bg-slate-800 p-6 rounded-xl border border-slate-700"> <h2 className="text-2xl text-brand-yellow mb-2">Why Traditional SEO is Dead</h2> <p>Google is no longer a search engine; it is an answer engine.</p> </div> </div> </div> );
