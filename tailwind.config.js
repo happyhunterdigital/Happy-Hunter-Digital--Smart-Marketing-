@@ -1,36 +1,22 @@
-import typography from '@tailwindcss/typography';
-
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
-    "./*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-    "./services/**/*.{js,ts,jsx,tsx}",
-    "./pages/**/*.{js,ts,jsx,tsx}"
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
+      colors: {
+        brand: {
+          yellow: '#FACC15', // The "Hunter" Yellow
+          dark: '#0F172A',   // Slate 900
+          gray: '#334155'    // Slate 700
+        }
+      },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
-      colors: {
-        // Your Custom Brand System
-        brand: {
-          yellow: '#FACC15',
-          dark: '#0F172A',
-          gray: '#334155'
-        },
-        // SAFETY MAPPING: This ensures standard Tailwind classes also use your colors
-        primary: {
-          DEFAULT: '#FACC15', // Maps 'text-primary' to your Yellow
-          foreground: '#0F172A',
-        },
-        background: '#0F172A', // Maps 'bg-background' to your Navy
-      }
-    }
+    },
   },
-  plugins: [
-    typography,
-  ],
+  plugins: [],
 }
