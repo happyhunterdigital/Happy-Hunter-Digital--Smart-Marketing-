@@ -1,12 +1,18 @@
-// happy-hunter-digital/firebaseConfig.ts
-// We're using the direct Gemini API via our shim, so we don't need the heavy Firebase SDK
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-// Import only from our shim
-import { getGenerativeModel } from './firebaseShim';
+// War Room: Ensure keys exist to prevent crash
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
+};
 
-// Export the model for your chatbot
-export const model = getGenerativeModel();
+const app = firebaseConfig.apiKey ? initializeApp(firebaseConfig) : undefined;
 
-// Export null versions for unused services to prevent import errors in other files
-export const db = null;
-export const auth = null;
+export const db = app ? getFirestore(app) : null;
+export const auth = app ? getAuth(app) : null;
