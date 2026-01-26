@@ -1,20 +1,23 @@
-// src/types.ts
 import { ReactNode } from 'react';
-import { User } from 'firebase/auth'; // Import for AdminDashboard user type
 
-// --- GENERAL UI TYPES ---
-export interface Message {
-  id: number;
-  text: string;
-  sender: 'bot' | 'user';
+export interface AuditProblem {
+  title: string;
+  desc: string;
+  severity: 'high' | 'medium';
 }
 
-export interface GenerativeChat {
-  sendMessage(message: string): Promise<{ response: { text: () => string } }>;
+export interface AuditSolution {
+  title: string;
+  desc: string;
 }
 
-// --- LEAD & AUDIT TYPES ---
-// Structure for the lead data stored in Firestore
+export interface AuditResult {
+  score: number;
+  summary: string;
+  problems: AuditProblem[];
+  solutions: AuditSolution[];
+}
+
 export interface Lead {
   id: string;
   businessName: string;
@@ -23,16 +26,11 @@ export interface Lead {
   email: string;
   status: 'new' | 'contacted';
   auditScore: number;
-  date: Date | { seconds: number, nanoseconds: number }; // Handle Firestore timestamp
+  date: any;
 }
 
-// Structure for the data returned by performAudit (geminiService.ts)
-export interface AuditResult {
-  score: number;
-  summary: string;
-  problems: { title: string; desc: string; severity: 'high' | 'medium' }[];
-  solutions: { title: string; desc: string }[];
+export interface Message {
+  id: number;
+  text: string;
+  sender: 'bot' | 'user';
 }
-
-// Type alias for Firebase User state
-export type UserState = User | null;
