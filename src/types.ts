@@ -1,5 +1,15 @@
 import { ReactNode } from 'react';
 
+export interface Message {
+  id: number;
+  text: string;
+  sender: 'bot' | 'user';
+}
+
+export interface GenerativeChat {
+  sendMessage(message: string): Promise<{ response: { text: () => string } }>;
+}
+
 export interface AuditProblem {
   title: string;
   desc: string;
@@ -27,10 +37,4 @@ export interface Lead {
   status: 'new' | 'contacted';
   auditScore: number;
   date: any;
-}
-
-export interface Message {
-  id: number;
-  text: string;
-  sender: 'bot' | 'user';
 }
