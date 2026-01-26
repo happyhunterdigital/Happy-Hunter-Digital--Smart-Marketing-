@@ -33,20 +33,22 @@ export const AiAudit: React.FC = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-slate-800 p-8 rounded-2xl border border-slate-700 mt-8 text-white">
+    <div className="max-w-xl mx-auto bg-slate-800 p-8 rounded-2xl border border-slate-700 mt-8 text-white shadow-2xl">
       {!result ? (
         <form onSubmit={handleSubmit} className="space-y-4">
+          <h2 className="text-2xl font-bold text-center mb-6">Free AI Digital Audit</h2>
           <input className="w-full bg-slate-900 border border-slate-700 rounded p-3" value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="Business Name" required />
           <input className="w-full bg-slate-900 border border-slate-700 rounded p-3" value={location} onChange={e => setLocation(e.target.value)} placeholder="Location" required />
-          <button disabled={loading} className="w-full bg-yellow-500 text-black font-bold py-4 rounded flex justify-center items-center gap-2">
+          <button disabled={loading} className="w-full bg-yellow-500 text-black font-bold py-4 rounded flex justify-center items-center gap-2 hover:bg-yellow-400">
             {loading ? <Loader2 className="animate-spin" /> : <Search size={20} />} {loading ? 'Scanning...' : 'Scan Now'}
           </button>
         </form>
       ) : (
-        <div className="text-center">
-          <div className="text-4xl font-black mb-2 text-yellow-500">{result.score}/100</div>
-          <p className="mb-4">{result.summary}</p>
-          <button onClick={() => setResult(null)} className="underline text-sm">New Scan</button>
+        <div className="text-center animate-fade-in">
+          <div className="text-5xl font-black mb-2 text-yellow-500">{result.score}/100</div>
+          <h3 className="text-xl font-bold mb-2">Audit Complete</h3>
+          <p className="mb-6 text-slate-300">{result.summary}</p>
+          <button onClick={() => setResult(null)} className="text-sm text-yellow-500 underline">Start New Scan</button>
         </div>
       )}
     </div>
