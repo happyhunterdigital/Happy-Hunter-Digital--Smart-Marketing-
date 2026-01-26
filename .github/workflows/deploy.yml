@@ -1,31 +1,47 @@
 name: Deploy to Firebase Hosting
+
 on:
   push:
     branches:
       - main
+  # WAR ROOM FIX: Allows manual trigger for testing/recovery
+  workflow_dispatch:
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    
+    # WAR ROOM FIX: Necessary permissions for deployment
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       
-      # WAR ROOM: Force Node 20 to prevent version mismatch crashes
+      # WAR ROOM FIX: Force Node.js 20 for stability (Crashing issue resolved)
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
+      # WAR ROOM FIX: npm ci is faster and ensures a clean install
       - name: Install Dependencies
         run: npm ci
 
-      - name: Build
+      # Build the application
+      - name: Build Application
         run: npm run build
 
+      # Deploy to Firebase Hosting
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HAPPY_HUNTER_DIGITAL }}'
+          # This secret must be set in your repo settings -> secrets
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HAPPY_HUNTER_DIGITAL }}' 
           channelId: live
           projectId: happy-hunter-digital
