@@ -3,7 +3,6 @@
 interface ImportMetaEnv {
   readonly VITE_API_KEY: string;
   readonly VITE_FIREBASE_API_KEY: string;
-  // add other env variables here...
 }
 
 interface ImportMeta {
