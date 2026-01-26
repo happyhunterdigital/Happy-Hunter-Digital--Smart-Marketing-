@@ -2,17 +2,18 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// War Room: Ensure keys exist to prevent crash
+// Replace PLACEHOLDERS with your config variables from .env
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  authDomain: "happy-hunter-digital.firebaseapp.com",
+  projectId: "happy-hunter-digital",
+  storageBucket: "happy-hunter-digital.appspot.com",
+  messagingSenderId: "PLACEHOLDER",
+  appId: "PLACEHOLDER"
 };
 
-const app = firebaseConfig.apiKey ? initializeApp(firebaseConfig) : undefined;
+const app = initializeApp(firebaseConfig);
 
-export const db = app ? getFirestore(app) : null;
-export const auth = app ? getAuth(app) : null;
+export const db = getFirestore(app); 
+export const auth = getAuth(app); 
+// We are removing the old model export because the AI is managed in geminiService.ts now
