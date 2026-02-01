@@ -1,1 +1,0 @@
-import typography from '@tailwindcss/typography'; export default { content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"], theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { yellow: '#FACC15', dark: '#0F172A', gray: '#334155' } } } }, plugins: [typography] }
