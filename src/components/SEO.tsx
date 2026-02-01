@@ -10,7 +10,8 @@ export const SEO = ({ title, description }: { title: string; description: string
         "@type": "ProfessionalService",
         "name": "Happy Hunter Digital",
         "founder": "Thabo Leslie Motsumi",
-        "description": "Smart Marketing for the AI era."
+        "description": "Specialized AIO agency for the South African market.",
+        "areaServed": "South Africa"
       })}
     </script>
   </Helmet>
