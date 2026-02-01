@@ -1,1 +1,0 @@
-import React from 'react'; export const Footer = () => ( <footer className="bg-brand-dark border-t border-gray-800 py-8 text-center text-slate-500 text-sm"> <p>© 2025 Happy Hunter Digital. Military Grade Marketing.</p> </footer> );
