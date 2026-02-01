@@ -4,7 +4,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: { black: '#0a0a0a', gold: '#C6A87C', white: '#ffffff' }
+        brand: { 
+          black: '#0a0a0a', 
+          gold: '#C6A87C', 
+          white: '#ffffff' 
+        }
       }
     },
   },
