@@ -21,8 +21,7 @@ export default function App() {
         </main>
         <Chatbot />
         <footer className="py-12 border-t border-slate-900 text-center text-slate-500 text-sm">
-          <p>© {new Date().getFullYear()} Happy Hunter Digital. All Rights Reserved.</p>
-          <p className="mt-2 text-xs uppercase tracking-widest text-slate-700">Digital Entity Protocol v2.0</p>
+          <p>© {new Date().getFullYear()} Happy Hunter Digital. Digital Entity Protocol Active.</p>
         </footer>
       </div>
     </Router>
