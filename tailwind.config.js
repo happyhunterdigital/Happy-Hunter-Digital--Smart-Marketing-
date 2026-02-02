@@ -8,8 +8,9 @@ export default {
     extend: {
       colors: {
         yellow: {
+          400: '#FDE047',
           500: '#FACC15',
-          400: '#FDE047'
+          600: '#CA8A04'
         }
       }
     },
