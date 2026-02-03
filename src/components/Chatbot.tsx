@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Sparkles, X } from 'lucide-react';
-import { callHunterAI } from '../firebaseConfig';
+import { Bot, Send, Sparkles, X, MessageSquare } from 'lucide-react';
+import { callHunterAI } from '../firebaseConfig'; // Updated import
 
 export const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([{ id: 1, text: "Welcome! I'm Hunter AI. How can I help your business dominate local search today?", sender: 'bot' }]);
+  const [messages, setMessages] = useState([{ id: 1, text: "Welcome. I am Hunter AI. Is your entity invisible to the smart filter?", sender: 'bot' }]);
   const [isTyping, setIsTyping] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -20,12 +20,7 @@ export const Chatbot = () => {
     setInput("");
     setIsTyping(true);
 
-    const systemContext = `Identity: Hunter AI (Happy Hunter Digital). 
-    Expertise: Digital Entity Management, GMB, AI Visibility. 
-    Rule: Short answers (2 sentences). Always suggest booking: https://calendly.com/motsumitl/30min if they want details.
-    User Question: ${input}`;
-
-    const aiText = await callHunterAI(systemContext);
+    const aiText = await callHunterAI(input);
     
     setMessages(prev => [...prev, { id: Date.now() + 1, text: aiText, sender: 'bot' }]);
     setIsTyping(false);
@@ -34,39 +29,39 @@ export const Chatbot = () => {
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {isOpen ? (
-        <div className="bg-white w-80 md:w-96 rounded-2xl shadow-2xl border border-gray-100 flex flex-col max-h-[500px] overflow-hidden">
-          <div className="bg-gray-900 p-4 flex justify-between items-center">
-            <div className="flex items-center gap-2 text-white font-bold text-sm">
-              <Bot className="text-yellow-500" /> Hunter AI
+        <div className="bg-slate-950 w-80 md:w-96 rounded-3xl shadow-2xl border border-slate-800 flex flex-col h-[500px] overflow-hidden">
+          <div className="bg-slate-900 p-5 flex justify-between items-center border-b border-slate-800">
+            <div className="flex items-center gap-2 text-white font-black text-xs uppercase tracking-widest">
+              <Bot className="text-yellow-500" size={18} /> Hunter AI
             </div>
-            <X className="text-gray-400 cursor-pointer" onClick={() => setIsOpen(false)} />
+            <X className="text-slate-500 cursor-pointer hover:text-white transition-colors" onClick={() => setIsOpen(false)} />
           </div>
           
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {messages.map(m => (
               <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`p-3 rounded-2xl text-sm max-w-[80%] ${m.sender === 'user' ? 'bg-gray-900 text-white' : 'bg-white text-gray-800 shadow-sm'}`}>
+                <div className={`p-4 rounded-2xl text-xs leading-relaxed max-w-[85%] ${m.sender === 'user' ? 'bg-yellow-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-300 border border-slate-800'}`}>
                   {m.text}
                 </div>
               </div>
             ))}
-            {isTyping && <p className="text-[10px] text-gray-400">Hunter AI is thinking...</p>}
+            {isTyping && <p className="text-[10px] text-yellow-500 animate-pulse font-black uppercase">Thinking...</p>}
             <div ref={endRef} />
           </div>
 
-          <form onSubmit={handleSend} className="p-3 border-t flex gap-2">
+          <form onSubmit={handleSend} className="p-4 bg-slate-900 border-t border-slate-800 flex gap-2">
             <input 
-              className="flex-1 bg-gray-100 p-2 rounded-xl text-sm outline-none"
-              placeholder="Ask me anything..."
+              className="flex-1 bg-slate-950 p-3 rounded-xl text-xs text-white outline-none border border-slate-800 focus:border-yellow-500 transition-colors"
+              placeholder="Query the entity..."
               value={input}
               onChange={e => setInput(e.target.value)}
             />
-            <button className="bg-yellow-500 p-2 rounded-xl"><Send size={18} /></button>
+            <button className="bg-yellow-500 p-3 rounded-xl text-slate-950 hover:bg-yellow-400 transition-colors"><Send size={16} /></button>
           </form>
         </div>
       ) : (
-        <button onClick={() => setIsOpen(true)} className="bg-gray-900 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all border border-gray-700">
-          <Sparkles className="text-yellow-500" />
+        <button onClick={() => setIsOpen(true)} className="bg-yellow-500 text-slate-950 p-5 rounded-full shadow-xl hover:scale-110 transition-all border-4 border-slate-950">
+          <MessageSquare size={28} />
         </button>
       )}
     </div>
