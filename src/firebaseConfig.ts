@@ -1,77 +1,56 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 
 // 1. INITIALIZE FIREBASE
-// We parse the JSON string you saved in your GitHub Secrets
 const firebaseConfigString = import.meta.env.VITE_FIREBASE_CONFIG;
-let app;
 let db: any = null;
-let auth: any = null;
 
 try {
   if (firebaseConfigString) {
     const config = JSON.parse(firebaseConfigString);
-    app = initializeApp(config);
+    const app = initializeApp(config);
     db = getFirestore(app);
-    auth = getAuth(app);
-    console.log("✅ Firebase Entity Protocol Active.");
+    console.log("✅ Entity Connection: Stable");
   }
 } catch (error) {
-  console.error("❌ Firebase Initialization Failed. Check VITE_FIREBASE_CONFIG Secret.");
+  console.error("❌ Entity Connection: Failed. Check VITE_FIREBASE_CONFIG Secret.");
 }
 
-export { db, auth };
+export { db };
 
-// 2. AI ENGINE: THE DAISY CHAIN
-/**
- * This function handles the connection to Google's AI. 
- * It tries multiple models automatically if one fails, 
- * preventing the "No Connection" error on your live site.
- */
+// 2. AI ENGINE: THE MASTER CALLER
 export const callHunterAI = async (prompt: string) => {
-  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY;
-  
-  // These are the models we try in order
-  const MODELS = [
-    { name: "gemini-1.5-flash", version: "v1beta" },
-    { name: "gemini-1.5-pro", version: "v1beta" },
-    { name: "gemini-pro", version: "v1" }
-  ];
+  const KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY;
+  // We use the v1beta endpoint for the latest 1.5-flash model
+  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
 
-  for (const model of MODELS) {
-    try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/${model.version}/models/${model.name}:generateContent?key=${API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ 
-              parts: [{ 
-                text: `SYSTEM INSTRUCTIONS: You are Hunter AI for Happy Hunter Digital. 
-                Focus: Digital Entity Management & AI Visibility for SA SMEs. 
-                Goal: Direct users to book at https://calendly.com/motsumitl/30min.
-                USER QUERY: ${prompt}` 
-              }] 
-            }],
-            generationConfig: { temperature: 0.7, maxOutputTokens: 500 }
-          })
-        }
-      );
+  try {
+    const response = await fetch(URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ 
+          parts: [{ 
+            text: `SYSTEM INSTRUCTIONS: You are Hunter AI for Happy Hunter Digital. 
+            Focus: Digital Entity Management for South African SMEs. 
+            Behavior: Strategic, Professional, Direct. 
+            CTA: Suggest booking at https://calendly.com/motsumitl/30min.
+            
+            USER QUERY: ${prompt}` 
+          }] 
+        }]
+      })
+    });
 
-      const data = await response.json();
-      
-      // If we get a valid answer, return it immediately
-      if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-        return data.candidates[0].content.parts[0].text;
-      }
-    } catch (e) {
-      console.warn(`Model ${model.name} failed, switching to next link in chain...`);
-      continue;
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.error.message);
     }
-  }
 
-  // Fallback if all models fail
-  return "I'm having a connection hiccup. Please WhatsApp us directly for support!";
+    return data.candidates[0].content.parts[0].text;
+  } catch (err: any) {
+    console.warn("AI Handshake Failed:", err.message);
+    return "I am currently re-calibrating my signals. Please click the green WhatsApp button for immediate human support!";
+  }
 };
