@@ -1,26 +1,24 @@
-import React, { useState } from 'react';
-import { db, callHunterAI } from '../firebaseConfig'; // Updated import
+import { useState } from 'react';
+import { db, callHunterAI } from '../firebaseConfig'; 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Search, Loader2, ShieldCheck } from 'lucide-react';
 
-export const AiAudit = () => {
+export default function AiAudit() {
   const [formData, setFormData] = useState({ name: '', loc: '', email: '' });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const runAudit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db) { alert("Database not connected. Check Secrets."); return; }
+    if (!db) { alert("Database not connected."); return; }
     
     setLoading(true);
     setStatus('idle');
 
     try {
-      // 1. REAL AI ANALYSIS
-      const auditPrompt = `Analyze this business: ${formData.name} in ${formData.loc}. Identify 3 critical digital gaps for South African SMEs.`;
+      const auditPrompt = `Analyze this business: ${formData.name} in ${formData.loc}. Identify 3 critical digital invisibility gaps for South African SMEs.`;
       const aiAnalysis = await callHunterAI(auditPrompt);
 
-      // 2. SAVE LEAD TO FIRESTORE
       await addDoc(collection(db, "mail"), {
         to: formData.email,
         businessName: formData.name,
@@ -45,7 +43,7 @@ export const AiAudit = () => {
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl max-w-4xl mx-auto my-10 relative overflow-hidden">
+    <div className="bg-slate-900 border border-slate-800 p-8 md:p-12 rounded-[2.5rem] shadow-2xl max-w-4xl mx-auto my-10 relative overflow-hidden">
       <h2 className="text-3xl font-black text-white mb-6 text-center uppercase tracking-tighter">
         2026 <span className="text-yellow-500">Entity</span> Audit
       </h2>
@@ -84,4 +82,4 @@ export const AiAudit = () => {
       </form>
     </div>
   );
-};
+}
