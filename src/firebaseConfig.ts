@@ -2,46 +2,76 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// Parse the JSON config from GitHub Secrets/Env
-const firebaseConfig = JSON.parse(
-  import.meta.env.VITE_FIREBASE_CONFIG || "{}"
-);
+// 1. INITIALIZE FIREBASE
+// We parse the JSON string you saved in your GitHub Secrets
+const firebaseConfigString = import.meta.env.VITE_FIREBASE_CONFIG;
+let app;
+let db: any = null;
+let auth: any = null;
 
-// Safety check for production
-const app = Object.keys(firebaseConfig).length > 0 
-  ? initializeApp(firebaseConfig) 
-  : null;
+try {
+  if (firebaseConfigString) {
+    const config = JSON.parse(firebaseConfigString);
+    app = initializeApp(config);
+    db = getFirestore(app);
+    auth = getAuth(app);
+    console.log("✅ Firebase Entity Protocol Active.");
+  }
+} catch (error) {
+  console.error("❌ Firebase Initialization Failed. Check VITE_FIREBASE_CONFIG Secret.");
+}
 
-export const db = app ? getFirestore(app) : null;
-export const auth = app ? getAuth(app) : null;
+export { db, auth };
 
+// 2. AI ENGINE: THE DAISY CHAIN
 /**
- * AI ENGINE: Centralized Gemini Caller
- * This handles the "Connection" logic in one place.
+ * This function handles the connection to Google's AI. 
+ * It tries multiple models automatically if one fails, 
+ * preventing the "No Connection" error on your live site.
  */
 export const callHunterAI = async (prompt: string) => {
   const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY;
-  const BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+  
+  // These are the models we try in order
+  const MODELS = [
+    { name: "gemini-1.5-flash", version: "v1beta" },
+    { name: "gemini-1.5-pro", version: "v1beta" },
+    { name: "gemini-pro", version: "v1" }
+  ];
 
-  try {
-    const response = await fetch(`${BASE_URL}?key=${API_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 500 }
-      })
-    });
+  for (const model of MODELS) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/${model.version}/models/${model.name}:generateContent?key=${API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ 
+              parts: [{ 
+                text: `SYSTEM INSTRUCTIONS: You are Hunter AI for Happy Hunter Digital. 
+                Focus: Digital Entity Management & AI Visibility for SA SMEs. 
+                Goal: Direct users to book at https://calendly.com/motsumitl/30min.
+                USER QUERY: ${prompt}` 
+              }] 
+            }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 500 }
+          })
+        }
+      );
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || "Connection Failed");
+      const data = await response.json();
+      
+      // If we get a valid answer, return it immediately
+      if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text;
+      }
+    } catch (e) {
+      console.warn(`Model ${model.name} failed, switching to next link in chain...`);
+      continue;
     }
-
-    const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
-  } catch (err) {
-    console.error("Hunter AI Connection Error:", err);
-    return "I'm having trouble connecting to my central brain. Please book a call for a manual audit: https://calendly.com/motsumitl/30min";
   }
+
+  // Fallback if all models fail
+  return "I'm having a connection hiccup. Please WhatsApp us directly for support!";
 };
