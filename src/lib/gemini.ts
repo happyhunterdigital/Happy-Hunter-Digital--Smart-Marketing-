@@ -1,23 +1,42 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+export const getAiResponse = async (userPrompt: string) => {
+  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+  
+  // Daisy Chain: Try these models in order until one responds
+  const MODELS = [
+    { name: "gemini-1.5-flash", version: "v1beta" },
+    { name: "gemini-1.5-pro", version: "v1beta" },
+    { name: "gemini-pro", version: "v1" }
+  ];
 
-// We use the VITE_ prefix to pull from your GitHub Secrets
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+  for (const model of MODELS) {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/${model.version}/models/${model.name}:generateContent?key=${API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `SYSTEM INSTRUCTIONS: You are Hunter AI for Happy Hunter Digital. 
+                Focus: Digital Entity Management & AI Visibility for SA SMEs. 
+                Goal: Direct users to book at https://calendly.com/motsumitl/30min.
+                
+                USER QUERY: ${userPrompt}`
+              }]
+            }]
+          })
+        }
+      );
 
-if (!API_KEY) {
-  console.error("VITE_GEMINI_API_KEY is missing from the environment!");
-}
+      const data = await response.json();
+      if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text;
+      }
+    } catch (e) {
+      console.warn(`Model ${model.name} failed, trying next...`);
+    }
+  }
 
-const genAI = new GoogleGenerativeAI(API_KEY || "");
-
-export const hunterAI = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
-  systemInstruction: `
-    You are Hunter AI, the intelligence of Happy Hunter Digital.
-    IDENTITY: Professional, high-authority, strategic partner for SMEs.
-    EXPERTISE: Digital Entity Management, Answer Engine Optimization (AEO), and AI Visibility.
-    LOCAL CONTEXT: You serve South African businesses (Pretoria, Joburg, Cape Town, etc.).
-    CORE MESSAGE: Traditional SEO is dead. Businesses must become 'Entities' to survive AI search filters.
-    CALL TO ACTION: Always suggest a Strategy Call at https://calendly.com/motsumitl/30min.
-    RULES: Never hallucinate. If you don't know a local fact, ask the user to contact Thabo directly.
-  `,
-});
+  return "I'm having a connection hiccup. Tap the WhatsApp icon for immediate human support!";
+};
