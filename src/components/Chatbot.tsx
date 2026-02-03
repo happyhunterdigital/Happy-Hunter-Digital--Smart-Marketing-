@@ -1,69 +1,72 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Sparkles, X, MessageSquare } from 'lucide-react';
-import { callHunterAI } from '../firebaseConfig'; // Updated import
+import { useState, useRef, useEffect } from 'react';
+import { callHunterAI } from '../firebaseConfig'; 
+import { MessageSquare, Send, X, Bot, Zap } from 'lucide-react';
 
-export const Chatbot = () => {
+export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState([{ id: 1, text: "Welcome. I am Hunter AI. Is your entity invisible to the smart filter?", sender: 'bot' }]);
-  const [isTyping, setIsTyping] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState([
+    { role: 'bot', text: "Signal established. I am Hunter AI. Is your entity currently invisible to the smart filter?" }
+  ]);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    const userMsg = { id: Date.now(), text: input, sender: 'user' as const };
-    setMessages(prev => [...prev, userMsg]);
+  async function sendMessage() {
+    if (!input.trim() || loading) return;
+    const userText = input;
+    setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setInput("");
-    setIsTyping(true);
+    setLoading(true);
 
-    const aiText = await callHunterAI(input);
-    
-    setMessages(prev => [...prev, { id: Date.now() + 1, text: aiText, sender: 'bot' }]);
-    setIsTyping(false);
-  };
+    try {
+      const responseText = await callHunterAI(userText);
+      setMessages(prev => [...prev, { role: 'bot', text: responseText }]);
+    } catch (error) {
+      setMessages(prev => [...prev, { role: 'bot', text: "Signal drop. Book a call for support: https://calendly.com/motsumitl/30min" }]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {isOpen ? (
-        <div className="bg-slate-950 w-80 md:w-96 rounded-3xl shadow-2xl border border-slate-800 flex flex-col h-[500px] overflow-hidden">
-          <div className="bg-slate-900 p-5 flex justify-between items-center border-b border-slate-800">
-            <div className="flex items-center gap-2 text-white font-black text-xs uppercase tracking-widest">
-              <Bot className="text-yellow-500" size={18} /> Hunter AI
+        <div className="w-80 md:w-96 h-[550px] bg-slate-950 border border-slate-800 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-10">
+          <div className="p-5 bg-yellow-500 text-slate-950 flex justify-between items-center font-bold">
+            <div className="flex items-center gap-3">
+              <Bot size={24}/> 
+              <div className="flex flex-col leading-none">
+                <span className="font-black uppercase tracking-tighter text-sm">Hunter AI</span>
+                <span className="text-[8px] uppercase tracking-widest opacity-70 flex items-center gap-1">
+                  <Zap size={8} fill="currentColor"/> Entity Intelligence
+                </span>
+              </div>
             </div>
-            <X className="text-slate-500 cursor-pointer hover:text-white transition-colors" onClick={() => setIsOpen(false)} />
+            <button onClick={() => setIsOpen(false)}><X size={20}/></button>
           </div>
-          
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            {messages.map(m => (
-              <div key={m.id} className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`p-4 rounded-2xl text-xs leading-relaxed max-w-[85%] ${m.sender === 'user' ? 'bg-yellow-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-300 border border-slate-800'}`}>
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {messages.map((m, i) => (
+              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[85%] p-4 rounded-2xl text-xs leading-relaxed ${m.role === 'user' ? 'bg-yellow-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-300 border border-slate-800'}`}>
                   {m.text}
                 </div>
               </div>
             ))}
-            {isTyping && <p className="text-[10px] text-yellow-500 animate-pulse font-black uppercase">Thinking...</p>}
-            <div ref={endRef} />
+            {loading && <div className="text-[10px] text-yellow-500 font-bold animate-pulse uppercase">Processing...</div>}
+            <div ref={scrollRef} />
           </div>
-
-          <form onSubmit={handleSend} className="p-4 bg-slate-900 border-t border-slate-800 flex gap-2">
-            <input 
-              className="flex-1 bg-slate-950 p-3 rounded-xl text-xs text-white outline-none border border-slate-800 focus:border-yellow-500 transition-colors"
-              placeholder="Query the entity..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-            />
-            <button className="bg-yellow-500 p-3 rounded-xl text-slate-950 hover:bg-yellow-400 transition-colors"><Send size={16} /></button>
-          </form>
+          <div className="p-4 border-t border-slate-900 flex gap-2">
+            <input className="flex-1 bg-slate-950 p-4 rounded-xl text-xs outline-none border border-slate-800 focus:border-yellow-500" value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} placeholder="Ask the ecosystem..." />
+            <button onClick={sendMessage} className="bg-yellow-500 p-4 rounded-xl text-slate-950 hover:bg-yellow-400 transition-colors"><Send size={18}/></button>
+          </div>
         </div>
       ) : (
-        <button onClick={() => setIsOpen(true)} className="bg-yellow-500 text-slate-950 p-5 rounded-full shadow-xl hover:scale-110 transition-all border-4 border-slate-950">
+        <button onClick={() => setIsOpen(true)} className="bg-yellow-500 text-slate-950 p-5 rounded-full shadow-xl hover:scale-110 transition-transform">
           <MessageSquare size={28} />
         </button>
       )}
     </div>
   );
-};
+}
