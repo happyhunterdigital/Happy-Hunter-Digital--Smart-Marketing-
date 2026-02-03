@@ -10,47 +10,43 @@ try {
     const config = JSON.parse(firebaseConfigString);
     const app = initializeApp(config);
     db = getFirestore(app);
-    console.log("✅ Entity Connection: Stable");
   }
 } catch (error) {
-  console.error("❌ Entity Connection: Failed. Check VITE_FIREBASE_CONFIG Secret.");
+  console.error("Firebase Config Error");
 }
 
 export { db };
 
-// 2. AI ENGINE: THE MASTER CALLER
+// 2. THE DAISY-CHAIN AI CALLER
 export const callHunterAI = async (prompt: string) => {
   const KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY;
-  // We use the v1beta endpoint for the latest 1.5-flash model
-  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
+  
+  // We try these endpoints in order. If one fails, we try the next.
+  const ENDPOINTS = [
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+    "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent"
+  ];
 
-  try {
-    const response = await fetch(URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ 
-          parts: [{ 
-            text: `SYSTEM INSTRUCTIONS: You are Hunter AI for Happy Hunter Digital. 
-            Focus: Digital Entity Management for South African SMEs. 
-            Behavior: Strategic, Professional, Direct. 
-            CTA: Suggest booking at https://calendly.com/motsumitl/30min.
-            
-            USER QUERY: ${prompt}` 
-          }] 
-        }]
-      })
-    });
+  for (const url of ENDPOINTS) {
+    try {
+      const response = await fetch(`${url}?key=${KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }]
+        })
+      });
 
-    const data = await response.json();
-    
-    if (data.error) {
-      throw new Error(data.error.message);
+      const data = await response.json();
+      
+      if (data.candidates && data.candidates[0].content.parts[0].text) {
+        return data.candidates[0].content.parts[0].text;
+      }
+    } catch (err) {
+      console.warn("Retrying AI connection via fallback link...");
+      continue;
     }
-
-    return data.candidates[0].content.parts[0].text;
-  } catch (err: any) {
-    console.warn("AI Handshake Failed:", err.message);
-    return "I am currently re-calibrating my signals. Please click the green WhatsApp button for immediate human support!";
   }
+
+  return "SIGNAL LOSS: My central brain is recalibrating. Please click the green button to WhatsApp us directly!";
 };
