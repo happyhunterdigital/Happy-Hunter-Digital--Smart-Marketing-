@@ -32,10 +32,10 @@ jobs:
           npm install
           npm run build
         env:
+          # COVERING ALL BASES: We map the secret to every name the code might look for
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
-          VITE_FIREBASE_CONFIG: ${{ secrets.VITE_FIREBASE_CONFIG }}
-          # This maps the key to both names for absolute safety
           VITE_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
+          VITE_FIREBASE_CONFIG: ${{ secrets.VITE_FIREBASE_CONFIG }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
