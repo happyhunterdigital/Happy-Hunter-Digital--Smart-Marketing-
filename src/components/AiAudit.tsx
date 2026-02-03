@@ -1,68 +1,70 @@
 import { useState } from 'react';
-import { db, callHunterAI } from '../firebaseConfig'; 
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Search, Loader2, ShieldCheck } from 'lucide-react';
+import { callHunterAI } from '../firebaseConfig'; 
+import { Search, Loader2, ShieldCheck, Zap } from 'lucide-react';
 
-export default function AiAudit() {
-  const [formData, setFormData] = useState({ name: '', loc: '', email: '' });
-  const [loading, setLoading] = useState(false);
+export default function Audit() {
+  const [bizName, setBizName] = useState("");
   const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const runAudit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function runAudit() {
+    if (!bizName || loading) return;
     setLoading(true);
     setResult("");
-
+    
     try {
-      // 1. GENERATE AI AUDIT
-      const prompt = `Analyze the business "${formData.name}" in "${formData.loc}". Identify 3 critical trust gaps for this South African niche. Assign an 'Invisibility Score' from 0-100. Tone: Strategic Expert.`;
-      const aiResponse = await callHunterAI(prompt);
-      setResult(aiResponse);
-
-      // 2. SAVE LEAD TO FIREBASE
-      if (db) {
-        await addDoc(collection(db, "mail"), {
-          to: formData.email,
-          businessName: formData.name,
-          location: formData.loc,
-          status: "new",
-          timestamp: serverTimestamp(),
-          analysis: aiResponse
-        });
-      }
-    } catch (error) {
-      setResult("Audit failed to save, but here is your analysis: " + result);
+      const prompt = `Analyze the business "${bizName}". Identify 3 Trust Gaps and give an Invisibility Score. Tone: Strategic Expert.`;
+      const responseText = await callHunterAI(prompt);
+      setResult(responseText);
+    } catch (e) {
+      setResult("The AI engine requires a direct handshake. Book a call: https://calendly.com/motsumitl/30min");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <div className="bg-slate-900 border border-slate-800 p-8 md:p-12 rounded-[2.5rem] shadow-2xl max-w-4xl mx-auto my-20">
-      <div className="text-center mb-10">
-        <h2 className="text-4xl font-black uppercase tracking-tighter text-white">Entity <span className="text-yellow-500">Scan</span></h2>
-        <p className="text-slate-500 italic mt-2 text-sm">Reveal the gaps in your digital architecture.</p>
+    <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto min-h-screen">
+      <div className="text-center mb-16 space-y-4">
+        <h2 className="text-5xl md:text-8xl font-black uppercase tracking-tighter">
+          Entity <span className="text-yellow-500">Scan</span>
+        </h2>
+        <p className="text-slate-500 font-medium italic">Query the Knowledge Graph to reveal your invisibility gaps.</p>
       </div>
-      
-      <form onSubmit={runAudit} className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <input className="bg-slate-950 border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-yellow-500" placeholder="Business Name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-          <input className="bg-slate-950 border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-yellow-500" placeholder="City" required value={formData.loc} onChange={e => setFormData({...formData, loc: e.target.value})} />
+
+      <div className="relative max-w-3xl mx-auto mb-16">
+        <div className="flex gap-2 bg-slate-900 p-2 rounded-2xl border border-slate-800 focus-within:border-yellow-500 transition-colors">
+          <input 
+            className="flex-1 bg-transparent p-5 rounded-xl focus:outline-none text-lg placeholder:text-slate-700 text-white"
+            placeholder="Business Name & City..."
+            value={bizName}
+            onChange={(e) => setBizName(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && runAudit()}
+          />
+          <button 
+            onClick={runAudit}
+            disabled={loading}
+            className="bg-yellow-500 text-slate-950 px-10 rounded-xl font-black hover:bg-yellow-400 transition-all disabled:opacity-50 flex items-center gap-2"
+          >
+            {loading ? <Loader2 className="animate-spin" size={24}/> : <Search size={24}/>}
+            <span className="hidden md:inline uppercase tracking-widest">Initiate</span>
+          </button>
         </div>
-        <input className="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-yellow-500" placeholder="Email Address" type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
-        
-        <button disabled={loading} className="w-full bg-yellow-500 text-slate-950 py-5 rounded-xl font-black flex items-center justify-center gap-3 hover:bg-yellow-400 disabled:opacity-50">
-          {loading ? <Loader2 className="animate-spin" /> : <Search size={20} />}
-          INITIATE SCAN
-        </button>
-      </form>
+      </div>
 
       {result && (
-        <div className="mt-10 p-8 border border-slate-800 bg-slate-950/50 rounded-3xl animate-in fade-in zoom-in">
-          <div className="flex items-center gap-2 mb-6 text-yellow-500">
-            <ShieldCheck size={18}/> <span className="text-[10px] font-black uppercase tracking-widest">Protocol Analysis Result</span>
+        <div className="max-w-3xl mx-auto p-10 border border-slate-800 rounded-[2.5rem] bg-slate-900/40 animate-in fade-in zoom-in duration-500">
+          <div className="flex items-center gap-3 mb-8">
+            <ShieldCheck className="text-yellow-500" size={20} />
+            <h3 className="text-yellow-500 font-black uppercase tracking-[0.3em] text-[10px]">Strategic Analysis Protocol</h3>
           </div>
-          <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap font-medium">{result}</div>
+          <div className="text-slate-300 text-sm md:text-base leading-relaxed whitespace-pre-wrap font-medium">
+            {result}
+          </div>
+          <div className="mt-12 pt-8 border-t border-slate-800 flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-600">
+             <span>End of Transmission</span>
+             <a href="https://calendly.com/motsumitl/30min" className="text-yellow-500 hover:underline">Book Strategy Call →</a>
+          </div>
         </div>
       )}
     </div>
