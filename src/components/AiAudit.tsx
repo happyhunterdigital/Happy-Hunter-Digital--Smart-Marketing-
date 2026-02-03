@@ -1,45 +1,43 @@
 import React, { useState } from 'react';
-import { db, callHunterAI } from '../firebaseConfig';
+import { db, callHunterAI } from '../firebaseConfig'; // Updated import
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Search, Loader2, ShieldCheck } from 'lucide-react';
 
 export const AiAudit = () => {
-  const [formData, setFormData] = useState({ name: '', loc: '', web: '', email: '' });
+  const [formData, setFormData] = useState({ name: '', loc: '', email: '' });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const runAudit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!db) { alert("Database not connected. Check Secrets."); return; }
+    
     setLoading(true);
     setStatus('idle');
 
     try {
-      // 1. Generate a REAL custom audit using Gemini
-      const auditPrompt = `Analyze this business: ${formData.name} in ${formData.loc}. 
-      Website: ${formData.web || 'No website'}. 
-      Identify 3 critical digital visibility gaps for this specific niche in South Africa. 
-      Keep the tone professional and urgent.`;
-      
+      // 1. REAL AI ANALYSIS
+      const auditPrompt = `Analyze this business: ${formData.name} in ${formData.loc}. Identify 3 critical digital gaps for South African SMEs.`;
       const aiAnalysis = await callHunterAI(auditPrompt);
 
-      // 2. Save to Firestore (The "Mail" collection for automated sending)
-      if (db) {
-        await addDoc(collection(db, "mail"), {
-          to: formData.email,
-          businessName: formData.name,
-          location: formData.loc,
-          timestamp: serverTimestamp(),
-          status: "new",
-          analysis: aiAnalysis,
-          message: {
-            subject: `⚠️ Critical Gaps Found: Audit for ${formData.name}`,
-            text: aiAnalysis
-          }
-        });
-      }
+      // 2. SAVE LEAD TO FIRESTORE
+      await addDoc(collection(db, "mail"), {
+        to: formData.email,
+        businessName: formData.name,
+        location: formData.loc,
+        timestamp: serverTimestamp(),
+        status: "new",
+        analysis: aiAnalysis,
+        message: {
+          subject: `⚠️ Audit Report: ${formData.name}`,
+          text: aiAnalysis
+        }
+      });
 
       setStatus('success');
-      setFormData({ name: '', loc: '', web: '', email: '' });
+      setFormData({ name: '', loc: '', email: '' });
     } catch (error) {
+      console.error(error);
       setStatus('error');
     } finally {
       setLoading(false);
@@ -47,27 +45,28 @@ export const AiAudit = () => {
   };
 
   return (
-    <div className="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl max-w-2xl mx-auto my-10 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
-      <h2 className="text-3xl font-bold text-white mb-6 text-center">AI Business Audit</h2>
+    <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2.5rem] shadow-2xl max-w-4xl mx-auto my-10 relative overflow-hidden">
+      <h2 className="text-3xl font-black text-white mb-6 text-center uppercase tracking-tighter">
+        2026 <span className="text-yellow-500">Entity</span> Audit
+      </h2>
       
       <form onSubmit={runAudit} className="space-y-4">
         <input 
-          className="w-full bg-gray-800 border border-gray-700 p-4 rounded-lg text-white"
+          className="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-all"
           placeholder="Business Name"
           required
           value={formData.name}
           onChange={e => setFormData({...formData, name: e.target.value})}
         />
         <input 
-          className="w-full bg-gray-800 border border-gray-700 p-4 rounded-lg text-white"
-          placeholder="Location (e.g. Pretoria)"
+          className="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-all"
+          placeholder="Location (City)"
           required
           value={formData.loc}
           onChange={e => setFormData({...formData, loc: e.target.value})}
         />
         <input 
-          className="w-full bg-gray-800 border border-gray-700 p-4 rounded-lg text-white"
+          className="w-full bg-slate-950 border border-slate-800 p-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-all"
           placeholder="Email Address"
           type="email"
           required
@@ -76,11 +75,12 @@ export const AiAudit = () => {
         />
         <button 
           disabled={loading}
-          className="w-full bg-yellow-500 text-gray-900 py-4 rounded-lg font-bold hover:bg-yellow-400 transition-all"
+          className="w-full bg-yellow-500 text-slate-950 py-4 rounded-xl font-black flex items-center justify-center gap-2 hover:bg-yellow-400"
         >
-          {loading ? 'Analyzing with Gemini...' : '🚀 Start AI Scan'}
+          {loading ? <Loader2 className="animate-spin" /> : <Search size={20} />}
+          RUN ENTITY SCAN
         </button>
-        {status === 'success' && <p className="text-green-400 text-center font-bold">✅ Audit completed! Check your email.</p>}
+        {status === 'success' && <p className="text-green-400 text-center font-bold">✅ Audit Initiated! Check your inbox.</p>}
       </form>
     </div>
   );
