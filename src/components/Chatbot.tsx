@@ -1,12 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { callHunterAI } from '../firebaseConfig'; // CORRECT IMPORT
-import { MessageSquare, Send, X, Bot } from 'lucide-react';
+import { callHunterAI } from '../firebaseConfig'; 
+import { MessageSquare, Send, X, Bot, AlertCircle } from 'lucide-react';
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState([{ role: 'bot', text: "Signal established. I am Hunter AI. Is your entity invisible?" }]);
+  const [messages, setMessages] = useState([{ role: 'bot', text: "Signal established. Ask anything about your Digital Entity." }]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
@@ -18,25 +18,23 @@ export default function Chatbot() {
     setInput("");
     setLoading(true);
 
-    const responseText = await callHunterAI(userText);
-    setMessages(prev => [...prev, { role: 'bot', text: responseText }]);
+    const response = await callHunterAI(userText);
+    setMessages(prev => [...prev, { role: 'bot', text: response }]);
     setLoading(false);
   }
 
   return (
     <div className="fixed bottom-6 right-6 z-[60]">
       {isOpen ? (
-        <div className="w-80 md:w-96 h-[500px] bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in">
+        <div className="w-80 md:w-96 h-[500px] bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
           <div className="p-5 bg-yellow-500 text-slate-950 flex justify-between items-center font-bold">
-            <div className="flex items-center gap-2 text-xs uppercase tracking-widest">
-              <Bot size={18}/> <span>Hunter AI</span>
-            </div>
+            <div className="flex items-center gap-2 text-xs uppercase tracking-widest"><Bot size={18}/> <span>Hunter AI</span></div>
             <button onClick={() => setIsOpen(false)}><X size={20}/></button>
           </div>
           <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`p-4 rounded-2xl text-xs max-w-[85%] ${m.role === 'user' ? 'bg-yellow-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-300'}`}>
+                <div className={`p-4 rounded-2xl text-xs max-w-[85%] ${m.role === 'user' ? 'bg-yellow-500 text-slate-950 font-bold' : m.text.includes("ERROR") ? 'bg-red-500/20 text-red-400 border border-red-500/50' : 'bg-slate-900 text-slate-300'}`}>
                   {m.text}
                 </div>
               </div>
