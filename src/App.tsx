@@ -5,13 +5,11 @@ import Home from './pages/Home';
 import Services from './pages/Services';
 import Audit from './pages/Audit';
 import FAQ from './pages/FAQ';
-import { ApiTest } from './components/ApiTest'; // DIAGNOSTIC TOOL
 
 export default function App() {
   return (
     <Router>
       <div className="min-h-screen bg-slate-950 text-white selection:bg-yellow-500/30 font-sans relative">
-        <ApiTest /> {/* REMOVE THIS AFTER WE FIX THE CONNECTION */}
         <Navbar />
         <main>
           <Routes>
@@ -22,8 +20,19 @@ export default function App() {
           </Routes>
         </main>
         <Chatbot />
-        <footer className="py-20 border-t border-slate-900 text-center text-slate-500 text-xs uppercase tracking-widest">
-          Happy Hunter Digital // Entity Protocol v2.0
+        <footer className="py-20 border-t border-slate-900 bg-slate-950/50 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="text-left">
+              <h3 className="text-xl font-black uppercase tracking-tighter mb-2">Happy Hunter Digital</h3>
+              <p className="text-slate-500 text-xs max-w-xs leading-relaxed uppercase tracking-widest">
+                Digital Entity Management for South African SMEs. // Protocol Active.
+              </p>
+            </div>
+            <div className="flex gap-8 text-[10px] font-black uppercase tracking-[0.3em] text-slate-700">
+              <span>Mirror Rule Applied</span>
+              <span>Information Gain High</span>
+            </div>
+          </div>
         </footer>
       </div>
     </Router>
