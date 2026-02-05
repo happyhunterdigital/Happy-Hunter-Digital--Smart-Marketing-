@@ -1,31 +1,36 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// 1. FIREBASE SETUP
+// 1. HARD-ALIGNED FIREBASE SETUP
 const firebaseConfigString = import.meta.env.VITE_FIREBASE_CONFIG;
+
 let db: any = null;
 
 try {
-  if (firebaseConfigString) {
-    const config = JSON.parse(firebaseConfigString);
-    const app = initializeApp(config);
-    db = getFirestore(app);
-    console.log("✅ Entity Firebase: Active");
-  }
+  // We use the exact Project ID from your screenshot: happyhunterdigital-17480
+  const config = firebaseConfigString ? JSON.parse(firebaseConfigString) : {
+    apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc",
+    authDomain: "happyhunterdigital-17480.firebaseapp.com",
+    projectId: "happyhunterdigital-17480",
+    storageBucket: "happyhunterdigital-17480.firebasestorage.app",
+    messagingSenderId: "449102421348",
+    appId: "1:449102421348:web:d61e0c209b93bf282fae71"
+  };
+  
+  const app = initializeApp(config);
+  db = getFirestore(app);
+  console.log("✅ Entity Firebase Hard-Aligned.");
 } catch (error) {
-  console.error("Firebase Config Failure");
+  console.error("Firebase Sync Error");
 }
 
 export { db };
 
-// 2. THE UNIVERSAL AI CALLER (Self-Healing)
+// 2. THE UNIVERSAL AI CALLER (Self-Healing Fetch)
 export const callHunterAI = async (prompt: string) => {
-  // Use every possible naming convention for the key to ensure it is found
-  const KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY;
+  const KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || "AIzaSyCdmPzVLVk0s7prinSgvxulfBZxLBTsA6U";
   
-  if (!KEY) return "ERROR: API Key Missing. Please check GitHub Secrets.";
-
-  // We try the Flash model first, then the Pro model as a fallback
+  // Daisy Chain: Trying different model endpoints for maximum reliability
   const ENDPOINTS = [
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
     "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent"
@@ -39,9 +44,10 @@ export const callHunterAI = async (prompt: string) => {
         body: JSON.stringify({
           contents: [{ 
             parts: [{ 
-              text: `SYSTEM: You are Hunter AI for Happy Hunter Digital. Expert in SA Marketing. 
-              GOAL: Help SMEs survive the AI filter. 
-              CTA: Book call at https://calendly.com/motsumitl/30min. 
+              text: `SYSTEM: You are Hunter AI for Happy Hunter Digital. Expert in South African SME Marketing. 
+              TONE: Strategic, Professional, Direct. 
+              GOAL: Help businesses survive the AI Filter. 
+              CTA: Book a call at https://calendly.com/motsumitl/30min. 
               USER QUERY: ${prompt}` 
             }] 
           }]
@@ -53,8 +59,12 @@ export const callHunterAI = async (prompt: string) => {
       if (data.candidates && data.candidates[0].content.parts[0].text) {
         return data.candidates[0].content.parts[0].text;
       }
+      
+      if (data.error) {
+        console.warn(`Model variant failed: ${data.error.message}`);
+        continue;
+      }
     } catch (err) {
-      console.warn("Retrying AI connection link...");
       continue;
     }
   }
