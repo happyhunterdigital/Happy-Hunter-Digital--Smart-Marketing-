@@ -6,7 +6,8 @@ import Services from './pages/Services';
 import Audit from './pages/Audit';
 import FAQ from './pages/FAQ';
 import EarnedMedia from './pages/EarnedMedia';
-import Admin from './pages/Admin'; // NEW IMPORT
+import Admin from './pages/Admin';
+import ArticleReader from './pages/ArticleReader'; // NEW IMPORT
 
 export default function App() {
   return (
@@ -20,7 +21,8 @@ export default function App() {
             <Route path="/audit" element={<Audit />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/earned-media" element={<EarnedMedia />} />
-            <Route path="/admin" element={<Admin />} /> {/* NEW ROUTE */}
+            <Route path="/article/:id" element={<ArticleReader />} /> {/* NEW ROUTE */}
+            <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
         <Chatbot />
@@ -29,11 +31,11 @@ export default function App() {
             <div className="text-left">
               <h3 className="text-xl font-black uppercase tracking-tighter mb-2 text-yellow-500">Happy Hunter Digital</h3>
               <p className="text-slate-500 text-xs max-w-xs leading-relaxed uppercase tracking-widest font-medium">
-                Digital Entity Management for SA SMEs. // Protocol Active.
+                Digital Entity Management for South African SMEs. // Protocol Active.
               </p>
             </div>
             <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-800">
-              Protocol v2.0 // Firebase High-Availability Engine
+              Protocol v2.0 // Firebase High-Availability Infrastructure
             </div>
           </div>
         </footer>
