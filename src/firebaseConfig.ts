@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// 1. HARD-ALIGNED FIREBASE SETUP
+// 1. HARD-CODED CONFIG (From your screenshot to ensure 0% chance of name mismatch)
 const firebaseConfig = {
   apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc",
   authDomain: "happyhunterdigital-17480.firebaseapp.com",
@@ -14,33 +14,36 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
-// 2. SELF-HEALING AI CALLER
+// 2. THE ERROR-EXPOSING AI CALLER
 export const callHunterAI = async (prompt: string) => {
-  // Pulling key from Secrets OR using the one you provided for immediate debug
-  const KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyCdmPzVLVk0s7prinSgvxulfBZxLBTsA6U";
-  
-  const ENDPOINTS = [
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-    "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent"
-  ];
+  // We use the exact key from your AI Studio screenshot
+  const KEY = "AIzaSyCdmPzVLVk0s7prinSgvxulfBZxLBTsA6U";
+  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`;
 
-  for (const url of ENDPOINTS) {
-    try {
-      const response = await fetch(`${url}?key=${KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: `SYSTEM: You are Hunter AI for Happy Hunter Digital. Expert in SA Marketing. Goal: Help SMEs survive the AI filter. TONE: Professional. QUERY: ${prompt}` }] }]
-        })
-      });
+  try {
+    const response = await fetch(URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
 
-      const data = await response.json();
-      if (data.candidates && data.candidates[0].content.parts[0].text) {
-        return data.candidates[0].content.parts[0].text;
-      }
-    } catch (err) {
-      continue;
+    const data = await response.json();
+    
+    // IF GOOGLE SENDS AN ERROR, SHOW IT ON THE SCREEN
+    if (data.error) {
+      return `GOOGLE_ERROR: ${data.error.message} (Code: ${data.error.code})`;
     }
+
+    if (data.candidates && data.candidates[0].content.parts[0].text) {
+      return data.candidates[0].content.parts[0].text;
+    }
+
+    return "ERROR: Received empty response from Gemini.";
+
+  } catch (err: any) {
+    // IF THE BROWSER BLOCKS THE REQUEST, SHOW WHY
+    return `BROWSER_NETWORK_ERROR: ${err.message}. Check if an ad-blocker is stopping the request.`;
   }
-  return "I'm having a connection hiccup. Please click the green WhatsApp button to chat with Thabo directly!";
 };
