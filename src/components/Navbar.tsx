@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Target, Menu, Zap } from 'lucide-react';
+import { Target, Menu, Zap, Globe } from 'lucide-react';
 
 export default function Navbar() {
   return (
@@ -14,17 +14,9 @@ export default function Navbar() {
         </Link>
         
         <div className="hidden md:flex items-center gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
-          <Link to="/services" className="hover:text-yellow-500 transition-colors">Ecosystem</Link>
+          <Link to="/core-services" className="hover:text-yellow-500 transition-colors flex items-center gap-1">
+            <Globe size={12} /> The Ecosystem
+          </Link>
           <Link to="/earned-media" className="hover:text-yellow-500 transition-colors">Media</Link>
           <Link to="/audit" className="hover:text-yellow-500 transition-colors">Entity Audit</Link>
-          <Link to="/faq" className="hover:text-yellow-500 transition-colors">AEO Knowledge</Link>
-          <Link to="/audit" className="bg-yellow-500 text-slate-950 px-6 py-2.5 rounded-full hover:bg-yellow-400 transition-all flex items-center gap-2">
-            <Zap size={14} /> Analyze Business
-          </Link>
-        </div>
-        
-        <button className="md:hidden text-slate-400"><Menu /></button>
-      </div>
-    </nav>
-  );
-}
+          <Link to="/faq" className="hover:text-yellow-500 transition-colors text-slate-600">Knowledge</Link>
