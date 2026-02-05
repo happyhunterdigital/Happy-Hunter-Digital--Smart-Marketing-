@@ -7,7 +7,8 @@ import Audit from './pages/Audit';
 import FAQ from './pages/FAQ';
 import EarnedMedia from './pages/EarnedMedia';
 import Admin from './pages/Admin';
-import ArticleReader from './pages/ArticleReader'; // NEW IMPORT
+import ArticleReader from './pages/ArticleReader';
+import CoreServices from './pages/CoreServices'; // NEW IMPORT
 
 export default function App() {
   return (
@@ -17,11 +18,12 @@ export default function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/core-services" element={<CoreServices />} /> {/* NEW ROUTE */}
             <Route path="/services" element={<Services />} />
             <Route path="/audit" element={<Audit />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/earned-media" element={<EarnedMedia />} />
-            <Route path="/article/:id" element={<ArticleReader />} /> {/* NEW ROUTE */}
+            <Route path="/article/:id" element={<ArticleReader />} />
             <Route path="/admin" element={<Admin />} />
           </Routes>
         </main>
@@ -30,12 +32,12 @@ export default function App() {
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="text-left">
               <h3 className="text-xl font-black uppercase tracking-tighter mb-2 text-yellow-500">Happy Hunter Digital</h3>
-              <p className="text-slate-500 text-xs max-w-xs leading-relaxed uppercase tracking-widest font-medium">
-                Digital Entity Management for South African SMEs. // Protocol Active.
+              <p className="text-slate-500 text-xs max-w-xs leading-relaxed">
+                Smart Marketing for South African SMEs. // Entity Protocol Active.
               </p>
             </div>
             <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-800">
-              Protocol v2.0 // Firebase High-Availability Infrastructure
+              Protocol v2.0 // Firebase Infrastructure
             </div>
           </div>
         </footer>
