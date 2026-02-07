@@ -15,9 +15,8 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
 export const callHunterAI = async (prompt: string) => {
-  // HARD-ALIGNED KEY FROM SCREENSHOT
   const KEY = "AIzaSyCdmPzVLVk0s7prinSgvxulfBZxLBTsA6U";
-  // HARD-ALIGNED MODEL FROM SCREENSHOT
+  // CRITICAL FIX: No space after key=
   const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${KEY}`;
 
   try {
@@ -26,19 +25,45 @@ export const callHunterAI = async (prompt: string) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.9, maxOutputTokens: 2000 }
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2000 }
       })
     });
 
-    const data = await response.json();
-    
-    if (data.error) {
-      console.error(data.error.message);
-      return `SYSTEM_ERROR: ${data.error.message}`;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      return `SYSTEM_ERROR: ${errorData.error?.message || `HTTP ${response.status}`}`;
     }
 
+    const data = await response.json();
     return data.candidates[0].content.parts[0].text;
   } catch (err: any) {
     return `CONNECTION_ERROR: ${err.message}`;
   }
+};
+
+export const performAuditAnalysis = async (businessName: string, location: string) => {
+  const researchPrompt = `
+    You are an elite Smart Marketing Auditor. Perform an UNSPARING audit for "${businessName}" in ${location}.
+    FOCUS ONLY ON PAIN POINTS AND FAILURES.
+    
+    STRUCTURE:
+    [SECTION] LOCAL SEO & GMB FAILURES
+    - Identify specific visibility gaps and missing trust signals.
+    [SECTION] SOCIAL MEDIA Voids
+    - Analyze the brand signal failures on Instagram, FB, and TikTok.
+    [SECTION] DIGITAL FOOTPRINT GAPS
+    - Identify data inconsistency across directories.
+    [SECTION] AI/LLM INVISIBILITY (AEO)
+    - Explain why ChatGPT and Gemini cannot trust or recommend this business.
+    [SECTION] STRATEGIC VERDICT
+    - Estimate monthly revenue loss from invisibility.
+    
+    FORMATTING:
+    - Use [H] for paragraph intros.
+    - Use **BOLD UPPERCASE** for critical failures.
+    - Use [FIX] for immediate requirements.
+    - Space paragraphs generously.
+    - TONE: Blunt, Professional, Urgent.
+  `;
+  return await callHunterAI(researchPrompt);
 };
