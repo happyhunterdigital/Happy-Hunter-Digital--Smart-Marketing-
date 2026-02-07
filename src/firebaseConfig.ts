@@ -14,12 +14,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
-// 2. THE 2.5-FLASH AI CALLER
+// 2. THE 2.5-FLASH AI CALLER (Sanitized)
 export const callHunterAI = async (prompt: string) => {
-  // Use your verified API key string directly for absolute reliability
-  const KEY = "AIzaSyCdmPzVLVk0s7prinSgvxulfBZxLBTsA6U";
-  
-  // URL aligned with the Gemini 2.5 Flash specifications
+  // THE SANITIZER: Automatically removes quotes or spaces from the secret
+  const RAW_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_API_KEY || "";
+  const KEY = RAW_KEY.replace(/['"]+/g, '').trim();
+
+  if (!KEY || KEY === "undefined") {
+    return "SYSTEM_ERROR: API Key missing from build environment. Re-run GitHub Actions.";
+  }
+
+  // ALIGNED TO GEMINI 2.5 FLASH SPECIFICATIONS
   const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${KEY}`;
 
   try {
@@ -29,27 +34,30 @@ export const callHunterAI = async (prompt: string) => {
       body: JSON.stringify({
         contents: [{ 
           parts: [{ 
-            text: `SYSTEM: You are Hunter AI for Happy Hunter Digital. You use the 2.5-Flash reasoning engine to audit South African SMEs. 
-            CONTEXT: Expert in Entity Trust, Mirror Rule, and AEO. 
+            text: `SYSTEM: You are Hunter AI for Happy Hunter Digital. Expert in SA Marketing. 
             TONE: Professional, Provocative, Strategic. 
-            USER QUERY: ${prompt}` 
+            ENGINE: Gemini 2.5 Flash reasoning model.
+            QUERY: ${prompt}` 
           }] 
-        }]
+        }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
       })
     });
 
     const data = await response.json();
     
     if (data.error) {
-      return `SYSTEM_ERROR: ${data.error.message} (Code: ${data.error.code})`;
+      // If the key is still invalid, we show exactly what Google sees (without leaking the key)
+      return `GOOGLE_REJECTION: ${data.error.message} (Code: ${data.error.code}). Check if your key is restricted to specific domains in Cloud Console.`;
     }
 
     if (data.candidates && data.candidates[0].content.parts[0].text) {
       return data.candidates[0].content.parts[0].text;
     }
     
-    return "Signal established, but the 2.5-engine returned a null state.";
+    return "ERROR: Signal established but response was empty.";
+
   } catch (err: any) {
-    return `NETWORK_FAILURE: ${err.message}. Check browser console for CORS blocks.`;
+    return `NETWORK_FAILURE: ${err.message}. Check browser for CORS or Ad-blocker interruptions.`;
   }
 };
