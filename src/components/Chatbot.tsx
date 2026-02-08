@@ -10,7 +10,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState([
     { 
       role: 'bot', 
-      text: "👋 Welcome! I'm Happy Hunter Digital AI, powered by the Smart Marketing Engine.\n\nI can help you with:\n• Digital Entity Audits\n• Local SEO Strategy\n• AI Visibility (AEO)\n• Social Media Positioning\n\nWhat business challenge are you facing today?" 
+      text: "Welcome to Smart Marketing. I am Hunter, lead strategist here.\n\nI advise South African businesses on:\n• Digital Entity Architecture\n• Local Market Dominance\n• AI Visibility Systems\n• Revenue Recovery Protocols\n\nWhat challenge is your business facing?" 
     }
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -18,14 +18,6 @@ export default function Chatbot() {
   useEffect(() => { 
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' }); 
   }, [messages]);
-
-  const cleanAIResponse = (text: string) => {
-    // Remove asterisks used for bolding in markdown
-    let cleaned = text.replace(/\*\*/g, '');
-    // Remove single asterisks that might be used for italics
-    cleaned = cleaned.replace(/(?<!\*)\*(?!\*)/g, '');
-    return cleaned;
-  };
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
@@ -35,21 +27,19 @@ export default function Chatbot() {
     setInput("");
     setLoading(true);
     
-    const systemPrompt = `You are Happy Hunter Digital AI, a senior marketing strategist at Smart Marketing South Africa. You help business owners with digital marketing, Entity SEO, and AI visibility. 
+    const systemPrompt = `You are Hunter, a senior digital strategist at Smart Marketing South Africa. You speak with authority and directness. You never use asterisks, markdown, or robotic language. You write like a seasoned consultant advising a business owner. Be concise, strategic, and actionable. Never mention being AI.
 
-CRITICAL INSTRUCTIONS:
-- Write in a natural, conversational human tone
-- NEVER use asterisks (*) or markdown formatting
-- Use plain text only - no bold, no italics, no special formatting characters
-- Be warm, professional, and direct
-- Sound like a knowledgeable human consultant, not an AI
-- Keep responses concise and actionable
-
-User query: ${userText}`;
+User: ${userText}`;
     
-    const rawResponse = await callHunterAI(systemPrompt);
-    const cleanedResponse = cleanAIResponse(rawResponse);
-    setMessages(prev => [...prev, { role: 'bot', text: cleanedResponse }]);
+    const responseText = await callHunterAI(systemPrompt);
+    // Clean any accidental formatting
+    const cleanText = responseText
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/As an AI/g, 'As a strategist')
+      .replace(/I am an AI/g, 'I am a strategist');
+      
+    setMessages(prev => [...prev, { role: 'bot', text: cleanText }]);
     setLoading(false);
   }
 
@@ -57,16 +47,16 @@ User query: ${userText}`;
     <div className="fixed bottom-6 right-6 z-[90]">
       {isOpen ? (
         <div className="w-80 md:w-96 h-[550px] bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
-          <div className="p-5 bg-yellow-500 text-slate-950 flex justify-between items-center font-bold">
+          <div className="p-5 bg-yellow-500 text-slate-950 flex justify-between items-center">
             <div className="flex flex-col leading-none">
               <span className="font-black uppercase tracking-tighter text-sm flex items-center gap-2">
-                <Bot size={16}/> Hunter AI
+                <Bot size={16}/> Hunter
               </span>
               <span className="text-[8px] uppercase tracking-widest opacity-70 mt-1 font-black">
                 Smart Marketing
               </span>
             </div>
-            <button onClick={() => setIsOpen(false)}>
+            <button onClick={() => setIsOpen(false)} className="hover:rotate-90 transition-transform">
               <X size={20}/>
             </button>
           </div>
@@ -85,7 +75,7 @@ User query: ${userText}`;
             ))}
             {loading && (
               <div className="text-[10px] text-yellow-500 font-bold animate-pulse uppercase tracking-widest ml-2">
-                Thinking...
+                Considering...
               </div>
             )}
             <div ref={scrollRef} />
@@ -94,7 +84,7 @@ User query: ${userText}`;
           <div className="p-4 border-t border-slate-900 flex gap-2 bg-slate-950">
             <input 
               className="flex-1 bg-slate-900 p-3 rounded-xl text-xs border border-slate-800 focus:border-yellow-500 text-white outline-none" 
-              placeholder="Ask me anything..." 
+              placeholder="Describe your situation..." 
               value={input} 
               onChange={(e) => setInput(e.target.value)} 
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()} 
