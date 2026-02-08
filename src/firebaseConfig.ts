@@ -16,7 +16,7 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
 export const callHunterAI = async (prompt: string) => {
-  const KEY = "AIzaSyCdmPzVLVk0s7prinSgvxulfBZxLBTsA6U";
+  const KEY = "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
   const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${KEY}`;
 
   try {
