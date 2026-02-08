@@ -1,19 +1,13 @@
-import { ArrowRight, ShieldCheck, Zap, Cpu, Globe, Search, AlertCircle, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Zap, Cpu, Globe, Search, TrendingUp, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ContentRibbon from '../components/ContentRibbon';
 
 export default function Home() {
   return (
     <div className="pt-24 font-sans text-white">
-      {/* 1. STATUS TICKER: Urgency & Protocol */}
-      <div className="bg-yellow-500 py-2 overflow-hidden">
-        <div className="flex gap-12 animate-pulse whitespace-nowrap justify-center">
-          {[1, 2, 3].map((i) => (
-            <span key={i} className="text-slate-950 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
-              <AlertCircle size={12}/> Entity Protocol Active // 2026 Smart Filter Detected // Mirror Rule Applied
-            </span>
-          ))}
-        </div>
-      </div>
+      
+      {/* 1. INBOUND CONTENT RIBBON */}
+      <ContentRibbon />
 
       {/* 2. HERO: The Provocation */}
       <section className="px-6 py-24 md:py-40 max-w-7xl mx-auto text-center space-y-10">
@@ -64,7 +58,6 @@ export default function Home() {
             </div>
           </div>
           
-          {/* THE PILLARS MAPPED */}
           <div className="grid gap-4">
              {[
                { icon: <ShieldCheck className="text-yellow-500" />, title: "The Trust Anchor", desc: "Digital Passport (GMB) Management." },
@@ -110,7 +103,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. THE FINAL CTA: The Revenue Engine */}
+      {/* 5. THE FINAL CTA */}
       <section className="py-40 px-6 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-yellow-500/10 via-slate-950 to-slate-950">
         <div className="max-w-4xl mx-auto text-center space-y-12">
            <h2 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-tight">
