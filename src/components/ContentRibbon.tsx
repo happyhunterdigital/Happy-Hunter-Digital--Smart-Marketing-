@@ -1,4 +1,4 @@
-import { AlertCircle, Zap, Star, Globe } from 'lucide-react';
+import { Zap, Star, Globe } from 'lucide-react';
 
 export default function ContentRibbon() {
   const content = (
@@ -24,15 +24,28 @@ export default function ContentRibbon() {
       </span>
       <span className="text-slate-800">•</span>
       
-      {/* SUMMIT ANNOUNCEMENT WITH RED BOLD DATE */}
-      <span className="bg-slate-950 text-white px-5 py-1.5 rounded-full border border-white/10 flex items-center gap-3 font-bold">
-        <AlertCircle size={14} className="text-yellow-500" />
-        <span className="uppercase tracking-wider">
-          happyhunterdigital @ IntegratedWellth Summit: AIpoweredMarketing // Automation // GMB Optimization — 
-          <span className="text-red-500 font-black ml-2 text-xs decoration-red-500/50 underline underline-offset-2">
+      {/* SUMMIT ANNOUNCEMENT: FLANKED BY LOGOS */}
+      <span className="bg-slate-950 text-white px-4 py-1.5 rounded-full border border-white/10 flex items-center gap-4 font-bold shadow-2xl">
+        {/* LOGO 1: INTEGRATED WELLTH */}
+        <img 
+          src="https://res.cloudinary.com/dka0498ns/image/upload/v1765747667/Integrated_Wellth_Solutions_Logo_bodmyc1_iiervl.png" 
+          alt="Integrated Wellth Logo" 
+          className="h-6 w-auto object-contain brightness-110"
+        />
+
+        <span className="uppercase tracking-widest text-[9px] md:text-[10px]">
+          Summit 2026: AIpoweredMarketing // Automation // GMB Mastery — 
+          <span className="text-red-500 font-black ml-2 underline decoration-red-500/50 underline-offset-2">
             28 February
           </span>
         </span>
+
+        {/* LOGO 2: HAPPY HUNTER */}
+        <img 
+          src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" 
+          alt="Happy Hunter Logo" 
+          className="h-6 w-6 rounded-full object-cover border border-yellow-500/50"
+        />
       </span>
       <span className="text-slate-800">•</span>
     </div>
