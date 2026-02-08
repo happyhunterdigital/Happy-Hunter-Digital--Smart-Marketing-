@@ -8,13 +8,24 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'bot', text: "👋 Welcome! I'm Hunter AI, powered by Gemini 2.5 Flash.\n\nI can help with:\n• Digital Entity Audits\n• Local SEO strategy\n• AI Visibility (AEO)\n• Social Media positioning\n\nWhat business challenge are you facing?" }
+    { 
+      role: 'bot', 
+      text: "👋 Welcome! I'm Happy Hunter Digital AI, powered by the Smart Marketing Engine.\n\nI can help you with:\n• Digital Entity Audits\n• Local SEO Strategy\n• AI Visibility (AEO)\n• Social Media Positioning\n\nWhat business challenge are you facing today?" 
+    }
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { 
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' }); 
   }, [messages]);
+
+  const cleanAIResponse = (text: string) => {
+    // Remove asterisks used for bolding in markdown
+    let cleaned = text.replace(/\*\*/g, '');
+    // Remove single asterisks that might be used for italics
+    cleaned = cleaned.replace(/(?<!\*)\*(?!\*)/g, '');
+    return cleaned;
+  };
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
@@ -24,10 +35,21 @@ export default function Chatbot() {
     setInput("");
     setLoading(true);
     
-    const systemPrompt = `You are Hunter AI, strategic assistant for Smart Marketing South Africa. Help with digital marketing, Entity SEO, and AI visibility. Be professional, direct, and South African market-focused. User: ${userText}`;
+    const systemPrompt = `You are Happy Hunter Digital AI, a senior marketing strategist at Smart Marketing South Africa. You help business owners with digital marketing, Entity SEO, and AI visibility. 
+
+CRITICAL INSTRUCTIONS:
+- Write in a natural, conversational human tone
+- NEVER use asterisks (*) or markdown formatting
+- Use plain text only - no bold, no italics, no special formatting characters
+- Be warm, professional, and direct
+- Sound like a knowledgeable human consultant, not an AI
+- Keep responses concise and actionable
+
+User query: ${userText}`;
     
-    const responseText = await callHunterAI(systemPrompt);
-    setMessages(prev => [...prev, { role: 'bot', text: responseText }]);
+    const rawResponse = await callHunterAI(systemPrompt);
+    const cleanedResponse = cleanAIResponse(rawResponse);
+    setMessages(prev => [...prev, { role: 'bot', text: cleanedResponse }]);
     setLoading(false);
   }
 
@@ -63,7 +85,7 @@ export default function Chatbot() {
             ))}
             {loading && (
               <div className="text-[10px] text-yellow-500 font-bold animate-pulse uppercase tracking-widest ml-2">
-                Reasoning...
+                Thinking...
               </div>
             )}
             <div ref={scrollRef} />
@@ -72,7 +94,7 @@ export default function Chatbot() {
           <div className="p-4 border-t border-slate-900 flex gap-2 bg-slate-950">
             <input 
               className="flex-1 bg-slate-900 p-3 rounded-xl text-xs border border-slate-800 focus:border-yellow-500 text-white outline-none" 
-              placeholder="Query the entity..." 
+              placeholder="Ask me anything..." 
               value={input} 
               onChange={(e) => setInput(e.target.value)} 
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()} 
