@@ -15,10 +15,34 @@ body {
   background: #020617;
 }
 
-/* THE BRAND CLASS */
 .brand-name {
   font-family: 'Caveat', cursive;
   text-transform: lowercase;
+}
+
+/* THE INBOUND RIBBON ANIMATION */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite; /* Standard Acceptable Speed */
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused; /* Allows users to read the summit info easily */
+}
+
+.animate-spin-slow {
+  animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .animate-fade-in {
