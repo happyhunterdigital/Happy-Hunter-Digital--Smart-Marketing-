@@ -1,69 +1,70 @@
 export interface Article {
   id: string;
-  category: "Case Study" | "Strategy";
+  category: "Case Study" | "Protocol";
   title: string;
   summary: string;
   content: string;
   date: string;
   tag: string;
+  results: string[];
 }
 
 export const ARTICLES: Article[] = [
   {
-    id: "profuse-beauty-success",
+    id: "profuse-beauty-local-dominance",
     category: "Case Study",
-    title: "Profuse Beauty: Dominating the Local Map Pack",
-    summary: "How a beauty clinic in Centurion went from invisible to fully booked using the Mirror Rule protocol.",
-    date: "Oct 12, 2025",
-    tag: "Local Dominance",
+    title: "Profuse Beauty: The Map Pack Domination",
+    summary: "How we took a Centurion-based beauty clinic from 'Page 2 Obscurity' to being fully booked 3 weeks in advance using the Mirror Rule.",
+    date: "February 2025",
+    tag: "310% CALL INCREASE",
+    results: ["#1 Rank in Local Pack", "310% Increase in GMB Calls", "Zero Ad Spend Required"],
     content: `
-      <h3>The Challenge</h3>
-      <p>Profuse Beauty had high-quality services but zero digital footprints. When users searched for 'Beauty Clinic Centurion', competitors with lower quality but better data were winning the leads.</p>
+      [SECTION] THE VULNERABILITY
+      Profuse Beauty was a 'Ghost Entity'. Despite having elite-level services, their digital presence was fragmented. Their Google Business Profile was unverified, their data nodes (NAP) didn't match their physical reality, and they were losing 80% of local search intent to inferior competitors.
       
-      <h3>The Protocol</h3>
-      <p>We implemented the <strong>Mirror Rule</strong>. We synchronized their physical signage, business hours, and location data with the Google Knowledge Graph. Then, we injected 'Information Gain' into their service descriptions.</p>
+      [SECTION] THE PROTOCOL
+      We applied the **MIRROR RULE**. We performed an 'Entity Cleanse', synchronizing every digital citation with their physical location in Centurion. We then injected **INFORMATION GAIN** into their service descriptions—writing for the AI algorithm while maintaining human appeal.
       
-      <h3>The Results</h3>
-      <ul>
-        <li>310% increase in inbound calls via GMB.</li>
-        <li>Ranked #1 in the Local Map Pack within 45 days.</li>
-        <li>Eliminated reliance on paid Facebook ads.</li>
-      </ul>
+      [SECTION] THE OUTCOME
+      Within 45 days, the 'Smart Filter' recognized Profuse Beauty as the primary authority in their region. The result was not just clicks, but **INBOUND REVENUE**. They are now the local benchmark for beauty clinic visibility in Gauteng.
     `
   },
   {
-    id: "construction-sme-leads",
+    id: "construction-sme-trust-architecture",
     category: "Case Study",
-    title: "Construction SME: Landing R2.5M via Trust Architecture",
-    summary: "Engineering a digital entity that high-ticket clients trust automatically.",
-    date: "Nov 05, 2025",
-    tag: "High-Ticket Leads",
+    title: "Construction SME: The R2.5M Trust Anchor",
+    summary: "Why a generic website was costing this firm millions, and how Trust Architecture secured a landmark residential contract.",
+    date: "January 2025",
+    tag: "R2.5M CONTRACT SECURED",
+    results: ["High-Ticket Conversion", "Entity Trust Verified", "Authority Signal Established"],
     content: `
-      <h3>The Challenge</h3>
-      <p>In the construction industry, trust is the only currency. This SME was losing high-value contracts because their website looked like a template rather than an Authority Entity.</p>
+      [SECTION] THE PAIN POINT
+      In the high-stakes construction industry, a 'Generic Website' is a trust-killer. This SME was bidding on multi-million Rand projects but their digital entity looked like a template. High-value clients were performing 'Shadow Audits' and choosing competitors with more authority signals.
       
-      <h3>The Strategy</h3>
-      <p>We built a <strong>Trust Architecture</strong>. Instead of just showing photos, we structured their project history as data nodes that AI search engines could verify. We turned their site into a 'Verified Resource'.</p>
+      [SECTION] THE STRATEGIC FIX
+      We replaced their 'Static Flyer' with a **TRUST ANCHOR**. We structured their project data as verifiable nodes. We implemented a 'Data-Rich' portfolio that proved their technical competence to both human stakeholders and Google's Knowledge Graph.
       
-      <h3>The Outcome</h3>
-      <p>Within three months of launch, they secured a R2.5M residential development contract. The client cited the 'professional depth of information' as the deciding factor.</p>
+      [SECTION] THE HANDSHAKE
+      Within 3 months, they secured a **R2.5 MILLION** residential development contract. The client explicitly mentioned the 'professional depth of the digital presence' as the reason they felt safe signing the deal.
     `
   },
   {
-    id: "mirror-rule-explained",
-    category: "Strategy",
-    title: "The Mirror Rule: Why AI Search Filters You Out",
-    summary: "Understanding the primary validator that Google and Gemini use to verify your business.",
-    date: "Jan 20, 2026",
-    tag: "Entity Trust",
+    id: "ai-visibility-aeo-protocol",
+    category: "Protocol",
+    title: "The AI Visibility Crisis of 2026",
+    summary: "Traditional SEO is failing. If your brand isn't 'AEO Ready', you are being filtered out of the conversation entirely.",
+    date: "February 2026",
+    tag: "STRATEGIC ADVISORY",
+    results: ["Future-Proofing", "SGE Optimization", "AI Citability"],
     content: `
-      <p>In 2026, AI models are designed to prevent 'Hallucinations'. When an AI recommends a business, it is putting its reputation on the line.</p>
+      [SECTION] THE SHIFT
+      We are moving from the 'Age of Links' to the 'Age of Answers'. Google SGE and Gemini are no longer showing a list of 10 links; they are providing **THE ANSWER**. If your business is not cited in that answer, you don't exist to the user.
       
-      <h3>The Logic</h3>
-      <p>If your digital data says you open at 08:00, but a user review says you were closed at 08:30, the AI sees a 'Signal Mismatch'. This is a violation of the Mirror Rule.</p>
+      [SECTION] THE AEO PROTOCOL
+      Answer Engine Optimization (AEO) is about becoming a **CITABLE SOURCE**. We restructure your business data into 'Semantic Clusters' that AI models can ingest and recommend. We solve the 'Findability Crisis' by proving your brand is the most reliable entity in its niche.
       
-      <h3>The Fix</h3>
-      <p>Your digital entity must be a perfect mirror of your physical reality. We use automated node synchronization to ensure your 'Signal' is always 100% accurate across the entire web.</p>
+      [SECTION] THE SURVIVAL REQUIREMENT
+      Mend your entity architecture now. Every day you wait is a day the algorithms spend training themselves to recommend your competition.
     `
   }
 ];
