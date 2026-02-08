@@ -7,7 +7,7 @@ export default function EventPopup() {
 
   // 1. SESSION LOGIC: Show popup after 3 seconds
   useEffect(() => {
-    const hasSeen = sessionStorage.getItem('summit_v2_seen');
+    const hasSeen = sessionStorage.getItem('summit_v3_seen');
     if (!hasSeen) {
       const timer = setTimeout(() => setIsVisible(true), 3000);
       return () => clearTimeout(timer);
@@ -16,7 +16,7 @@ export default function EventPopup() {
 
   const closePopup = () => {
     setIsVisible(false);
-    sessionStorage.setItem('summit_v2_seen', 'true');
+    sessionStorage.setItem('summit_v3_seen', 'true');
   };
 
   // 2. COUNTDOWN LOGIC: Target Feb 28, 2026
@@ -51,30 +51,22 @@ export default function EventPopup() {
           <X size={20} />
         </button>
 
-        {/* LEFT COLUMN: THE SPEAKER BADGE (2/5) */}
-        <div className="relative lg:col-span-2 h-72 md:h-auto overflow-hidden bg-slate-800 border-r border-slate-800">
+        {/* LEFT COLUMN: THE SPEAKER (2/5) */}
+        <div className="relative lg:col-span-2 h-80 md:h-auto overflow-hidden bg-slate-800 border-r border-slate-800">
           <img 
             src="https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png"
             alt="Thabo Leslie Motsumi"
-            className="w-full h-full object-cover grayscale brightness-75 transition-all duration-1000 hover:grayscale-0 hover:scale-105"
+            className="w-full h-full object-cover grayscale brightness-90 transition-all duration-1000 hover:grayscale-0"
           />
           
-          {/* LOGO OVERLAY */}
-          <div className="absolute top-8 left-8 flex flex-col gap-4">
-            <img 
-              src="https://res.cloudinary.com/dka0498ns/image/upload/v1762761701/Logo_mock1_jmjuoe.png" 
-              alt="Happy Hunter Logo" 
-              className="h-10 w-auto"
-            />
-            <h4 className="brand-name text-4xl text-yellow-500 leading-none">happyhunterdigital</h4>
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
 
           {/* PARTNER SEAL: Integrated Wellth */}
           <a 
             href="https://integratedwellth.co.za" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="absolute bottom-8 left-8 right-8 bg-slate-950/80 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex items-center gap-4 group hover:border-yellow-500/50 transition-all"
+            className="absolute bottom-8 left-8 right-8 bg-slate-950/80 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex items-center gap-4 group hover:border-yellow-500/50 transition-all shadow-2xl"
           >
             <img 
               src="https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png" 
