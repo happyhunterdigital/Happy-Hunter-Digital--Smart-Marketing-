@@ -5,27 +5,24 @@ export default function EventPopup() {
   const [isVisible, setIsVisible] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
-  // 1. SESSION LOGIC: Show popup after 3 seconds
   useEffect(() => {
-    const hasSeen = sessionStorage.getItem('summit_v3_seen');
+    const hasSeen = sessionStorage.getItem('summit_mobile_v1');
     if (!hasSeen) {
-      const timer = setTimeout(() => setIsVisible(true), 3000);
+      const timer = setTimeout(() => setIsVisible(true), 2500);
       return () => clearTimeout(timer);
     }
   }, []);
 
   const closePopup = () => {
     setIsVisible(false);
-    sessionStorage.setItem('summit_v3_seen', 'true');
+    sessionStorage.setItem('summit_mobile_v1', 'true');
   };
 
-  // 2. COUNTDOWN LOGIC: Target Feb 28, 2026
   useEffect(() => {
     const target = new Date("February 28, 2026 09:00:00").getTime();
     const interval = setInterval(() => {
       const now = new Date().getTime();
       const diff = target - now;
-
       if (diff < 0) {
         clearInterval(interval);
       } else {
@@ -43,105 +40,96 @@ export default function EventPopup() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center px-4 sm:px-6 bg-slate-950/95 backdrop-blur-md animate-fade-in">
-      <div className="relative max-w-6xl w-full bg-slate-900 border border-slate-800 rounded-[3rem] overflow-hidden shadow-[0_50px_100px_rgba(0,0,0,0.8)] grid md:grid-cols-2 lg:grid-cols-5">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-slate-950/98 backdrop-blur-md animate-fade-in">
+      {/* MAIN CONTAINER: Responsive width and Max-Height for mobile scrolling */}
+      <div className="relative max-w-5xl w-full max-h-[90vh] overflow-y-auto md:overflow-hidden bg-slate-900 border border-slate-800 rounded-[2.5rem] shadow-[0_50px_100px_rgba(0,0,0,0.8)] flex flex-col md:flex-row">
         
-        {/* CLOSE BUTTON */}
-        <button onClick={closePopup} className="absolute top-6 right-6 z-50 p-2 bg-slate-950/50 rounded-full text-slate-400 hover:text-white transition-colors">
-          <X size={20} />
+        {/* CLOSE BUTTON (FIXED ON MOBILE) */}
+        <button onClick={closePopup} className="absolute top-4 right-4 z-[210] p-2 bg-slate-950/80 rounded-full text-slate-400 hover:text-white transition-colors border border-white/5">
+          <X size={18} />
         </button>
 
-        {/* LEFT COLUMN: THE SPEAKER (2/5) */}
-        <div className="relative lg:col-span-2 h-80 md:h-auto overflow-hidden bg-slate-800 border-r border-slate-800">
+        {/* IMAGE SECTION: Top on mobile, Left on desktop */}
+        <div className="relative w-full md:w-[40%] h-64 md:h-auto shrink-0 overflow-hidden bg-slate-800 border-b md:border-b-0 md:border-r border-slate-800">
           <img 
             src="https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png"
             alt="Thabo Leslie Motsumi"
-            className="w-full h-full object-cover grayscale brightness-90 transition-all duration-1000 hover:grayscale-0"
+            className="w-full h-full object-cover object-[center_15%] md:object-center grayscale brightness-90"
           />
-          
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80 md:opacity-40"></div>
 
-          {/* PARTNER SEAL: Integrated Wellth */}
-          <a 
-            href="https://integratedwellth.co.za" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="absolute bottom-8 left-8 right-8 bg-slate-950/80 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex items-center gap-4 group hover:border-yellow-500/50 transition-all shadow-2xl"
-          >
+          {/* PARTNER SEAL: Smaller & Smarter for Mobile */}
+          <div className="absolute bottom-4 left-4 right-4 md:bottom-8 md:left-8 md:right-8 bg-slate-950/90 backdrop-blur-md border border-white/10 p-3 md:p-4 rounded-xl flex items-center gap-3">
             <img 
               src="https://res.cloudinary.com/dka0498ns/image/upload/v1765747786/favicon_ofkkb1.png" 
               alt="Integrated Wellth" 
-              className="h-8 w-8 object-contain"
+              className="h-6 w-6 object-contain"
             />
             <div className="flex flex-col leading-none">
-              <span className="text-[9px] font-black uppercase text-slate-500 tracking-widest">Official Guest of</span>
-              <span className="text-white font-bold text-xs group-hover:text-yellow-500 transition-colors">Integrated Wellth Summit</span>
+              <span className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Invited by</span>
+              <span className="text-white font-bold text-[10px] md:text-xs">Integrated Wellth Summit</span>
             </div>
-            <ExternalLink size={12} className="ml-auto text-slate-700 group-hover:text-yellow-500" />
-          </a>
+          </div>
         </div>
 
-        {/* RIGHT COLUMN: THE INTEL (3/5) */}
-        <div className="lg:col-span-3 p-8 md:p-14 flex flex-col justify-between space-y-8 bg-slate-900/50">
+        {/* CONTENT SECTION: Scrollable if text is long */}
+        <div className="p-6 md:p-12 lg:p-16 flex flex-col justify-between space-y-6 md:space-y-8 bg-slate-900/50">
+          
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-4 py-1.5 rounded-full">
-              <Zap size={14} className="text-yellow-500" fill="currentColor" />
-              <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">High-Impact SME Session</span>
+            <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1 rounded-full">
+              <Zap size={12} className="text-yellow-500" fill="currentColor" />
+              <span className="text-[9px] font-black text-yellow-500 uppercase tracking-widest">Strategic Masterclass</span>
             </div>
 
-            <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tighter leading-[0.95] text-white">
-              Empowering SMEs with <br />
-              <span className="text-yellow-500">Clarity & Transformation</span>
+            <h3 className="text-2xl md:text-5xl font-black uppercase tracking-tighter leading-[0.95] text-white">
+              SME Clarity & <br />
+              <span className="text-yellow-500">Digital Transformation</span>
             </h3>
 
-            <div className="space-y-4 text-slate-400 text-sm leading-relaxed border-l-2 border-slate-800 pl-6 italic">
-              <p>Thabo Leslie Motsumi has been officially invited by **Integrated Wellth** to lead a session on navigating the digital era without complexity.</p>
-            </div>
+            <p className="text-slate-400 text-xs md:text-sm leading-relaxed border-l-2 border-slate-800 pl-4 italic">
+              Thabo Leslie Motsumi leads an unsparing session on leveraging **AI & GMB Optimization** for measurable SA growth.
+            </p>
 
-            {/* VALUE PROPS GRID */}
-            <div className="grid sm:grid-cols-2 gap-4">
+            {/* VALUE PROPS: 1 column on mobile, 2 on desktop */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               {[
                 "AI-Powered Marketing",
                 "Automation Frameworks",
                 "Google Business Mastery",
                 "Scalable Growth Logic"
               ].map((text, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <ShieldCheck size={16} className="text-yellow-500" />
-                  <span className="text-[10px] font-bold text-slate-200 uppercase tracking-wide">{text}</span>
+                <div key={i} className="flex items-center gap-2">
+                  <ShieldCheck size={14} className="text-yellow-500 shrink-0" />
+                  <span className="text-[9px] md:text-[10px] font-bold text-slate-200 uppercase tracking-wide">{text}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* LOGISTICS & COUNTDOWN */}
-          <div className="space-y-8">
-            <div className="flex flex-wrap gap-8 py-6 border-y border-slate-800/50">
-              <div className="flex items-center gap-3">
-                <Calendar size={20} className="text-yellow-500" />
-                <div className="text-[11px] font-black uppercase text-white tracking-widest leading-none">
-                  28 Feb 2026
-                </div>
+          <div className="space-y-6 md:space-y-8">
+            <div className="flex flex-row justify-between items-center py-4 border-y border-slate-800/50">
+              <div className="flex items-center gap-2">
+                <Calendar size={16} className="text-yellow-500" />
+                <span className="text-[10px] font-black uppercase text-white tracking-widest">28 Feb 2026</span>
               </div>
-              <div className="flex items-center gap-3 text-slate-400">
-                <MapPin size={20} className="text-slate-600" />
-                <div className="text-[11px] font-bold uppercase tracking-widest leading-none">
-                  Waterfall City
-                </div>
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-slate-600" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Waterfall City</span>
               </div>
             </div>
 
-            {/* COUNTDOWN CLOCK */}
-            <div className="flex gap-4">
+            {/* COUNTDOWN: Compact for small screens */}
+            <div className="flex gap-2 md:gap-4">
               {[
                 { label: 'Days', val: timeLeft.days },
-                { label: 'Hours', val: timeLeft.hours },
-                { label: 'Mins', val: timeLeft.mins },
-                { label: 'Secs', val: timeLeft.secs }
+                { label: 'Hrs', val: timeLeft.hours },
+                { label: 'Min', val: timeLeft.mins },
+                { label: 'Sec', val: timeLeft.secs }
               ].map((t, idx) => (
-                <div key={idx} className="flex-1 p-3 bg-slate-950 rounded-2xl border border-slate-800 flex flex-col items-center">
-                  <span className="text-2xl font-black text-white">{t.val.toString().padStart(2, '0')}</span>
-                  <span className="text-[8px] uppercase text-slate-600 font-black mt-1 tracking-widest">{t.label}</span>
+                <div key={idx} className="flex-1 p-2 md:p-3 bg-slate-950 rounded-xl border border-slate-800 flex flex-col items-center">
+                  <span className="text-lg md:text-2xl font-black text-white">{t.val.toString().padStart(2, '0')}</span>
+                  <span className="text-[7px] md:text-[8px] uppercase text-slate-600 font-black mt-1">{t.label}</span>
                 </div>
               ))}
             </div>
@@ -151,10 +139,9 @@ export default function EventPopup() {
               href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="group w-full bg-yellow-500 text-slate-950 p-6 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-white transition-all shadow-[0_20px_50px_rgba(250,204,21,0.2)]"
+              className="w-full bg-yellow-500 text-slate-950 p-4 md:p-6 rounded-2xl font-black uppercase tracking-widest text-[11px] md:text-sm flex items-center justify-center gap-3 hover:bg-white transition-all shadow-2xl active:scale-95"
             >
-              Reserve Your Spot Today
-              <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />
+              Reserve Your Spot Today <ArrowRight size={18} />
             </a>
           </div>
         </div>
