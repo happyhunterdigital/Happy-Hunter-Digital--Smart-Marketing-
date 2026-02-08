@@ -65,7 +65,7 @@ export default function Audit() {
       
       setStep(3);
     } catch (err) {
-      setResult("SYSTEM_ERROR: Audit generation failed. Please try again.");
+      setResult("SYSTEM_ERROR: Audit generation failed.");
       setStep(3);
     } finally {
       setLoading(false);
