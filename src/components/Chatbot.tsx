@@ -24,7 +24,7 @@ export default function Chatbot() {
     setInput("");
     setLoading(true);
     
-    const systemPrompt = `You are Hunter AI, strategic assistant for Smart Marketing South Africa. Help with digital marketing, Entity SEO, and AI visibility. Be professional, direct, and South African market-focused. If they need a full audit, direct them to the Entity Scan tool. User: ${userText}`;
+    const systemPrompt = `You are Hunter AI, strategic assistant for Smart Marketing South Africa. Help with digital marketing, Entity SEO, and AI visibility. Be professional, direct, and South African market-focused. User: ${userText}`;
     
     const responseText = await callHunterAI(systemPrompt);
     setMessages(prev => [...prev, { role: 'bot', text: responseText }]);
