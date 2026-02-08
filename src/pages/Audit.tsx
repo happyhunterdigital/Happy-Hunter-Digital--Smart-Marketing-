@@ -260,4 +260,119 @@ export default function Audit() {
                 </div>
 
                 <div className="relative group">
-                  <Phone className="absolute left-5 top-1/2 -translate
+                  <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-yellow-500 transition-colors" size={20} />
+                  <input 
+                    required 
+                    type="tel"
+                    className="w-full bg-slate-950 border-2 border-slate-800 p-5 pl-14 rounded-2xl text-white outline-none focus:border-yellow-500 transition-all placeholder:text-slate-600" 
+                    placeholder="WhatsApp Number"
+                    value={formData.whatsapp} 
+                    onChange={e => setFormData({...formData, whatsapp: e.target.value})}
+                  />
+                </div>
+
+                <button 
+                  disabled={loading} 
+                  className="w-full bg-yellow-500 text-slate-950 py-6 rounded-2xl font-black uppercase tracking-widest text-lg shadow-xl shadow-yellow-500/10 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 mt-6"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="animate-spin" size={24} />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      Initiate Audit
+                      <ArrowRight size={20} />
+                    </>
+                  )}
+                </button>
+
+                <p className="text-center text-slate-600 text-xs mt-4">
+                  Confidential analysis delivered via email and secure PDF.
+                </p>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="animate-in fade-in duration-1000">
+            <div className="bg-yellow-500 p-8 rounded-[2rem] mb-12 text-slate-950 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-yellow-500/20">
+              <div className="space-y-1 text-center md:text-left">
+                <h3 className="text-3xl font-black uppercase leading-none">Analysis Complete</h3>
+                <p className="font-bold text-sm opacity-80">Delivered to {formData.email}</p>
+              </div>
+              <div className="flex gap-4">
+                <button 
+                  onClick={downloadPDF} 
+                  className="bg-slate-950 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center gap-3 hover:bg-slate-800 transition-all"
+                >
+                  <Download size={20}/> Download PDF
+                </button>
+                <a 
+                  href="https://calendly.com/motsumitl/30min"
+                  className="bg-white text-slate-950 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center gap-3 hover:bg-slate-200 transition-all"
+                >
+                  Schedule Call
+                </a>
+              </div>
+            </div>
+
+            <div ref={reportRef} className="p-12 md:p-20 border-2 border-slate-800 rounded-[3rem] bg-slate-900/30 relative shadow-2xl">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 pb-12 border-b-2 border-slate-800 gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3 text-yellow-500 font-black uppercase tracking-[0.3em] text-xs">
+                    <ShieldCheck size={16} />
+                    Confidential Strategic Analysis
+                  </div>
+                  <h4 className="text-5xl md:text-6xl font-black text-white uppercase tracking-tighter">
+                    {formData.bizName}
+                  </h4>
+                  <p className="text-slate-500 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
+                    <MapPin size={14} /> {formData.location}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="text-6xl font-black text-yellow-500">2025</div>
+                  <div className="text-slate-500 font-bold uppercase tracking-widest text-xs">Entity Assessment</div>
+                </div>
+              </div>
+
+              <div className="max-w-4xl mx-auto">
+                {renderFormattedText(result)}
+              </div>
+
+              <div className="mt-24 p-16 bg-yellow-500 rounded-[2.5rem] text-slate-950 text-center relative overflow-hidden">
+                <div className="relative z-10">
+                  <h4 className="text-4xl md:text-5xl font-black uppercase mb-6 leading-tight">
+                    Recover Your Visibility
+                  </h4>
+                  <p className="font-bold text-lg mb-12 max-w-2xl mx-auto opacity-90">
+                    South African consumers are finding your competitors. Reclaim your market position.
+                  </p>
+                  <a 
+                    href="https://calendly.com/motsumitl/30min" 
+                    className="inline-block bg-slate-950 text-white px-12 py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-sm hover:bg-white hover:text-slate-950 transition-all shadow-2xl"
+                  >
+                    Schedule Strategy Session
+                  </a>
+                </div>
+                
+                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                  <div className="absolute top-10 left-10 w-32 h-32 border-4 border-slate-950 rounded-full" />
+                  <div className="absolute bottom-10 right-10 w-48 h-48 border-4 border-slate-950 rounded-full" />
+                </div>
+              </div>
+
+              <div className="mt-12 pt-8 border-t border-slate-800 flex justify-between items-center text-slate-600 text-sm">
+                <div className="font-bold uppercase tracking-widest">Smart Marketing</div>
+                <div className="font-medium">Confidential • Prepared for {formData.fullName}</div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
