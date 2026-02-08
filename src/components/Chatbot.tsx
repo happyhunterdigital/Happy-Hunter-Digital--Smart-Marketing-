@@ -8,7 +8,7 @@ export default function Chatbot() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'bot', text: "Signal established. How can Smart Marketing transform your entity today?" }
+    { role: 'bot', text: "👋 Welcome! I'm Hunter AI, powered by Gemini 2.5 Flash.\n\nI can help with:\n• Digital Entity Audits\n• Local SEO strategy\n• AI Visibility (AEO)\n• Social Media positioning\n\nWhat business challenge are you facing?" }
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -24,7 +24,9 @@ export default function Chatbot() {
     setInput("");
     setLoading(true);
     
-    const responseText = await callHunterAI(userText);
+    const systemPrompt = `You are Hunter AI, strategic assistant for Smart Marketing South Africa. Help with digital marketing, Entity SEO, and AI visibility. Be professional, direct, and South African market-focused. If they need a full audit, direct them to the Entity Scan tool. User: ${userText}`;
+    
+    const responseText = await callHunterAI(systemPrompt);
     setMessages(prev => [...prev, { role: 'bot', text: responseText }]);
     setLoading(false);
   }
@@ -32,8 +34,8 @@ export default function Chatbot() {
   return (
     <div className="fixed bottom-6 right-6 z-[90]">
       {isOpen ? (
-        <div className="w-80 md:w-96 h-[550px] bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in">
-          <div className="p-5 bg-yellow-500 text-slate-950 flex justify-between items-center font-bold shadow-lg">
+        <div className="w-80 md:w-96 h-[550px] bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+          <div className="p-5 bg-yellow-500 text-slate-950 flex justify-between items-center font-bold">
             <div className="flex flex-col leading-none">
               <span className="font-black uppercase tracking-tighter text-sm flex items-center gap-2">
                 <Bot size={16}/> Hunter AI
@@ -50,7 +52,7 @@ export default function Chatbot() {
           <div className="flex-1 overflow-y-auto p-5 space-y-6 bg-slate-950">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-4 rounded-2xl text-[13px] leading-relaxed shadow-sm ${
+                <div className={`max-w-[85%] p-4 rounded-2xl text-[13px] leading-relaxed whitespace-pre-wrap ${
                   m.role === 'user' 
                     ? 'bg-yellow-500 text-slate-950 font-bold' 
                     : 'bg-slate-900 text-slate-300 border border-slate-800'
@@ -60,7 +62,7 @@ export default function Chatbot() {
               </div>
             ))}
             {loading && (
-              <div className="text-[10px] text-yellow-500 font-bold animate-pulse uppercase tracking-[0.2em] ml-2">
+              <div className="text-[10px] text-yellow-500 font-bold animate-pulse uppercase tracking-widest ml-2">
                 Reasoning...
               </div>
             )}
@@ -86,7 +88,7 @@ export default function Chatbot() {
       ) : (
         <button 
           onClick={() => setIsOpen(true)} 
-          className="bg-yellow-500 text-slate-950 p-5 rounded-full shadow-[0_0_40px_rgba(250,204,21,0.2)] hover:scale-110 transition-all border-4 border-slate-950"
+          className="bg-yellow-500 text-slate-950 p-5 rounded-full shadow-xl hover:scale-110 transition-all border-4 border-slate-950"
         >
           <MessageSquare size={28} />
         </button>
