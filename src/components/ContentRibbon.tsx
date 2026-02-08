@@ -24,20 +24,25 @@ export default function ContentRibbon() {
       </span>
       <span className="text-slate-800">•</span>
       
-      {/* SUMMIT ANNOUNCEMENT HIGHLIGHT */}
-      <span className="bg-slate-950 text-yellow-500 px-4 py-1 rounded-full border border-yellow-500/30 flex items-center gap-3 font-black italic">
-        <AlertCircle size={14} />
-        <span>happyhunterdigital @ IntegratedWellth Summit: AIpoweredMarketing // Automation // GMB Optimization</span>
+      {/* SUMMIT ANNOUNCEMENT WITH RED BOLD DATE */}
+      <span className="bg-slate-950 text-white px-5 py-1.5 rounded-full border border-white/10 flex items-center gap-3 font-bold">
+        <AlertCircle size={14} className="text-yellow-500" />
+        <span className="uppercase tracking-wider">
+          happyhunterdigital @ IntegratedWellth Summit: AIpoweredMarketing // Automation // GMB Optimization — 
+          <span className="text-red-500 font-black ml-2 text-xs decoration-red-500/50 underline underline-offset-2">
+            28 February
+          </span>
+        </span>
       </span>
       <span className="text-slate-800">•</span>
     </div>
   );
 
   return (
-    <div className="bg-yellow-500 py-3 overflow-hidden border-y border-yellow-600/20 relative z-50">
+    <div className="bg-yellow-500 py-3 overflow-hidden border-y border-yellow-600/20 relative z-50 shadow-xl">
       <div className="animate-marquee text-slate-950 text-[10px] font-black uppercase tracking-[0.2em] flex items-center">
         {content}
-        {content} {/* Doubled for seamless loop */}
+        {content} {/* Seamless loop */}
       </div>
     </div>
   );
