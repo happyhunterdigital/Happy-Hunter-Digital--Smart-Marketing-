@@ -1,7 +1,7 @@
 // src/components/Chatbot.tsx
 import { useState, useRef, useEffect } from 'react';
 import { callHunterAI } from '../firebaseConfig'; 
-import { MessageSquare, Send, X, Bot } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, Calendar } from 'lucide-react';
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,7 +10,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState([
     { 
       role: 'bot', 
-      text: "Welcome to Smart Marketing. I am Hunter, lead strategist here.\n\nI advise South African businesses on:\n• Digital Entity Architecture\n• Local Market Dominance\n• AI Visibility Systems\n• Revenue Recovery Protocols\n\nWhat challenge is your business facing?" 
+      text: "Welcome to Smart Marketing. I am Hunter, lead strategist here.\n\nI advise South African businesses on:\n• Digital Entity Architecture\n• Local Market Dominance\n• AI Visibility Systems\n• Revenue Recovery Protocols\n\nWhat challenge is your business facing?\n\nOr ask me about our upcoming session at the Integrated Wellth Summit on 28 February." 
     }
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -18,6 +18,30 @@ export default function Chatbot() {
   useEffect(() => { 
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' }); 
   }, [messages]);
+
+  const isSummitQuery = (text: string) => {
+    const keywords = ['summit', 'integrated wellth', 'february', '28', 'event', 'session', 'thabo', 'motsumi', 'speaking', 'workshop'];
+    return keywords.some(k => text.toLowerCase().includes(k));
+  };
+
+  const getSummitResponse = () => {
+    return `The Integrated Wellth Summit 2026 is happening on 28 February. Smart Marketing has been invited to lead a high-impact session.
+
+Thabo Leslie Motsumi will be guiding business owners through:
+
+AI-Powered Marketing
+Streamlined campaigns that personalize engagement and drive measurable results without technical complexity.
+
+Automation Frameworks  
+Reliable workflows that save time and ensure your operations run consistently.
+
+Google Business Profile Optimization
+Turning your profile into a conversion engine using Q&A, FAQs, offers, and strategic updates that dominate local search.
+
+This session is built for non-technical business owners who want actionable growth strategies without the overwhelm.
+
+Would you like details on attending?`;
+  };
 
   async function sendMessage() {
     if (!input.trim() || loading) return;
@@ -27,7 +51,22 @@ export default function Chatbot() {
     setInput("");
     setLoading(true);
     
+    // Check if user is asking about the summit first
+    if (isSummitQuery(userText)) {
+      setMessages(prev => [...prev, { role: 'bot', text: getSummitResponse() }]);
+      setLoading(false);
+      return;
+    }
+    
     const systemPrompt = `You are Hunter, a senior digital strategist at Smart Marketing South Africa. You speak with authority and directness. You never use asterisks, markdown, or robotic language. You write like a seasoned consultant advising a business owner. Be concise, strategic, and actionable. Never mention being AI.
+
+IMPORTANT CONTEXT:
+- Smart Marketing (Happy Hunter Digital) is presenting at the Integrated Wellth Summit on 28 February 2026
+- Thabo Leslie Motsumi is the founder and lead strategist
+- The session covers: AI-Powered Marketing, Automation Frameworks, and Google Business Profile Optimization
+- The target audience is non-technical SME owners who want practical growth strategies
+
+If the user asks about events, speaking, the summit, or Thabo's sessions, provide details about the Integrated Wellth Summit.
 
 User: ${userText}`;
     
@@ -37,7 +76,8 @@ User: ${userText}`;
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
       .replace(/As an AI/g, 'As a strategist')
-      .replace(/I am an AI/g, 'I am a strategist');
+      .replace(/I am an AI/g, 'I am a strategist')
+      .replace(/I am an artificial intelligence/g, 'I am a strategist');
       
     setMessages(prev => [...prev, { role: 'bot', text: cleanText }]);
     setLoading(false);
@@ -64,7 +104,7 @@ User: ${userText}`;
           <div className="flex-1 overflow-y-auto p-5 space-y-6 bg-slate-950">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-4 rounded-2xl text-[13px] leading-relaxed whitespace-pre-wrap ${
+                <div className={`max-w-[90%] p-4 rounded-2xl text-[13px] leading-relaxed whitespace-pre-wrap ${
                   m.role === 'user' 
                     ? 'bg-yellow-500 text-slate-950 font-bold' 
                     : 'bg-slate-900 text-slate-300 border border-slate-800'
@@ -100,9 +140,10 @@ User: ${userText}`;
       ) : (
         <button 
           onClick={() => setIsOpen(true)} 
-          className="bg-yellow-500 text-slate-950 p-5 rounded-full shadow-xl hover:scale-110 transition-all border-4 border-slate-950"
+          className="group bg-yellow-500 text-slate-950 p-5 rounded-full shadow-xl hover:scale-110 transition-all border-4 border-slate-950 relative"
         >
           <MessageSquare size={28} />
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-950 animate-pulse" title="Ask about the Integrated Wellth Summit" />
         </button>
       )}
     </div>
