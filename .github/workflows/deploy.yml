@@ -20,10 +20,9 @@ jobs:
           npm install
           npm run build
         env:
-          # BAKING THE KEYS INTO THE SITE
+          # THE VAULT: This maps your GitHub Secret to the variable in the code
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           VITE_FIREBASE_CONFIG: ${{ secrets.VITE_FIREBASE_CONFIG }}
-          VITE_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
 
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
