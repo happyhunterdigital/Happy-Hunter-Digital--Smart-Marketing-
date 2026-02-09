@@ -17,14 +17,10 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// THE SECURE CALLER
 export const callHunterAI = async (prompt: string) => {
-  // HIDDEN: Pulls from GitHub Secrets during build
   const KEY = import.meta.env.VITE_GEMINI_API_KEY;
   
-  if (!KEY) return "SECURITY_ERROR: API Key not injected.";
-
-  // CRITICAL FIX: No space after key=
+  // CRITICAL FIX: Removed space after key=
   const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${KEY}`;
 
   try {
@@ -50,6 +46,12 @@ export const callHunterAI = async (prompt: string) => {
 };
 
 export const performAuditAnalysis = async (bizName: string, location: string) => {
-  const prompt = `You are Hunter AI for Smart Marketing. Perform a Strategic Audit for "${bizName}" in ${location}. Focus on pain points. No asterisks.`;
+  const prompt = `You are Hunter AI for Smart Marketing. Perform a Strategic Audit for "${bizName}" in ${location}. 
+  FOCUS: Pain points in SEO, Social, Footprint, and AEO.
+  
+  MANDATORY REQUIREMENT: At the very end of your response, you MUST write exactly: 
+  FINAL_SCORE: [number between 0 and 100]
+  
+  RULES: Use [SECTION] for headers, [FIX] for actions, NO asterisks.`;
   return await callHunterAI(prompt);
 };
