@@ -10,7 +10,8 @@ import EarnedMedia from './pages/EarnedMedia';
 import Admin from './pages/Admin';
 import ArticleReader from './pages/ArticleReader';
 import CoreServices from './pages/CoreServices';
-import SummitPage from './pages/SummitPage'; // THIS WAS THE MISSING IMPORT
+import SummitPage from './pages/SummitPage';
+import Founders from './pages/Founders'; // NEW IMPORT
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <main className="animate-fade-in">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/founders" element={<Founders />} /> {/* NEW ROUTE */}
             <Route path="/core-services" element={<CoreServices />} />
             <Route path="/services" element={<Services />} />
             <Route path="/audit" element={<Audit />} />
