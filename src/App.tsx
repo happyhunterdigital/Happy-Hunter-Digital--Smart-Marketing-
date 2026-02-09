@@ -10,7 +10,7 @@ import EarnedMedia from './pages/EarnedMedia';
 import Admin from './pages/Admin';
 import ArticleReader from './pages/ArticleReader';
 import CoreServices from './pages/CoreServices';
-import SummitPage from './pages/SummitPage'; // PREPARING FOR PHASE 2
+import SummitPage from './pages/SummitPage'; // THIS WAS THE MISSING IMPORT
 
 export default function App() {
   return (
@@ -28,25 +28,13 @@ export default function App() {
             <Route path="/earned-media" element={<EarnedMedia />} />
             <Route path="/article/:id" element={<ArticleReader />} />
             <Route path="/admin-ops-center" element={<Admin />} />
-            <Route path="/integrated-wellth-summit" element={<SummitPage />} /> {/* SUMMIT ROUTE */}
+            <Route path="/integrated-wellth-summit" element={<SummitPage />} />
           </Routes>
         </main>
         <Chatbot />
-        <footer className="py-20 border-t border-slate-900 bg-slate-950/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left">
-            <div className="flex flex-col items-center md:items-start gap-4">
-              <div className="flex items-center gap-3">
-                <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1762761701/Logo_mock1_jmjuoe.png" className="h-8 grayscale opacity-50" alt="logo" />
-                <span className="brand-name text-3xl text-slate-500">happyhunterdigital</span>
-              </div>
-              <p className="text-slate-700 text-xs max-w-xs leading-relaxed uppercase tracking-widest font-black">
-                South African Digital Entity Specialist. // Handshake Protocol Active.
-              </p>
-            </div>
-            <div className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-800 italic text-center md:text-right">
-              Managed by Thabo Leslie Motsumi // Official Speaker: IntegratedWellth 2026
-            </div>
-          </div>
+        <footer className="py-20 border-t border-slate-900 bg-slate-950/50 backdrop-blur-sm text-center">
+            <h3 className="text-xl font-black uppercase tracking-tighter mb-2 text-yellow-500 underline decoration-yellow-500/20 underline-offset-8">Happy Hunter Digital</h3>
+            <p className="text-slate-700 text-[10px] font-black uppercase tracking-[0.4em] mt-4 italic">Protocol v2.0 // Active</p>
         </footer>
       </div>
     </Router>
