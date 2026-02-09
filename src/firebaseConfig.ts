@@ -1,3 +1,4 @@
+// src/firebaseConfig.ts
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -18,11 +19,12 @@ export const auth = getAuth(app);
 
 // THE SECURE CALLER
 export const callHunterAI = async (prompt: string) => {
+  // HIDDEN: Pulls from GitHub Secrets during build
   const KEY = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!KEY) return "SECURITY_ERROR: API Key not injected.";
 
-  // CRITICAL FIX: Removed space after key=
+  // CRITICAL FIX: No space after key=
   const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${KEY}`;
 
   try {
