@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Chatbot from './components/Chatbot';
-import EventPopup from './components/EventPopup'; // NEW IMPORT
+import EventPopup from './components/EventPopup';
 import Home from './pages/Home';
 import Services from './pages/Services';
 import Audit from './pages/Audit';
@@ -10,12 +10,13 @@ import EarnedMedia from './pages/EarnedMedia';
 import Admin from './pages/Admin';
 import ArticleReader from './pages/ArticleReader';
 import CoreServices from './pages/CoreServices';
+import SummitPage from './pages/SummitPage'; // PREPARING FOR PHASE 2
 
 export default function App() {
   return (
     <Router>
       <div className="min-h-screen bg-slate-950 text-white font-sans relative">
-        <EventPopup /> {/* THE SUMMIT ENGINE */}
+        <EventPopup />
         <Navbar />
         <main className="animate-fade-in">
           <Routes>
@@ -27,26 +28,23 @@ export default function App() {
             <Route path="/earned-media" element={<EarnedMedia />} />
             <Route path="/article/:id" element={<ArticleReader />} />
             <Route path="/admin-ops-center" element={<Admin />} />
+            <Route path="/integrated-wellth-summit" element={<SummitPage />} /> {/* SUMMIT ROUTE */}
           </Routes>
         </main>
         <Chatbot />
         <footer className="py-20 border-t border-slate-900 bg-slate-950/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-left">
             <div className="flex flex-col items-center md:items-start gap-4">
-              <div className="flex items-center gap-3 text-slate-500">
-                <img 
-                  src="https://res.cloudinary.com/dka0498ns/image/upload/v1762761701/Logo_mock1_jmjuoe.png" 
-                  alt="logo" 
-                  className="h-8 w-auto grayscale"
-                />
-                <span className="brand-name text-3xl">happyhunterdigital</span>
+              <div className="flex items-center gap-3">
+                <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1762761701/Logo_mock1_jmjuoe.png" className="h-8 grayscale opacity-50" alt="logo" />
+                <span className="brand-name text-3xl text-slate-500">happyhunterdigital</span>
               </div>
-              <p className="text-slate-700 text-xs max-w-xs uppercase tracking-widest font-black leading-relaxed">
-                Official AI & GMB Session Lead // IntegratedWellth Summit 2026.
+              <p className="text-slate-700 text-xs max-w-xs leading-relaxed uppercase tracking-widest font-black">
+                South African Digital Entity Specialist. // Handshake Protocol Active.
               </p>
             </div>
-            <div className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-800 italic">
-              Principal Strategist // Thabo Leslie Motsumi
+            <div className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-800 italic text-center md:text-right">
+              Managed by Thabo Leslie Motsumi // Official Speaker: IntegratedWellth 2026
             </div>
           </div>
         </footer>
