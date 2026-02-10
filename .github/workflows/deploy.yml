@@ -1,33 +1,43 @@
-name: Deploy Happy Hunter to Firebase
+name: Deploy to Firebase Hosting
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      # 1. Download your code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      # 2. Setup Node.js environment
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
-      - name: Install & Build
-        run: |
-          npm install
-          npm run build
+      # 3. Install Dependencies (Clean Install)
+      - name: Install Dependencies
+        run: npm ci
+
+      # 4. Build the App (Injecting Secrets)
+      - name: Build Project
+        run: npm run build
         env:
-          # THE VAULT: This maps your GitHub Secret to the variable in the code
+          # These pull the keys you saved in GitHub Secrets
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           VITE_FIREBASE_CONFIG: ${{ secrets.VITE_FIREBASE_CONFIG }}
 
+      # 5. Deploy to Firebase
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HAPPYHUNTERDIGITAL_17480 }}'
           channelId: live
           projectId: happyhunterdigital-17480
