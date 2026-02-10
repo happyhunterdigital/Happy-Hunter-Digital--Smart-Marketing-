@@ -1,12 +1,13 @@
+// src/main.tsx
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
-import { GlobalErrorBoundary } from './components/GlobalErrorBoundary' // Import this
+import { GlobalErrorBoundary } from './components/GlobalErrorBoundary'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <GlobalErrorBoundary> {/* Wrap App here */}
+    <GlobalErrorBoundary>
       <App />
     </GlobalErrorBoundary>
   </React.StrictMode>,
