@@ -1,6 +1,6 @@
 // src/pages/SummitPage.tsx
 import { useEffect, useState } from 'react';
-import { ShieldCheck, Zap, ArrowRight, MapPin, Calendar, Clock, CheckCircle2, AlertTriangle, TrendingUp, HelpCircle, TrendingDown } from 'lucide-react';
+import { ShieldCheck, Zap, ArrowRight, MapPin, Calendar, Clock, CheckCircle2, AlertTriangle, TrendingUp, HelpCircle, TrendingDown, Mic2 } from 'lucide-react';
 
 export default function SummitPage() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
@@ -23,13 +23,13 @@ export default function SummitPage() {
   }, []);
 
   return (
-    <div className="pt-24 pb-20 px-6 font-sans text-white min-h-screen selection:bg-yellow-500/30">
+    <div className="pt-24 pb-20 px-6 font-sans text-white min-h-screen selection:bg-yellow-500/30 bg-slate-950">
       
       {/* 1. HERO: THE VALUE ARBITRAGE HOOK */}
       <section className="max-w-7xl mx-auto py-20 lg:py-32 border-b border-slate-900">
         <div className="text-center mb-12 animate-fade-in">
           <div className="flex items-center justify-center gap-4 mb-8">
-             <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765747667/Integrated_Wellth_Solutions_Logo_bodmyc1_iiervl.png" className="h-12" alt="Integrated Wellth" />
+             <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765747667/Integrated_Wellth_Solutions_Logo_bodmyc1_iiervl.png " className="h-12" alt="Integrated Wellth" />
              <span className="text-yellow-500 font-black uppercase text-[10px] tracking-[0.4em]">Official 2026 Summit</span>
           </div>
           
@@ -46,7 +46,7 @@ export default function SummitPage() {
         <div className="grid md:grid-cols-2 gap-6 mb-12">
            <div className="relative rounded-[3rem] overflow-hidden border-2 border-slate-800 shadow-2xl group">
               <img 
-                src="https://res.cloudinary.com/dka0498ns/image/upload/v1765644818/Accountability_Partnership._SMMEs_review_session._egzihs.jpg" 
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1765644818/Accountability_Partnership._SMMEs_review_session._egzihs.jpg " 
                 className="w-full h-[400px] object-cover grayscale brightness-75 group-hover:brightness-100 transition-all duration-1000" 
                 alt="SMMEs Review Session" 
               />
@@ -57,7 +57,7 @@ export default function SummitPage() {
            </div>
            <div className="relative rounded-[3rem] overflow-hidden border-2 border-slate-800 shadow-2xl group">
               <img 
-                src="https://res.cloudinary.com/dka0498ns/image/upload/v1765321878/Integrated_Wellth_Financial_Literacy._nscht7.jpg" 
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1765321878/Integrated_Wellth_Financial_Literacy._nscht7.jpg " 
                 className="w-full h-[400px] object-cover grayscale brightness-75 group-hover:brightness-100 transition-all duration-1000" 
                 alt="Financial Literacy" 
               />
@@ -80,7 +80,7 @@ export default function SummitPage() {
 
           <div className="flex justify-center">
             <a 
-              href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" 
+              href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/ " 
               target="_blank" 
               rel="noopener noreferrer"
               className="w-full sm:w-fit bg-yellow-500 text-slate-950 px-12 py-6 rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-2xl flex items-center justify-center gap-3 uppercase tracking-tighter"
@@ -125,7 +125,7 @@ export default function SummitPage() {
            <div className="p-12 border border-slate-800 rounded-[4rem] bg-slate-900/20 space-y-8 hover:border-yellow-500/20 transition-all">
               <div className="relative rounded-[3rem] overflow-hidden border-2 border-slate-800 mb-6">
                  <img 
-                   src="https://res.cloudinary.com/dka0498ns/image/upload/v1766077285/Chartered_Business_Accountant_in_Practice_CIBA_Hons_Psychological_Counselling_Risk_and_Project_Management_ubcpy9.jpg" 
+                   src="https://res.cloudinary.com/dka0498ns/image/upload/v1766077285/Chartered_Business_Accountant_in_Practice_CIBA_Hons_Psychological_Counselling_Risk_and_Project_Management_ubcpy9.jpg " 
                    className="w-full h-[300px] object-cover grayscale hover:grayscale-0 transition-all duration-700" 
                    alt="Marcia - Chartered Business Accountant" 
                  />
@@ -147,7 +147,7 @@ export default function SummitPage() {
            <div className="p-12 border border-slate-800 rounded-[4rem] bg-slate-900/20 space-y-8 hover:border-yellow-500/20 transition-all">
               <div className="relative rounded-[3rem] overflow-hidden border-2 border-slate-800 mb-6">
                  <img 
-                   src="https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png" 
+                   src="https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png " 
                    className="w-full h-[300px] object-cover grayscale hover:grayscale-0 transition-all duration-700" 
                    alt="Thabo Leslie Motsumi - Digital Strategist" 
                  />
@@ -167,7 +167,64 @@ export default function SummitPage() {
         </div>
       </section>
 
-      {/* 4. THE VALUE RECEIPT: PSYCHOLOGICAL TRIGGER */}
+      {/* 4. KEYNOTE SPEAKER: TUKISANG SENNE */}
+      <section className="py-32 max-w-4xl mx-auto border-b border-slate-900">
+        <div className="relative">
+          {/* Decorative background element */}
+          <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-yellow-500/5 rounded-full blur-[100px] pointer-events-none" />
+          
+          <div className="text-center mb-16 relative z-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 mb-6">
+              <Mic2 size={16} className="text-yellow-500" />
+              <span className="text-yellow-500 font-black uppercase text-[10px] tracking-[0.3em]">Special Guest</span>
+            </div>
+            <h3 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none mb-4">
+              The <span className="text-yellow-500">Keynote</span>
+            </h3>
+            <p className="text-slate-500 font-medium max-w-lg mx-auto">
+              Leadership, Legacy, and the Mindset required to scale beyond survival mode.
+            </p>
+          </div>
+
+          <div className="relative rounded-[4rem] overflow-hidden border-2 border-yellow-500/20 bg-slate-900/30">
+            <div className="grid md:grid-cols-2">
+              <div className="relative h-[400px] md:h-auto overflow-hidden">
+                <img 
+                  src="https://res.cloudinary.com/dka0498ns/image/upload/v1770754623/Business_Coach_and_Mentor_Tukisang_Senne_cgtyyw.jpg" 
+                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" 
+                  alt="Tukisang Senne - Business Coach and Mentor" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-slate-950/90 md:to-transparent" />
+              </div>
+              
+              <div className="p-12 flex flex-col justify-center space-y-8">
+                <div>
+                  <h4 className="text-4xl md:text-5xl font-black uppercase leading-none mb-2">Tukisang Senne</h4>
+                  <p className="text-yellow-500 font-black uppercase tracking-widest text-[10px]">Business Coach & Mentor</p>
+                </div>
+                
+                <p className="text-slate-400 text-sm leading-relaxed italic border-l-2 border-yellow-500/30 pl-6">
+                  "Bridging the gap between technical excellence and strategic leadership. Tukisang brings decades of experience guiding SMMEs from operational chaos to sustainable growth."
+                </p>
+
+                <div className="space-y-3">
+                  <p className="flex items-center gap-3 text-sm text-slate-300">
+                    <CheckCircle2 size={16} className="text-yellow-500"/> Leadership Architecture for Founders
+                  </p>
+                  <p className="flex items-center gap-3 text-sm text-slate-300">
+                    <CheckCircle2 size={16} className="text-yellow-500"/> Scaling Mindset vs. Survival Mindset
+                  </p>
+                  <p className="flex items-center gap-3 text-sm text-slate-300">
+                    <CheckCircle2 size={16} className="text-yellow-500"/> Accountability Frameworks That Stick
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. THE VALUE RECEIPT: PSYCHOLOGICAL TRIGGER */}
       <section className="py-32 max-w-4xl mx-auto">
         <div className="p-12 border-2 border-yellow-500 rounded-[4rem] bg-slate-950 shadow-[0_0_100px_rgba(250,204,21,0.1)] relative overflow-hidden">
            <h3 className="text-4xl font-black uppercase mb-12 text-center">The Math <span className="text-yellow-500">Makes Sense</span></h3>
@@ -196,10 +253,58 @@ export default function SummitPage() {
         </div>
       </section>
 
-      {/* 5. EVENT DETAILS */}
+      {/* 6. EVENT DETAILS */}
       <section className="py-32 max-w-4xl mx-auto border-t border-slate-900">
          <div className="grid md:grid-cols-3 gap-8 text-center">
             <div className="p-8 border border-slate-800 rounded-[2.5rem] bg-slate-900/20">
                <Calendar className="mx-auto mb-4 text-yellow-500" size={32} />
                <p className="text-xs font-black uppercase text-slate-500 tracking-widest mb-2">Date</p>
-               <p className="
+               <p className="text-xl font-black">February 28, 2026</p>
+            </div>
+            <div className="p-8 border border-slate-800 rounded-[2.5rem] bg-slate-900/20">
+               <Clock className="mx-auto mb-4 text-yellow-500" size={32} />
+               <p className="text-xs font-black uppercase text-slate-500 tracking-widest mb-2">Time</p>
+               <p className="text-xl font-black">09:00 - 16:00</p>
+            </div>
+            <div className="p-8 border border-slate-800 rounded-[2.5rem] bg-slate-900/20">
+               <MapPin className="mx-auto mb-4 text-yellow-500" size={32} />
+               <p className="text-xs font-black uppercase text-slate-500 tracking-widest mb-2">Venue</p>
+               <p className="text-xl font-black">Munyaka, Waterfall</p>
+            </div>
+         </div>
+
+         {/* Countdown Timer */}
+         <div className="mt-20 p-12 border border-slate-800 rounded-[3rem] bg-slate-900/20 text-center">
+            <p className="text-xs font-black uppercase text-slate-500 tracking-[0.3em] mb-8">Summit Commences In</p>
+            <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
+               {[
+                 { val: timeLeft.days, label: "Days" },
+                 { val: timeLeft.hours, label: "Hours" },
+                 { val: timeLeft.mins, label: "Mins" },
+                 { val: timeLeft.secs, label: "Secs" }
+               ].map((t, i) => (
+                 <div key={i} className="p-4 bg-slate-950 rounded-2xl border border-slate-800">
+                   <div className="text-3xl md:text-5xl font-black text-yellow-500 mb-1">{t.val}</div>
+                   <div className="text-[10px] font-bold uppercase text-slate-600 tracking-widest">{t.label}</div>
+                 </div>
+               ))}
+            </div>
+         </div>
+      </section>
+
+      {/* FOOTER CTA */}
+      <section className="py-20 text-center">
+        <a 
+          href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/ " 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-3 bg-yellow-500 text-slate-950 px-12 py-6 rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-2xl uppercase tracking-tighter"
+        >
+          Secure Your Seat <ArrowRight size={24} />
+        </a>
+        <p className="mt-6 text-slate-600 text-xs font-bold uppercase tracking-widest">Only 50 Seats Available • R 849.99</p>
+      </section>
+
+    </div>
+  );
+}
