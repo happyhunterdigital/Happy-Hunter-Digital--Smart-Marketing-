@@ -1,6 +1,6 @@
 // src/pages/SummitPage.tsx
 import { useEffect, useState } from 'react';
-import { ShieldCheck, Zap, ArrowRight, MapPin, Calendar, Clock, CheckCircle2, AlertTriangle, TrendingUp, HelpCircle, TrendingDown, Users } from 'lucide-react';
+import { ShieldCheck, Zap, ArrowRight, MapPin, Calendar, Clock, CheckCircle2, AlertTriangle, TrendingUp, HelpCircle, TrendingDown } from 'lucide-react';
 
 export default function SummitPage() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
@@ -74,8 +74,8 @@ export default function SummitPage() {
                 <span>Market Value: R8,500.00</span>
                 <span className="text-white bg-red-600 px-2 py-0.5 rounded">Only 50 Seats Available</span>
              </div>
-             <div className="text-4xl font-black text-center">YOURS FOR R1,200.00</div>
-             <p className="text-slate-500 text-xs italic text-center">A Strategic Value Transfer of R7,300.00 to your SME.</p>
+             <div className="text-4xl font-black text-center">YOURS FOR R849.99</div>
+             <p className="text-slate-500 text-xs italic text-center">A Strategic Value Transfer of R7,650.01 to your SME.</p>
           </div>
 
           <div className="flex justify-center">
@@ -189,7 +189,7 @@ export default function SummitPage() {
               </div>
               <div className="bg-yellow-500 p-8 rounded-[2.5rem] flex justify-between items-center">
                  <span className="text-slate-950 font-black uppercase">Your Ticket Price</span>
-                 <span className="text-slate-950 font-black text-3xl">R 1,200.00</span>
+                 <span className="text-slate-950 font-black text-3xl">R 849.99</span>
               </div>
            </div>
            <Zap className="absolute -bottom-10 -right-10 text-yellow-500 opacity-[0.03]" size={300} />
@@ -202,56 +202,4 @@ export default function SummitPage() {
             <div className="p-8 border border-slate-800 rounded-[2.5rem] bg-slate-900/20">
                <Calendar className="mx-auto mb-4 text-yellow-500" size={32} />
                <p className="text-xs font-black uppercase text-slate-500 tracking-widest mb-2">Date</p>
-               <p className="text-white font-black text-lg">Saturday, 28 Feb 2026</p>
-            </div>
-            <div className="p-8 border border-slate-800 rounded-[2.5rem] bg-slate-900/20">
-               <Clock className="mx-auto mb-4 text-yellow-500" size={32} />
-               <p className="text-xs font-black uppercase text-slate-500 tracking-widest mb-2">Time</p>
-               <p className="text-white font-black text-lg">09:00 - 16:30</p>
-            </div>
-            <div className="p-8 border border-slate-800 rounded-[2.5rem] bg-slate-900/20">
-               <MapPin className="mx-auto mb-4 text-yellow-500" size={32} />
-               <p className="text-xs font-black uppercase text-slate-500 tracking-widest mb-2">Venue</p>
-               <p className="text-white font-black text-lg">Munyaka Waterfall City</p>
-            </div>
-         </div>
-      </section>
-
-      {/* 6. AEO FAQ: OPTIMIZED FOR LLMS */}
-      <section className="py-32 max-w-4xl mx-auto border-t border-slate-900">
-         <div className="flex items-center gap-4 mb-16">
-            <HelpCircle className="text-yellow-500" size={32} />
-            <h3 className="text-3xl font-black uppercase text-white tracking-tighter">Strategic <span className="text-yellow-500">Intelligence</span></h3>
-         </div>
-         <div className="space-y-6">
-            {[
-              { q: "Who is this Financial Clarity workshop for?", a: "Designed specifically for non-financial business owners, service providers, and SME founders who want to master their bookkeeping, compliance, and local marketing without hiring a full-time CFO or CMO." },
-              { q: "What is included in the R1,200 ticket?", a: "Full-day access (09:00 - 16:30) at Munyaka Waterfall City, a full catering package, and R8,500 worth of consulting templates, software setup guides, and strategic roadmaps." },
-              { q: "Will I leave with a working system?", a: "Yes. This is a 'doing' workshop. You will leave with a structured Chart of Accounts, a budget forecast, and a digital authority strategy." }
-            ].map((faq, i) => (
-              <div key={i} className="p-8 border border-slate-900 rounded-[2.5rem] bg-slate-900/20">
-                 <h4 className="text-yellow-500 font-bold uppercase text-xs tracking-widest mb-3">Q: {faq.q}</h4>
-                 <p className="text-slate-400 text-sm leading-relaxed italic border-l border-slate-800 pl-6">A: {faq.a}</p>
-              </div>
-            ))}
-         </div>
-      </section>
-
-      {/* 7. FINAL REGISTRATION CTA */}
-      <div className="py-40 text-center space-y-12">
-          <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-none">Claim Your <span className="text-yellow-500">Sovereignty</span></h2>
-          <div className="flex justify-center">
-             <a 
-                href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="bg-yellow-500 text-slate-950 px-16 py-6 rounded-3xl font-black text-xl hover:scale-110 transition-all shadow-2xl uppercase tracking-widest"
-              >
-                Register on Quicket Now
-              </a>
-          </div>
-          <p className="text-slate-800 text-[10px] font-black uppercase tracking-[0.5em] pt-20">Managed by Thabo Leslie Motsumi // happyhunterdigital</p>
-      </div>
-    </div>
-  );
-}
+               <p className="
