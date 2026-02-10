@@ -1,5 +1,6 @@
+// src/pages/SummitPage.tsx
 import { useEffect, useState } from 'react';
-import { ShieldCheck, Zap, ArrowRight, MapPin, Calendar, Clock, CheckCircle2, AlertTriangle, TrendingUp, HelpCircle } from 'lucide-react';
+import { ShieldCheck, Zap, ArrowRight, MapPin, Calendar, Clock, CheckCircle2, AlertTriangle, TrendingUp, HelpCircle, TrendingDown } from 'lucide-react';
 
 export default function SummitPage() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
@@ -52,6 +53,7 @@ export default function SummitPage() {
           <a 
             href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" 
             target="_blank" 
+            rel="noopener noreferrer"
             className="w-full sm:w-fit bg-yellow-500 text-slate-950 px-12 py-6 rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-2xl flex items-center justify-center gap-3 uppercase tracking-tighter"
           >
             Secure Your Seat on Quicket <ArrowRight size={24} />
@@ -78,9 +80,9 @@ export default function SummitPage() {
 
         <div className="grid md:grid-cols-3 gap-8">
            {[
-             { title: "Financial Fog", desc: "You don't know if you are truly profitable or just busy.", icon: <TrendingDown className="text-red-500" /> },
-             { title: "Compliance Risk", desc: "You fear the 'Audit' conversation because your books are a mess.", icon: <ShieldCheck className="text-yellow-500" /> },
-             { title: "Digital Invisibility", desc: "Local customers can't find you because your entity is broken.", icon: <Zap className="text-blue-500" /> }
+             { title: "Financial Fog", desc: "You don't know if you are truly profitable or just busy.", icon: <TrendingDown size={32} className="text-red-500" /> },
+             { title: "Compliance Risk", desc: "You fear the 'Audit' conversation because your books are a mess.", icon: <AlertTriangle size={32} className="text-yellow-500" /> },
+             { title: "Digital Invisibility", desc: "Local customers can't find you because your entity is broken.", icon: <Zap size={32} className="text-blue-500" /> }
            ].map((p, i) => (
              <div key={i} className="p-10 border border-slate-900 rounded-[3rem] bg-slate-900/10 text-center space-y-4">
                 <div className="flex justify-center mb-4">{p.icon}</div>
@@ -179,6 +181,7 @@ export default function SummitPage() {
              <a 
                 href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/" 
                 target="_blank" 
+                rel="noopener noreferrer"
                 className="bg-yellow-500 text-slate-950 px-16 py-6 rounded-3xl font-black text-xl hover:scale-110 transition-all shadow-2xl uppercase tracking-widest"
               >
                 Register on Quicket Now
