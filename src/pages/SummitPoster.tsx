@@ -56,18 +56,18 @@ export default function SummitPoster() {
             />
             <div className="absolute inset-0 bg-gradient-to-l from-transparent via-slate-950 to-slate-950"></div>
             
-            {/* VALUE ARBITRAGE MEDALLION */}
+            {/* VALUE ARBITRAGE MEDALLION (Updated Price) */}
             <div className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 rotate-[-8deg] bg-yellow-500 text-slate-950 p-8 rounded-[3rem] shadow-2xl border-[6px] border-slate-950 z-30 text-center scale-110">
                <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Total Value</p>
                <p className="text-2xl font-black uppercase leading-none mb-3">R8,500</p>
                <div className="h-0.5 bg-slate-950/20 w-12 mx-auto mb-3"></div>
-               <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Your Price</p>
-               <p className="text-5xl font-black tracking-tighter leading-none">R1,200</p>
+               <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Price Today</p>
+               <p className="text-4xl font-black tracking-tighter leading-none whitespace-nowrap">R849.99</p>
             </div>
           </div>
         </div>
 
-        {/* 3. THE INFRASTRUCTURE BAR (Glassmorphism) */}
+        {/* 3. THE INFRASTRUCTURE BAR */}
         <div className="p-12 pt-0 z-20">
           <div className="bg-slate-900/60 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-10 shadow-2xl flex items-center justify-between gap-12">
             <div className="space-y-4">
@@ -82,7 +82,7 @@ export default function SummitPoster() {
                   <TrendingUp size={14}/> Core Session Outcome
                </p>
                <p className="text-[12px] text-slate-300 font-medium leading-relaxed italic">
-                  Build your Ledger Architecture & AI Authority signal in one day. 
+                  Establish Automated Bookkeeping & AI Authority signals in one session. 
                </p>
             </div>
 
