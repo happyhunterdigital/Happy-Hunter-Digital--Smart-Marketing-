@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth"; // HANDSHAKE FIX
 
 // Firebase config
 const firebaseConfig = {
@@ -13,12 +14,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const auth = getAuth(app); // EXPORTED FOR ADMIN OPS
 
 // API Keys
 const PLACES_KEY = "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
 const GEMINI_KEY = "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
 
-// FIXED: Removed space in URL
 export const callHunterAI = async (prompt: string) => {
   const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
   
@@ -28,36 +29,26 @@ export const callHunterAI = async (prompt: string) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.8, maxOutputTokens: 2500 }
+        generationConfig: { temperature: 0.8, maxOutputTokens: 3000 }
       })
     });
     
     if (!response.ok) {
       const error = await response.json();
-      console.error("Gemini API Error:", error);
       return `AI_ERROR: ${error.error?.message || response.statusText}`;
     }
     
     const data = await response.json();
-    
-    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-      return "AI_ERROR: Invalid response structure";
-    }
-    
-    return data.candidates[0].content.parts[0].text;
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "AI_ERROR: Empty response";
   } catch (err: any) {
-    console.error("AI Fetch Error:", err);
     return `HANDSHAKE_ERROR: ${err.message}`;
   }
 };
 
-// FIXED: Removed trailing space, added proper error handling, returns structured object
 export const fetchMapsData = async (bizName: string, location: string) => {
-  const URL = "https://places.googleapis.com/v1/places:searchText"; // NO TRAILING SPACE
+  const URL = "https://places.googleapis.com/v1/places:searchText";
   
   try {
-    console.log(`Fetching Places data for: ${bizName} in ${location}`);
-    
     const response = await fetch(URL, {
       method: "POST",
       headers: {
@@ -66,39 +57,18 @@ export const fetchMapsData = async (bizName: string, location: string) => {
         "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress,places.businessStatus,places.primaryType"
       },
       body: JSON.stringify({ 
-        textQuery: `${bizName} ${location}`, // Removed "in" - better for API matching
-        maxResultCount: 3, // Get a few results to find best match
+        textQuery: `${bizName} ${location}`,
+        maxResultCount: 1,
         languageCode: "en"
       })
     });
 
-    // Log the raw response for debugging
-    console.log("Places API Status:", response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("Places API Error Response:", errorText);
-      return { 
-        error: true, 
-        message: `API_ERROR_${response.status}: ${errorText}`,
-        raw: errorText
-      };
-    }
+    if (!response.ok) return { error: true, message: "API_REJECTION" };
 
     const data = await response.json();
-    console.log("Places API Data:", data);
+    if (!data.places || data.places.length === 0) return { error: true, message: "ENTITY_NOT_FOUND" };
     
-    if (!data.places || data.places.length === 0) {
-      return { 
-        error: true, 
-        message: "ENTITY_NOT_FOUND_IN_GOOGLE_GRAPH",
-        suggestion: "Business is not verified or listed on Google Maps"
-      };
-    }
-    
-    // Get the best match (first result usually best)
     const biz = data.places[0];
-    
     return {
       found: true,
       name: biz.displayName?.text || bizName,
@@ -107,71 +77,29 @@ export const fetchMapsData = async (bizName: string, location: string) => {
       website: biz.websiteUri || null,
       address: biz.formattedAddress || location,
       status: biz.businessStatus || "UNKNOWN",
-      category: biz.primaryType || "Unknown",
-      raw: biz // Keep raw data for debugging
+      category: biz.primaryType || "Unknown"
     };
     
   } catch (err: any) {
-    console.error("Places Fetch Exception:", err);
-    return { 
-      error: true, 
-      message: `FETCH_EXCEPTION: ${err.message}`,
-      code: err.name
-    };
+    return { error: true, message: err.message };
   }
 };
 
-// FIXED: Properly structured analysis with real data integration
 export const performAuditAnalysis = async (bizName: string, location: string) => {
-  console.log(`Starting audit for ${bizName}...`);
+  const mapsData: any = await fetchMapsData(bizName, location);
   
-  const mapsData = await fetchMapsData(bizName, location);
-  
-  // Build context based on real data or failure
   let dataContext = "";
-  
   if (mapsData.found) {
-    const stars = mapsData.rating ? `${mapsData.rating}/5` : "No rating";
-    const reviews = mapsData.reviewCount > 0 ? `${mapsData.reviewCount} reviews` : "No reviews";
-    const webStatus = mapsData.website ? `Website: ${mapsData.website}` : "NO WEBSITE LINKED";
-    
-    dataContext = `VERIFIED GOOGLE BUSINESS PROFILE FOUND:
-- Name: ${mapsData.name}
-- Rating: ${stars} (${reviews})
-- Address: ${mapsData.address}
-- Status: ${mapsData.status}
-- Category: ${mapsData.category}
-- ${webStatus}`;
-    
+    dataContext = `✓ VERIFIED PROFILE FOUND: Rating ${mapsData.rating}/5 from ${mapsData.reviewCount} reviews. Website: ${mapsData.website || "MISSING"}.`;
   } else {
-    dataContext = `CRITICAL FAILURE - NO GOOGLE PRESENCE:
-Error: ${mapsData.message}
-Diagnosis: ${mapsData.suggestion || "Business is invisible to Google Maps API"}
-Impact: AI assistants cannot recommend this business. Local SEO is non-existent.`;
+    dataContext = `× CRITICAL FAILURE: Business is INVISIBLE to the Knowledge Graph. Data fetch returned ${mapsData.message}.`;
   }
 
-  const prompt = `You are Hunter AI, lead strategist at Smart Marketing. Perform a Forensic Strategic Audit.
+  const prompt = `You are Hunter AI, lead strategist at Smart Marketing. Perform a Forensic Strategic Audit for "${bizName}" in ${location}.
+  REAL DATA CONTEXT: ${dataContext}
+  MISSION: Expose pain points and gaps. 
+  RULES: Use [SECTION] for headers, [FIX] for action items. No asterisks. No markdown.
+  MANDATORY: End with exactly FINAL_SCORE: [number between 0 and 100].`;
 
-BUSINESS: "${bizName}" in ${location}
-
-REAL DATA FROM GOOGLE MAPS API:
-${dataContext}
-
-AUDIT REQUIREMENTS:
-1. If NO DATA FOUND: Explain the "Digital Black Hole" - why being unfindable on Google Maps kills revenue. Be specific about lost opportunities.
-2. If DATA FOUND: Analyze the profile strength. Critique missing elements (photos, posts, Q&A, description). Compare rating/review count to industry averages.
-3. Identify 3 specific competitive gaps.
-4. Give brutally honest assessment of their AI visibility (ChatGPT, Gemini, Siri recommendations).
-
-OUTPUT RULES:
-- NO asterisks (*), NO markdown, NO bullet points
-- Use [SECTION] for headers
-- Use [FIX] for action items  
-- Use CAPS for emphasis on critical failures
-- End with exactly: FINAL_SCORE: [0-100]
-
-The score must reflect real findability: 0-20 = Invisible, 21-40 = Weak, 41-60 = Average, 61-80 = Strong, 81-100 = Dominant.`;
-
-  console.log("Sending prompt to AI...");
   return await callHunterAI(prompt);
 };
