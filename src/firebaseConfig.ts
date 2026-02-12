@@ -1,8 +1,8 @@
-// src/firebaseConfig.ts
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
+// Initialize Firebase with hardcoded config (safe for client)
 const firebaseConfig = {
   apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc",
   authDomain: "happyhunterdigital-17480.firebaseapp.com",
@@ -17,140 +17,110 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// API KEYS - Check if they exist
-const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY;
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+// API Keys from environment variables
+const PLACES_API_KEY = import.meta.env.VITE_PLACES_API_KEY;
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-console.log("🔑 Environment Check:", {
-  placesKeyExists: !!PLACES_KEY,
-  placesKeyFirst10: PLACES_KEY ? PLACES_KEY.substring(0, 10) + "..." : "MISSING",
-  geminiKeyExists: !!GEMINI_KEY,
-  nodeEnv: import.meta.env.MODE
+// Debug logging (visible in browser console)
+console.log("[FirebaseConfig] Environment check:", {
+  placesKeyExists: !!PLACES_API_KEY,
+  placesKeyLength: PLACES_API_KEY ? PLACES_API_KEY.length : 0,
+  geminiKeyExists: !!GEMINI_API_KEY,
+  geminiKeyLength: GEMINI_API_KEY ? GEMINI_API_KEY.length : 0,
+  mode: import.meta.env.MODE
 });
 
-// Location coordinates for major SA cities
+// City coordinates for location bias
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
   "cape town": { lat: -33.9249, lng: 18.4241 },
   "johannesburg": { lat: -26.2041, lng: 28.0473 },
   "pretoria": { lat: -25.7479, lng: 28.2293 },
-  "durban": { lat: -29.8587, lng: 31.0218 }
+  "durban": { lat: -29.8587, lng: 31.0218 },
+  "gqeberha": { lat: -33.9608, lng: 25.6022 },
+  "port elizabeth": { lat: -33.9608, lng: 25.6022 },
+  "bloemfontein": { lat: -29.0852, lng: 26.1596 },
+  "nelspruit": { lat: -25.4753, lng: 30.9694 },
+  "polokwane": { lat: -23.9045, lng: 29.4688 },
+  "rustenburg": { lat: -25.6676, lng: 27.2421 }
 };
 
-export const fetchMapsData = async (bizName: string, location: string) => {
-  console.log("🔍 fetchMapsData called:", { bizName, location });
-  
-  if (!PLACES_KEY) {
-    console.error("❌ PLACES_KEY is undefined - check .env file");
-    return { error: "CONFIG_ERROR", message: "VITE_PLACES_API_KEY not found in environment" };
+interface MapsDataSuccess {
+  found: true;
+  name: string;
+  rating?: number;
+  reviewCount: number;
+  website?: string;
+  isOpen?: boolean;
+  status?: string;
+  mapsUrl?: string;
+  address?: string;
+}
+
+interface MapsDataError {
+  found: false;
+  error: string;
+  message: string;
+}
+
+type MapsDataResult = MapsDataSuccess | MapsDataError;
+
+export const fetchMapsData = async (
+  bizName: string, 
+  location: string
+): Promise<MapsDataResult> => {
+  console.log("[fetchMapsData] Starting search:", { bizName, location });
+
+  if (!PLACES_API_KEY) {
+    console.error("[fetchMapsData] PLACES_API_KEY is missing");
+    return {
+      found: false,
+      error: "CONFIG_ERROR",
+      message: "Places API key not configured. Check GitHub secrets."
+    };
   }
 
   const normalizedLocation = location.toLowerCase().trim();
-  const coords = CITY_COORDS[normalizedLocation] || CITY_COORDS["johannesburg"];
-  
+  const coords = CITY_COORDS[normalizedLocation];
+
   try {
-    // NO TRAILING SPACE IN URL!
-    const URL = "https://places.googleapis.com/v1/places:searchText";
+    const url = "https://places.googleapis.com/v1/places:searchText";
     
-    console.log("🌐 Making request to Places API...");
-    
-    const response = await fetch(URL, {
+    const requestBody: any = {
+      textQuery: `${bizName} in ${location}`,
+      maxResultCount: 3
+    };
+
+    // Add location bias if we have coordinates
+    if (coords) {
+      requestBody.locationBias = {
+        circle: {
+          center: {
+            latitude: coords.lat,
+            longitude: coords.lng
+          },
+          radius: 50000.0 // 50km radius
+        }
+      };
+    }
+
+    console.log("[fetchMapsData] Making API request...");
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-Goog-Api-Key": PLACES_KEY,
-        "X-Goog-FieldMask": "places.id,places.displayName.text,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri,places.regularOpeningHours.openNow,places.businessStatus"
+        "X-Goog-Api-Key": PLACES_API_KEY,
+        "X-Goog-FieldMask": "places.displayName.text,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri,places.regularOpeningHours.openNow,places.businessStatus,places.googleMapsUri"
       },
-      body: JSON.stringify({
-        textQuery: `${bizName} in ${location}`,
-        locationBias: {
-          circle: { 
-            center: { latitude: coords.lat, longitude: coords.lng }, 
-            radius: 50000.0 
-          }
-        },
-        maxResultCount: 1
-      })
+      body: JSON.stringify(requestBody)
     });
 
-    console.log("📥 Response status:", response.status);
+    console.log("[fetchMapsData] Response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("❌ HTTP Error:", errorText);
-      return { error: "API_ERROR", message: `HTTP ${response.status}: ${errorText}` };
-    }
-
-    const data = await response.json();
-    console.log("✅ Places API response:", data);
-
-    if (!data.places || data.places.length === 0) {
-      return { error: "NOT_FOUND", message: "No Maps profile detected." };
-    }
-
-    const place = data.places[0];
-    return {
-      found: true,
-      name: place.displayName?.text,
-      rating: place.rating || "N/A",
-      reviews: place.userRatingCount || 0,
-      website: place.websiteUri || "MISSING",
-      status: place.businessStatus
-    };
-    
-  } catch (err: any) {
-    console.error("💥 Exception:", err);
-    return { error: "FETCH_ERROR", message: err.message };
-  }
-};
-
-export const callHunterAI = async (prompt: string) => {
-  if (!GEMINI_KEY) {
-    throw new Error("GEMINI_KEY missing");
-  }
-
-  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`;
-  
-  try {
-    const response = await fetch(URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 4000 }
-      })
-    });
-    
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "No Response";
-  } catch (err) { 
-    return "Handshake Interrupted."; 
-  }
-};
-
-export const performAuditAnalysis = async (bizName: string, location: string) => {
-  console.log("🚀 performAuditAnalysis started");
-  
-  const mapsData = await fetchMapsData(bizName, location);
-  console.log("📊 Maps data result:", mapsData);
-  
-  let context = "";
-  if ("error" in mapsData) {
-    context = `MAPS STATUS: ${mapsData.error}. ${mapsData.message}`;
-  } else {
-    context = `REAL DATA: Rating ${mapsData.rating}, Reviews ${mapsData.reviews}, Website ${mapsData.website}`;
-  }
-
-  const prompt = `You are Hunter AI, lead strategist at Smart Marketing SA. 
-Audit "${bizName}" in ${location}.
-${context}
-
-Structure:
-[SECTION] THE MAPS VERDICT
-[SECTION] LOCAL SEO FAILURES  
-[SECTION] AI VISIBILITY
-[SECTION] STRATEGIC RECOVERY
-
-End with FINAL_SCORE: [0-100]. No asterisks.`;
-
-  return await callHunterAI(prompt);
-};
+      console.error("[fetchMapsData] HTTP error:", errorText);
+      return {
+        found: false,
+        error: "API_ERROR",
+        message: `Places
