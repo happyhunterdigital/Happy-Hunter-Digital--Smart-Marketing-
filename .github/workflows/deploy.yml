@@ -1,5 +1,4 @@
-name: Deploy Happy Hunter to Firebase
-
+name: Deploy Happy Hunter 2.0
 on:
   push:
     branches: [main]
@@ -7,53 +6,28 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install Root Dependencies
+      - name: Install Frontend Deps & Build
         run: |
           npm install
-          npm ci
-
-      - name: Install Functions Dependencies
-        working-directory: ./functions
-        run: |
-          npm install
-          npm ci
-
-      - name: Build Functions
-        working-directory: ./functions
-        run: npm run build
-
-      - name: Deploy Functions
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only functions
+          npm run build
         env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-          PROJECT_ID: happyhunterdigital-17480
-
-      - name: Set Functions Config (Places API Key)
-        uses: w9jds/firebase-action@master
-        with:
-          args: functions:config:set places.key="${{ secrets.VITE_PLACES_API_KEY }}" --project happyhunterdigital-17480
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-
-      - name: Build Frontend
-        run: npm run build
-        env:
-          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           VITE_FIREBASE_CONFIG: ${{ secrets.VITE_FIREBASE_CONFIG }}
 
-      - name: Deploy to Firebase Hosting
+      - name: Install Function Deps
+        run: |
+          cd functions
+          npm install
+
+      - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
