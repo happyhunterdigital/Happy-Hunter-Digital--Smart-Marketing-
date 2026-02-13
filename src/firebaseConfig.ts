@@ -1,8 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth"; // HANDSHAKE FIX
+import { getAuth } from "firebase/auth";
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc",
   authDomain: "happyhunterdigital-17480.firebaseapp.com",
@@ -14,13 +14,20 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
-export const auth = getAuth(app); // EXPORTED FOR ADMIN OPS
+export const auth = getAuth(app);
 
-// API Keys
-const PLACES_KEY = "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
+const functions = getFunctions(app);
+
+// Uncomment for local testing
+// if (import.meta.env.DEV) {
+//   connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+// }
+
+const getPlaceDataFn = httpsCallable(functions, 'getPlaceData');
+
 const GEMINI_KEY = "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
 
-export const callHunterAI = async (prompt: string) => {
+export const callHunterAI = async (prompt: string): Promise<string> => {
   const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
   
   try {
@@ -29,12 +36,12 @@ export const callHunterAI = async (prompt: string) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.8, maxOutputTokens: 3000 }
+        generationConfig: { temperature: 0.8, maxOutputTokens: 4000 }
       })
     });
     
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({}));
       return `AI_ERROR: ${error.error?.message || response.statusText}`;
     }
     
@@ -46,28 +53,23 @@ export const callHunterAI = async (prompt: string) => {
 };
 
 export const fetchMapsData = async (bizName: string, location: string) => {
-  const URL = "https://places.googleapis.com/v1/places:searchText";
-  
   try {
-    const response = await fetch(URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": PLACES_KEY,
-        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress,places.businessStatus,places.primaryType"
-      },
-      body: JSON.stringify({ 
-        textQuery: `${bizName} ${location}`,
-        maxResultCount: 1,
-        languageCode: "en"
-      })
-    });
-
-    if (!response.ok) return { error: true, message: "API_REJECTION" };
-
-    const data = await response.json();
-    if (!data.places || data.places.length === 0) return { error: true, message: "ENTITY_NOT_FOUND" };
+    console.log(`[Places] Querying: ${bizName} in ${location}`);
     
+    const result = await getPlaceDataFn({ bizName, location });
+    const data = result.data as any;
+    
+    console.log("[Places] Response:", data);
+
+    if (!data.places || data.places.length === 0) {
+      return {
+        found: false,
+        error: true,
+        message: "ENTITY_NOT_FOUND_IN_KNOWLEDGE_GRAPH",
+        suggestion: "Business is not verified on Google Maps or lacks digital presence"
+      };
+    }
+
     const biz = data.places[0];
     return {
       found: true,
@@ -77,29 +79,87 @@ export const fetchMapsData = async (bizName: string, location: string) => {
       website: biz.websiteUri || null,
       address: biz.formattedAddress || location,
       status: biz.businessStatus || "UNKNOWN",
-      category: biz.primaryType || "Unknown"
+      category: biz.primaryType || "Unknown",
+      phone: biz.nationalPhoneNumber || null,
+      openNow: biz.regularOpeningHours?.openNow || null,
+      priceLevel: biz.priceLevel || null,
+      photos: biz.photos?.length || 0
     };
     
   } catch (err: any) {
-    return { error: true, message: err.message };
+    console.error("[Places] Error:", err);
+    return {
+      found: false,
+      error: true,
+      message: `PROXY_ERROR: ${err.message || err.code || "Unknown error"}`,
+      code: err.code || "UNKNOWN"
+    };
   }
 };
 
-export const performAuditAnalysis = async (bizName: string, location: string) => {
-  const mapsData: any = await fetchMapsData(bizName, location);
+export const performAuditAnalysis = async (bizName: string, location: string): Promise<string> => {
+  console.log(`[Audit] Starting for: ${bizName} in ${location}`);
+  
+  const mapsData = await fetchMapsData(bizName, location);
   
   let dataContext = "";
+  
   if (mapsData.found) {
-    dataContext = `✓ VERIFIED PROFILE FOUND: Rating ${mapsData.rating}/5 from ${mapsData.reviewCount} reviews. Website: ${mapsData.website || "MISSING"}.`;
+    const stars = mapsData.rating ? `${mapsData.rating}/5` : "No rating";
+    const reviews = mapsData.reviewCount > 0 ? `${mapsData.reviewCount} reviews` : "No reviews";
+    const webStatus = mapsData.website ? `Website: ${mapsData.website}` : "NO WEBSITE LINKED";
+    const phoneStatus = mapsData.phone ? `Phone: ${mapsData.phone}` : "NO PHONE LISTED";
+    
+    dataContext = `✓ VERIFIED GOOGLE BUSINESS PROFILE FOUND
+- Business Name: ${mapsData.name}
+- Rating: ${stars} (${reviews})
+- Address: ${mapsData.address}
+- Status: ${mapsData.status}
+- Category: ${mapsData.category}
+- ${webStatus}
+- ${phoneStatus}
+- Photos: ${mapsData.photos} uploaded
+- Open Now: ${mapsData.openNow !== null ? mapsData.openNow : "Unknown"}`;
   } else {
-    dataContext = `× CRITICAL FAILURE: Business is INVISIBLE to the Knowledge Graph. Data fetch returned ${mapsData.message}.`;
+    dataContext = `✗ CRITICAL: NO GOOGLE PRESENCE DETECTED
+Error Code: ${mapsData.message}
+Diagnosis: ${mapsData.suggestion}
+
+This business is currently INVISIBLE to:
+- Google Maps searches
+- AI assistants (Gemini, ChatGPT, Siri)
+- Local "near me" queries
+- Google Business Profile ecosystem
+
+REVENUE IMPACT: Potential customers cannot find this business. All searches go to competitors with verified profiles.`;
   }
 
-  const prompt = `You are Hunter AI, lead strategist at Smart Marketing. Perform a Forensic Strategic Audit for "${bizName}" in ${location}.
-  REAL DATA CONTEXT: ${dataContext}
-  MISSION: Expose pain points and gaps. 
-  RULES: Use [SECTION] for headers, [FIX] for action items. No asterisks. No markdown.
-  MANDATORY: End with exactly FINAL_SCORE: [number between 0 and 100].`;
+  const prompt = `You are Hunter AI, lead strategist at Smart Marketing South Africa. Perform a Forensic Strategic Audit.
 
+BUSINESS: "${bizName}" in ${location}
+
+${dataContext}
+
+AUDIT PROTOCOL:
+1. VISIBILITY STATUS: Is this business findable in the AI era? If NO DATA, explain the "Digital Black Hole" effect on revenue.
+2. REPUTATION ANALYSIS: If data exists, critique rating/review count vs industry standards. If missing, explain why AI won't recommend them.
+3. COMPETITIVE GAPS: List 3 specific things competitors are doing that this business isn't.
+4. AI READINESS: Can Gemini/ChatGPT cite this business? Why or why not?
+
+OUTPUT RULES:
+- NO asterisks (*), NO markdown bullets, NO bold syntax
+- Use [SECTION] for headers: [SECTION] Executive Summary
+- Use [FIX] for action items: [FIX] Immediate action required
+- Use CAPS for critical failures and emphasis
+- End with exactly: FINAL_SCORE: [0-100]
+
+SCORING GUIDE:
+0-20 = Invisible (no GBP or unverified)
+21-40 = Weak (GBP exists but incomplete/poor)
+41-60 = Average (GBP active, needs optimization)
+61-80 = Strong (well-optimized, good ratings)
+81-100 = Dominant (authoritative, highly cited, complete)`;
+
+  console.log("[Audit] Sending to AI...");
   return await callHunterAI(prompt);
 };
