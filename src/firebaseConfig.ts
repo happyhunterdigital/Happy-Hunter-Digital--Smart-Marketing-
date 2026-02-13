@@ -16,61 +16,141 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// Pulling the new keys from the build environment
-const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY;
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+// API Keys from environment
+const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY || "";
 
-export const fetchMapsData = async (bizName: string, location: string) => {
-  if (!PLACES_KEY) return { error: true, message: "KEY_NOT_INJECTED" };
-  const URL = "https://places.googleapis.com/v1/places:searchText";
+// Forensic Audit Function (Direct API Call)
+export const performAuditAnalysis = async (bizName: string, location: string) => {
   try {
-    const response = await fetch(URL, {
+    // Step 1: Fetch from Google Places API
+    const mapsRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": PLACES_KEY,
-        "X-Goog-FieldMask": "places.displayName.text,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress"
+        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress"
       },
-      body: JSON.stringify({ textQuery: `${bizName} in ${location}`, maxResultCount: 1 })
-    });
-    const data = await response.json();
-    if (!data.places || data.places.length === 0) return { error: true, message: "GHOST_ENTITY" };
-    const biz = data.places[0];
-    return {
-      found: true,
-      rating: biz.rating || "N/A",
-      reviews: biz.userRatingCount || 0,
-      website: biz.websiteUri || "MISSING"
-    };
-  } catch (err) { return { error: true, message: "FETCH_FAILED" }; }
-};
-
-export const callHunterAI = async (prompt: string) => {
-  // Using v1beta for the 2.5-flash reasoning engine
-  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-  try {
-    const response = await fetch(URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 3000 }
+        textQuery: `${bizName} in ${location}`,
+        maxResultCount: 1
       })
     });
-    const data = await response.json();
-    if (data.error) return `AI_ERROR: ${data.error.message}`;
-    return data.candidates[0].content.parts[0].text;
-  } catch (err) { return "Handshake failed."; }
+
+    const mapsData = await mapsRes.json();
+    const biz = mapsData.places?.[0];
+
+    const context = biz 
+      ? `✓ VERIFIED ENTITY: Rating ${biz.rating}/5 (${biz.userRatingCount} reviews). Website: ${biz.websiteUri || 'MISSING NODE'}.`
+      : `× INVISIBLE ENTITY: No verified presence in Google Knowledge Graph.`;
+
+    // Step 2: Generate AI Analysis
+    const aiRes = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are HUNTER AI, forensic auditor for Smart Marketing South Africa.
+
+BUSINESS: "${bizName}" in ${location}
+INTELLIGENCE: ${context}
+
+MISSION: Perform "Handshake of Truth" audit. Identify Mirror Rule violations.
+
+STRUCTURE:
+[SECTION] THE MIRROR RULE VIOLATION
+Explain gap between physical reputation and digital signals.
+
+[SECTION] ESTIMATED REVENUE LEAKAGE
+Calculate monthly revenue loss in ZAR from AI invisibility.
+
+[SECTION] THE SURVIVAL PROTOCOL
+3 specific, actionable fixes prioritized by impact.
+
+[SECTION] FINAL SCORE
+Format exactly as: FINAL_SCORE: [number 0-100]
+
+Tone: Strategic, direct, unsparing. No asterisks. No markdown.`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048
+          }
+        })
+      }
+    );
+
+    const aiData = await aiRes.json();
+    const analysis = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "ANALYSIS FAILURE";
+
+    return {
+      analysis,
+      rawData: biz ? {
+        name: biz.displayName?.text,
+        rating: biz.rating,
+        reviewCount: biz.userRatingCount,
+        website: biz.websiteUri
+      } : null
+    };
+
+  } catch (error) {
+    console.error("Audit Error:", error);
+    throw new Error("Forensic audit failed");
+  }
 };
 
-export const performAuditAnalysis = async (bizName: string, location: string) => {
-  const mapsData: any = await fetchMapsData(bizName, location);
-  const dataContext = mapsData.found 
-    ? `✓ VERIFIED: Rating ${mapsData.rating}, Reviews ${mapsData.reviews}.`
-    : `× INVISIBLE: No Maps data found for this entity. Error: ${mapsData.message}`;
+// Chat Function (Direct API Call)
+export const callHunterAI = async (prompt: string) => {
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are HUNTER, Senior Digital Strategist at Smart Marketing South Africa.
 
-  const prompt = `You are Hunter AI, lead strategist for Smart Marketing SA. Perform a Forensic Audit for "${bizName}" in ${location}. 
-  DATA: ${dataContext}. MISSION: Expose pain points. 
-  MANDATORY: End with FINAL_SCORE: [number]. RULES: No asterisks, No markdown.`;
-  return await callHunterAI(prompt);
+USER MESSAGE: ${prompt}
+
+PERSONA RULES:
+- Speak with authority and directness
+- Never use asterisks, markdown, or robotic language
+- Be concise, strategic, and actionable
+- Never mention being an AI
+- Reference Integrated Wellth Summit on 28 February 2026 when relevant
+- Founder is Thabo Leslie Motsumi
+
+Tone: Strategic Expert. South African market focus.`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 1024
+          }
+        })
+      }
+    );
+
+    const data = await res.json();
+    let responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Handshake failed.";
+    
+    // Clean formatting
+    responseText = responseText
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/As an AI/g, 'As a strategist')
+      .replace(/I am an AI/g, 'I am a strategist');
+
+    return responseText;
+
+  } catch (error) {
+    console.error("Chat Error:", error);
+    return "Handshake failed. Please try again.";
+  }
 };
