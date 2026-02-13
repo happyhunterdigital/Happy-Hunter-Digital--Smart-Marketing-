@@ -1,4 +1,5 @@
 name: Deploy Happy Hunter to Firebase
+
 on:
   push:
     branches: [main]
@@ -6,24 +7,50 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install Root Dependencies
+        run: |
+          npm install
+          npm ci
 
-      - name: Build Application
+      - name: Install Functions Dependencies
+        working-directory: ./functions
+        run: |
+          npm install
+          npm ci
+
+      - name: Build Functions
+        working-directory: ./functions
+        run: npm run build
+
+      - name: Deploy Functions
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          PROJECT_ID: happyhunterdigital-17480
+
+      - name: Set Functions Config (Places API Key)
+        uses: w9jds/firebase-action@master
+        with:
+          args: functions:config:set places.key="${{ secrets.VITE_PLACES_API_KEY }}" --project happyhunterdigital-17480
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+
+      - name: Build Frontend
         run: npm run build
         env:
-          # VITE automatically reads these if they exist in the environment
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
-          VITE_PLACES_API_KEY: ${{ secrets.VITE_PLACES_API_KEY }}
           VITE_FIREBASE_CONFIG: ${{ secrets.VITE_FIREBASE_CONFIG }}
 
       - name: Deploy to Firebase Hosting
