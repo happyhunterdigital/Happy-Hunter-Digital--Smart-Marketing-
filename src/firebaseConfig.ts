@@ -8,14 +8,14 @@ const firebaseConfig = {
   projectId: "happyhunterdigital-17480",
   storageBucket: "happyhunterdigital-17480.firebasestorage.app",
   messagingSenderId: "449102421348",
-  appId: "1:449102421348:web:d61e0c209b93bf282fae71"
+  appId: "1:449102421348:web:d61e0c209b93bf282fae71",
+  measurementId: "G-PS04HKGEXF"
 };
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// THE VERIFIED KEY FROM YOUR SCREENSHOT
 const KEY = "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
 
 export const callHunterAI = async (prompt: string) => {
@@ -26,7 +26,7 @@ export const callHunterAI = async (prompt: string) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 3000 }
+        generationConfig: { temperature: 0.7, maxOutputTokens: 4000 }
       })
     });
     const data = await response.json();
@@ -37,8 +37,6 @@ export const callHunterAI = async (prompt: string) => {
 };
 
 export const performAuditAnalysis = async (bizName: string, location: string) => {
-  const prompt = `You are Hunter AI for Smart Marketing SA. Perform a BRUTALLY HONEST audit for "${bizName}" in ${location}. 
-  Expose pain points in SEO, Social, Footprint, and AEO. 
-  MANDATORY: End with FINAL_SCORE: [number]. RULES: No asterisks, No markdown.`;
+  const prompt = `You are Hunter AI. Perform a Strategic Audit for "${bizName}" in ${location}. Focus on pain points. No asterisks. End with FINAL_SCORE: [number].`;
   return await callHunterAI(prompt);
 };
