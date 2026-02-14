@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // CRITICAL FIX
+import { Link } from 'react-router-dom'; 
 import { ShieldCheck } from 'lucide-react';
 
 export default function CookieConsent() {
@@ -7,7 +7,10 @@ export default function CookieConsent() {
 
   useEffect(() => {
     const consent = localStorage.getItem('entity_consent');
-    if (!consent) setShow(true);
+    if (!consent) {
+      const timer = setTimeout(() => setShow(true), 2000);
+      return () => clearTimeout(timer);
+    }
   }, []);
 
   const accept = () => {
