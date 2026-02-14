@@ -1,13 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>happyhunterdigital | Smart Marketing</title>
-  </head>
-  <body class="bg-[#020617]">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
-</html>
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './src/index.css'; // Mapped to your src folder path
+
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  throw new Error("CRITICAL HANDSHAKE FAILURE: Element #root not found.");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
