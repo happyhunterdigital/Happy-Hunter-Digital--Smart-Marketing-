@@ -10,19 +10,20 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   background: #020617;
   color: #ffffff;
   overflow-x: hidden;
 }
 
+/* THE HANDWRITTEN BRAND IDENTITY */
 .brand-name {
   font-family: 'Caveat', cursive;
   text-transform: lowercase;
 }
 
-/* SINGLE-LINE MARQUEE LOGIC */
+/* THE INBOUND RIBBON ENGINE */
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -30,15 +31,16 @@ body {
 
 .animate-marquee {
   display: flex;
-  width: max-content; /* Critical: Matches content width */
-  animation: marquee 50s linear infinite; /* Standard Strategic Speed */
-  white-space: nowrap; /* Forces one line */
+  width: max-content;
+  animation: marquee 40s linear infinite; /* Standard Acceptable Speed */
+  white-space: nowrap;
 }
 
 .animate-marquee:hover {
-  animation-play-state: paused;
+  animation-play-state: paused; /* Allows users to read summit details */
 }
 
+/* UTILITY ANIMATIONS */
 .animate-fade-in {
   animation: fadeIn 0.8s ease-out forwards;
 }
@@ -46,4 +48,19 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* CUSTOM SCROLLBAR */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FACC15;
 }
