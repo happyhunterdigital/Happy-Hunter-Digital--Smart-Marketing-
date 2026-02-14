@@ -17,39 +17,19 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 
 // API Keys from environment
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY || "";
+const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
+const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY || "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
 
-console.log("🔍 API Keys loaded:", {
-  geminiExists: !!GEMINI_KEY,
-  placesExists: !!PLACES_KEY,
-  geminiLength: GEMINI_KEY?.length,
-  placesLength: PLACES_KEY?.length
-});
-
-// Forensic Audit - Returns STRING
-export const performAuditAnalysis = async (bizName: string, location: string): Promise<string> => {
-  console.log("🔍 Starting audit for:", bizName, location);
-  
+// 1. SMART MARKETING GRAPH (GOOGLE MAPS)
+export const fetchMapsData = async (bizName: string, location: string) => {
+  const URL = "https://places.googleapis.com/v1/places:searchText";
   try {
-    // Check if keys exist
-    if (!PLACES_KEY) {
-      console.error("❌ PLACES_KEY is empty!");
-      return "ERROR: Places API key not configured. Check GitHub secrets.";
-    }
-    if (!GEMINI_KEY) {
-      console.error("❌ GEMINI_KEY is empty!");
-      return "ERROR: Gemini API key not configured. Check GitHub secrets.";
-    }
-
-    // Step 1: Fetch from Google Places API
-    console.log("🗺️ Calling Places API...");
-    const mapsRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    const response = await fetch(URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": PLACES_KEY,
-        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress"
+        "X-Goog-FieldMask": "places.displayName.text,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri,places.businessStatus"
       },
       body: JSON.stringify({
         textQuery: `${bizName} in ${location}`,
@@ -57,153 +37,69 @@ export const performAuditAnalysis = async (bizName: string, location: string): P
       })
     });
 
-    console.log("🗺️ Places API status:", mapsRes.status);
+    const data = await response.json();
+    if (!data.places || data.places.length === 0) return { found: false, message: "INVISIBLE" };
     
-    if (!mapsRes.ok) {
-      const errorText = await mapsRes.text();
-      console.error("❌ Places API error:", errorText);
-      return `ERROR: Places API failed (${mapsRes.status}). ${errorText}`;
-    }
-
-    const mapsData = await mapsRes.json();
-    console.log("🗺️ Places data:", mapsData);
-    
-    const biz = mapsData.places?.[0];
-
-    const context = biz 
-      ? `✓ VERIFIED ENTITY: Rating ${biz.rating}/5 (${biz.userRatingCount} reviews). Website: ${biz.websiteUri || 'MISSING NODE'}.`
-      : `× INVISIBLE ENTITY: No verified presence in Google Knowledge Graph.`;
-
-    // Step 2: Generate AI Analysis
-    console.log("🤖 Calling Gemini API...");
-    const aiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `You are HUNTER AI, forensic auditor for Smart Marketing South Africa.
-
-BUSINESS: "${bizName}" in ${location}
-INTELLIGENCE: ${context}
-
-MISSION: Perform "Handshake of Truth" audit. Identify Mirror Rule violations.
-
-STRUCTURE:
-[SECTION] THE MIRROR RULE VIOLATION
-Explain gap between physical reputation and digital signals.
-
-[SECTION] ESTIMATED REVENUE LEAKAGE
-Calculate monthly revenue loss in ZAR from AI invisibility.
-
-[SECTION] THE SURVIVAL PROTOCOL
-3 specific, actionable fixes prioritized by impact.
-
-[SECTION] FINAL SCORE
-Format exactly as: FINAL_SCORE: [number 0-100]
-
-Tone: Strategic, direct, unsparing. No asterisks. No markdown.`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2048
-          }
-        })
-      }
-    );
-
-    console.log("🤖 Gemini API status:", aiRes.status);
-
-    if (!aiRes.ok) {
-      const errorText = await aiRes.text();
-      console.error("❌ Gemini API error:", errorText);
-      return `ERROR: Gemini API failed (${aiRes.status}). ${errorText}`;
-    }
-
-    const aiData = await aiRes.json();
-    console.log("🤖 Gemini response:", aiData);
-    
-    const analysis = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
-    
-    if (!analysis) {
-      console.error("❌ No analysis in response:", aiData);
-      return "ERROR: No analysis generated. Check API response.";
-    }
-
-    return analysis;
-
-  } catch (error: any) {
-    console.error("❌ Audit exception:", error);
-    return `ERROR: ${error.message || "Unknown error"}`;
+    const biz = data.places[0];
+    return {
+      found: true,
+      name: biz.displayName?.text,
+      rating: biz.rating || "N/A",
+      reviews: biz.userRatingCount || 0,
+      website: biz.websiteUri || "MISSING"
+    };
+  } catch (err) {
+    return { found: false, message: "NETWORK_ERROR" };
   }
 };
 
-// Chat Function
+// 2. THE STABLE AI CALLER (1.5-FLASH)
 export const callHunterAI = async (prompt: string): Promise<string> => {
-  console.log("💬 Chat prompt:", prompt);
-  
+  // SWITCHED TO 1.5-FLASH FOR QUOTA STABILITY
+  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+
   try {
-    if (!GEMINI_KEY) {
-      console.error("❌ GEMINI_KEY is empty!");
-      return "ERROR: Chat service not configured.";
-    }
+    const response = await fetch(URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2500 }
+      })
+    });
 
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `You are HUNTER, Senior Digital Strategist at Smart Marketing South Africa.
+    const data = await response.json();
 
-USER MESSAGE: ${prompt}
-
-PERSONA RULES:
-- Speak with authority and directness
-- Never use asterisks, markdown, or robotic language
-- Be concise, strategic, and actionable
-- Never mention being an AI
-- Reference Integrated Wellth Summit on 28 February 2026 when relevant
-- Founder is Thabo Leslie Motsumi
-
-Tone: Strategic Expert. South African market focus.`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.8,
-            maxOutputTokens: 1024
-          }
-        })
+    if (data.error) {
+      if (data.error.code === 429) {
+        return "ERROR: Our AI strategists are currently over-capacity. Please WhatsApp Thabo directly or try again in 60 seconds.";
       }
-    );
-
-    console.log("💬 Chat API status:", res.status);
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("❌ Chat API error:", errorText);
-      return "Handshake failed. Service temporarily unavailable.";
+      return `SYSTEM_ERROR: ${data.error.message}`;
     }
 
-    const data = await res.json();
-    let responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Handshake failed.";
-    
-    // Clean formatting
-    responseText = responseText
-      .replace(/\*\*/g, '')
-      .replace(/\*/g, '')
-      .replace(/As an AI/g, 'As a strategist')
-      .replace(/I am an AI/g, 'I am a strategist');
-
-    return responseText;
-
-  } catch (error: any) {
-    console.error("❌ Chat exception:", error);
-    return "Handshake failed. Please try again.";
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Handshake failed.";
+  } catch (err: any) {
+    return "CONNECTION_ERROR: Signal lost.";
   }
+};
+
+// 3. THE FORENSIC AUDIT ANALYSIS
+export const performAuditAnalysis = async (bizName: string, location: string): Promise<string> => {
+  const mapsData = await fetchMapsData(bizName, location);
+  
+  let context = "";
+  if (mapsData.found) {
+    context = `✓ VERIFIED ENTITY FOUND: Rating ${mapsData.rating}, Reviews ${mapsData.reviews}, Website: ${mapsData.website}.`;
+  } else {
+    context = `× INVISIBLE ENTITY: Business is not verified in the Google Knowledge Graph.`;
+  }
+
+  const prompt = `You are Hunter AI, lead digital strategist for Smart Marketing South Africa. 
+  Perform an unsparing strategic audit for "${bizName}" in ${location}. 
+  REAL DATA: ${context}.
+  
+  MISSION: Expose pain points. NO asterisks. 
+  MANDATORY: End with exactly FINAL_SCORE: [number 0-100].`;
+
+  return await callHunterAI(prompt);
 };
