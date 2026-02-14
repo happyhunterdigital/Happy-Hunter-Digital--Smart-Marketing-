@@ -20,10 +20,30 @@ export const auth = getAuth(app);
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY || "";
 
-// Forensic Audit - Returns STRING (not object) for compatibility
+console.log("🔍 API Keys loaded:", {
+  geminiExists: !!GEMINI_KEY,
+  placesExists: !!PLACES_KEY,
+  geminiLength: GEMINI_KEY?.length,
+  placesLength: PLACES_KEY?.length
+});
+
+// Forensic Audit - Returns STRING
 export const performAuditAnalysis = async (bizName: string, location: string): Promise<string> => {
+  console.log("🔍 Starting audit for:", bizName, location);
+  
   try {
-    // Fetch from Google Places API
+    // Check if keys exist
+    if (!PLACES_KEY) {
+      console.error("❌ PLACES_KEY is empty!");
+      return "ERROR: Places API key not configured. Check GitHub secrets.";
+    }
+    if (!GEMINI_KEY) {
+      console.error("❌ GEMINI_KEY is empty!");
+      return "ERROR: Gemini API key not configured. Check GitHub secrets.";
+    }
+
+    // Step 1: Fetch from Google Places API
+    console.log("🗺️ Calling Places API...");
     const mapsRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
       headers: {
@@ -37,14 +57,25 @@ export const performAuditAnalysis = async (bizName: string, location: string): P
       })
     });
 
+    console.log("🗺️ Places API status:", mapsRes.status);
+    
+    if (!mapsRes.ok) {
+      const errorText = await mapsRes.text();
+      console.error("❌ Places API error:", errorText);
+      return `ERROR: Places API failed (${mapsRes.status}). ${errorText}`;
+    }
+
     const mapsData = await mapsRes.json();
+    console.log("🗺️ Places data:", mapsData);
+    
     const biz = mapsData.places?.[0];
 
     const context = biz 
       ? `✓ VERIFIED ENTITY: Rating ${biz.rating}/5 (${biz.userRatingCount} reviews). Website: ${biz.websiteUri || 'MISSING NODE'}.`
       : `× INVISIBLE ENTITY: No verified presence in Google Knowledge Graph.`;
 
-    // Generate AI Analysis
+    // Step 2: Generate AI Analysis
+    console.log("🤖 Calling Gemini API...");
     const aiRes = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
       {
@@ -84,18 +115,42 @@ Tone: Strategic, direct, unsparing. No asterisks. No markdown.`
       }
     );
 
-    const aiData = await aiRes.json();
-    return aiData.candidates?.[0]?.content?.parts?.[0]?.text || "ANALYSIS FAILURE";
+    console.log("🤖 Gemini API status:", aiRes.status);
 
-  } catch (error) {
-    console.error("Audit Error:", error);
-    return "Forensic audit failed. Please try again.";
+    if (!aiRes.ok) {
+      const errorText = await aiRes.text();
+      console.error("❌ Gemini API error:", errorText);
+      return `ERROR: Gemini API failed (${aiRes.status}). ${errorText}`;
+    }
+
+    const aiData = await aiRes.json();
+    console.log("🤖 Gemini response:", aiData);
+    
+    const analysis = aiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!analysis) {
+      console.error("❌ No analysis in response:", aiData);
+      return "ERROR: No analysis generated. Check API response.";
+    }
+
+    return analysis;
+
+  } catch (error: any) {
+    console.error("❌ Audit exception:", error);
+    return `ERROR: ${error.message || "Unknown error"}`;
   }
 };
 
-// Chat Function - Returns STRING
+// Chat Function
 export const callHunterAI = async (prompt: string): Promise<string> => {
+  console.log("💬 Chat prompt:", prompt);
+  
   try {
+    if (!GEMINI_KEY) {
+      console.error("❌ GEMINI_KEY is empty!");
+      return "ERROR: Chat service not configured.";
+    }
+
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
       {
@@ -127,6 +182,14 @@ Tone: Strategic Expert. South African market focus.`
       }
     );
 
+    console.log("💬 Chat API status:", res.status);
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("❌ Chat API error:", errorText);
+      return "Handshake failed. Service temporarily unavailable.";
+    }
+
     const data = await res.json();
     let responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Handshake failed.";
     
@@ -139,8 +202,8 @@ Tone: Strategic Expert. South African market focus.`
 
     return responseText;
 
-  } catch (error) {
-    console.error("Chat Error:", error);
+  } catch (error: any) {
+    console.error("❌ Chat exception:", error);
     return "Handshake failed. Please try again.";
   }
 };
