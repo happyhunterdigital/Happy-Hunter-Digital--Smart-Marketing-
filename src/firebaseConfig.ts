@@ -12,7 +12,6 @@ const firebaseConfig = {
   measurementId: "G-PS04HKGEXF"
 };
 
-// INITIALIZATION WITH CRASH PROTECTION
 let db: any = null;
 let auth: any = null;
 
@@ -22,39 +21,63 @@ try {
     db = getFirestore(app);
     auth = getAuth(app);
   }
-} catch (e) { console.error("Firebase Init Offline"); }
+} catch (e) { console.error("Database Handshake Offline"); }
 
 export { db, auth };
 
-// RESTORING THE STRATEGIC AI ENGINE
+const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY; // CRITICAL: Forensic Key
+
+// 1. FORENSIC GRAPH SEARCH (REAL DATA)
+export const fetchMapsData = async (bizName: string, location: string) => {
+  if (!PLACES_KEY) return "HANDSHAKE_ERROR: Places API Key Missing.";
+  
+  const URL = "https://places.googleapis.com/v1/places:searchText";
+  try {
+    const response = await fetch(URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": PLACES_KEY,
+        "X-Goog-FieldMask": "places.displayName.text,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress"
+      },
+      body: JSON.stringify({ textQuery: `${bizName} in ${location}`, maxResultCount: 1 })
+    });
+    const data = await response.json();
+    if (!data.places || data.places.length === 0) return "DATA_UNAVAILABLE: Entity invisible in the Graph.";
+    const biz = data.places[0];
+    return `Verified Data: ${biz.displayName?.text}. Rating: ${biz.rating || "N/A"}. Reviews: ${biz.userRatingCount || 0}. Website: ${biz.websiteUri || "Missing"}.`;
+  } catch (err) { return "NETWORK_ERROR"; }
+};
+
+// 2. THE CLEAN AI CALLER (Strips Markdown)
 export const callHunterAI = async (prompt: string) => {
-  const KEY = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!KEY) return "ERROR: API Key not found. Please re-run the GitHub build.";
+  if (!GEMINI_KEY) return "ERROR: AI Signal Interrupted.";
 
-  // Hard-aligned to your 2.5 Flash reasoning model
-  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${KEY}`;
-
+  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
+  
   try {
     const response = await fetch(URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.8, maxOutputTokens: 4000 }
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2000 }
       })
     });
     const data = await response.json();
-    if (data.error) return `AI_ERROR: ${data.error.message}`;
-    return data.candidates[0].content.parts[0].text;
-  } catch (err) {
-    return "Handshake lost. Please WhatsApp Thabo directly.";
-  }
+    let text = data.candidates[0].content.parts[0].text;
+    
+    // THE CLEANER: Remove every asterisk and robotic marker from the result
+    return text.replace(/\*/g, '').replace(/###/g, '').trim();
+  } catch (err) { return "Handshake failed."; }
 };
 
 export const performAuditAnalysis = async (bizName: string, location: string) => {
-  const prompt = `You are Hunter AI, lead strategist at Smart Marketing. Perform a BRUTALLY HONEST forensic audit for "${bizName}" in ${location}. 
-  Expose pain points in Local SEO, Social signals, and AEO visibility. 
-  RULES: Use [SECTION] for headers. NO asterisks.
+  const mapsData = await fetchMapsData(bizName, location);
+  const prompt = `You are Hunter AI. Perform a strategic audit for "${bizName}" in ${location}. 
+  REAL DATA FOUND: ${mapsData}. 
+  Expose pain points. NO asterisks. Use [H] for emphasis. Use [SECTION] for headers. 
   MANDATORY: End with FINAL_SCORE: [number].`;
   return await callHunterAI(prompt);
 };
