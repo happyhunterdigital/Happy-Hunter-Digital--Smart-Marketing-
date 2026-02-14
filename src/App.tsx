@@ -1,8 +1,15 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+
+// --- COMPONENTS (Found in src/components/) ---
 import Navbar from './components/Navbar';
 import Chatbot from './components/Chatbot';
-import ContentRibbon from './components/ContentRibbon';
+import Footer from './components/Footer';
+import CookieConsent from './components/CookieConsent';
+import EventPopup from './components/EventPopup';
+
+// --- PAGES (Found in src/pages/) ---
 import Home from './pages/Home';
+import Founders from './pages/Founders';
 import CoreServices from './pages/CoreServices';
 import EarnedMedia from './pages/EarnedMedia';
 import Audit from './pages/Audit';
@@ -10,15 +17,23 @@ import FAQ from './pages/FAQ';
 import ArticleReader from './pages/ArticleReader';
 import Admin from './pages/Admin';
 import SummitPage from './pages/SummitPage';
-import Founders from './pages/Founders';
 import SummitPoster from './pages/SummitPoster';
+
+// --- BLOG PAGES (Found in src/pages/blog/) ---
+import PillarAuthority from './pages/blog/PillarAuthority';
+import TrustAnchor from './pages/blog/TrustAnchor';
+import AiMegaphone from './pages/blog/AiMegaphone';
+import RevenueBrain from './pages/blog/RevenueBrain';
 
 export default function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-[#020617] text-white font-sans relative">
+      <div className="min-h-screen bg-[#020617] text-white font-sans relative flex flex-col">
+        <CookieConsent />
+        <EventPopup />
         <Navbar />
-        <main>
+        
+        <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/founders" element={<Founders />} />
@@ -30,15 +45,17 @@ export default function App() {
             <Route path="/admin-ops-center" element={<Admin />} />
             <Route path="/integrated-wellth-summit" element={<SummitPage />} />
             <Route path="/poster" element={<SummitPoster />} />
+            
+            {/* Blog Routes */}
+            <Route path="/blog/digital-authority-architecture" element={<PillarAuthority />} />
+            <Route path="/blog/trust-anchor" element={<TrustAnchor />} />
+            <Route path="/blog/ai-megaphone" element={<AiMegaphone />} />
+            <Route path="/blog/revenue-brain" element={<RevenueBrain />} />
           </Routes>
         </main>
+
         <Chatbot />
-        <footer className="py-20 border-t border-slate-900 bg-slate-950/50 backdrop-blur-sm text-center">
-            <h3 className="brand-name text-3xl text-yellow-500 mb-4">happyhunterdigital</h3>
-            <p className="text-slate-700 text-[10px] font-black uppercase tracking-[0.4em] italic">
-              Digital Entity Protocol v2.0 // Managed by Thabo Leslie Motsumi
-            </p>
-        </footer>
+        <Footer />
       </div>
     </Router>
   );
