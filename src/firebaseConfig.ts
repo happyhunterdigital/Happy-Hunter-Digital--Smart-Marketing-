@@ -20,8 +20,8 @@ export const auth = getAuth(app);
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY || "";
 
-// Forensic Audit Function
-export const performAuditAnalysis = async (bizName: string, location: string) => {
+// Forensic Audit - Returns STRING (not object) for compatibility
+export const performAuditAnalysis = async (bizName: string, location: string): Promise<string> => {
   try {
     // Fetch from Google Places API
     const mapsRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
@@ -85,26 +85,16 @@ Tone: Strategic, direct, unsparing. No asterisks. No markdown.`
     );
 
     const aiData = await aiRes.json();
-    const analysis = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "ANALYSIS FAILURE";
-
-    return {
-      analysis,
-      rawData: biz ? {
-        name: biz.displayName?.text,
-        rating: biz.rating,
-        reviewCount: biz.userRatingCount,
-        website: biz.websiteUri
-      } : null
-    };
+    return aiData.candidates?.[0]?.content?.parts?.[0]?.text || "ANALYSIS FAILURE";
 
   } catch (error) {
     console.error("Audit Error:", error);
-    throw new Error("Forensic audit failed");
+    return "Forensic audit failed. Please try again.";
   }
 };
 
-// Chat Function
-export const callHunterAI = async (prompt: string) => {
+// Chat Function - Returns STRING
+export const callHunterAI = async (prompt: string): Promise<string> => {
   try {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
@@ -140,6 +130,7 @@ Tone: Strategic Expert. South African market focus.`
     const data = await res.json();
     let responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Handshake failed.";
     
+    // Clean formatting
     responseText = responseText
       .replace(/\*\*/g, '')
       .replace(/\*/g, '')
