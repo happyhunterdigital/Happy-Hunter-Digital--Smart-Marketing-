@@ -16,11 +16,11 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// API Keys from environment
+// API Keys
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
-const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY || "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
+const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY || GEMINI_KEY;
 
-// 1. SMART MARKETING GRAPH (GOOGLE MAPS)
+// 1. SMART MARKETING GRAPH (MAPS)
 export const fetchMapsData = async (bizName: string, location: string) => {
   const URL = "https://places.googleapis.com/v1/places:searchText";
   try {
@@ -29,77 +29,63 @@ export const fetchMapsData = async (bizName: string, location: string) => {
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": PLACES_KEY,
-        "X-Goog-FieldMask": "places.displayName.text,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri,places.businessStatus"
+        "X-Goog-FieldMask": "places.displayName.text,places.rating,places.userRatingCount,places.websiteUri"
       },
-      body: JSON.stringify({
-        textQuery: `${bizName} in ${location}`,
-        maxResultCount: 1
-      })
+      body: JSON.stringify({ textQuery: `${bizName} in ${location}`, maxResultCount: 1 })
     });
-
     const data = await response.json();
-    if (!data.places || data.places.length === 0) return { found: false, message: "INVISIBLE" };
-    
+    if (!data.places?.length) return "DATA_UNAVAILABLE";
     const biz = data.places[0];
-    return {
-      found: true,
-      name: biz.displayName?.text,
-      rating: biz.rating || "N/A",
-      reviews: biz.userRatingCount || 0,
-      website: biz.websiteUri || "MISSING"
-    };
-  } catch (err) {
-    return { found: false, message: "NETWORK_ERROR" };
-  }
+    return `Verified Presence: ${biz.rating || "N/A"} stars, ${biz.userRatingCount || 0} reviews.`;
+  } catch (err) { return "DATA_FETCH_FAILED"; }
 };
 
-// 2. THE STABLE AI CALLER (1.5-FLASH)
+// 2. THE UNIVERSAL AI CALLER (Daisy Chain Logic)
 export const callHunterAI = async (prompt: string): Promise<string> => {
-  // SWITCHED TO 1.5-FLASH FOR QUOTA STABILITY
-  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+  // We try these configurations in order until one works
+  const ATTEMPTS = [
+    { version: "v1", model: "gemini-1.5-flash" }, // Stable Road
+    { version: "v1beta", model: "gemini-1.5-flash" }, // Beta Road
+    { version: "v1beta", model: "gemini-2.0-flash" } // Experimental Road
+  ];
 
-  try {
-    const response = await fetch(URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 2500 }
-      })
-    });
+  for (const config of ATTEMPTS) {
+    try {
+      const URL = `https://generativelanguage.googleapis.com/${config.version}/models/${config.model}:generateContent?key=${GEMINI_KEY}`;
+      
+      const response = await fetch(URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2000 }
+        })
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (data.error) {
-      if (data.error.code === 429) {
-        return "ERROR: Our AI strategists are currently over-capacity. Please WhatsApp Thabo directly or try again in 60 seconds.";
+      if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+        console.log(`✅ Handshake Success via ${config.model} (${config.version})`);
+        return data.candidates[0].content.parts[0].text;
       }
-      return `SYSTEM_ERROR: ${data.error.message}`;
-    }
+      
+      // If we hit a 429 (Quota), we stop and tell the user
+      if (data.error?.code === 429) {
+        return "ERROR: Capacity reached. Please try again in 60 seconds.";
+      }
 
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Handshake failed.";
-  } catch (err: any) {
-    return "CONNECTION_ERROR: Signal lost.";
+    } catch (err) {
+      console.warn(`Attempt with ${config.model} failed, trying next...`);
+    }
   }
+
+  return "CRITICAL_ERROR: All AI signal paths are blocked. Check API key status in Google Cloud.";
 };
 
-// 3. THE FORENSIC AUDIT ANALYSIS
+// 3. THE FORENSIC AUDIT
 export const performAuditAnalysis = async (bizName: string, location: string): Promise<string> => {
   const mapsData = await fetchMapsData(bizName, location);
-  
-  let context = "";
-  if (mapsData.found) {
-    context = `✓ VERIFIED ENTITY FOUND: Rating ${mapsData.rating}, Reviews ${mapsData.reviews}, Website: ${mapsData.website}.`;
-  } else {
-    context = `× INVISIBLE ENTITY: Business is not verified in the Google Knowledge Graph.`;
-  }
-
-  const prompt = `You are Hunter AI, lead digital strategist for Smart Marketing South Africa. 
-  Perform an unsparing strategic audit for "${bizName}" in ${location}. 
-  REAL DATA: ${context}.
-  
-  MISSION: Expose pain points. NO asterisks. 
-  MANDATORY: End with exactly FINAL_SCORE: [number 0-100].`;
-
+  const prompt = `You are Hunter AI for Smart Marketing. Perform a strategic audit for "${bizName}" in ${location}. 
+  REAL DATA: ${mapsData}. Expose pain points. NO asterisks. End with FINAL_SCORE: [number].`;
   return await callHunterAI(prompt);
 };
