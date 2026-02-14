@@ -14,13 +14,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
-export const auth = getAuth(app); // FIXED: Exported for Admin
+export const auth = getAuth(app);
 
 const KEY = "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
 
 export const callHunterAI = async (prompt: string) => {
-  // RESTORED: Using gemini-flash-latest as requested
-  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${KEY}`;
+  // HARD-ALIGNED TO GEMINI 2.5 FLASH
+  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${KEY}`;
   
   try {
     const response = await fetch(URL, {
@@ -33,7 +33,7 @@ export const callHunterAI = async (prompt: string) => {
     });
 
     const data = await response.json();
-    if (data.error) return `AI_ERROR: ${data.error.message} (${data.error.code})`;
+    if (data.error) return `AI_ERROR: ${data.error.message}`;
     return data.candidates[0].content.parts[0].text;
   } catch (err) {
     return "Handshake failed. Recalibrating signal...";
@@ -41,8 +41,10 @@ export const callHunterAI = async (prompt: string) => {
 };
 
 export const performAuditAnalysis = async (bizName: string, location: string) => {
-  const prompt = `You are Hunter AI, lead strategist at Smart Marketing SA. Perform a BRUTALLY HONEST strategic audit for "${bizName}" in ${location}. 
-  Focus ONLY on pain points in SEO, Social, Footprint, and AEO. 
-  MANDATORY: End with FINAL_SCORE: [number]. RULES: No asterisks, No markdown. Bold specific high-impact words with ALL CAPS.`;
+  const prompt = `You are Hunter AI for Smart Marketing SA. Perform a BRUTALLY HONEST forensic audit for "${bizName}" in ${location}. 
+  CATEGORIES: Local SEO, Social Media, Digital Footprint, and AEO Visibility.
+  FOCUS: Pain points and gaps only.
+  FORMATTING: Use [SECTION] for headers. Use [H] for paragraph intros. Use CAPS for critical words. NO asterisks.
+  MANDATORY: End with exactly FINAL_SCORE: [number].`;
   return await callHunterAI(prompt);
 };
