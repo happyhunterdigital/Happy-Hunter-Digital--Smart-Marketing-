@@ -14,46 +14,35 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
-export const auth = getAuth(app); // FIXED: Export for Admin ops
+export const auth = getAuth(app); // FIXED: Exported for Admin
 
-const KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
-const PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY || KEY;
-
-export const fetchMapsData = async (bizName: string, location: string) => {
-  const URL = "https://places.googleapis.com/v1/places:searchText";
-  try {
-    const response = await fetch(URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": PLACES_KEY,
-        "X-Goog-FieldMask": "places.displayName.text,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri"
-      },
-      body: JSON.stringify({ textQuery: `${bizName} in ${location}`, maxResultCount: 1 })
-    });
-    const data = await response.json();
-    if (!data.places?.length) return "DATA_UNAVAILABLE";
-    const biz = data.places[0];
-    return `Verified Presence: ${biz.rating || "N/A"} stars, ${biz.userRatingCount || 0} reviews.`;
-  } catch (err) { return "GRAPH_CONNECTION_ERROR"; }
-};
+const KEY = "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
 
 export const callHunterAI = async (prompt: string) => {
+  // RESTORED: Using gemini-flash-latest as requested
   const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${KEY}`;
+  
   try {
     const response = await fetch(URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.7 } })
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 4000 }
+      })
     });
+
     const data = await response.json();
+    if (data.error) return `AI_ERROR: ${data.error.message} (${data.error.code})`;
     return data.candidates[0].content.parts[0].text;
-  } catch (err) { return "Handshake failed."; }
+  } catch (err) {
+    return "Handshake failed. Recalibrating signal...";
+  }
 };
 
 export const performAuditAnalysis = async (bizName: string, location: string) => {
-  const mapsData = await fetchMapsData(bizName, location);
-  const prompt = `You are Hunter AI for Smart Marketing. Perform a Strategic Forensic Audit for "${bizName}" in ${location}. 
-  REAL DATA: ${mapsData}. MISSION: Expose pain points. NO asterisks. End with FINAL_SCORE: [number].`;
+  const prompt = `You are Hunter AI, lead strategist at Smart Marketing SA. Perform a BRUTALLY HONEST strategic audit for "${bizName}" in ${location}. 
+  Focus ONLY on pain points in SEO, Social, Footprint, and AEO. 
+  MANDATORY: End with FINAL_SCORE: [number]. RULES: No asterisks, No markdown. Bold specific high-impact words with ALL CAPS.`;
   return await callHunterAI(prompt);
 };
