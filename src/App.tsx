@@ -1,13 +1,13 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
-// --- COMPONENTS (Found in src/components/) ---
+// --- COMPONENTS ---
 import Navbar from './components/Navbar';
 import Chatbot from './components/Chatbot';
 import Footer from './components/Footer';
 import CookieConsent from './components/CookieConsent';
 import EventPopup from './components/EventPopup';
 
-// --- PAGES (Found in src/pages/) ---
+// --- PAGES ---
 import Home from './pages/Home';
 import Founders from './pages/Founders';
 import CoreServices from './pages/CoreServices';
@@ -19,7 +19,7 @@ import Admin from './pages/Admin';
 import SummitPage from './pages/SummitPage';
 import SummitPoster from './pages/SummitPoster';
 
-// --- BLOG PAGES (Found in src/pages/blog/) ---
+// --- BLOG PAGES (Folder: src/pages/blog/) ---
 import PillarAuthority from './pages/blog/PillarAuthority';
 import TrustAnchor from './pages/blog/TrustAnchor';
 import AiMegaphone from './pages/blog/AiMegaphone';
@@ -33,7 +33,7 @@ export default function App() {
         <EventPopup />
         <Navbar />
         
-        <main className="flex-grow">
+        <main className="flex-grow pt-24">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/founders" element={<Founders />} />
@@ -46,7 +46,7 @@ export default function App() {
             <Route path="/integrated-wellth-summit" element={<SummitPage />} />
             <Route path="/poster" element={<SummitPoster />} />
             
-            {/* Blog Routes */}
+            {/* Intelligence Hub Routes */}
             <Route path="/blog/digital-authority-architecture" element={<PillarAuthority />} />
             <Route path="/blog/trust-anchor" element={<TrustAnchor />} />
             <Route path="/blog/ai-megaphone" element={<AiMegaphone />} />
