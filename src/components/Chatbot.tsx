@@ -6,19 +6,16 @@ export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState([{ role: 'bot', text: "Signal established. How can Smart Marketing transform your entity today?" }]);
+  const [messages, setMessages] = useState([{ role: 'bot', text: "Signal established. I am Hunter AI. How can Smart Marketing transform your entity today?" }]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { scrollRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  // THE CHAT PARSER: Turns AI text into professional styled paragraphs
   const renderFormattedChat = (text: string) => {
     return text.split('\n').filter(line => line.trim() !== "").map((line, i) => {
-      // Handle "Section" style (Headings)
       if (line.startsWith('[SECTION]') || line.includes(':')) {
         return <p key={i} className="text-yellow-500 font-black uppercase text-[10px] tracking-widest mb-1 mt-4">{line.replace('[SECTION]', '')}</p>;
       }
-      // Handle "Emphasis" style (H-tags)
       const parts = line.split(/(\[H\].*?\[\/H\]|[A-Z]{4,})/g);
       return (
         <p key={i} className="mb-3 text-slate-300 leading-relaxed font-medium">
@@ -39,12 +36,18 @@ export default function Chatbot() {
     setInput("");
     setLoading(true);
 
-    const prompt = `You are Hunter AI for Smart Marketing. 
-    INSTRUCTION: Well-structured, paragraphed response. NO ASTERISKS. NO MARKDOWN.
-    Use [H] for important words. Use [SECTION] for titles.
-    QUERY: ${userText}`;
+    // INJECTING SUMMIT KNOWLEDGE
+    const systemInstructions = `
+      You are Hunter AI for Smart Marketing SA. 
+      SUMMIT KNOWLEDGE: You are officially invited to lead a session at the Integrated Wellth Summit on 28 February 2026 at Munyaka Waterfall City. 
+      SESSION TOPICS: AI-Powered Marketing, Automation Frameworks, and GMB Optimization for SMEs.
+      GOAL: Help non-technical business owners scale.
+      CTAs: Direct users to the Entity Scan on this site or suggest they reserve a spot for the summit.
+      RULES: Well-structured paragraphs. NO asterisks. Use [H] for emphasis.
+      QUERY: ${userText}
+    `;
 
-    const responseText = await callHunterAI(prompt);
+    const responseText = await callHunterAI(systemInstructions);
     setMessages(prev => [...prev, { role: 'bot', text: responseText }]);
     setLoading(false);
   }
@@ -58,17 +61,17 @@ export default function Chatbot() {
               <span className="font-black uppercase tracking-tighter text-sm flex items-center gap-2"><Bot size={16}/> Hunter AI</span>
               <span className="text-[8px] uppercase tracking-widest opacity-70 mt-1 font-black">Smart Marketing</span>
             </div>
-            <button onClick={() => setIsOpen(false)}><X size={20}/></button>
+            <button onClick={() => setIsOpen(false)} className="hover:rotate-90 transition-transform"><X size={20}/></button>
           </div>
-          <div className="flex-1 overflow-y-auto p-5 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:20px_20px]">
+          <div className="flex-1 overflow-y-auto p-5 space-y-6">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-4 rounded-2xl text-[13px] shadow-sm ${m.role === 'user' ? 'bg-yellow-500 text-slate-950 font-bold' : 'bg-slate-900 border border-slate-800'}`}>
+                <div className={`max-w-[85%] p-4 rounded-2xl text-[13px] leading-relaxed shadow-sm ${m.role === 'user' ? 'bg-yellow-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-300 border border-slate-800'}`}>
                   {m.role === 'bot' ? renderFormattedChat(m.text) : m.text}
                 </div>
               </div>
             ))}
-            {loading && <div className="text-[10px] text-yellow-500 font-bold animate-pulse uppercase tracking-[0.2em] ml-2">Establishing Protocol...</div>}
+            {loading && <div className="text-[10px] text-yellow-500 font-bold animate-pulse uppercase tracking-widest">Reasoning...</div>}
             <div ref={scrollRef} />
           </div>
           <div className="p-4 border-t border-slate-900 flex gap-2">
