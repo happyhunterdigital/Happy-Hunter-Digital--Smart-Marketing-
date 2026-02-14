@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { GoogleGenerativeAI } from "@google/generative-ai"; // OFFICIAL SDK
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc",
@@ -17,31 +17,28 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
-// 1. INITIALIZE THE SDK BRAIN
+// 1. INITIALIZE THE LATEST AI ENGINE
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
 const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
 // 2. THE UNIVERSAL AI CALLER (SDK VERSION)
 export const callHunterAI = async (prompt: string): Promise<string> => {
   try {
-    // We use 1.5-flash because it has the highest free-tier quota
+    // Using 'gemini-flash-latest' as per your recommendation
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: { temperature: 0.7, maxOutputTokens: 2000 }
+      model: "gemini-flash-latest",
+      generationConfig: { temperature: 0.7, maxOutputTokens: 3000 }
     });
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
-
-    if (!text) throw new Error("Empty Response");
-    return text;
+    return response.text();
 
   } catch (err: any) {
     if (err.message?.includes("429")) {
-      return "ERROR: The Smart Marketing Graph is currently processing a high volume of SME data. Please try again in 30 seconds or WhatsApp Thabo directly.";
+      return "ERROR: Our strategic graph is currently under high load. Please try again in 30 seconds or WhatsApp Thabo directly.";
     }
-    return `CONNECTION_ERROR: Protocol handshake refused. (${err.message})`;
+    return "Handshake failed. Protocol recalibrating.";
   }
 };
 
@@ -60,17 +57,22 @@ export const fetchMapsData = async (bizName: string, location: string) => {
       body: JSON.stringify({ textQuery: `${bizName} in ${location}`, maxResultCount: 1 })
     });
     const data = await response.json();
-    if (!data.places?.length) return "DATA_UNAVAILABLE";
+    if (!data.places || data.places.length === 0) return "DATA_UNAVAILABLE";
     const biz = data.places[0];
-    return `Verified Rating: ${biz.rating || "N/A"} (${biz.userRatingCount || 0} reviews).`;
-  } catch (err) { return "DATA_FETCH_FAILED"; }
+    return `✓ Verified Presence Found. Rating: ${biz.rating || "N/A"} stars. Reviews: ${biz.userRatingCount || 0}.`;
+  } catch (err) { return "GRAPH_CONNECTION_ERROR"; }
 };
 
-// 4. THE FORENSIC AUDIT
+// 4. THE UNSPARING FORENSIC AUDIT
 export const performAuditAnalysis = async (bizName: string, location: string): Promise<string> => {
   const mapsData = await fetchMapsData(bizName, location);
-  const prompt = `You are Hunter AI, lead digital strategist at Smart Marketing SA. Perform a forensic audit for "${bizName}" in ${location}.
-  REAL MAPS DATA: ${mapsData}
-  MISSION: Expose gaps in Local SEO, Social signals, and AI visibility. NO asterisks. End with FINAL_SCORE: [number].`;
+  const prompt = `
+    You are Hunter AI for Smart Marketing. Perform a Strategic Audit for: "${bizName}" in ${location}.
+    REAL DATA FROM SMART MARKETING GRAPH: ${mapsData}
+
+    MISSION: Expose pain points and gaps. 
+    RULES: No asterisks. [SECTION] for headers. [FIX] for actions.
+    MANDATORY: End with exactly FINAL_SCORE: [number 0-100].
+  `;
   return await callHunterAI(prompt);
 };
