@@ -1,4 +1,5 @@
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 
 // --- COMPONENTS ---
 import Navbar from './components/Navbar';
@@ -20,19 +21,27 @@ import Admin from './pages/Admin';
 import SummitPage from './pages/SummitPage';
 import SummitPoster from './pages/SummitPoster';
 
+// --- BLOG PAGES ---
+import PillarAuthority from './pages/blog/PillarAuthority';
+import TrustAnchor from './pages/blog/TrustAnchor';
+import AiMegaphone from './pages/blog/AiMegaphone';
+import RevenueBrain from './pages/blog/RevenueBrain';
+
 export default function App() {
   return (
     <Router>
       <div className="min-h-screen bg-[#020617] text-white font-sans relative flex flex-col">
         
-        {/* THE HEADER STACK (Fixed at Top) */}
+        {/* THE FIXED HEADER STACK */}
         <ContentRibbon />
-        <Navbar />
+        <div className="mt-12"> {/* This pushes the Navbar below the ribbon */}
+          <Navbar />
+        </div>
 
         <CookieConsent />
         <EventPopup />
         
-        <main className="flex-grow pt-32"> {/* Pushes content down so it's not hidden by headers */}
+        <main className="flex-grow pt-24">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/founders" element={<Founders />} />
@@ -43,14 +52,10 @@ export default function App() {
             <Route path="/article/:id" element={<ArticleReader />} />
             <Route path="/integrated-wellth-summit" element={<SummitPage />} />
             <Route path="/poster" element={<SummitPoster />} />
-            
-            {/* Blog Cluster */}
             <Route path="/blog/digital-authority-architecture" element={<PillarAuthority />} />
             <Route path="/blog/trust-anchor" element={<TrustAnchor />} />
             <Route path="/blog/ai-megaphone" element={<AiMegaphone />} />
             <Route path="/blog/revenue-brain" element={<RevenueBrain />} />
-
-            {/* Ops Center */}
             <Route path="/admin-ops-center" element={<Admin />} />
           </Routes>
         </main>
@@ -61,9 +66,3 @@ export default function App() {
     </Router>
   );
 }
-
-// Fallback components to prevent import crashes
-function PillarAuthority() { return null; }
-function TrustAnchor() { return null; }
-function AiMegaphone() { return null; }
-function RevenueBrain() { return null; }
