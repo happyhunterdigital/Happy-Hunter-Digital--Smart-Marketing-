@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export default function Home() {
   return (
     <div className="font-sans text-white">
-      {/* 1. HERO SECTION */}
+      {/* HERO SECTION */}
       <section className="px-6 py-20 lg:py-32 max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
         <div className="space-y-8 animate-fade-in text-center lg:text-left">
           <div className="inline-flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-2 rounded-full mx-auto lg:mx-0">
@@ -14,7 +14,7 @@ export default function Home() {
           <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85]">
             Stop Being <br /><span className="text-yellow-500 italic">Invisible</span>
           </h1>
-          <p className="text-slate-500 text-lg md:text-xl italic max-w-md mx-auto lg:mx-0">Standard SEO is dead. If you aren't a <b>Verified Entity</b>, you don't exist.</p>
+          <p className="text-slate-500 text-lg md:text-xl italic max-w-md mx-auto lg:mx-0 font-medium">Standard SEO is dead. If you aren't a <b>Verified Entity</b>, you don't exist.</p>
           <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 pt-6">
             <Link to="/audit" className="bg-yellow-500 text-slate-950 px-10 py-5 rounded-2xl font-black text-lg hover:scale-105 transition-all flex items-center justify-center gap-3 shadow-xl shadow-yellow-500/10">
               ASSESS YOUR BUSINESS <Search size={22}/>
@@ -34,10 +34,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. THE PROBLEM SECTION */}
-      <section className="bg-slate-900/30 border-y border-slate-900 py-32 px-6">
+      {/* PROBLEM SECTION */}
+      <section className="bg-slate-900/30 border-y border-slate-900 py-32 px-6 text-center lg:text-left">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-20 items-center">
-          <div className="space-y-8 text-left">
+          <div className="space-y-8">
             <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-none">The Great AI <span className="text-slate-800">Filter</span></h2>
             <p className="text-slate-400 text-lg leading-relaxed font-medium">
               Google SGE and Gemini are now filtering out businesses that lack <span className="text-yellow-500 font-black">Entity Trust</span>. If your digital footprint is fragmented, AI search engines will protect their users by simply never mentioning your brand.
@@ -45,13 +45,13 @@ export default function Home() {
           </div>
           <div className="grid gap-4">
              {[
-               { icon: <ShieldCheck className="text-yellow-500" />, title: "The Trust Anchor", desc: "Digital Passport (GMB) Management." },
-               { icon: <Cpu className="text-yellow-500" />, title: "The AI Megaphone", desc: "Answer Engine Optimization (AEO)." },
-               { icon: <Zap className="text-yellow-500" />, title: "The Revenue Brain", desc: "Agentic Lead Automation." }
+               { title: "The Trust Anchor", desc: "Digital Passport (GMB) Management." },
+               { title: "The AI Megaphone", desc: "Answer Engine Optimization (AEO)." },
+               { title: "The Revenue Brain", desc: "Agentic Lead Automation." }
              ].map((item, idx) => (
                <div key={idx} className="p-8 border border-slate-800 rounded-[2.5rem] bg-slate-950/50 flex items-center gap-6 hover:border-yellow-500/30 transition-all">
-                  <div className="bg-slate-900 p-4 rounded-2xl">{item.icon}</div>
-                  <div><h4 className="font-black uppercase text-lg">{item.title}</h4><p className="text-slate-500 text-sm italic font-medium text-left">{item.desc}</p></div>
+                  <ShieldCheck className="text-yellow-500" />
+                  <div><h4 className="font-black uppercase text-lg">{item.title}</h4><p className="text-slate-500 text-sm italic font-medium">{item.desc}</p></div>
                </div>
              ))}
           </div>
