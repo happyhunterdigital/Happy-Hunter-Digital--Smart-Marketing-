@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc",
@@ -15,39 +16,26 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export const functions = getFunctions(app, "africa-south1"); // HARD-ALIGNED
 
-// 1. THE SECRET SANITIZER
-const getSecret = (val: string | undefined) => (val || "").replace(/['"]+/g, '').trim();
+// SECURE CALLERS
+const auditProxy = httpsCallable(functions, 'performForensicAudit');
+const chatProxy = httpsCallable(functions, 'hunterChatProxy');
 
-const GEMINI_KEY = getSecret(import.meta.env.VITE_GEMINI_API_KEY) || "AIzaSyDImAFg8zzlljI1XG38mYXClH3gPa522hs";
-
-export const callHunterAI = async (prompt: string): Promise<string> => {
-  // CRITICAL: Handshake aligned to v1beta and gemini-2.5-flash with NO spaces
-  const URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-  
+export const performAuditAnalysis = async (bizName: string, location: string) => {
   try {
-    const response = await fetch(URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 4000 }
-      })
-    });
-
-    const data = await response.json();
-    if (data.error) return `AI_ERROR: ${data.error.message}`;
-    
-    // THE CLEANER: Stripping all asterisks and robotic markers
-    return data.candidates[0].content.parts[0].text.replace(/\*/g, '').trim();
-  } catch (err: any) {
-    return "Handshake failed. Protocol recalibrating.";
+    const result: any = await auditProxy({ bizName, location });
+    return result.data.analysis; // Extracts the text from the JSON object
+  } catch (err) {
+    return "SYSTEM_ERROR: Secure Handshake Refused.";
   }
 };
 
-export const performAuditAnalysis = async (bizName: string, location: string) => {
-  const prompt = `You are Hunter AI for Smart Marketing SA. Perform an unsparing strategic audit for "${bizName}" in ${location}. 
-  FOCUS: Pain points in Local SEO, Social signals, and AI visibility. NO asterisks.
-  MANDATORY: End with exactly FINAL_SCORE: [number]. Bold key words with ALL CAPS.`;
-  return await callHunterAI(prompt);
+export const callHunterAI = async (prompt: string) => {
+  try {
+    const result: any = await chatProxy({ prompt });
+    return result.data.response;
+  } catch (err) {
+    return "Protocol active. Please use the Entity Scan for full forensic analysis.";
+  }
 };
