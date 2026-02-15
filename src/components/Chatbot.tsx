@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { callHunterAI } from '../firebaseConfig'; 
-import { MessageSquare, Send, X, Bot, Zap } from 'lucide-react';
+import { MessageSquare, Send, X, Bot } from 'lucide-react';
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,10 +17,21 @@ export default function Chatbot() {
     setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setInput("");
     setLoading(true);
-    const responseText = await callHunterAI(`CONTEXT: Smart Marketing SA Advisor. QUERY: ${userText}`);
+    const responseText = await callHunterAI(`CONTEXT: Smart Marketing SA Advisor. NO asterisks. QUERY: ${userText}`);
     setMessages(prev => [...prev, { role: 'bot', text: responseText }]);
     setLoading(false);
   }
+
+  const parseResponse = (text: string) => {
+    return text.split('\n').filter(l => l.trim() !== "").map((line, i) => {
+      const parts = line.split(/([A-Z]{5,})/g);
+      return (
+        <p key={i} className="mb-3 leading-relaxed">
+          {parts.map((part, j) => /^[A-Z]{5,}$/.test(part) ? <span key={j} className="text-yellow-500 font-black">{part}</span> : part)}
+        </p>
+      );
+    });
+  };
 
   return (
     <div className="fixed bottom-6 right-6 z-[90]">
@@ -37,7 +48,7 @@ export default function Chatbot() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] p-4 rounded-2xl text-[13px] leading-relaxed shadow-sm ${m.role === 'user' ? 'bg-yellow-500 text-slate-950 font-bold' : 'bg-slate-900 text-slate-300 border border-slate-800'}`}>
-                  {m.text}
+                  {m.role === 'bot' ? parseResponse(m.text) : m.text}
                 </div>
               </div>
             ))}
