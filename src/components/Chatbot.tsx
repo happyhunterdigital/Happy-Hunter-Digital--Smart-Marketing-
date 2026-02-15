@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { callHunterAI } from '../firebaseConfig'; 
-import { MessageSquare, Send, X, Bot } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, Zap } from 'lucide-react';
 
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,17 +17,21 @@ export default function Chatbot() {
     setMessages(prev => [...prev, { role: 'user', text: userText }]);
     setInput("");
     setLoading(true);
-    const responseText = await callHunterAI(`CONTEXT: Smart Marketing SA Advisor. NO asterisks. QUERY: ${userText}`);
+    const responseText = await callHunterAI(userText);
     setMessages(prev => [...prev, { role: 'bot', text: responseText }]);
     setLoading(false);
   }
 
   const parseResponse = (text: string) => {
     return text.split('\n').filter(l => l.trim() !== "").map((line, i) => {
-      const parts = line.split(/([A-Z]{5,})/g);
+      const parts = line.split(/(\[H\].*?\[\/H\]|[A-Z]{4,})/g);
       return (
         <p key={i} className="mb-3 leading-relaxed">
-          {parts.map((part, j) => /^[A-Z]{5,}$/.test(part) ? <span key={j} className="text-yellow-500 font-black">{part}</span> : part)}
+          {parts.map((part, j) => {
+            if (part.startsWith('[H]')) return <span key={j} className="text-yellow-500 font-bold">{part.replace(/\[\/H\]|\[H\]/g, '')}</span>;
+            if (/^[A-Z]{4,}$/.test(part)) return <span key={j} className="text-yellow-500 font-black">{part}</span>;
+            return part;
+          })}
         </p>
       );
     });
@@ -56,8 +60,8 @@ export default function Chatbot() {
             <div ref={scrollRef} />
           </div>
           <div className="p-4 border-t border-slate-900 flex gap-2 bg-slate-950">
-            <input className="flex-1 bg-slate-950 p-3 rounded-xl text-xs border border-slate-800 focus:border-yellow-500 text-white outline-none" placeholder="Query the entity..." value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} />
-            <button onClick={sendMessage} className="bg-yellow-500 p-3 rounded-xl text-slate-950 hover:bg-yellow-400 transition-colors"><Send size={16}/></button>
+            <input className="flex-1 bg-slate-900 p-3 rounded-xl text-xs border border-slate-800 focus:border-yellow-500 text-white outline-none" placeholder="Query the entity..." value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && sendMessage()} />
+            <button onClick={sendMessage} className="bg-yellow-500 p-3 rounded-xl text-slate-950 hover:bg-yellow-400 transition-colors shadow-lg"><Send size={16}/></button>
           </div>
         </div>
       ) : (
