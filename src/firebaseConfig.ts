@@ -3,10 +3,11 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// 1. ROBUST CONFIG LOAD
-// Tries to parse the GitHub Secret JSON first, falls back to manual env vars
+// 1. SAFETY CONFIG LOADING
+// This prevents the "JSON Parse" error if the secret is missing during build
 let firebaseConfig;
 try {
+  // Tries to load from GitHub Secret first
   const rawConfig = import.meta.env.VITE_FIREBASE_CONFIG;
   if (rawConfig && rawConfig.startsWith('{')) {
     firebaseConfig = JSON.parse(rawConfig);
@@ -14,8 +15,9 @@ try {
     throw new Error("Using Manual Config");
   }
 } catch (e) {
+  // FALLBACK: Hardcoded config (Safe for public client-side apps)
   firebaseConfig = {
-    apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc", // Hardcoded safe for client-side
+    apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc",
     authDomain: "happyhunterdigital-17480.firebaseapp.com",
     projectId: "happyhunterdigital-17480",
     storageBucket: "happyhunterdigital-17480.firebasestorage.app",
@@ -30,27 +32,28 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// 3. THE MASTER AI HANDSHAKE
-// This function handles the connection to Gemini securely from the client
+// 3. THE ROBUST AI CALLER (CLIENT-SIDE)
 export const callHunterAI = async (prompt: string, isJsonMode = false) => {
-  const RAW_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+  // debug: Check if key exists in the build
+  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
   
-  // Debug Log (Visible in Console F12)
-  console.log("Hunter AI Signal Check:", RAW_KEY ? "KEY PRESENT" : "KEY MISSING");
-
-  if (!RAW_KEY) {
+  if (!API_KEY) {
+    console.error("CRITICAL: VITE_GEMINI_API_KEY is missing.");
     return isJsonMode ? 
-      JSON.stringify({ error: "MISSING_KEY", analysis: [] }) : 
-      "SYSTEM ALERT: API Key lost in deployment. Check GitHub Secrets.";
+      JSON.stringify({ score: 0, analysis: [{ heading: "Config Error", content: "API Key Missing", requirement: "Check GitHub Secrets" }] }) 
+      : "System Error: API Key not found.";
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(RAW_KEY);
-    // Using 1.5 Flash as it is the most stable for Client-Side calls currently
+    // Initialize Gemini Client
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    
+    // Use 'gemini-1.5-flash' for speed and stability
     const model = genAI.getGenerativeModel({ 
       model: "gemini-1.5-flash",
       generationConfig: {
-        responseMimeType: isJsonMode ? "application/json" : "text/plain"
+        // Force JSON if requested (Crucial for the Audit)
+        responseMimeType: isJsonMode ? "application/json" : "text/plain" 
       }
     });
 
@@ -59,13 +62,11 @@ export const callHunterAI = async (prompt: string, isJsonMode = false) => {
     return response.text();
 
   } catch (error: any) {
-    console.error("HANDSHAKE FAILED:", error);
-    
-    // Friendly error for the UI
-    if (error.message.includes("403")) return "ACCESS DENIED: Check Google Cloud API Restrictions.";
-    if (error.message.includes("429")) return "TRAFFIC OVERLOAD: Too many requests. Try again.";
-    
-    return "SIGNAL LOST: connection failed. Please retry.";
+    console.error("HUNTER AI ERROR:", error);
+    // Return a safe fallback string so the UI doesn't crash
+    return isJsonMode ? 
+      JSON.stringify({ score: 0, analysis: [] }) 
+      : "Hunter AI is currently recalibrating. Please try again in 10 seconds.";
   }
 };
 
