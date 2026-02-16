@@ -33,7 +33,7 @@ jobs:
       - name: Build Application
         run: npm run build
         env:
-          # THIS INJECTS THE KEYS INTO THE BUILD
+          # These inject the secrets from GitHub Settings into the Vite Build
           VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           VITE_PLACES_API_KEY: ${{ secrets.VITE_PLACES_API_KEY }}
           VITE_FIREBASE_CONFIG: ${{ secrets.VITE_FIREBASE_CONFIG }}
