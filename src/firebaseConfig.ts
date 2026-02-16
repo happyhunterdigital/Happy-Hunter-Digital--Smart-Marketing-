@@ -1,73 +1,57 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
 
-// 1. SAFETY CONFIG LOADING
-// This prevents the "JSON Parse" error if the secret is missing during build
-let firebaseConfig;
-try {
-  // Tries to load from GitHub Secret first
-  const rawConfig = import.meta.env.VITE_FIREBASE_CONFIG;
-  if (rawConfig && rawConfig.startsWith('{')) {
-    firebaseConfig = JSON.parse(rawConfig);
-  } else {
-    throw new Error("Using Manual Config");
-  }
-} catch (e) {
-  // FALLBACK: Hardcoded config (Safe for public client-side apps)
-  firebaseConfig = {
-    apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc",
-    authDomain: "happyhunterdigital-17480.firebaseapp.com",
-    projectId: "happyhunterdigital-17480",
-    storageBucket: "happyhunterdigital-17480.firebasestorage.app",
-    messagingSenderId: "449102421348",
-    appId: "1:449102421348:web:d61e0c209b93bf282fae71",
-    measurementId: "G-PS04HKGEXF"
-  };
+// Your Firebase config from the console (these are public, safe to expose)
+const firebaseConfig = {
+  apiKey: "AIzaSyBQvZ2-w9DrJWQEgy4IarClycARAvMJIAc",
+  authDomain: "happyhunterdigital-17480.firebaseapp.com",
+  projectId: "happyhunterdigital-17480",
+  storageBucket: "happyhunterdigital-17480.firebasestorage.app",
+  messagingSenderId: "449102421348",
+  appId: "1:449102421348:web:d61e0c209b93bf282fae71",
+  measurementId: "G-PS04HKGEXF"
+};
+
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const functions = getFunctions(app, "africa-south1");
+
+// Connect to emulator in development
+if (import.meta.env.DEV) {
+  // connectFunctionsEmulator(functions, "localhost", 5001);
 }
 
-// 2. INITIALIZE FIREBASE
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-// 3. THE ROBUST AI CALLER (CLIENT-SIDE)
-export const callHunterAI = async (prompt: string, isJsonMode = false) => {
-  // debug: Check if key exists in the build
-  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-  
-  if (!API_KEY) {
-    console.error("CRITICAL: VITE_GEMINI_API_KEY is missing.");
-    return isJsonMode ? 
-      JSON.stringify({ score: 0, analysis: [{ heading: "Config Error", content: "API Key Missing", requirement: "Check GitHub Secrets" }] }) 
-      : "System Error: API Key not found.";
-  }
-
+// SECURE CALLERS - These call the Firebase Functions (server-side)
+export const performAuditAnalysis = async (bizName: string, location: string) => {
   try {
-    // Initialize Gemini Client
-    const genAI = new GoogleGenerativeAI(API_KEY);
-    
-    // Use 'gemini-1.5-flash' for speed and stability
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        // Force JSON if requested (Crucial for the Audit)
-        responseMimeType: isJsonMode ? "application/json" : "text/plain" 
-      }
-    });
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-
-  } catch (error: any) {
-    console.error("HUNTER AI ERROR:", error);
-    // Return a safe fallback string so the UI doesn't crash
-    return isJsonMode ? 
-      JSON.stringify({ score: 0, analysis: [] }) 
-      : "Hunter AI is currently recalibrating. Please try again in 10 seconds.";
+    const auditProxy = httpsCallable(functions, 'performForensicAudit');
+    const result = await auditProxy({ bizName, location });
+    return result.data as { analysis: any[], score: number, rawResponse: string, mapsData: any };
+  } catch (err: any) {
+    console.error("Audit handshake failed:", err);
+    return {
+      analysis: [{
+        heading: "System Error",
+        content: "Secure handshake failed. The AI audit engine is temporarily unavailable.",
+        type: "error"
+      }],
+      score: 0,
+      rawResponse: err.message,
+      mapsData: null
+    };
   }
 };
 
-export { db, auth };
+export const callHunterAI = async (prompt: string) => {
+  try {
+    const chatProxy = httpsCallable(functions, 'hunterChatProxy');
+    const result = await chatProxy({ prompt });
+    return (result.data as { response: string }).response;
+  } catch (err: any) {
+    console.error("Chat handshake failed:", err);
+    return "SIGNAL INTERRUPTED: Handshake failed. Please book a call at https://calendly.com/motsumitl/30min";
+  }
+};
