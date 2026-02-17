@@ -1,78 +1,53 @@
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+// src/App.tsx
+import { Routes, Route } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
+import { Navbar, Footer, CookieConsent, Chatbot, GlobalErrorBoundary } from './components';
+import Home from './pages/Home';
 
-// 🛡️ IRON DOME: Use barrel imports to avoid case sensitivity issues
-import {
-  Navbar,
-  Chatbot,
-  Footer,
-  CookieConsent,
-  EventPopup,
-  ContentRibbon,
-} from './components';
-
-import {
-  Home,
-  Founders,
-  CoreServices,
-  EarnedMedia,
-  Audit,
-  FAQ,
-  ArticleReader,
-  Admin,
-  SummitPage,
-  SummitPoster,
-} from './pages';
-
-// Lazy load blog pages
-const PillarAuthority = lazy(() => import('./pages/blog/PillarAuthority'));
-const TrustAnchor = lazy(() => import('./pages/blog/TrustAnchor'));
-const AiMegaphone = lazy(() => import('./pages/blog/AiMegaphone'));
-const RevenueBrain = lazy(() => import('./pages/blog/RevenueBrain'));
+// Lazy load heavy pages
+const Audit = lazy(() => import('./pages/Audit'));
+const Admin = lazy(() => import('./pages/Admin'));
+const Founders = lazy(() => import('./pages/Founders'));
+const CoreServices = lazy(() => import('./pages/CoreServices'));
+const EarnedMedia = lazy(() => import('./pages/EarnedMedia'));
+const FAQ = lazy(() => import('./pages/FAQ'));
+const SummitPage = lazy(() => import('./pages/SummitPage'));
+const ArticleReader = lazy(() => import('./pages/ArticleReader'));
 
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-950">
-    <div className="animate-pulse text-yellow-500 font-black uppercase tracking-widest">
-      Initializing...
-    </div>
+  <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
   </div>
 );
 
-export default function App() {
+function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-[#020617] text-white font-sans relative flex flex-col">
-        <ContentRibbon />
-        <div className="mt-12">
-          <Navbar />
-        </div>
+    <GlobalErrorBoundary>
+      <div className="min-h-screen bg-[#020617] text-white font-sans flex flex-col">
         <CookieConsent />
-        <EventPopup />
+        <Navbar />
         
-        <main className="flex-grow pt-24">
+        <main className="flex-grow">
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/audit" element={<Audit />} />
               <Route path="/founders" element={<Founders />} />
               <Route path="/core-services" element={<CoreServices />} />
               <Route path="/earned-media" element={<EarnedMedia />} />
-              <Route path="/audit" element={<Audit />} />
               <Route path="/faq" element={<FAQ />} />
               <Route path="/article/:id" element={<ArticleReader />} />
-              <Route path="/integrated-wellth-summit" element={<SummitPage />} />
-              <Route path="/poster" element={<SummitPoster />} />
-              <Route path="/blog/digital-authority-architecture" element={<PillarAuthority />} />
-              <Route path="/blog/trust-anchor" element={<TrustAnchor />} />
-              <Route path="/blog/ai-megaphone" element={<AiMegaphone />} />
-              <Route path="/blog/revenue-brain" element={<RevenueBrain />} />
               <Route path="/admin-ops-center" element={<Admin />} />
+              <Route path="/integrated-wellth-summit" element={<SummitPage />} />
             </Routes>
           </Suspense>
         </main>
-        
+
         <Chatbot />
         <Footer />
       </div>
-    </Router>
+    </GlobalErrorBoundary>
   );
 }
+
+export default App;
