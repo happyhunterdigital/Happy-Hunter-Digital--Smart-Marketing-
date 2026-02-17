@@ -1,4 +1,7 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+// src/components/GlobalErrorBoundary.tsx
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Props {
   children: ReactNode;
@@ -6,36 +9,91 @@ interface Props {
 
 interface State {
   hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
-export class GlobalErrorBoundary extends Component<Props, State> {
+export default class GlobalErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false
+    hasError: false,
+    error: null,
+    errorInfo: null,
   };
 
-  public static getDerivedStateFromError(_: Error): State {
-    return { hasError: true };
+  public static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error, errorInfo: null };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("System Failure:", error, errorInfo);
+    console.error('🔴 Global Error Boundary caught:', error, errorInfo);
+    this.setState({ error, errorInfo });
+    
+    // Log to analytics if available
+    if (import.meta.env.PROD) {
+      // Send to your error tracking service
+      console.error('Production error logged:', {
+        error: error.toString(),
+        stack: errorInfo.componentStack,
+        url: window.location.href,
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
+
+  private handleReload = () => {
+    window.location.reload();
+  };
+
+  private handleReset = () => {
+    this.setState({ hasError: false, error: null, errorInfo: null });
+  };
 
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-4">
-          <div className="text-center max-w-md border border-red-500/30 p-8 rounded-2xl bg-slate-900">
-            <h1 className="text-2xl font-black text-red-500 uppercase tracking-widest mb-4">System Anomaly</h1>
-            <p className="text-slate-400 mb-6 text-sm">
-              A critical rendering error was intercepted. The diagnostic engine has paused to prevent data corruption.
+        <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6">
+          <div className="max-w-2xl w-full bg-slate-900 border border-red-500/30 rounded-3xl p-8 md:p-12 text-center">
+            <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="text-red-500" size={40} />
+            </div>
+            
+            <h1 className="text-3xl md:text-4xl font-black uppercase text-white mb-4">
+              System Malfunction
+            </h1>
+            
+            <p className="text-slate-400 mb-8 text-lg">
+              A critical error has compromised the interface. The engineering team has been notified.
             </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-black py-3 px-8 rounded-xl transition-all uppercase tracking-wider text-xs"
-            >
-              Re-Initialize System
-            </button>
+
+            {import.meta.env.DEV && this.state.error && (
+              <div className="bg-slate-950 rounded-xl p-4 mb-8 text-left overflow-auto max-h-64 border border-slate-800">
+                <p className="text-red-400 font-mono text-sm mb-2">{this.state.error.toString()}</p>
+                <pre className="text-slate-500 font-mono text-xs whitespace-pre-wrap">
+                  {this.state.errorInfo?.componentStack}
+                </pre>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={this.handleReload}
+                className="flex items-center justify-center gap-2 bg-yellow-500 text-slate-950 px-8 py-4 rounded-xl font-black uppercase hover:bg-yellow-400 transition-colors"
+              >
+                <RefreshCw size={18} /> Reload System
+              </button>
+              
+              <Link
+                to="/"
+                onClick={this.handleReset}
+                className="flex items-center justify-center gap-2 bg-slate-800 text-white px-8 py-4 rounded-xl font-black uppercase hover:bg-slate-700 transition-colors"
+              >
+                <Home size={18} /> Return Home
+              </Link>
+            </div>
+
+            <p className="mt-8 text-slate-600 text-xs font-bold uppercase tracking-widest">
+              Error ID: {Math.random().toString(36).substring(2, 10).toUpperCase()}
+            </p>
           </div>
         </div>
       );
