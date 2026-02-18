@@ -1,3 +1,4 @@
+// src/pages/Audit.tsx
 import { useState, useRef } from 'react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -6,7 +7,7 @@ import {
   Building2, MapPin, User, Mail, Phone, Globe,
   AlertTriangle, CheckCircle, WifiOff
 } from 'lucide-react';
-import { db, getFirebaseStatus } from '../firebaseConfig';
+import { db, getFirebaseStatus, callFunction } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
 
@@ -44,100 +45,56 @@ const checkGeminiCircuit = (): boolean => {
   return false;
 };
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-const callGemini = async (prompt: string): Promise<{ text: string; error?: string }> => {
-  if (!GEMINI_API_KEY) {
-    return { text: '', error: 'AI system not configured. Contact administrator.' };
-  }
-  
+// Use Firebase Function instead of direct API call
+const runAuditAnalysis = async (bizName: string, location: string): Promise<{ text: string; score: number; error?: string }> => {
   if (!checkGeminiCircuit()) {
-    return { text: '', error: 'AI service temporarily unavailable. Retry shortly.' };
+    return { text: '', score: 35, error: 'AI service temporarily unavailable. Retry shortly.' };
   }
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    const result = await callFunction<{
+      analysis: Array<{ heading: string; content: string; type: string }>;
+      score: number;
+      rawResponse: string;
+      mapsData: any;
+    }>('performForensicAudit', { bizName, location });
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 4000 },
-        }),
-        signal: controller.signal,
-      }
-    );
+    // Convert structured analysis back to text format
+    const analysisText = result.analysis
+      .map(item => `[${item.heading.toUpperCase()}]\n${item.content}`)
+      .join('\n\n');
 
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-      throw new Error('Invalid AI response structure');
-    }
-
-    // Reset failure count on success
-    geminiFailures = 0;
-    return { text: data.candidates[0].content.parts[0].text };
-    
+    return { text: analysisText, score: result.score };
   } catch (error: any) {
     geminiFailures++;
     if (geminiFailures >= 3) {
       geminiCircuitOpen = true;
       lastGeminiFailure = Date.now();
     }
-    
-    console.error('Gemini error:', error);
+    console.error('Audit function error:', error);
     return {
-      text: '',
-      error: error.name === 'AbortError' 
-        ? 'AI engine timeout. High server load detected.'
-        : 'AI analysis failed. Fallback mode activated.'
+      text: generateFallbackAnalysis(bizName, location),
+      score: 35,
+      error: error.message
     };
   }
 };
-
-const generateAuditPrompt = (bizName: string, location: string): string =>
-  `You are Hunter AI, lead strategist at Happy Hunter Digital. Perform a forensic Strategic Audit for "${bizName}" in ${location}.
-
-AUDIT FRAMEWORK - 4 Pillars:
-1. ENTITY ARCHITECTURE (Google Business Profile Health) - Verification status, data completeness, category alignment - Mirror Rule compliance
-2. TRUST SIGNALS (Social Proof & Authority) - Review velocity, sentiment analysis, competitive positioning  
-3. DISCOVERY MECHANICS (SEO & AEO Readiness) - Local pack visibility, "near me" optimization, AI search readiness
-4. CONVERSION ARCHITECTURE (Lead Capture) - Website presence, contact friction, missed opportunities
-
-OUTPUT RULES:
-- No asterisks, no markdown
-- Use [SECTION] headers
-- Use [FIX] tags for critical items
-- HIGH-IMPACT words in ALL CAPS
-- End with: FINAL_SCORE: [0-100]
-
-TONE: Military precision. Direct. Make owner feel PAIN of INVISIBILITY, then show PATH to DOMINANCE.`;
 
 // Fallback analysis when AI fails
 const generateFallbackAnalysis = (biz: string, loc: string): string =>
   `[SECTION] ENTITY ARCHITECTURE
 Your business "${biz}" in ${loc} requires immediate digital verification. Without an optimized Google Business Profile, you are INVISIBLE to local search algorithms.
 
-[SECTION] TRUST SIGNALS  
-No review velocity detected. Competitors are capturing market trust while you remain silent.
+[SECTION] TRUST SIGNALS
+No review velocity detected. Competitors are capturing market trust while you remain digitally silent.
 
 [SECTION] DISCOVERY MECHANICS
-ZERO AI search readiness detected. ChatGPT, Gemini, and Perplexity cannot recommend your services.
+ZERO AI search readiness detected. ChatGPT, Gemini, and Perplexity cannot recommend your business.
 
 [SECTION] CONVERSION ARCHITECTURE
-Lead capture mechanisms: ABSENT. Every day without optimization costs approximately 3-7 high-intent inquiries.
+Lead capture mechanisms: ABSENT. Every day without optimization costs approximately 3-7 high-intent leads.
 
 [FIX] IMMEDIATE ACTION REQUIRED: Schedule Entity Recovery Protocol with Happy Hunter Digital.
-
 FINAL_SCORE: 35`;
 
 export default function Audit() {
@@ -147,7 +104,7 @@ export default function Audit() {
   const [loadingText, setLoadingText] = useState('Initializing...');
   const [error, setError] = useState<string | null>(null);
   const firebaseStatus = getFirebaseStatus();
-  
+
   const [formData, setFormData] = useState<AuditFormData>({
     bizName: '',
     location: '',
@@ -155,7 +112,7 @@ export default function Audit() {
     email: '',
     whatsapp: '',
   });
-  
+
   const [analysis, setAnalysis] = useState('');
   const [score, setScore] = useState<number>(0);
   const [emailSent, setEmailSent] = useState(false);
@@ -197,23 +154,19 @@ export default function Audit() {
     setError(null);
 
     try {
-      // Stage 1: AI Analysis
+      // Stage 1: AI Analysis via Firebase Function
       setLoadingText('Querying Smart Marketing Graph...');
-      const prompt = generateAuditPrompt(formData.bizName, formData.location);
-      const aiResponse = await callGemini(prompt);
-
+      const result = await runAuditAnalysis(formData.bizName, formData.location);
+      
       let finalAnalysis: string;
       let finalScore: number;
 
-      if (aiResponse.error || !aiResponse.text) {
-        // Use fallback
+      if (result.error && !result.text) {
         finalAnalysis = generateFallbackAnalysis(formData.bizName, formData.location);
         finalScore = 35;
       } else {
-        const text = aiResponse.text;
-        const scoreMatch = text.match(/FINAL_SCORE:\s*(\d+)/i);
-        finalScore = scoreMatch ? parseInt(scoreMatch[1], 10) : 50;
-        finalAnalysis = text.replace(/FINAL_SCORE:\s*\d+/i, '').trim();
+        finalAnalysis = result.text;
+        finalScore = result.score;
       }
 
       setAnalysis(finalAnalysis);
@@ -257,7 +210,6 @@ export default function Audit() {
       }
 
       setStep(3);
-      
     } catch (err: any) {
       setError(err.message || 'System malfunction. Contact hello@happyhunterdigital.com');
     } finally {
@@ -267,7 +219,6 @@ export default function Audit() {
 
   const downloadPDF = async () => {
     if (!reportRef.current) return;
-    
     try {
       const canvas = await html2canvas(reportRef.current, {
         scale: 2,
@@ -275,15 +226,12 @@ export default function Audit() {
         logging: false,
         useCORS: true,
       });
-      
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`${formData.bizName.replace(/\s+/g, '_')}_Strategic_Audit.pdf`);
-      
     } catch (err) {
       console.error('PDF generation failed:', err);
       alert('PDF generation failed. Please screenshot the report.');
@@ -302,7 +250,6 @@ export default function Audit() {
           </h4>
         );
       }
-
       if (trimmed.startsWith('[FIX]')) {
         return (
           <div key={i} className="bg-yellow-500/10 border-l-4 border-yellow-500 p-4 my-4 text-white text-sm font-bold rounded-r-lg">
@@ -328,7 +275,6 @@ export default function Audit() {
 
   return (
     <div className="pt-24 sm:pt-32 pb-20 px-4 sm:px-6 max-w-6xl mx-auto min-h-screen">
-      
       {/* Firebase Status Warning */}
       {!firebaseStatus.initialized && (
         <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center gap-3 text-yellow-500">
@@ -371,12 +317,11 @@ export default function Audit() {
             Entity <span className="text-yellow-500">Scan</span>
           </h2>
           <p className="text-slate-400 mb-8 text-sm sm:text-base">
-            Forensic analysis of your digital footprint. No obligations.
+            Forensic analysis of your digital footprint. No obligation.
           </p>
-          
           <form onSubmit={proceedToStep2} className="space-y-4">
             <div className="relative">
-              <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
               <input
                 className="w-full bg-slate-900 border border-slate-800 pl-12 pr-4 py-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-colors text-sm sm:text-base"
                 placeholder="Business Name"
@@ -385,9 +330,8 @@ export default function Audit() {
                 maxLength={100}
               />
             </div>
-            
             <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
               <input
                 className="w-full bg-slate-900 border border-slate-800 pl-12 pr-4 py-4 rounded-xl text-white outline-none focus:border-yellow-500 transition-colors text-sm sm:text-base"
                 placeholder="City / Location"
@@ -396,9 +340,8 @@ export default function Audit() {
                 maxLength={100}
               />
             </div>
-            
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="w-full bg-yellow-500 text-slate-950 py-4 rounded-xl font-black uppercase hover:bg-yellow-400 flex items-center justify-center gap-2 transition-colors"
             >
               Proceed <ArrowRight size={18} />
@@ -414,7 +357,6 @@ export default function Audit() {
           <h3 className="text-lg sm:text-xl font-black uppercase text-white text-center mb-6">
             Secure Your Results
           </h3>
-          
           <form onSubmit={runAudit} className="space-y-4">
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
@@ -426,7 +368,6 @@ export default function Audit() {
                 maxLength={100}
               />
             </div>
-            
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
               <input
@@ -437,7 +378,6 @@ export default function Audit() {
                 onChange={e => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
-            
             <div className="relative">
               <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
               <input
@@ -447,9 +387,8 @@ export default function Audit() {
                 onChange={e => setFormData({ ...formData, whatsapp: e.target.value })}
               />
             </div>
-            
-            <button 
-              disabled={loading} 
+            <button
+              disabled={loading}
               className="w-full bg-yellow-500 text-slate-950 py-4 rounded-xl font-black uppercase disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
             >
               {loading ? (
@@ -472,14 +411,14 @@ export default function Audit() {
                 ✓ Report emailed to {formData.email}
               </p>
             )}
-            <button 
-              onClick={downloadPDF} 
+            <button
+              onClick={downloadPDF}
               className="bg-slate-950 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-black text-xs sm:text-sm flex items-center gap-2 mx-auto hover:scale-105 transition-transform"
             >
               <Download size={16} /> Download PDF
             </button>
           </div>
-
+          
           <div ref={reportRef} className="p-4 sm:p-8 border border-slate-800 rounded-3xl bg-slate-900/40">
             <div className="flex flex-col sm:flex-row justify-between items-start mb-6 sm:mb-8 border-b border-slate-800 pb-6 gap-4">
               <div>
@@ -496,15 +435,15 @@ export default function Audit() {
                 </p>
               </div>
             </div>
-
+            
             <div className="max-w-3xl">
               {renderAnalysis(analysis)}
             </div>
-
+            
             <div className="mt-8 sm:mt-12 p-6 sm:p-8 bg-yellow-500 rounded-2xl text-slate-950 text-center">
               <h4 className="text-xl sm:text-2xl font-black uppercase mb-4">Mend Your Architecture</h4>
-              <a 
-                href="https://calendly.com/motsumitl/30min" 
+              <a
+                href="https://calendly.com/motsumitl/30min"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block bg-slate-950 text-white px-6 sm:px-8 py-3 rounded-xl font-black text-xs sm:text-sm uppercase hover:bg-white hover:text-slate-950 transition-colors"
