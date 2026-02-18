@@ -94,4 +94,91 @@ export default function EventPopup() {
         {/* Right: Content */}
         <div className="p-6 md:p-12 lg:p-16 flex flex-col justify-between space-y-8 bg-slate-900/50">
           <div className="space-y-6">
+            div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-full">
+              <Zap size={12} className="text-yellow-500" fill="currentColor" />
+              <span className="text-[10px] font-black text-yellow-500 uppercase tracking-[0.3em]">
+                Protocol Directive 2026
+              </span>
+            </div>
             
+            <h3 className="text-2xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter leading-[0.9] text-white">
+              SME Clarity &<br />
+              <span className="text-yellow-500">Transformation</span>
+            </h3>
+
+            <p className="text-slate-400 text-sm md:text-base leading-relaxed border-l-4 border-yellow-500/20 pl-6 italic">
+              Thabo Leslie Motsumi has been officially invited to lead an unsparing session on leveraging{' '}
+              <span className="text-yellow-500 font-black not-italic px-1">AI & GMB Optimization</span>{' '}
+              for measurable South African business growth.
+            </p>
+
+            {/* Strategic Pillars */}
+            <div className="grid grid-cols-2 gap-3 pt-4">
+              {[
+                "AI-Powered Marketing",
+                "Automation Frameworks",
+                "Google Business Mastery",
+                "Scalable Growth Logic"
+              ].map((text, i) => (
+                <div key={i} className="flex items-center gap-2 group">
+                  <div className="w-1.5 h-1.5 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(250,204,21,0.5)]" />
+                  <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest group-hover:text-white transition-colors">
+                    {text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Logistics & Countdown */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between py-4 border-y border-slate-800/50">
+              <div className="flex items-center gap-2">
+                <Calendar size={18} className="text-yellow-500" />
+                <span className="text-[11px] font-black uppercase text-white tracking-[0.2em]">
+                  28 Feb 2026
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin size={18} className="text-slate-600" />
+                <span className="text-[11px] font-black uppercase text-slate-400 tracking-[0.2em]">
+                  Waterfall City
+                </span>
+              </div>
+            </div>
+
+            {/* Countdown */}
+            <div className="grid grid-cols-4 gap-2 sm:gap-3">
+              {[
+                { label: 'Days', val: timeLeft.days },
+                { label: 'Hours', val: timeLeft.hours },
+                { label: 'Mins', val: timeLeft.mins },
+                { label: 'Secs', val: timeLeft.secs }
+              ].map((t, idx) => (
+                <div key={idx} className="p-3 sm:p-4 bg-slate-950 rounded-2xl border border-slate-800 flex flex-col items-center shadow-inner">
+                  <span className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-none">
+                    {t.val.toString().padStart(2, '0')}
+                  </span>
+                  <span className="text-[7px] uppercase text-slate-600 font-black mt-2 tracking-[0.2em]">
+                    {t.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <a
+              href="https://www.quicket.co.za/events/352598-financial-clarity-for-non-financial-business-owners/#/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group w-full bg-yellow-500 text-slate-950 p-4 sm:p-6 rounded-2xl font-black uppercase tracking-[0.2em] text-xs sm:text-sm flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl active:scale-95"
+            >
+              Reserve Your Spot Today
+              <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
