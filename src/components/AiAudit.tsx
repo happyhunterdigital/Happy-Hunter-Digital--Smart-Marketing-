@@ -1,209 +1,55 @@
 import React, { useState } from 'react';
-import { Search, AlertTriangle, Loader2, ShieldCheck, CheckCircle, XCircle } from 'lucide-react';
+import { Search, AlertTriangle, Loader2 } from 'lucide-react';
 import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
 
 export const AiAudit: React.FC = () => {
-  const [bizName, setBizName] = useState('');
-  const [location, setLocation] = useState('');
-  const [email, setEmail] = useState('');
+  const [form, setForm] = useState({ biz: '', loc: '', mail: '' });
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState('');
-  const [usingFallback, setUsingFallback] = useState(false);
+  const [res, setRes] = useState<any>(null);
 
-  // Construct Endpoint
-  const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-  const AUDIT_ENDPOINT = `https://us-central1-${PROJECT_ID}.cloudfunctions.net/performAudit`;
-
-  const generateFallbackResult = (name: string, loc: string) => {
-    // This runs if the Backend fails, ensuring the user ALWAYS gets a result.
-    return {
-      score: 42,
-      summary: `Simulated Analysis: ${name} in ${loc} has a fragmented digital presence. Multiple unverified citations detected.`,
-      truths: [
-        "Google Business Profile appears unoptimized for 'Near Me' searches.",
-        "Inconsistent NAP (Name, Address, Phone) data across directories.",
-        "Zero visibility in AI-driven answer engines (ChatGPT/Gemini)."
-      ]
-    };
-  };
-
-  const runAudit = async (e: React.FormEvent) => {
+  const run = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!bizName || !location || !email) return;
-
     setLoading(true);
-    setError('');
-    setResult(null);
-    setUsingFallback(false);
-
     try {
-      console.log(`[AUDIT] Initiating Handshake: ${AUDIT_ENDPOINT}`);
-      
-      // 1. Attempt Secure Backend Call
-      const response = await fetch(AUDIT_ENDPOINT, {
+      const call = await fetch(`https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net/performAudit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessName: bizName, location })
+        body: JSON.stringify({ businessName: form.biz, location: form.loc })
       });
-
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
+      const json = await call.json();
+      if (json.success) {
+        setRes(json.data);
+        await addDoc(collection(db, 'leads'), { ...form, score: json.data.score, timestamp: serverTimestamp() });
+        await emailjs.send(import.meta.env.VITE_EMAILJS_SERVICE_ID, import.meta.env.VITE_EMAILJS_TEMPLATE_ID, 
+          { to_email: form.mail, business_name: form.biz, audit_score: json.data.score, summary: json.data.summary }, 
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
       }
-      
-      const json = await response.json();
-      if (!json.success) throw new Error(json.error || 'Unknown Data Error');
-
-      setResult(json.data);
-
-    } catch (err: any) {
-      console.warn("[AUDIT] Backend Handshake Failed. Engaging Fail-Safe Protocol.", err);
-      // ENGAGE FAIL-SAFE
-      setUsingFallback(true);
-      const fallbackData = generateFallbackResult(bizName, location);
-      
-      // Simulate processing delay for realism
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setResult(fallbackData);
-    }
-
-    // 2. Always try to save the Lead (Firestore works even if Functions fail)
-    try {
-      if (db) {
-        await addDoc(collection(db, 'leads'), {
-          business: bizName,
-          location,
-          email,
-          score: result?.score || 42,
-          timestamp: serverTimestamp(),
-          status: usingFallback ? 'Fallback' : 'Live'
-        });
-      }
-    } catch (dbErr) {
-      console.error("[AUDIT] Database Write Failed", dbErr);
-    }
-
-    // 3. Send Email
-    try {
-      await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        {
-          to_email: email,
-          business_name: bizName,
-          audit_score: result?.score || 42,
-          summary: result?.summary || "Audit Completed.",
-          date: new Date().toLocaleDateString()
-        },
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      );
-    } catch (emailErr) {
-      console.error("[AUDIT] Dispatch Failed", emailErr);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { alert("Protocol Handshake Failed. Verify keys."); }
+    setLoading(false);
   };
 
   return (
-    <section className="py-20 bg-brand-dark relative overflow-hidden">
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
-      
-      <div className="container mx-auto px-6 relative z-10">
-        <div className="max-w-3xl mx-auto text-center mb-12">
-          <h2 className="text-4xl md:text-6xl font-black text-white mb-6 uppercase tracking-tighter">
-            Digital Entity <span className="text-brand-yellow">Scan</span>
-          </h2>
-          <p className="text-gray-400 text-lg">
-            Forensic analysis of your digital footprint. Detect the "Ghost Effect" before your competitors do.
-          </p>
+    <div className="max-w-2xl mx-auto p-8 bg-gray-900 rounded-2xl border border-gray-800 shadow-2xl mt-10">
+      {!res ? (
+        <form onSubmit={run} className="space-y-4">
+          <input className="w-full bg-black p-4 rounded border border-gray-800 text-white" placeholder="Business Name" onChange={e => setForm({...form, biz: e.target.value})} required />
+          <input className="w-full bg-black p-4 rounded border border-gray-800 text-white" placeholder="Location" onChange={e => setForm({...form, loc: e.target.value})} required />
+          <input className="w-full bg-black p-4 rounded border border-gray-800 text-white" placeholder="Email" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
+          <button className="w-full bg-brand-yellow p-4 rounded font-black uppercase text-brand-dark flex items-center justify-center gap-2">
+            {loading ? <Loader2 className="animate-spin" /> : <Search />} Initiate Scan
+          </button>
+        </form>
+      ) : (
+        <div className="text-left animate-fade-in">
+          <h3 className="text-3xl font-black text-brand-yellow mb-4">Score: {res.score}/100</h3>
+          <p className="text-gray-300 italic mb-6">"{res.summary}"</p>
+          <ul className="space-y-2">
+            {res.truths.map((t: string, i: number) => <li key={i} className="text-red-400 text-sm flex gap-2"><AlertTriangle size={16}/> {t}</li>)}
+          </ul>
         </div>
-
-        <div className="max-w-2xl mx-auto bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
-          {!result ? (
-            <form onSubmit={runAudit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-brand-yellow uppercase tracking-widest mb-2">Target Entity</label>
-                <input 
-                  value={bizName}
-                  onChange={(e) => setBizName(e.target.value)}
-                  className="w-full bg-gray-950 border border-gray-800 text-white p-4 rounded-lg focus:border-brand-yellow outline-none transition-colors"
-                  placeholder="Business Name..." 
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Coordinates</label>
-                  <input 
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="w-full bg-gray-950 border border-gray-800 text-white p-4 rounded-lg focus:border-brand-yellow outline-none"
-                    placeholder="City/Area..." 
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Report Delivery</label>
-                  <input 
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-gray-950 border border-gray-800 text-white p-4 rounded-lg focus:border-brand-yellow outline-none"
-                    placeholder="Email Address..." 
-                    required
-                  />
-                </div>
-              </div>
-
-              <button 
-                disabled={loading}
-                className="w-full bg-brand-yellow text-brand-dark font-black uppercase py-4 rounded-lg hover:bg-yellow-400 transition-all flex items-center justify-center gap-2"
-              >
-                {loading ? <Loader2 className="animate-spin" /> : <Search size={20} />}
-                {loading ? 'Running Protocol...' : 'Initiate Scan'}
-              </button>
-              
-              {error && <p className="text-red-500 text-sm text-center mt-2 font-mono">{error}</p>}
-            </form>
-          ) : (
-            <div className="animate-fade-in text-left">
-              <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
-                <div>
-                  <h3 className="text-2xl font-bold text-white">Audit Result</h3>
-                  {usingFallback && <p className="text-[10px] text-red-400 uppercase tracking-widest mt-1">* Limited Connectivity Mode</p>}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400 text-xs uppercase">Score</span>
-                  <span className={`text-4xl font-black ${result.score < 50 ? 'text-red-500' : 'text-brand-yellow'}`}>{result.score}/100</span>
-                </div>
-              </div>
-              
-              <div className="space-y-4 mb-8">
-                <p className="text-gray-300 italic">"{result.summary}"</p>
-                <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-lg">
-                  <h4 className="text-red-500 font-bold uppercase text-xs mb-2 flex items-center gap-2">
-                    <AlertTriangle size={14}/> Critical Findings
-                  </h4>
-                  <ul className="list-disc list-inside text-gray-400 text-sm space-y-1">
-                    {result.truths.map((truth: string, i: number) => (
-                      <li key={i}>{truth}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => window.location.href = "mailto:hello@happyhunterdigital.com"}
-                className="w-full border border-brand-yellow text-brand-yellow font-bold py-3 rounded-lg hover:bg-brand-yellow hover:text-brand-dark transition-colors uppercase text-sm tracking-widest"
-              >
-                Schedule Fix Implementation
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
+      )}
+    </div>
   );
 };
