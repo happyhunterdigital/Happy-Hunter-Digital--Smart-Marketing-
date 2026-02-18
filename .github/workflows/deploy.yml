@@ -11,14 +11,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Setup Node.js
+      # 1. Setup Node.js
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # Install & Build Frontend
+      # 2. Frontend: Install & Build
       - name: Install Frontend Dependencies
         run: npm ci
 
@@ -35,11 +35,15 @@ jobs:
           VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
           VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
 
-      # Install Functions Dependencies
-      - name: Install Functions Dependencies
-        run: cd functions && npm ci
+      # 3. Backend: Inject Secrets & Install
+      - name: Create Functions Env File
+        run: |
+          cd functions
+          echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" > .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          npm ci
 
-      # Deploy to Firebase
+      # 4. Deploy to Firebase (Hosting + Functions)
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
