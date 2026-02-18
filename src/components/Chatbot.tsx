@@ -1,18 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, Bot, Wifi } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Wifi, WifiOff } from 'lucide-react';
 
 export const Chatbot: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([{ role: 'bot', text: 'Protocol initialized. I am Hunter AI. How can I assist with your entity dominance?' }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [online, setOnline] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const CHAT_ENDPOINT = `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net/hunterChat`;
+  const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+  const CHAT_ENDPOINT = `https://us-central1-${PROJECT_ID}.cloudfunctions.net/hunterChat`;
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const getFallbackResponse = (query: string) => {
+    const q = query.toLowerCase();
+    if (q.includes('audit') || q.includes('scan') || q.includes('check')) return "You can run a forensic scan using the tool above. It will analyze your Google visibility.";
+    if (q.includes('price') || q.includes('cost')) return "Our Entity Management protocols are customized. Book a strategy call for a quote.";
+    if (q.includes('hello') || q.includes('hi')) return "Awaiting your command. Are you ready to fix your digital invisibility?";
+    return "Secure link unstable. I recommend running the Audit tool immediately to diagnose your entity status.";
+  };
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,16 +34,25 @@ export const Chatbot: React.FC = () => {
     setLoading(true);
 
     try {
+      // Attempt Secure Connection
       const res = await fetch(CHAT_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMsg })
       });
       
+      if (!res.ok) throw new Error("Connection Failed");
+
       const data = await res.json();
-      setMessages(prev => [...prev, { role: 'bot', text: data.reply || "Signal interference. Please retry." }]);
+      setMessages(prev => [...prev, { role: 'bot', text: data.reply }]);
+      setOnline(true);
+
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'bot', text: "Offline mode. Please email the HQ." }]);
+      console.warn("Chatbot switched to Offline Mode");
+      setOnline(false);
+      // Fallback Logic
+      await new Promise(r => setTimeout(r, 1000)); // Fake think time
+      setMessages(prev => [...prev, { role: 'bot', text: getFallbackResponse(userMsg) }]);
     } finally {
       setLoading(false);
     }
@@ -55,7 +74,7 @@ export const Chatbot: React.FC = () => {
               <Bot className="text-brand-yellow" size={20} />
               <span className="font-bold text-white text-sm uppercase tracking-wider">Hunter AI</span>
             </div>
-            <Wifi size={14} className="text-green-500" />
+            {online ? <Wifi size={14} className="text-green-500" /> : <WifiOff size={14} className="text-red-500" title="Offline Mode" />}
           </div>
 
           <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-black/50">
@@ -74,7 +93,7 @@ export const Chatbot: React.FC = () => {
             <input 
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Enter command..."
+              placeholder={online ? "Enter command..." : "Offline mode (Limited commands)"}
               className="flex-1 bg-gray-950 text-white text-sm p-2 rounded border border-gray-800 focus:border-brand-yellow outline-none"
             />
             <button type="submit" disabled={loading} className="text-brand-yellow hover:text-white p-2">
