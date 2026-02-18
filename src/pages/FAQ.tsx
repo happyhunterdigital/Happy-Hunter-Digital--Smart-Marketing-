@@ -134,4 +134,60 @@ export default function FAQ() {
                       </span>
                       <div className={`shrink-0 p-2 rounded-full transition-all duration-500 ${
                         isOpen 
-                          ? 'bg
+                          ? 'bg-yellow-500 text-slate-950 rotate-0' 
+                          : 'bg-slate-800 text-slate-500 rotate-180'
+                      }`}>
+                        {isOpen ? <Minus size={18} strokeWidth={3} /> : <Plus size={18} strokeWidth={3} />}
+                      </div>
+                    </button>
+                    
+                    <div className={`transition-all duration-500 ease-in-out ${
+                      isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="px-6 lg:px-8 pb-8 lg:pb-10">
+                        <div className="border-l-2 border-yellow-500/30 pl-6 lg:pl-8">
+                          <p className="text-slate-400 leading-relaxed text-sm lg:text-base font-medium italic">
+                            {item.a}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <div className="mt-20 lg:mt-40 p-10 lg:p-16 border-2 border-slate-900 rounded-[3rem] lg:rounded-[4rem] bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-yellow-500/5 via-slate-950 to-slate-950 text-center relative overflow-hidden">
+        <HelpCircle className="mx-auto text-yellow-500/20 mb-6 lg:mb-8" size={60} />
+        <h3 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-black uppercase tracking-tighter mb-4 lg:mb-6 text-white leading-none">
+          Still Being <br />
+          <span className="text-yellow-500">Filtered Out?</span>
+        </h3>
+        <p className="text-slate-500 mb-8 lg:mb-12 max-w-xl mx-auto italic font-medium text-sm lg:text-base">
+          Technical uncertainty is the #1 reason why SA businesses remain invisible. Let's discuss your survival strategy.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row justify-center gap-4 lg:gap-6">
+          <a
+            href="https://calendly.com/motsumitl/30min"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-yellow-500 text-slate-950 px-8 lg:px-12 py-4 lg:py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 transition-all shadow-2xl"
+          >
+            Book Strategy Session
+          </a>
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="border-2 border-slate-800 text-slate-500 px-8 lg:px-12 py-4 lg:py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-900 transition-all"
+          >
+            Review Pillars
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
