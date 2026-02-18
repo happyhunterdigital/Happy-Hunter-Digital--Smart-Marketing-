@@ -1,6 +1,7 @@
+// src/components/Chatbot.tsx
 import { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2, WifiOff } from 'lucide-react';
-import { getFirebaseStatus } from '../firebaseConfig';
+import { getFirebaseStatus, callFunction } from '../firebaseConfig';
 
 interface Message {
   role: 'user' | 'model';
@@ -8,8 +9,6 @@ interface Message {
   timestamp: Date;
   isError?: boolean;
 }
-
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 // Simple response cache
 const responseCache = new Map<string, string>();
@@ -37,26 +36,27 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [aiAvailable, setAiAvailable] = useState(!!GEMINI_API_KEY);
+  const [aiAvailable, setAiAvailable] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const firebaseStatus = getFirebaseStatus();
 
   // Initialize welcome message
   useEffect(() => {
     setMessages([{
       role: 'model',
-      text: GEMINI_API_KEY 
+      text: firebaseStatus.functions 
         ? 'I am Hunter AI. I diagnose digital invisibility. What entity are we assessing?'
         : 'I am Hunter AI [LIMITED MODE]. Ask about our audit tool or email hello@happyhunterdigital.com.',
       timestamp: new Date(),
     }]);
-  }, []);
+  }, [firebaseStatus.functions]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const callGemini = async (userMessage: string, history: string[]): Promise<string> => {
-    if (!GEMINI_API_KEY) {
+  const callHunterAI = async (userMessage: string, history: string[]): Promise<string> => {
+    if (!firebaseStatus.functions) {
       return getFallbackResponse(userMessage);
     }
 
@@ -67,44 +67,15 @@ export default function Chatbot() {
     }
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const result = await callFunction<{ response: string }>('hunterChatProxy', {
+        prompt: userMessage,
+        history: history.slice(-4)
+      });
 
-      const prompt = `You are Hunter AI, autonomous strategist for Happy Hunter Digital (South African digital marketing agency specializing in Entity Management).
-
-CONTEXT: You help businesses fix "digital invisibility" through Google Business Profile optimization, AEO (Answer Engine Optimization), and AI search readiness.
-
-CONVERSATION HISTORY: ${history.slice(-4).map((h, i) => `${i % 2 === 0 ? 'User' : 'Hunter'}: ${h}`).join('\n')}
-
-User: ${userMessage}
-
-Hunter AI (respond in 1-2 sentences, authoritative tone, mention "Entity Scan" if relevant):`;
-
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { temperature: 0.8, maxOutputTokens: 150 },
-          }),
-          signal: controller.signal,
-        }
-      );
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) throw new Error('API error');
-
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      
-      if (text) {
-        responseCache.set(cacheKey, text);
-        return text;
+      if (result.response) {
+        responseCache.set(cacheKey, result.response);
+        return result.response;
       }
-      
       throw new Error('Empty response');
     } catch (error) {
       console.error('Chatbot AI error:', error);
@@ -129,7 +100,7 @@ Hunter AI (respond in 1-2 sentences, authoritative tone, mention "Entity Scan" i
 
     try {
       const history = messages.slice(-6).map(m => m.text);
-      const responseText = await callGemini(userMsg, history);
+      const responseText = await callHunterAI(userMsg, history);
       
       const botMessage: Message = {
         role: 'model',
@@ -180,7 +151,7 @@ Hunter AI (respond in 1-2 sentences, authoritative tone, mention "Entity Scan" i
               <h4 className="font-black text-slate-950 uppercase text-xs">Hunter AI</h4>
               <p className="text-[10px] text-slate-800 font-bold flex items-center gap-1">
                 {!aiAvailable && <WifiOff size={10} />}
-                {aiAvailable ? 'Digital Entity Strategist' : 'Limited Mode'}
+                {aiAvailable && firebaseStatus.functions ? 'Digital Entity Strategist' : 'Limited Mode'}
               </p>
             </div>
           </div>
@@ -191,9 +162,9 @@ Hunter AI (respond in 1-2 sentences, authoritative tone, mention "Entity Scan" i
                 <div className={`max-w-[85%] p-2.5 rounded-xl text-xs ${
                   msg.role === 'user'
                     ? 'bg-yellow-500 text-slate-950 font-medium'
-                    : msg.isError 
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                      : 'bg-slate-800 text-slate-200'
+                    : msg.isError
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                    : 'bg-slate-800 text-slate-200'
                 }`}>
                   {msg.text}
                 </div>
@@ -215,7 +186,7 @@ Hunter AI (respond in 1-2 sentences, authoritative tone, mention "Entity Scan" i
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={aiAvailable ? "Deploy query..." : "Limited mode - try: audit, contact, price"}
+                placeholder={firebaseStatus.functions ? "Deploy query..." : "Limited mode - try: audit, contact, price"}
                 className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-xs outline-none focus:border-yellow-500"
                 maxLength={200}
               />
