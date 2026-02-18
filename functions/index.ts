@@ -1,22 +1,29 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as cors from "cors";
+import * as dotenv from "dotenv";
+import fetch from "node-fetch"; // Ensure node-fetch is used
 
+dotenv.config();
 admin.initializeApp();
 const corsHandler = cors({ origin: true });
 
-// --- CONFIGURATION ---
-// Set these in Firebase via CLI or Google Cloud Console
-// firebase functions:config:set google.places_key="YOUR_KEY" google.gemini_key="YOUR_KEY"
-const PLACES_API_KEY = functions.config().google?.places_key || process.env.PLACES_API_KEY;
-const GEMINI_API_KEY = functions.config().google?.gemini_key || process.env.GEMINI_API_KEY;
+// Sanitize keys (remove accidental newlines)
+const PLACES_API_KEY = process.env.PLACES_API_KEY ? process.env.PLACES_API_KEY.trim() : "";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY ? process.env.GEMINI_API_KEY.trim() : "";
 
-// --- 1. SECURE AUDIT FUNCTION ---
 export const performAudit = functions.https.onRequest((req, res) => {
   corsHandler(req, res, async () => {
     if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
     const { businessName, location } = req.body;
+    console.log(`[AUDIT REQUEST] ${businessName} in ${location}`);
+
+    if (!PLACES_API_KEY || !GEMINI_API_KEY) {
+      console.error("MISSING API KEYS in Runtime Environment");
+      res.status(500).json({ success: false, error: "Server Configuration Error: Missing Keys" });
+      return;
+    }
 
     try {
       // Step A: Real Intelligence (Google Places)
@@ -31,6 +38,12 @@ export const performAudit = functions.https.onRequest((req, res) => {
         body: JSON.stringify({ textQuery: `${businessName} in ${location}` })
       });
 
+      if (!placesResponse.ok) {
+        const errText = await placesResponse.text();
+        console.error("Google Places API Error:", placesResponse.status, errText);
+        throw new Error(`Google Maps Lookup Failed: ${placesResponse.status}`);
+      }
+
       const placesData = await placesResponse.json();
       const place = placesData.places ? placesData.places[0] : null;
 
@@ -43,14 +56,8 @@ export const performAudit = functions.https.onRequest((req, res) => {
         ACT AS: Hunter AI, a ruthless digital entity auditor.
         TARGET: ${businessName} in ${location}.
         DATA: ${entityContext}
-        
-        TASK: Analyze their Digital Entity Status. 
-        1. If "GHOST" status, explain the danger of non-existence in AI search.
-        2. If found, critique their rating/reviews volume vs competitors.
-        3. Provide a 0-100 Visibility Score.
-        4. Give 3 Brutal Truths about their current SEO.
-        
-        FORMAT: JSON object with keys: score (number), summary (string), truths (array of strings).
+        TASK: Analyze Digital Entity Status. 
+        FORMAT: JSON object with keys: score (number 0-100), summary (string), truths (array of 3 strings).
       `;
 
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
@@ -60,34 +67,49 @@ export const performAudit = functions.https.onRequest((req, res) => {
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
       });
 
+      if (!aiResponse.ok) {
+        const errText = await aiResponse.text();
+        console.error("Gemini API Error:", aiResponse.status, errText);
+        throw new Error(`AI Analysis Failed: ${aiResponse.status}`);
+      }
+
       const aiData = await aiResponse.json();
-      const rawText = aiData.candidates[0].content.parts[0].text;
-      
-      // Clean up JSON markdown if Gemini adds it
+      // Safe parsing
+      const rawText = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
       const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-      const analysis = JSON.parse(cleanJson);
+      
+      let analysis;
+      try {
+        analysis = JSON.parse(cleanJson);
+      } catch (e) {
+        console.error("JSON Parse Error:", rawText);
+        analysis = { score: 50, summary: "Analysis complete but unformatted.", truths: ["Manual review required."] };
+      }
 
       res.status(200).json({ success: true, data: analysis, place: place });
 
     } catch (error: any) {
-      console.error("Audit Error", error);
+      console.error("Audit Critical Failure:", error);
       res.status(500).json({ success: false, error: error.message });
     }
   });
 });
 
-// --- 2. SECURE CHAT FUNCTION ---
 export const hunterChat = functions.https.onRequest((req, res) => {
   corsHandler(req, res, async () => {
-    const { message, history } = req.body;
+    const { message } = req.body;
     
+    if (!GEMINI_API_KEY) {
+       res.status(500).json({ error: "System Offline (Config)" });
+       return;
+    }
+
     const prompt = `
-      SYSTEM: You are Hunter AI, the strategic interface for Happy Hunter Digital.
-      MISSION: Convert visitors into clients by diagnosing their "Digital Invisibility".
-      TONE: Professional, succinct, military-grade precision.
-      CONTEXT: User is asking: "${message}".
-      
-      Provide a helpful, strategic response (max 50 words). Encourages them to run the Audit Tool.
+      SYSTEM: You are Hunter AI for Happy Hunter Digital.
+      MISSION: Convert visitors into clients.
+      TONE: Military-grade precision.
+      CONTEXT: User asks: "${message}".
+      Provide a strategic response (max 50 words).
     `;
 
     try {
@@ -97,8 +119,10 @@ export const hunterChat = functions.https.onRequest((req, res) => {
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
       });
       const data = await response.json();
-      res.status(200).json({ reply: data.candidates[0].content.parts[0].text });
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Signal Lost.";
+      res.status(200).json({ reply });
     } catch (e: any) {
+      console.error("Chat Error:", e);
       res.status(500).json({ error: "Comms Link Unstable" });
     }
   });
