@@ -1,29 +1,19 @@
-name: Deploy to Firebase Hosting & Functions
-
+name: Deploy Protocol
 on:
   push:
     branches: [main]
-  workflow_dispatch:
-
 jobs:
-  build_and_deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # 1. Setup Node.js
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-
-      # 2. Frontend: Install & Build
-      # CHANGED: Using 'npm install' instead of 'npm ci' because you have no lockfile
-      - name: Install Frontend Dependencies
-        run: npm install
-
-      - name: Build Frontend
-        run: npm run build
+          node-version: 20
+      - name: Install & Build
+        run: |
+          npm install
+          npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
@@ -34,22 +24,15 @@ jobs:
           VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
           VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
           VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
-
-      # 3. Backend: Inject Secrets & Install
-      - name: Create Functions Env File
+      - name: Deploy Functions
         run: |
           cd functions
+          npm install
           echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" > .env
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
-          npm install
-
-      # 4. Deploy to Firebase (Hosting + Functions)
-      - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
           channelId: live
           projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
-        env:
-          FIREBASE_CLI_PREVIEWS: hostingchannels
