@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { ShieldCheck, Megaphone, BrainCircuit, ChevronDown, Plus, Minus, HelpCircle, Zap, AlertCircle } from 'lucide-react';
+import { 
+  ShieldCheck, Megaphone, BrainCircuit, 
+  Plus, Minus, HelpCircle, AlertCircle 
+} from 'lucide-react';
 
 const FAQ_DATA = [
   {
@@ -68,26 +71,26 @@ export default function FAQ() {
 
   return (
     <div className="pt-32 pb-20 px-6 max-w-5xl mx-auto min-h-screen">
-      
-      {/* 1. Header: The Knowledge Authority */}
-      <div className="mb-32 space-y-4 max-w-3xl">
-        <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-4 py-1.5 rounded-full mb-4">
+      {/* Header */}
+      <div className="mb-16 lg:mb-32 space-y-4 max-w-3xl">
+        <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-4 py-1.5 rounded-full">
           <AlertCircle size={14} className="text-yellow-500" />
-          <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">Protocol Intelligence Base</span>
+          <span className="text-[10px] font-black text-yellow-500 uppercase tracking-widest">
+            Protocol Intelligence Base
+          </span>
         </div>
-        <h2 className="text-6xl md:text-9xl font-black uppercase tracking-tighter text-white">
+        <h2 className="text-4xl sm:text-6xl lg:text-7xl xl:text-9xl font-black uppercase tracking-tighter text-white">
           Strategic <span className="text-yellow-500">Knowledge</span>
         </h2>
-        <p className="text-slate-500 text-lg md:text-xl italic font-medium leading-relaxed">
-          Addressing the technical realities and survival requirements of the 2026 South African digital landscape.
+        <p className="text-slate-500 text-base lg:text-lg xl:text-xl italic font-medium leading-relaxed">
+          Addressing the technical realities and survival requirements of the 2026 South African digital economy.
         </p>
       </div>
 
-      {/* 2. FAQ Categories */}
-      <div className="space-y-24">
+      {/* FAQ Categories */}
+      <div className="space-y-16 lg:space-y-24">
         {FAQ_DATA.map((section, sIdx) => (
-          <div key={sIdx} className="space-y-8 animate-fade-in" style={{ animationDelay: `${sIdx * 150}ms` }}>
-            
+          <div key={sIdx} className="space-y-6 lg:space-y-8 animate-fade-in">
             {/* Category Marker */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-900 pb-6">
               <div className="flex items-center gap-4">
@@ -95,82 +98,40 @@ export default function FAQ() {
                   {section.icon}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-black uppercase tracking-tight text-white">{section.category}</h3>
-                  <p className="text-slate-600 text-[10px] font-bold uppercase tracking-widest">{section.description}</p>
+                  <h3 className="text-xl lg:text-2xl font-black uppercase tracking-tight text-white">
+                    {section.category}
+                  </h3>
+                  <p className="text-slate-600 text-[10px] font-bold uppercase tracking-widest">
+                    {section.description}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Questions Grid */}
+            {/* Questions */}
             <div className="grid gap-4">
               {section.questions.map((item, qIdx) => {
                 const id = `${sIdx}-${qIdx}`;
                 const isOpen = openId === id;
+
                 return (
-                  <div 
-                    key={qIdx} 
-                    className={`group border rounded-[2rem] transition-all duration-500 overflow-hidden ${
-                      isOpen 
-                        ? 'bg-slate-900/40 border-yellow-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.3)]' 
+                  <div
+                    key={qIdx}
+                    className={`group border rounded-[1.5rem] lg:rounded-[2rem] transition-all duration-500 overflow-hidden ${
+                      isOpen
+                        ? 'bg-slate-900/40 border-yellow-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.3)]'
                         : 'bg-slate-900/10 border-slate-900 hover:border-slate-700'
                     }`}
                   >
-                    <button 
+                    <button
                       onClick={() => toggle(id)}
-                      className="w-full p-8 text-left flex justify-between items-center gap-6"
+                      className="w-full p-6 lg:p-8 text-left flex justify-between items-center gap-4 lg:gap-6"
                     >
-                      <span className={`font-black text-lg md:text-xl leading-tight transition-colors uppercase tracking-tighter ${isOpen ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`}>
+                      <span className={`font-black text-base lg:text-lg xl:text-xl leading-tight transition-colors uppercase tracking-tighter ${
+                        isOpen ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'
+                      }`}>
                         {item.q}
                       </span>
-                      <div className={`shrink-0 p-2 rounded-full transition-all duration-500 ${isOpen ? 'bg-yellow-500 text-slate-950 rotate-0' : 'bg-slate-800 text-slate-500 rotate-180'}`}>
-                        {isOpen ? <Minus size={18} strokeWidth={3} /> : <Plus size={18} strokeWidth={3} />}
-                      </div>
-                    </button>
-                    
-                    <div className={`transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                      <div className="px-8 pb-10">
-                        <div className="border-l-2 border-yellow-500/30 pl-8">
-                          <p className="text-slate-400 leading-relaxed text-base font-medium italic">
-                            {item.a}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* 3. The "Uncertainty" CTA */}
-      <div className="mt-40 p-16 border-2 border-slate-900 rounded-[4rem] bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-yellow-500/5 via-slate-950 to-slate-950 text-center relative overflow-hidden">
-        <HelpCircle className="mx-auto text-yellow-500/20 mb-8" size={80} />
-        <h3 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6 text-white leading-none">Still Being <br /><span className="text-yellow-500">Filtered Out?</span></h3>
-        <p className="text-slate-500 mb-12 max-w-xl mx-auto italic font-medium">Technical uncertainty is the #1 reason why SA businesses remain invisible. Let's discuss your survival strategy personally.</p>
-        
-        <div className="flex flex-col sm:flex-row justify-center gap-6">
-          <a 
-            href="https://calendly.com/motsumitl/30min" 
-            target="_blank" 
-            className="bg-yellow-500 text-slate-950 px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 transition-all shadow-2xl shadow-yellow-500/20"
-          >
-            Book 15-Min Strategy Session
-          </a>
-          <button 
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="border-2 border-slate-800 text-slate-500 px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-900 transition-all"
-          >
-            Review Pillars
-          </button>
-        </div>
-
-        {/* Decorative Brand Background */}
-        <div className="absolute -bottom-10 -left-10 opacity-[0.03] select-none pointer-events-none">
-           <span className="brand-name text-[15rem] leading-none">happyhunter</span>
-        </div>
-      </div>
-    </div>
-  );
-}
+                      <div className={`shrink-0 p-2 rounded-full transition-all duration-500 ${
+                        isOpen 
+                          ? 'bg
