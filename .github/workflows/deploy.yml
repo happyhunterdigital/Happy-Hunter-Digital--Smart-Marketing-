@@ -16,11 +16,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       # 2. Frontend: Install & Build
+      # CHANGED: Using 'npm install' instead of 'npm ci' because you have no lockfile
       - name: Install Frontend Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build Frontend
         run: npm run build
@@ -41,7 +41,7 @@ jobs:
           cd functions
           echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" > .env
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
-          npm ci
+          npm install
 
       # 4. Deploy to Firebase (Hosting + Functions)
       - name: Deploy to Firebase
