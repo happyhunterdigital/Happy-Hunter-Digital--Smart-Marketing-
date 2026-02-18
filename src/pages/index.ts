@@ -1,5 +1,3 @@
-// 🛡️ IRON DOME: Centralized page exports
-
 export { default as Home } from './Home';
 export { default as Founders } from './Founders';
 export { default as CoreServices } from './CoreServices';
