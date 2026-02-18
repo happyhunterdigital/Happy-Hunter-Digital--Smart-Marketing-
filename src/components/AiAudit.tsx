@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, ShieldCheck, AlertTriangle, Loader2 } from 'lucide-react';
+import { Search, AlertTriangle, Loader2 } from 'lucide-react';
 import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
@@ -12,9 +12,6 @@ export const AiAudit: React.FC = () => {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState('');
 
-  // Use the Cloud Function URL (replace PROJECT_ID and REGION after deployment)
-  // For local dev, use http://127.0.0.1:5001/...
-  // For production, GitHub Actions will handle the env, but we construct the URL dynamically or hardcode the prod URL
   const AUDIT_ENDPOINT = `https://us-central1-${import.meta.env.VITE_FIREBASE_PROJECT_ID}.cloudfunctions.net/performAudit`;
 
   const runAudit = async (e: React.FormEvent) => {
@@ -26,7 +23,6 @@ export const AiAudit: React.FC = () => {
     setResult(null);
 
     try {
-      // 1. Call Secure Backend
       const response = await fetch(AUDIT_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,7 +36,6 @@ export const AiAudit: React.FC = () => {
 
       setResult(json.data);
 
-      // 2. Save Lead to Firestore
       await addDoc(collection(db, 'leads'), {
         business: bizName,
         location,
@@ -49,7 +44,6 @@ export const AiAudit: React.FC = () => {
         timestamp: serverTimestamp()
       });
 
-      // 3. Send Email (EmailJS)
       await emailjs.send(
         import.meta.env.VITE_EMAILJS_SERVICE_ID,
         import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
@@ -72,7 +66,6 @@ export const AiAudit: React.FC = () => {
 
   return (
     <section className="py-20 bg-brand-dark relative overflow-hidden">
-      {/* Background Grid */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10"></div>
       
       <div className="container mx-auto px-6 relative z-10">
