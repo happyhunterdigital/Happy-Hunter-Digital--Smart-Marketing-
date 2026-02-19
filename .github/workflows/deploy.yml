@@ -13,12 +13,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          # NO CACHE - avoids lock file requirement
 
       # FRONTEND BUILD
       - name: Install & Build Frontend
         run: |
-          npm ci
+          npm install
           npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
@@ -36,10 +36,10 @@ jobs:
       - name: Install & Compile Functions
         run: |
           cd functions
-          npm ci
+          npm install
           npm run build
 
-      # DEPLOY (Explicitly exclude extensions to avoid permission issues)
+      # DEPLOY
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
