@@ -3,7 +3,7 @@ import { Search, AlertTriangle, Loader2, Zap } from 'lucide-react';
 import { db, functions } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import emailjs from '@emailjs/browser';
+// REMOVED: import emailjs from '@emailjs/browser';
 
 export const AiAudit: React.FC = () => {
   const [form, setForm] = useState({ biz: '', loc: '', mail: '' });
@@ -15,21 +15,26 @@ export const AiAudit: React.FC = () => {
     setLoading(true);
     try {
       const performAudit = httpsCallable(functions, 'performAudit');
-      const result = await performAudit({ businessName: form.biz, location: form.loc });
+      const result = await performAudit({ 
+        businessName: form.biz, 
+        location: form.loc,
+        clientEmail: form.mail // Pass email to the backend
+      });
       
       const data: any = result.data;
       setRes(data);
 
-      // Persistence
-      await addDoc(collection(db, 'leads'), { ...form, score: data.score, timestamp: serverTimestamp(), model: 'Gemini 3 Flash' });
+      // Persistence for admin dashboard
+      await addDoc(collection(db, 'leads'), { 
+          businessName: form.biz,
+          location: form.loc,
+          email: form.mail,
+          score: data.score, 
+          timestamp: serverTimestamp(), 
+          model: 'Gemini 3 Flash' 
+      });
       
-      // Dispatch
-      await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID, 
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID, 
-        { to_email: form.mail, business_name: form.biz, audit_score: data.score, summary: data.summary }, 
-        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-      );
+      // REMOVED: The emailjs.send() call is no longer needed here.
         
     } catch (err: any) {
       alert("Gemini 3 Handshake Error: " + err.message);
