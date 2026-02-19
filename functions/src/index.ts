@@ -6,10 +6,15 @@ import { getFirestore } from "firebase-admin/firestore";
 admin.initializeApp();
 const db = getFirestore();
 
+// EmailJS configuration
+const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY;
+const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID;
+const EMAILJS_TEMPLATE_ID = process.env.EMAILJS_TEMPLATE_ID;
+
 // 1. FORENSIC AUDIT (GEMINI 3 FLASH)
 export const performAudit = onCall({
   region: "us-central1",
-  secrets: ["GEMINI_API_KEY", "PLACES_API_KEY"],
+  secrets: ["GEMINI_API_KEY", "PLACES_API_KEY", "EMAILJS_PUBLIC_KEY", "EMAILJS_SERVICE_ID", "EMAILJS_TEMPLATE_ID"],
   cors: true,
   maxInstances: 10,
 }, async (request) => {
@@ -95,39 +100,59 @@ Output STRICT JSON format:
       throw new Error("Invalid analysis format from AI");
     }
 
-    // Stage 3: Trigger Email via Firestore Extension
-    await db.collection("mail").add({
-      to: [clientEmail],
-      message: {
-        subject: `[Intelligence Report] Entity Status for ${businessName}`,
-        html: `
-          <h1 style="color:#eab308;font-family:Arial,sans-serif;">Protocol: Digital Entity Scan</h1>
-          <p><strong>Target:</strong> ${businessName}</p>
-          <p><strong>Location:</strong> ${location}</p>
-          <hr style="border:1px solid #333;margin:20px 0;"/>
-          <h2 style="color:${analysis.score > 70 ? '#22c55e' : analysis.score > 40 ? '#eab308' : '#ef4444'};">
-            Visibility Score: ${analysis.score}/100
-          </h2>
-          <p><strong>Hunter AI Analysis:</strong> ${analysis.summary}</p>
-          <hr style="border:1px solid #333;margin:20px 0;"/>
-          <h3 style="color:#ef4444;">Critical Gaps Identified:</h3>
-          <ul>
-            ${analysis.truths.map((truth: string) => `<li style="margin:10px 0;color:#666;">${truth}</li>`).join('')}
-          </ul>
-          <p style="margin-top:30px;padding:20px;background:#f9fafb;border-left:4px solid #eab308;">
-            Your digital entity is ${analysis.score < 50 ? 'highly vulnerable' : 'at risk'}.
-            The "Ghost Effect" is preventing AI search engines from recommending you.
-            Schedule a counter-intelligence briefing immediately.
-          </p>
-          <a href="https://happyhunterdigital.com" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#eab308;color:#000;text-decoration:none;font-weight:bold;border-radius:6px;">
-            Secure Your Entity
-          </a>
-          <br/><br/>
-          <p style="color:#999;font-size:12px;"><em>End of Transmission. / Happy Hunter Command</em></p>
-        `,
+    // Stage 3: Send Email via EmailJS API directly
+    const emailHtml = `
+      <h1 style="color:#eab308;font-family:Arial,sans-serif;">Protocol: Digital Entity Scan</h1>
+      <p><strong>Target:</strong> ${businessName}</p>
+      <p><strong>Location:</strong> ${location}</p>
+      <hr style="border:1px solid #333;margin:20px 0;"/>
+      <h2 style="color:${analysis.score > 70 ? '#22c55e' : analysis.score > 40 ? '#eab308' : '#ef4444'};">
+        Visibility Score: ${analysis.score}/100
+      </h2>
+      <p><strong>Hunter AI Analysis:</strong> ${analysis.summary}</p>
+      <hr style="border:1px solid #333;margin:20px 0;"/>
+      <h3 style="color:#ef4444;">Critical Gaps Identified:</h3>
+      <ul>
+        ${analysis.truths.map((truth: string) => `<li style="margin:10px 0;color:#666;">${truth}</li>`).join('')}
+      </ul>
+      <p style="margin-top:30px;padding:20px;background:#f9fafb;border-left:4px solid #eab308;">
+        Your digital entity is ${analysis.score < 50 ? 'highly vulnerable' : 'at risk'}.
+        The "Ghost Effect" is preventing AI search engines from recommending you.
+        Schedule a counter-intelligence briefing immediately.
+      </p>
+      <a href="https://happyhunterdigital.com" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#eab308;color:#000;text-decoration:none;font-weight:bold;border-radius:6px;">
+        Secure Your Entity
+      </a>
+      <br/><br/>
+      <p style="color:#999;font-size:12px;"><em>End of Transmission. / Happy Hunter Command</em></p>
+    `;
+
+    // Send via EmailJS REST API
+    const emailResponse = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      body: JSON.stringify({
+        service_id: EMAILJS_SERVICE_ID,
+        template_id: EMAILJS_TEMPLATE_ID,
+        user_id: EMAILJS_PUBLIC_KEY,
+        template_params: {
+          to_email: clientEmail,
+          to_name: businessName,
+          from_name: "Hunter AI",
+          subject: `[Intelligence Report] Entity Status for ${businessName}`,
+          message_html: emailHtml,
+          score: analysis.score,
+          summary: analysis.summary
+        }
+      })
     });
+
+    if (!emailResponse.ok) {
+      console.error("Email failed to send:", await emailResponse.text());
+      // Don't throw - audit still succeeded even if email fails
+    }
 
     // Stage 4: Persist lead for admin dashboard
     await db.collection("leads").add({
@@ -140,7 +165,8 @@ Output STRICT JSON format:
       placeData: biz || null,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       model: 'Gemini 2.0 Flash',
-      status: 'new'
+      status: 'new',
+      emailSent: emailResponse.ok
     });
 
     // Return analysis to frontend
@@ -220,7 +246,7 @@ Respond in 1-2 sentences maximum. Be helpful but concise. If they ask about pric
   }
 });
 
-// Health check function (optional, for monitoring)
+// Health check function
 export const healthCheck = onCall({
   region: "us-central1",
   cors: true,
