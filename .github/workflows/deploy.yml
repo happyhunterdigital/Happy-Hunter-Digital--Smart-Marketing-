@@ -39,10 +39,10 @@ jobs:
           npm install
           npm run build
 
-      # DEPLOY
+      # DEPLOY (Explicitly exclude extensions to avoid permission issues)
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting,functions
+          args: deploy --only hosting,functions --force
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
