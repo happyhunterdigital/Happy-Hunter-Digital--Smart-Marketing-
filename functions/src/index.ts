@@ -1,97 +1,73 @@
-import * as functions from "firebase-functions";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
-import * as cors from "cors";
-import * as dotenv from "dotenv";
 
-dotenv.config();
 admin.initializeApp();
-const corsHandler = cors({ origin: true });
 
-// Read from process.env (injected via GitHub Actions)
-const PLACES_API_KEY = process.env.PLACES_API_KEY;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+// --- 1. FORENSIC AUDIT (GEMINI 3 FLASH) ---
+export const performAudit = onCall({ 
+  region: "us-central1",
+  secrets: ["GEMINI_API_KEY", "PLACES_API_KEY"],
+  cors: true
+}, async (request) => {
+  const { businessName, location } = request.data;
+  const G_KEY = process.env.GEMINI_API_KEY;
+  const P_KEY = process.env.PLACES_API_KEY;
 
-// 1. Audit Function
-export const performAudit = functions.https.onRequest((req, res) => {
-  corsHandler(req, res, async () => {
-    if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  try {
+    // Stage 1: Intelligence Retrieval (Google Places)
+    const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": P_KEY || "" },
+      body: JSON.stringify({ textQuery: `${businessName} in ${location}` })
+    });
+    const pData = await pRes.json() as any;
+    const biz = pData.places?.[0];
 
-    const { businessName, location } = req.body;
+    // Stage 2: Gemini 3 Flash Neural Analysis
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${G_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        contents: [{ parts: [{ text: `
+          ACT AS: Hunter AI (Gemini 3 Core). 
+          TASK: Forensic Audit of "${businessName}" in "${location}". 
+          CONTEXT: ${biz ? 'Entity Found' : 'Entity Invisible/Ghost'}.
+          OBJECTIVE: Identify 3 critical Trust Gaps. Rate AI Visibility 0-100.
+          OUTPUT: Strict JSON { "score": number, "summary": "string", "truths": ["string"] }` 
+        }] }],
+        generationConfig: { responseMimeType: "application/json", temperature: 1.0 }
+      })
+    });
 
-    try {
-      // Step A: Google Places
-      const placesUrl = `https://places.googleapis.com/v1/places:searchText`;
-      const placesResponse = await fetch(placesUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": PLACES_API_KEY || "",
-          "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.rating,places.userRatingCount,places.websiteUri"
-        },
-        body: JSON.stringify({ textQuery: `${businessName} in ${location}` })
-      });
+    const aiData = await aiRes.json() as any;
+    if (!aiData.candidates) throw new Error("Gemini 3 Link Severed");
+    
+    return JSON.parse(aiData.candidates[0].content.parts[0].text);
 
-      const placesData = await placesResponse.json();
-      const place = placesData.places ? placesData.places[0] : null;
-
-      // Step B: Gemini AI
-      const entityContext = place 
-        ? `Found Entity: ${place.displayName.text}, Rating: ${place.rating} (${place.userRatingCount} reviews), Web: ${place.websiteUri}`
-        : `Entity Status: GHOST. No verified Google Maps data found for ${businessName} in ${location}.`;
-
-      const prompt = `
-        ACT AS: Hunter AI, digital auditor.
-        TARGET: ${businessName} in ${location}.
-        DATA: ${entityContext}
-        TASK: Analyze their Digital Entity Status. 
-        Provide a 0-100 Visibility Score and 3 Brutal Truths.
-        FORMAT: JSON object with keys: score (number), summary (string), truths (array of strings).
-      `;
-
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
-      const aiResponse = await fetch(geminiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      });
-
-      const aiData = await aiResponse.json();
-      const rawText = aiData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-      const cleanJson = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-      const analysis = JSON.parse(cleanJson);
-
-      res.status(200).json({ success: true, data: analysis, place: place });
-
-    } catch (error: any) {
-      console.error("Audit Error", error);
-      res.status(500).json({ success: false, error: error.message });
-    }
-  });
+  } catch (e: any) {
+    console.error("Gemini 3 Audit Failure", e);
+    throw new HttpsError("internal", `Gemini 3 Handshake Failed: ${e.message}`);
+  }
 });
 
-// 2. Chat Function
-export const hunterChat = functions.https.onRequest((req, res) => {
-  corsHandler(req, res, async () => {
-    const { message } = req.body;
-    
-    const prompt = `
-      SYSTEM: You are Hunter AI for Happy Hunter Digital.
-      MISSION: Convert visitors into clients.
-      TONE: Military-grade precision.
-      CONTEXT: User asks: "${message}".
-      Provide a strategic response (max 50 words).
-    `;
-
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      });
-      const data = await response.json();
-      res.status(200).json({ reply: data.candidates?.[0]?.content?.parts?.[0]?.text || "Signal Lost." });
-    } catch (e: any) {
-      res.status(500).json({ error: "Comms Link Unstable" });
-    }
-  });
+// --- 2. STRATEGIC CHAT (GEMINI 3 FLASH) ---
+export const hunterChat = onCall({ 
+  region: "us-central1",
+  secrets: ["GEMINI_API_KEY"],
+  cors: true
+}, async (request) => {
+  const { message } = request.data;
+  try {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        contents: [{ parts: [{ text: `You are Hunter AI, powered by Gemini 3 Flash. User query: "${message}". Respond with strategic, military-grade precision in 1 sentence.` }] }]
+      })
+    });
+    const data = await aiRes.json() as any;
+    return { reply: data.candidates[0].content.parts[0].text };
+  } catch (e) {
+    return { reply: "Gemini 3 Link Unstable. Try again." };
+  }
 });
