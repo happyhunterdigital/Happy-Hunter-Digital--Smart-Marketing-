@@ -26,7 +26,15 @@ jobs:
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          # These VITE keys are for the frontend if you need them there
           VITE_PLACES_API_KEY: ${{ secrets.VITE_PLACES_API_KEY }}
+
+      # BACKEND PREP: Inject Secrets into .env file
+      - name: Create Functions Environment File
+        run: |
+          cd functions
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+          echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
 
       # BACKEND BUILD
       - name: Install & Compile Functions
@@ -35,7 +43,7 @@ jobs:
           npm install
           npm run build
 
-      # DEPLOY - Only hosting and functions, skip extensions
+      # DEPLOY
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
