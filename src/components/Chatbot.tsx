@@ -12,10 +12,10 @@ interface Message {
 export const Chatbot: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: 'bot', 
-      text: 'Protocol initialized. I am Hunter AI, your strategic digital marketing assistant. How can I help you dominate the AI search era?', 
-      timestamp: new Date() 
+    {
+      role: 'bot',
+      text: 'Protocol initialized. I am Hunter AI, your strategic digital marketing assistant. How can I help you dominate the AI search era?',
+      timestamp: new Date()
     }
   ]);
   const [input, setInput] = useState('');
@@ -39,18 +39,18 @@ export const Chatbot: React.FC = () => {
       const hunterChat = httpsCallable(functions, 'hunterChat');
       const response = await hunterChat({ message: userMsg });
       const data = response.data as { reply: string };
-      
-      setMessages(prev => [...prev, { 
-        role: 'bot', 
-        text: data.reply || "Signal interference. Please retry.", 
-        timestamp: new Date() 
+
+      setMessages(prev => [...prev, {
+        role: 'bot',
+        text: data.reply || "Signal interference. Please retry.",
+        timestamp: new Date()
       }]);
     } catch (err) {
       console.error("Chat error:", err);
-      setMessages(prev => [...prev, { 
-        role: 'bot', 
-        text: "Comms link offline. Please email HQ at hello@happyhunterdigital.com", 
-        timestamp: new Date() 
+      setMessages(prev => [...prev, {
+        role: 'bot',
+        text: "Comms link offline. Please email HQ at hello@happyhunterdigital.com",
+        timestamp: new Date()
       }]);
     } finally {
       setLoading(false);
@@ -86,8 +86,8 @@ export const Chatbot: React.FC = () => {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] p-3 rounded-xl text-sm ${
-                  m.role === 'user' 
-                    ? 'bg-yellow-500 text-black font-medium' 
+                  m.role === 'user'
+                    ? 'bg-yellow-500 text-black font-medium'
                     : 'bg-gray-800 text-gray-300'
                 }`}>
                   {m.text}
@@ -113,8 +113,8 @@ export const Chatbot: React.FC = () => {
               className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none"
               disabled={loading}
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading || !input.trim()}
               className="text-yellow-500 hover:text-white p-3 disabled:opacity-50 transition-colors"
             >
