@@ -5,10 +5,12 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 
 interface AuditResult {
+  success: boolean;
   score: number;
   summary: string;
   truths: string[];
   placeData?: any;
+  error?: string;
 }
 
 export const AiAudit: React.FC = () => {
@@ -47,6 +49,7 @@ export const AiAudit: React.FC = () => {
 
       const data = response.data as AuditResult;
       
+      // Check if the response indicates failure
       if (!data.success) {
         throw new Error(data.error || "Audit failed");
       }
