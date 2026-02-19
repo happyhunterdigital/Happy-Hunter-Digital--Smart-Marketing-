@@ -48,7 +48,7 @@ export const AiAudit: React.FC = () => {
       });
 
       const data = response.data as AuditResult;
-      
+
       // Check if the response indicates failure
       if (!data.success) {
         throw new Error(data.error || "Audit failed");
@@ -105,7 +105,6 @@ export const AiAudit: React.FC = () => {
               required
             />
           </div>
-          
           <div>
             <input
               className="w-full bg-gray-900/50 p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-colors"
@@ -116,7 +115,6 @@ export const AiAudit: React.FC = () => {
               required
             />
           </div>
-          
           <div>
             <input
               className="w-full bg-gray-900/50 p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-colors"
@@ -169,7 +167,7 @@ export const AiAudit: React.FC = () => {
           </div>
 
           <p className="text-gray-400 leading-relaxed font-medium italic text-lg">
-            "{result.summary}"
+            {result.summary}
           </p>
 
           <div className="space-y-3">
