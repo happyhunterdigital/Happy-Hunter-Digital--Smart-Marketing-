@@ -1,9 +1,7 @@
 name: Deploy Gemini 3 Protocol
-
 on:
   push:
     branches: [main]
-
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -13,7 +11,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-
       # FRONTEND BUILD
       - name: Install & Build Frontend
         run: |
@@ -30,18 +27,16 @@ jobs:
           VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
           VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
           VITE_PLACES_API_KEY: ${{ secrets.VITE_PLACES_API_KEY }}
-
       # BACKEND BUILD
       - name: Install & Compile Functions
         run: |
           cd functions
           npm install
           npm run build
-
       # DEPLOY - Only hosting and functions, skip extensions
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting,functions --non-interactive
+          args: deploy --only hosting,functions --non-interactive --force
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
