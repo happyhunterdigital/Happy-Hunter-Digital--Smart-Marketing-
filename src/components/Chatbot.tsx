@@ -1,15 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, Bot } from 'lucide-react';
+import { MessageSquare, X, Send, Bot, Loader2 } from 'lucide-react';
+import { functions } from '../firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
+
+interface Message {
+  role: 'user' | 'bot';
+  text: string;
+  timestamp: Date;
+}
 
 export const Chatbot: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([{ role: 'bot', text: 'Protocol initialized. Awaiting command.' }]);
+  const [messages, setMessages] = useState<Message[]>([
+    { 
+      role: 'bot', 
+      text: 'Protocol initialized. I am Hunter AI, your strategic digital marketing assistant. How can I help you dominate the AI search era?', 
+      timestamp: new Date() 
+    }
+  ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-  const CHAT_ENDPOINT = `https://us-central1-${PROJECT_ID}.cloudfunctions.net/hunterChat`;
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -17,24 +28,30 @@ export const Chatbot: React.FC = () => {
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
+    if (!input.trim() || loading) return;
 
-    const userMsg = input;
+    const userMsg = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setMessages(prev => [...prev, { role: 'user', text: userMsg, timestamp: new Date() }]);
     setLoading(true);
 
     try {
-      const res = await fetch(CHAT_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg })
-      });
+      const hunterChat = httpsCallable(functions, 'hunterChat');
+      const response = await hunterChat({ message: userMsg });
+      const data = response.data as { reply: string };
       
-      const data = await res.json();
-      setMessages(prev => [...prev, { role: 'bot', text: data.reply || "Signal interference." }]);
+      setMessages(prev => [...prev, { 
+        role: 'bot', 
+        text: data.reply || "Signal interference. Please retry.", 
+        timestamp: new Date() 
+      }]);
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'bot', text: "Comms link offline. Please email HQ." }]);
+      console.error("Chat error:", err);
+      setMessages(prev => [...prev, { 
+        role: 'bot', 
+        text: "Comms link offline. Please email HQ at hello@happyhunterdigital.com", 
+        timestamp: new Date() 
+      }]);
     } finally {
       setLoading(false);
     }
@@ -42,42 +59,65 @@ export const Chatbot: React.FC = () => {
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-50 bg-brand-yellow text-brand-dark p-4 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:scale-110 transition-transform"
+        className="fixed bottom-6 right-6 z-50 bg-yellow-500 text-black p-4 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:scale-110 transition-transform"
+        aria-label={open ? "Close chat" : "Open chat"}
       >
-        {open ? <X /> : <MessageSquare />}
+        {open ? <X size={24} /> : <MessageSquare size={24} />}
       </button>
 
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 md:w-96 bg-brand-dark border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
-          <div className="bg-gray-900 p-4 border-b border-gray-800 flex items-center justify-between">
+        <div className="fixed bottom-24 right-6 z-50 w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
+          <div className="bg-black p-4 border-b border-gray-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Bot className="text-brand-yellow" size={20} />
-              <span className="font-bold text-white text-sm uppercase tracking-wider">Hunter AI</span>
+              <Bot className="text-yellow-500" size={20} />
+              <span className="font-bold text-white text-sm uppercase tracking-wider">
+                Hunter AI
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="text-xs text-gray-500">Online</span>
             </div>
           </div>
 
           <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-black/50 scrollbar-hide">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-3 rounded-xl text-sm ${m.role === 'user' ? 'bg-brand-yellow text-brand-dark font-medium' : 'bg-gray-800 text-gray-300'}`}>
+                <div className={`max-w-[80%] p-3 rounded-xl text-sm ${
+                  m.role === 'user' 
+                    ? 'bg-yellow-500 text-black font-medium' 
+                    : 'bg-gray-800 text-gray-300'
+                }`}>
                   {m.text}
                 </div>
               </div>
             ))}
-            {loading && <div className="text-gray-500 text-xs animate-pulse">Computing response...</div>}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-800 text-gray-500 text-xs p-3 rounded-xl flex items-center gap-2">
+                  <Loader2 className="animate-spin" size={14} />
+                  Computing response...
+                </div>
+              </div>
+            )}
             <div ref={scrollRef} />
           </div>
 
           <form onSubmit={sendMessage} className="p-3 bg-gray-900 border-t border-gray-800 flex gap-2">
-            <input 
+            <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Enter command..."
-              className="flex-1 bg-gray-950 text-white text-sm p-2 rounded border border-gray-800 focus:border-brand-yellow outline-none"
+              className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none"
+              disabled={loading}
             />
-            <button type="submit" disabled={loading} className="text-brand-yellow hover:text-white p-2">
+            <button 
+              type="submit" 
+              disabled={loading || !input.trim()}
+              className="text-yellow-500 hover:text-white p-3 disabled:opacity-50 transition-colors"
+            >
               <Send size={18} />
             </button>
           </form>
