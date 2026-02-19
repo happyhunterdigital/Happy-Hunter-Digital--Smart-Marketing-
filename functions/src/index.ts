@@ -6,15 +6,10 @@ import { getFirestore } from "firebase-admin/firestore";
 admin.initializeApp();
 const db = getFirestore();
 
-// EmailJS configuration
-const EMAILJS_PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY;
-const EMAILJS_SERVICE_ID = process.env.EMAILJS_SERVICE_ID;
-const EMAILJS_TEMPLATE_ID = process.env.EMAILJS_TEMPLATE_ID;
-
 // 1. FORENSIC AUDIT (GEMINI 3 FLASH)
 export const performAudit = onCall({
   region: "us-central1",
-  secrets: ["GEMINI_API_KEY", "PLACES_API_KEY", "EMAILJS_PUBLIC_KEY", "EMAILJS_SERVICE_ID", "EMAILJS_TEMPLATE_ID"],
+  secrets: ["GEMINI_API_KEY", "PLACES_API_KEY"],
   cors: true,
   maxInstances: 10,
 }, async (request) => {
@@ -100,7 +95,7 @@ Output STRICT JSON format:
       throw new Error("Invalid analysis format from AI");
     }
 
-    // Stage 3: Send Email via EmailJS API directly
+    // Stage 3: Trigger Email via Firestore Extension
     const emailHtml = `
       <h1 style="color:#eab308;font-family:Arial,sans-serif;">Protocol: Digital Entity Scan</h1>
       <p><strong>Target:</strong> ${businessName}</p>
@@ -127,32 +122,14 @@ Output STRICT JSON format:
       <p style="color:#999;font-size:12px;"><em>End of Transmission. / Happy Hunter Command</em></p>
     `;
 
-    // Send via EmailJS REST API
-    const emailResponse = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    await db.collection("mail").add({
+      to: [clientEmail],
+      message: {
+        subject: `[Intelligence Report] Entity Status for ${businessName}`,
+        html: emailHtml,
       },
-      body: JSON.stringify({
-        service_id: EMAILJS_SERVICE_ID,
-        template_id: EMAILJS_TEMPLATE_ID,
-        user_id: EMAILJS_PUBLIC_KEY,
-        template_params: {
-          to_email: clientEmail,
-          to_name: businessName,
-          from_name: "Hunter AI",
-          subject: `[Intelligence Report] Entity Status for ${businessName}`,
-          message_html: emailHtml,
-          score: analysis.score,
-          summary: analysis.summary
-        }
-      })
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
-
-    if (!emailResponse.ok) {
-      console.error("Email failed to send:", await emailResponse.text());
-      // Don't throw - audit still succeeded even if email fails
-    }
 
     // Stage 4: Persist lead for admin dashboard
     await db.collection("leads").add({
@@ -165,8 +142,7 @@ Output STRICT JSON format:
       placeData: biz || null,
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
       model: 'Gemini 2.0 Flash',
-      status: 'new',
-      emailSent: emailResponse.ok
+      status: 'new'
     });
 
     // Return analysis to frontend
