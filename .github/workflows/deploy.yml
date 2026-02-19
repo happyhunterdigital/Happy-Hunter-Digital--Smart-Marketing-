@@ -1,4 +1,4 @@
-name: Deploy Gemini 3 Protocol
+name: Gemini 3 Deployment
 on:
   push:
     branches: [main]
@@ -11,7 +11,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install & Build Frontend
+      - name: Install & Build
         run: |
           npm install
           npm run build
@@ -26,14 +26,15 @@ jobs:
           VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
           VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
 
-      - name: Install & Prepare Functions
+      - name: Initialize Gemini 3 Backend
         run: |
           cd functions
           npm install
+          # Baked-in environment for Gemini 3
           echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" > .env
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
 
-      - name: Deploy to Firebase
+      - name: Global Deploy
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only hosting,functions
