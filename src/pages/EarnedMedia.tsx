@@ -1,9 +1,11 @@
 import React from 'react';
-import { ArrowRight, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2 } from 'lucide-react';
 
 const CASE_STUDIES = [
   {
     client: "Skubalisto",
+    logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1770623694/IMG-20260209-WA0025_zgpgf7.jpg",
+    website: "https://skubalisto.com",
     industry: "Art & Muralism",
     vulnerability: "High offline visibility but entirely subjected to the 'Ghost Effect' online. Technical architecture prevented Google Knowledge Graph generation.",
     protocol: "Entity Resolution. Fixed broken shop links, unblocked search bots, and injected explicit Person and LocalBusiness schema markup.",
@@ -12,6 +14,8 @@ const CASE_STUDIES = [
   },
   {
     client: "Integrated Wellth Solutions",
+    logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1765747667/Integrated_Wellth_Solutions_Logo_bodmyc1_iiervl.png",
+    website: "https://www.integratedwellth.co.za",
     industry: "Financial Intelligence",
     vulnerability: "High TOFU (Top-of-Funnel) traffic (14,000 views) resulting in zero MQLs due to generic, ambiguous positioning.",
     protocol: "Rebranded as a 'Financial Intelligence Unit'. Deployed a RAG-ready FAQ architecture and automated inbound triage system.",
@@ -19,7 +23,9 @@ const CASE_STUDIES = [
     metrics: ["Lead Filtering Triage Active", "High-Speed Infrastructure Deployed"]
   },
   {
-    client: "Khongoloti Training Academy",
+    client: "Khongoloti Academy",
+    logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1762927791/logo_Khongoloti_1_e4k887.png",
+    website: "https://khongoloti.co.za",
     industry: "B2B Education",
     vulnerability: "Fragmented messaging causing high-friction user journeys from initial inquiry to final certification.",
     protocol: "Implemented an AEO-First approach. Restructured digital assets to create a 'Business Success Loop' with cross-channel data alignment.",
@@ -32,22 +38,28 @@ export const EarnedMedia = () => (
   <div className="container mx-auto px-6 py-20 animate-fade-in">
     <div className="max-w-4xl mx-auto mb-16 text-center">
       <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 text-white">
-        Verified <span className="text-yellow-500">Outcomes</span>
+        Client <span className="text-yellow-500">Success</span>
       </h1>
       <p className="text-gray-400 text-lg md:text-xl leading-relaxed">
-        Initial performance validation and beta stage testing for ambitious brands. We measure success by increased Net Revenue Retention, not vanity metrics.
+        Real results for ambitious South African businesses. See how we turn digital friction into seamless growth.
       </p>
     </div>
 
     <div className="grid gap-10 max-w-5xl mx-auto">
       {CASE_STUDIES.map((study, i) => (
         <div key={i} className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 md:p-12 hover:border-yellow-500/30 transition-all">
-          <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4 border-b border-gray-800/50 pb-6">
-            <div>
-              <h2 className="text-3xl font-black text-white">{study.client}</h2>
-              <p className="text-yellow-500 font-bold uppercase tracking-widest text-[10px] mt-2 bg-yellow-500/10 inline-block px-3 py-1 rounded-md">{study.industry}</p>
+          
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-gray-800/50 pb-6">
+            <div className="flex items-center gap-6">
+              <img src={study.logo} alt={`${study.client} Logo`} className="h-16 w-auto object-contain bg-white/5 p-2 rounded-lg" />
+              <div>
+                <h2 className="text-3xl font-black text-white">{study.client}</h2>
+                <p className="text-yellow-500 font-bold uppercase tracking-widest text-[10px] mt-2 bg-yellow-500/10 inline-block px-3 py-1 rounded-md">{study.industry}</p>
+              </div>
             </div>
-            <TrendingUp className="text-gray-700 hidden md:block" size={40} />
+            <a href={study.website} target="_blank" rel="noopener noreferrer" className="shrink-0 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-gray-500 hover:text-yellow-500 transition-colors">
+              Visit Client Site <ArrowUpRight size={16} />
+            </a>
           </div>
           
           <div className="grid md:grid-cols-2 gap-10 mb-8">
