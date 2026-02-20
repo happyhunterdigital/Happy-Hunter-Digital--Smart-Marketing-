@@ -4,24 +4,20 @@ import { Link } from 'react-router-dom';
 
 const FAQS = [
   {
-    q: "What is the difference between standard SEO and Generative Engine Optimization (GEO)?",
-    a: "SEO optimizes content for ranking hyperlinks against search engine algorithms. GEO is the systematic practice of structuring digital content so that generative AI models (ChatGPT, Gemini) accurately extract, synthesize, and cite your brand as the definitive answer."
+    q: "What does an 'AI Marketing Scan' actually do?",
+    a: "Our scan analyzes how search engines (like Google) and AI assistants (like ChatGPT) view your business. It checks for missing data, broken links, and consistency errors that prevent you from ranking high in local searches."
   },
   {
-    q: "Why is my current website traffic dropping despite maintaining SEO efforts?",
-    a: "You are experiencing the 'Zero-Click Crisis'. Approximately 40% of B2B searches now end within the AI interface because the engine answers the user directly. We shift your strategy from 'Click-Chasing' to securing 'Share of Voice' within the AI response itself."
+    q: "Why is Google Maps so important for my business?",
+    a: "For local businesses in South Africa, Google Maps is the modern-day yellow pages. If your profile isn't verified and optimized, your competitors are getting all the phone calls from people searching 'near me'."
   },
   {
-    q: "How do you make our content 'citable' for Large Language Models?",
-    a: "We utilize RAG-Ready (Retrieval-Augmented Generation) formatting. We restructure your business data into semantic clusters and deploy strict JSON-LD Schema.org markup. This ensures AI models can parse your data deterministically, eliminating algorithmic ambiguity."
+    q: "Do I need technical skills to use your services?",
+    a: "Not at all. We are a 'done-for-you' agency. We handle the complex technical setup, coding, and AI integration so you can focus on running your business."
   },
   {
-    q: "What is the 'Ghost Effect' and how does it impact B2B SaaS?",
-    a: "The Ghost Effect occurs when a business has high physical competence but fragmented digital data. If your citations, NAP data, and service pages lack consistency, AI models classify your entity as unreliable and refuse to recommend you to decision-makers."
-  },
-  {
-    q: "How does your system reduce our overall Customer Acquisition Cost (CAC)?",
-    a: "By shifting reliance away from volatile paid advertising to organic, LLM-driven visibility. Our automated qualification pipelines immediately filter zero-intent traffic, effectively doubling your Lead-to-MQL conversion rate and shortening your CAC payback period."
+    q: "How does the automated lead chatbot work?",
+    a: "We train a custom AI assistant on your business's specific services, pricing, and FAQs. It sits on your website and WhatsApp, chatting with potential customers, answering their questions, and booking appointments for you 24/7."
   }
 ];
 
@@ -60,12 +56,13 @@ export const FAQ = () => {
           ))}
         </div>
 
+        {/* UPDATED CTA BOX */}
         <div className="mt-16 p-8 bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-3xl text-center shadow-xl">
           <Cpu className="mx-auto text-yellow-500 mb-4" size={32} />
           <h2 className="text-xl font-bold text-white mb-2">Require further diagnostic data?</h2>
-          <p className="text-gray-400 mb-6 text-sm">Deploy our Gemini 3 Engine to analyze your specific domain architecture.</p>
+          <p className="text-gray-400 mb-6 text-sm">Deploy our Smart Marketing Engine to analyze your specific BUSINESS architecture.</p>
           <Link to="/audit" className="bg-yellow-500 text-black px-8 py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors inline-block text-xs">
-            Initialize Entity Scan
+            Initialize Smart Business Scan
           </Link>
         </div>
       </div>
