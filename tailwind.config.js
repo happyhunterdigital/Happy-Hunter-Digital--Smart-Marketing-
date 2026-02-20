@@ -3,22 +3,19 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      colors: {
-        'brand-dark': '#0a0a0a', 
-        'brand-yellow': '#eab308', 
-      },
-      fontFamily: {
+      colors: { 'brand-dark': '#050505', 'brand-yellow': '#eab308' },
+      fontFamily: { 
         sans: ['Inter', 'sans-serif'],
-        handwriting: ['Caveat', 'cursive'], // Added handwriting font
+        handwriting: ['Caveat', 'cursive'] 
       },
       animation: {
-        'scan': 'scan 2s linear infinite',
+        'marquee': 'marquee 30s linear infinite',
         'fade-in': 'fadeIn 0.5s ease-out forwards',
       },
       keyframes: {
-        scan: {
-          '0%': { transform: 'translateY(-100%)' },
-          '100%': { transform: 'translateY(100%)' },
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
         },
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
