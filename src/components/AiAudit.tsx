@@ -12,7 +12,6 @@ export const AiAudit: React.FC = () => {
   const [verdict, setVerdict] = useState<any>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  // SEMANTIC PARSER: Strips asterisks and applies Brand Yellow Bolding
   const formatText = (text: string) => {
     const clean = text.replace(/\*/g, '');
     const keywords = ["Entity", "Protocol", "Scan", "Handshake", "AI Visibility", "Visibility Score", "Vulnerability", "Revenue", "Authority"];
