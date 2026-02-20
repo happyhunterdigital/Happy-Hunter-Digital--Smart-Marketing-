@@ -8,21 +8,21 @@ export const Home = () => {
       
       {/* 
         HERO SECTION
-        Using your specific image with cinematic dark overlays and data nodes
+        Image: The Gemini Generated "Digital Joburg" Graphic
       */}
       <section className="relative container-fluid px-6 text-center py-32 md:py-48 overflow-hidden min-h-[90vh] flex flex-col justify-center">
         
         {/* The Custom Background Image */}
         <div 
-          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-30 grayscale"
-          style={{ backgroundImage: "url('https://res.cloudinary.com/dka0498ns/image/upload/v1770566290/Thabo_Leslie_Motsumi_is_the_founder_and_key_figure_behind_happyhunterdigital_also_referred_to_as_Happy_Hunter_Smart_Marketing_yvomai.png')" }}
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 grayscale"
+          style={{ backgroundImage: "url('https://res.cloudinary.com/dka0498ns/image/upload/v1762926940/Gemini_Generated_Image_wayxwqwayxwqwayx_mt1bop.png')" }}
         ></div>
 
         {/* The "Slate 950" Moody Gradient Overlay */}
         <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#020617]/80 via-[#020617]/90 to-[#050505]"></div>
 
-        {/* The Cybernetic Yellow Data Nodes (SVG) */}
-        <div className="absolute inset-0 z-10 opacity-40 pointer-events-none">
+        {/* The Cybernetic Yellow Data Nodes (SVG Animation) */}
+        <div className="absolute inset-0 z-10 opacity-30 pointer-events-none">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
              {/* Connection Lines */}
              <path d="M 10% 20% L 30% 50% L 60% 30% L 80% 70% L 95% 40%" fill="none" stroke="#eab308" strokeWidth="1" strokeDasharray="4,4" className="animate-pulse" />
