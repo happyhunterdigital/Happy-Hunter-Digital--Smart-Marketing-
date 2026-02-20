@@ -2,11 +2,9 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 
-// Initialize Firebase Admin
 admin.initializeApp();
 const db = getFirestore();
 
-// 1. FORENSIC AUDIT (GEMINI 3 FLASH)
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
@@ -14,76 +12,91 @@ export const performAudit = onCall({
 }, async (request) => {
   const { businessName, location, clientEmail } = request.data;
 
-  // Runtime keys are provided by the environment automatically
-  const G_KEY = process.env.GEMINI_API_KEY;
-  const P_KEY = process.env.PLACES_API_KEY;
-
   if (!businessName || !location || !clientEmail) {
     throw new HttpsError("invalid-argument", "Missing required fields.");
   }
+
+  const G_KEY = process.env.GEMINI_API_KEY;
+  const P_KEY = process.env.PLACES_API_KEY;
+
   if (!G_KEY || !P_KEY) {
-    throw new HttpsError("failed-precondition", "AI Core keys not found.");
+    throw new HttpsError("failed-precondition", "API keys not configured.");
   }
 
   try {
-    // Stage 1: Intelligence Retrieval
     const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": P_KEY,
-        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.businessStatus"
+        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.businessStatus,places.formattedAddress"
       },
       body: JSON.stringify({ textQuery: `${businessName} in ${location}` })
     });
 
+    if (!pRes.ok) throw new Error(`Places API error: ${pRes.status}`);
+
     const pData = await pRes.json() as any;
     const biz = pData.places?.[0];
     const context = biz
-      ? `VERIFIED: ${biz.displayName?.text}. Rating: ${biz.rating}. Reviews: ${biz.userRatingCount}.`
-      : `GHOST: No data found for "${businessName}" in ${location}.`;
+      ? `VERIFIED: ${biz.displayName?.text}. Rating: ${biz.rating || 'N/A'}. Reviews: ${biz.userRatingCount || 0}. Status: ${biz.businessStatus}.`
+      : `GHOST: No Maps data found for "${businessName}" in ${location}.`;
 
-    // Stage 2: Gemini 3 Flash Neural Analysis
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `You are Hunter AI. Perform a Digital Audit on: ${businessName}.
+            text: `You are Hunter AI. Perform a Digital Entity Audit on: ${businessName}.
 Context: ${context}
-Output STRICT JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }`
+Task: Analyze their digital presence. Rate visibility 0-100. Identify 3 critical invisibility gaps.
+Output STRICT JSON format: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }`
           }]
         }],
         generationConfig: { responseMimeType: "application/json" }
       })
     });
 
+    if (!aiRes.ok) throw new Error(`Gemini API error: ${aiRes.status}`);
+
     const aiData = await aiRes.json() as any;
     const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
 
-    // Stage 3: Trigger Email Extension
     await db.collection("mail").add({
       to: [clientEmail],
       message: {
-        subject: `[Intel Report] Status for ${businessName}`,
-        html: `<h1>Score: ${analysis.score}/100</h1><p>${analysis.summary}</p>`,
+        subject: `[Intelligence Report] Entity Status for ${businessName}`,
+        html: `<h1 style="color:#eab308;">Score: ${analysis.score}/100</h1><p>${analysis.summary}</p><ul>${analysis.truths.map((t: string) => `<li>${t}</li>`).join('')}</ul>`,
       },
     });
 
-    // Stage 4: Log Lead
     await db.collection("leads").add({
-      businessName, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp()
+      businessName,
+      location,
+      email: clientEmail,
+      score: analysis.score,
+      summary: analysis.summary,
+      truths: analysis.truths,
+      placeData: biz || null,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      status: 'new'
     });
 
-    return { success: true, ...analysis };
+    return {
+      success: true,
+      score: analysis.score,
+      summary: analysis.summary,
+      truths: analysis.truths,
+      placeData: biz || null
+    };
 
   } catch (e: any) {
-    throw new HttpsError("internal", `Audit Link Failed: ${e.message}`);
+    console.error("Audit Failure:", e);
+    throw new HttpsError("internal", `Audit failed: ${e.message}`);
   }
 });
 
-// 2. STRATEGIC CHAT (GEMINI 3 FLASH)
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
@@ -92,17 +105,26 @@ export const hunterChat = onCall({
   const { message } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
 
+  if (!message || !G_KEY) throw new HttpsError("invalid-argument", "Invalid request.");
+
   try {
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Hunter AI. User says: "${message}". Respond in 1 sentence.` }] }]
+        contents: [{
+          parts: [{
+            text: `You are Hunter AI, strategic digital marketing assistant for Happy Hunter Digital. Direct, authoritative, military-inspired. Help with Entity SEO and AI visibility. User says: "${message}". Respond in 1-2 sentences. If they ask about pricing, direct them to schedule a briefing.`
+          }]
+        }],
+        generationConfig: { temperature: 0.8, maxOutputTokens: 256 }
       })
     });
+
     const data = await aiRes.json() as any;
-    return { reply: data.candidates[0].content.parts[0].text.trim() };
-  } catch (e) {
-    throw new HttpsError("internal", "Comms offline.");
+    return { success: true, reply: data.candidates[0].content.parts[0].text.trim() };
+
+  } catch (e: any) {
+    throw new HttpsError("internal", "Comms link offline.");
   }
 });
