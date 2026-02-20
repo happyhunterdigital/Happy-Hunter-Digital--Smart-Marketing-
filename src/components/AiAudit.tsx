@@ -19,22 +19,14 @@ export const AiAudit: React.FC = () => {
   const [result, setResult] = useState<AuditResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const runGemini3Scan = async (e: React.FormEvent) => {
+  const runSmartScan = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setResult(null);
 
-    // Client-side validation
     if (!form.biz.trim() || !form.loc.trim() || !form.mail.trim()) {
-      setError("All fields are required");
-      setLoading(false);
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.mail)) {
-      setError("Please enter a valid email address");
+      setError("Please fill in all fields to generate your report.");
       setLoading(false);
       return;
     }
@@ -49,14 +41,12 @@ export const AiAudit: React.FC = () => {
 
       const data = response.data as AuditResult;
 
-      // Check if the response indicates failure
       if (!data.success) {
-        throw new Error(data.error || "Audit failed");
+        throw new Error(data.error || "Scan interrupted. Please try again.");
       }
 
       setResult(data);
 
-      // Persist to local analytics (optional, backend already does this)
       await addDoc(collection(db, 'audit_logs'), {
         businessName: form.biz,
         location: form.loc,
@@ -66,7 +56,8 @@ export const AiAudit: React.FC = () => {
 
     } catch (err: any) {
       console.error("Audit error:", err);
-      setError(err.message || "Gemini 3 Handshake Error. Please retry.");
+      // Friendly error message instead of raw system errors
+      setError("Our AI is experiencing high traffic. Please try again in a few moments.");
     } finally {
       setLoading(false);
     }
@@ -85,20 +76,20 @@ export const AiAudit: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 md:p-10 bg-black border border-yellow-500/20 rounded-3xl shadow-[0_0_50px_rgba(234,179,8,0.1)] mt-10">
+    <div className="max-w-2xl mx-auto p-6 md:p-10 bg-[#0a0a0a] border border-yellow-500/20 rounded-3xl shadow-[0_0_50px_rgba(234,179,8,0.05)] mt-10">
       <div className="flex items-center gap-2 mb-8 justify-center">
         <Zap className="text-yellow-500 fill-yellow-500 animate-pulse" size={20} />
-        <span className="text-xs font-black uppercase tracking-[0.3em] text-yellow-500">
-          Gemini 3 Flash Active
+        <span className="text-xs font-black uppercase tracking-[0.2em] text-yellow-500">
+          Smart AI Marketing Engine
         </span>
       </div>
 
       {!result ? (
-        <form onSubmit={runGemini3Scan} className="space-y-6">
+        <form onSubmit={runSmartScan} className="space-y-6">
           <div>
             <input
               className="w-full bg-gray-900/50 p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-colors"
-              placeholder="Business Name"
+              placeholder="Your Business Name"
               value={form.biz}
               onChange={e => setForm({ ...form, biz: e.target.value })}
               disabled={loading}
@@ -108,7 +99,7 @@ export const AiAudit: React.FC = () => {
           <div>
             <input
               className="w-full bg-gray-900/50 p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-colors"
-              placeholder="Location (City, State)"
+              placeholder="City or Area"
               value={form.loc}
               onChange={e => setForm({ ...form, loc: e.target.value })}
               disabled={loading}
@@ -118,7 +109,7 @@ export const AiAudit: React.FC = () => {
           <div>
             <input
               className="w-full bg-gray-900/50 p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-colors"
-              placeholder="Client Email"
+              placeholder="Where should we send your report?"
               type="email"
               value={form.mail}
               onChange={e => setForm({ ...form, mail: e.target.value })}
@@ -128,7 +119,7 @@ export const AiAudit: React.FC = () => {
           </div>
 
           {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm text-center font-medium">
               {error}
             </div>
           )}
@@ -141,12 +132,12 @@ export const AiAudit: React.FC = () => {
             {loading ? (
               <>
                 <Loader2 className="animate-spin" size={20} />
-                Scanning Digital Footprint...
+                Analyzing Digital Footprint...
               </>
             ) : (
               <>
                 <Search size={20} />
-                Initiate Gemini 3 Protocol
+                Initiate Smart Marketing Scan
               </>
             )}
           </button>
@@ -155,7 +146,7 @@ export const AiAudit: React.FC = () => {
         <div className="text-left animate-fade-in space-y-6">
           <div className="flex justify-between items-center border-b border-gray-800 pb-6">
             <h3 className="text-xl font-black text-white uppercase tracking-tighter">
-              Diagnostic Score
+              Visibility Score
             </h3>
             <div className="flex items-center gap-3">
               {getScoreIcon(result.score)}
@@ -166,46 +157,31 @@ export const AiAudit: React.FC = () => {
             </div>
           </div>
 
-          <p className="text-gray-400 leading-relaxed font-medium italic text-lg">
+          <p className="text-gray-300 leading-relaxed font-medium text-lg">
             {result.summary}
           </p>
 
           <div className="space-y-3">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-red-400 mb-3">
-              Critical Intelligence Gaps
+            <h4 className="text-sm font-bold uppercase tracking-wider text-yellow-500 mb-3">
+              Key Growth Opportunities
             </h4>
             {result.truths?.map((truth, i) => (
               <div
                 key={i}
-                className="p-4 bg-red-500/5 border-l-4 border-red-500 text-red-200 text-sm flex gap-3 items-start"
+                className="p-4 bg-gray-900/50 border-l-4 border-yellow-500 text-gray-300 text-sm flex gap-3 items-start rounded-r-lg"
               >
-                <AlertTriangle className="shrink-0 mt-0.5" size={18} />
+                <AlertTriangle className="shrink-0 mt-0.5 text-yellow-500" size={18} />
                 <span>{truth}</span>
               </div>
             ))}
           </div>
 
-          {result.placeData && (
-            <div className="p-4 bg-gray-900/50 rounded-xl border border-gray-800">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-                Google Maps Verification
-              </h4>
-              <p className="text-white font-medium">{result.placeData.displayName?.text}</p>
-              <p className="text-gray-400 text-sm">{result.placeData.formattedAddress}</p>
-              {result.placeData.rating && (
-                <p className="text-yellow-500 text-sm mt-1">
-                  Rating: {result.placeData.rating} ⭐ ({result.placeData.userRatingCount} reviews)
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-            <p className="text-yellow-200 text-sm">
-              <strong>Report dispatched to:</strong> {form.mail}
+          <div className="p-5 bg-yellow-500/10 border border-yellow-500/30 rounded-xl text-center">
+            <p className="text-yellow-500 font-bold mb-1">
+              Your detailed report is on its way!
             </p>
-            <p className="text-yellow-500/70 text-xs mt-1">
-              Check your inbox for the full intelligence briefing.
+            <p className="text-yellow-500/70 text-sm">
+              We just emailed the full analysis to <strong>{form.mail}</strong>
             </p>
           </div>
 
@@ -214,9 +190,9 @@ export const AiAudit: React.FC = () => {
               setResult(null);
               setForm({ biz: '', loc: '', mail: '' });
             }}
-            className="w-full text-gray-600 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors py-4"
+            className="w-full text-gray-500 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors py-4"
           >
-            Clear Neural Cache & Run New Scan
+            Run Another Scan
           </button>
         </div>
       )}
