@@ -1,4 +1,4 @@
-name: Deploy Gemini 3 Protocol
+name: Deploy Happy Hunter Systems
 
 on:
   push:
@@ -8,14 +8,15 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # FRONTEND BUILD
-      - name: Install & Build Frontend
+      - name: Install and Build Frontend
         run: |
           npm install
           npm run build
@@ -26,27 +27,20 @@ jobs:
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          # These VITE keys are for the frontend if you need them there
-          VITE_PLACES_API_KEY: ${{ secrets.VITE_PLACES_API_KEY }}
+          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
+          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
 
-      # BACKEND PREP: Inject Secrets into .env file
-      - name: Create Functions Environment File
-        run: |
-          cd functions
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
-          echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
-
-      # BACKEND BUILD
-      - name: Install & Compile Functions
+      - name: Install and Compile Backend Functions
         run: |
           cd functions
           npm install
           npm run build
 
-      # DEPLOY
-      - name: Deploy to Firebase
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only hosting,functions --non-interactive
+      - name: Force Deploy to Firebase (Hosting & Functions)
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          echo "$GCP_SA_KEY" > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
+          npx firebase-tools deploy --only hosting,functions --force --non-interactive
