@@ -16,7 +16,7 @@ export const Founders = () => (
         <div className="space-y-6 text-gray-300 leading-relaxed text-lg border-l-2 border-gray-800 pl-6">
           <p>
             The digital landscape of 2026 is hostile to "unverified" entities. 
-            I founded Happy Hunter Systems because I observed a systemic failure in how traditional agencies service modern businesses: they focus on <em>activity</em> rather than <em>architecture</em>.
+            I founded <span className="font-handwriting text-2xl lowercase text-white">happyhunterdigital</span> because I observed a systemic failure in how traditional agencies service modern businesses: they focus on <em>activity</em> rather than <em>architecture</em>.
           </p>
           <p>
             We do not engage in superficial lead generation. My operational mandate is to execute focused, dedicated sprints that systematize your intellectual property into highly scalable, AI-ready digital assets.
@@ -37,23 +37,38 @@ export const Founders = () => (
       </div>
 
       <div className="md:col-span-5 relative">
-        <div className="aspect-[3/4] bg-gray-900 border border-gray-800 rounded-3xl overflow-hidden relative shadow-2xl z-10 flex flex-col justify-end p-8">
-             {/* Replace with real image: Add <img src="..." className="absolute inset-0 w-full h-full object-cover opacity-50" /> here */}
-             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-0"></div>
+        {/* IMAGE CONTAINER */}
+        <div className="aspect-[3/4] bg-gray-900 border border-gray-800 rounded-[2rem] overflow-hidden relative shadow-2xl z-10">
              
-             <div className="relative z-10 space-y-4">
-                <div className="flex items-center gap-3 text-gray-400 text-sm">
-                  <Database size={16} className="text-yellow-500"/> Data Synthesis
+             {/* Actual Founder Image */}
+             <img 
+               src="https://res.cloudinary.com/dka0498ns/image/upload/v1766069617/Thabo_Leslie_Motsumi._AI_Google_my_Business_profile_optimization_Search_Everywhere_Optimation_SEO_Automation_and_Smart_digital_marketing._vncyse.png"
+               alt="Thabo Leslie Motsumi"
+               className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+             />
+             
+             {/* Gradient overlay for text readability */}
+             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
+             
+             {/* BOTTOM RIGHT NAME PLATE (Touching Borders) */}
+             <div className="absolute bottom-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-l border-gray-800 p-5 rounded-tl-3xl text-right">
+               <p className="font-black uppercase tracking-widest text-yellow-500 text-lg leading-none">Thabo Leslie Motsumi</p>
+               <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">Principal Strategist</p>
+             </div>
+
+             {/* Tech floating icons (Top left) */}
+             <div className="absolute top-6 left-6 space-y-3 opacity-70">
+                <div className="flex items-center gap-2 text-white bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-bold uppercase tracking-widest">
+                  <Database size={12} className="text-yellow-500"/> Data Synthesis
                 </div>
-                <div className="flex items-center gap-3 text-gray-400 text-sm">
-                  <Code2 size={16} className="text-yellow-500"/> Schema Architecture
-                </div>
-                <div className="flex items-center gap-3 text-gray-400 text-sm">
-                  <Network size={16} className="text-yellow-500"/> Entity Resolution
+                <div className="flex items-center gap-2 text-white bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-bold uppercase tracking-widest">
+                  <Code2 size={12} className="text-yellow-500"/> Schema Arch
                 </div>
              </div>
         </div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-yellow-500/5 blur-[120px] rounded-full z-0 pointer-events-none"></div>
+        
+        {/* Background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-yellow-500/10 blur-[100px] rounded-full z-0 pointer-events-none"></div>
       </div>
 
     </div>
