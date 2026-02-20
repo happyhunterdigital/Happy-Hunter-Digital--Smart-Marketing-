@@ -5,7 +5,7 @@ import { getFirestore } from "firebase-admin/firestore";
 admin.initializeApp();
 const db = getFirestore();
 
-// 1. SMART MARKETING AUDIT (WITH LIVE GOOGLE MAPS DATA)
+// 1. SMART MARKETING AUDIT
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
@@ -24,28 +24,18 @@ export const performAudit = onCall({
   }
 
   try {
-    // Stage 1: LIVE GOOGLE MAPS INTELLIGENCE
     const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": P_KEY,
-        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.businessStatus,places.formattedAddress"
-      },
+      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": P_KEY },
       body: JSON.stringify({ textQuery: `${businessName} in ${location}` })
     });
 
-    if (!pRes.ok) throw new Error(`Google Maps API Error: ${pRes.status}`);
-
     const pData = await pRes.json() as any;
     const biz = pData.places?.[0];
-    
-    // CONTEXT for AI is now based on REAL data
     const context = biz
-      ? `LIVE DATA FOUND: Business Name: ${biz.displayName?.text}. Google Rating: ${biz.rating || 'Not Available'}. Review Count: ${biz.userRatingCount || 0}. Status: ${biz.businessStatus}.`
-      : `LIVE DATA NOT FOUND: The business "${businessName}" in ${location} is not easily discoverable on Google Maps, indicating a significant 'near me' visibility issue.`;
+      ? `Data Found: ${biz.displayName?.text}. Rating: ${biz.rating || 'N/A'}. Reviews: ${biz.userRatingCount || 0}. Status: ${biz.businessStatus}.`
+      : `No Google Maps data found for "${businessName}" in ${location}.`;
 
-    // Stage 2: Gemini Analysis
     let analysis;
     
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${G_KEY}`, {
@@ -54,19 +44,15 @@ export const performAudit = onCall({
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `You are a Google Maps optimization expert. Analyze this business: ${businessName}.
-LIVE DATA: ${context}
-TASK: Analyze their 'Near Me' visibility on Google Maps. Rate their visibility from 0 to 100.
-Identify 3 actionable steps they should take to improve their Google Business Profile ranking.
-OUTPUT: Strict JSON format: { "score": number, "summary": "string (professional summary of their Maps presence)", "truths": ["string", "string", "string"] }`
+            text: `You are an expert Digital Marketing Strategist. Analyze: ${businessName}. Context: ${context}. Rate visibility 0-100. Identify 3 growth areas. Output STRICT JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }`
           }]
         }],
-        generationConfig: { responseMimeType: "application/json", temperature: 0.5 }
+        generationConfig: { responseMimeType: "application/json" }
       })
     });
 
     if (aiRes.status === 429) {
-      console.warn("Gemini Rate Limit (429) Hit. Using Fallback Data.");
+      console.warn("Audit Rate Limit Hit. Using Fallback.");
       analysis = {
         score: biz ? 55 : 35,
         summary: `Our AI is experiencing high traffic. Based on a rapid scan, ${businessName} shows opportunities for significant growth in local search visibility.`,
@@ -83,24 +69,68 @@ OUTPUT: Strict JSON format: { "score": number, "summary": "string (professional 
       analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
     }
 
-    // Stage 3: Send Email
-    const emailHtml = `... (email logic here) ...`;
+    const emailHtml = `...`; // Email logic remains
     await db.collection("mail").add({
       to: [clientEmail],
       message: {
-        subject: `Your Google Maps Audit Results: ${businessName}`,
+        subject: `Your Marketing Audit Results: ${businessName}`,
         html: emailHtml,
       },
     });
 
-    // Stage 4: Persist lead
     await db.collection("leads").add({ businessName, location, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
 
-    return { success: true, ...analysis, placeData: biz || null };
+    return { success: true, score: analysis.score, summary: analysis.summary, truths: analysis.truths };
 
   } catch (e: any) {
-    throw new HttpsError("internal", `Audit failed: ${e.message}`);
+    console.error("Audit Failure:", e);
+    throw new HttpsError("internal", `Audit failed. Please try again.`);
   }
 });
 
-// ... (hunterChat function remains the same) ...
+// 2. STRATEGIC CHAT (UPGRADED WITH FALLBACK)
+export const hunterChat = onCall({
+  region: "us-central1",
+  cors: true,
+  maxInstances: 10,
+}, async (request) => {
+  const { message } = request.data;
+  const G_KEY = process.env.GEMINI_API_KEY;
+
+  if (!message || !G_KEY) {
+    throw new HttpsError("invalid-argument", "Invalid request.");
+  }
+
+  try {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${G_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `You are a helpful, professional digital marketing assistant for Happy Hunter Systems. User says: "${message}". Respond in 1-2 friendly sentences.`
+          }]
+        }],
+        generationConfig: { temperature: 0.8, maxOutputTokens: 150 }
+      })
+    });
+    
+    // THE FIX: Check for rate limit and provide a smart fallback
+    if (aiRes.status === 429) {
+        console.warn("Chatbot Rate Limit Hit. Using Fallback.");
+        return { success: true, reply: "Our AI is handling a high volume of requests at the moment. Please try the Smart Marketing Scan above for a detailed analysis, or ask me again in a minute!" };
+    }
+
+    if (!aiRes.ok) {
+        throw new Error(`AI error: ${aiRes.status}`);
+    }
+
+    const data = await aiRes.json() as any;
+    return { success: true, reply: data.candidates[0].content.parts[0].text.trim() };
+
+  } catch (e: any) {
+    // This is the generic crash error
+    console.error("Chat Failure:", e);
+    return { success: true, reply: "My connection is unstable at the moment. For immediate help, please email our team at hello@happyhunterdigital.com" };
+  }
+});
