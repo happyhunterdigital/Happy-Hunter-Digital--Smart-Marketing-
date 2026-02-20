@@ -1,22 +1,28 @@
 {
-  "name": "functions",
-  "description": "Happy Hunter Systems - AI Marketing Backend",
-  "engines": {
-    "node": "20"
-  },
-  "main": "lib/index.js",
+  "name": "happyhunterdigital",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "build": "tsc",
-    "deploy": "firebase deploy --only functions"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "firebase-admin": "^12.0.0",
-    "firebase-functions": "^5.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5" 
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.0",
+    "firebase": "^10.8.0",
+    "lucide-react": "^0.344.0"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
-  },
-  "private": true
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.0"
+  }
 }
