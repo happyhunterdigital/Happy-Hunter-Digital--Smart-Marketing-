@@ -1,82 +1,118 @@
-import React, { useState } from 'react';
-import { Search, AlertTriangle, Loader2, Zap, CheckCircle, XCircle } from 'lucide-react';
-import { functions } from '../firebaseConfig';
-import { httpsCallable } from 'firebase/functions';
+import React, { useState, useRef } from 'react';
+import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare } from 'lucide-react';
+import { db, hunterModel, PLACES_KEY } from '../firebaseConfig';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export const AiAudit: React.FC = () => {
-  const [form, setForm] = useState({ biz: '', loc: '', mail: '' });
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
   const [loading, setLoading] = useState(false);
-  const [res, setRes] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [verdict, setVerdict] = useState<any>(null);
+  const reportRef = useRef<HTMLDivElement>(null);
 
-  const runSmartScan = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setRes(null);
-
-    try {
-      const performAudit = httpsCallable(functions, 'performAudit');
-      const result = await performAudit({
-        businessName: form.biz,
-        location: form.loc,
-        clientEmail: form.mail
-      });
-
-      if (result.data) {
-        setRes(result.data);
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError("The Audit System is currently overloaded or blocked. Please try again in 60 seconds.");
-    } finally {
-      setLoading(false);
-    }
+  // SEMANTIC PARSER: No asterisks, Brand Yellow Bolding
+  const formatText = (text: string) => {
+    return text.replace(/\*/g, '').replace(/(Entity|Protocol|Scan|Handshake|AI Visibility|Visibility Score|Vulnerability|Revenue|Authority)/gi, (match) => {
+      return `<span class="text-yellow-500 font-bold">${match}</span>`;
+    });
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 70) return 'text-green-500';
-    if (score >= 40) return 'text-yellow-500';
-    return 'text-red-500';
+  const getForensicData = async () => {
+    const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": PLACES_KEY, "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount" },
+      body: JSON.stringify({ textQuery: `${form.biz} in ${form.loc}` })
+    });
+    const data = await res.json();
+    const biz = data.places?.[0];
+    return biz ? `Verified: ${biz.displayName.text}, ${biz.rating} stars, ${biz.userRatingCount} reviews.` : "Status: GHOST (No Maps data found).";
+  };
+
+  const runAnalysis = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const mapsData = await getForensicData();
+      const prompt = `You are Hunter AI. Perform a Forensic Audit for ${form.biz} in ${form.loc}. DATA: ${mapsData}. EXPOSE gaps. NO ASTERISKS. End with FINAL_SCORE: [number].`;
+      
+      const result = await hunterModel.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      const scoreMatch = text.match(/FINAL_SCORE:\s*(\d+)/);
+      const score = scoreMatch ? parseInt(scoreMatch[1]) : 50;
+      const cleanText = text.replace(/FINAL_SCORE:\s*\d+/, '');
+
+      setVerdict({ score, text: cleanText });
+      setStep(3);
+
+      await addDoc(collection(db, 'leads'), { ...form, score, timestamp: serverTimestamp() });
+    } catch (err) { alert("Handshake Failed. Link lost."); }
+    setLoading(false);
+  };
+
+  const downloadPDF = async () => {
+    if (!reportRef.current) return;
+    const canvas = await html2canvas(reportRef.current, { backgroundColor: '#050505', scale: 2 });
+    const img = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    pdf.addImage(img, 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
+    pdf.save(`HH_Audit_${form.biz}.pdf`);
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-10 bg-[#0a0a0a] border border-brand-yellow/20 rounded-3xl shadow-[0_0_50px_rgba(234,179,8,0.1)] mt-10">
-      <div className="flex items-center gap-2 mb-8 justify-center">
-        <Zap className="text-brand-yellow fill-brand-yellow animate-pulse" size={20} />
-        <span className="text-xs font-black uppercase tracking-[0.3em] text-brand-yellow">
-          Smart Marketing Engine
-        </span>
-      </div>
+    <div className="max-w-2xl mx-auto mt-10 px-4">
+      {/* STEP 1: THE HOOK */}
+      {step === 1 && (
+        <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="space-y-6 bg-gray-900/50 p-10 rounded-[2.5rem] border border-gray-800 backdrop-blur-xl">
+          <h2 className="text-3xl font-black text-white uppercase text-center tracking-tighter">Business <span className="text-yellow-500">Scan</span></h2>
+          <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Business Name" onChange={e => setForm({...form, biz: e.target.value})} required />
+          <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="City" onChange={e => setForm({...form, loc: e.target.value})} required />
+          <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3">Analyze Architecture <ArrowRight size={20}/></button>
+        </form>
+      )}
 
-      {!res ? (
-        <form onSubmit={runSmartScan} className="space-y-6">
-          <input className="w-full bg-gray-900/50 p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-brand-yellow transition-all" placeholder="Business Name" onChange={e => setForm({...form, biz: e.target.value})} required />
-          <input className="w-full bg-gray-900/50 p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-brand-yellow transition-all" placeholder="City" onChange={e => setForm({...form, loc: e.target.value})} required />
-          <input className="w-full bg-gray-900/50 p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-brand-yellow transition-all" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
-          
-          {error && <div className="p-4 bg-red-900/20 text-red-400 text-sm rounded-xl text-center font-bold">{error}</div>}
-
-          <button disabled={loading} className="w-full bg-brand-yellow p-5 rounded-2xl font-black uppercase text-brand-dark flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50">
-            {loading ? <Loader2 className="animate-spin" /> : <Search size={20}/>}
-            {loading ? 'Running Forensic Scan...' : 'Initiate Smart Scan'}
+      {/* STEP 2: THE HANDSHAKE */}
+      {step === 2 && (
+        <form onSubmit={runAnalysis} className="space-y-6 bg-gray-900/50 p-10 rounded-[2.5rem] border border-yellow-500/30 backdrop-blur-xl">
+          <div className="text-center space-y-2 mb-8">
+            <ShieldCheck className="mx-auto text-yellow-500" size={40}/>
+            <h2 className="text-2xl font-black text-white uppercase">Secure Your Results</h2>
+            <p className="text-gray-400 text-sm">Where should we send your forensic report?</p>
+          </div>
+          <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} required />
+          <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
+          <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="WhatsApp Number" type="tel" onChange={e => setForm({...form, wa: e.target.value})} required />
+          <button disabled={loading} className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3">
+            {loading ? <Loader2 className="animate-spin" /> : <Zap size={20}/>} Reveal Intelligence
           </button>
         </form>
-      ) : (
-        <div className="text-left animate-fade-in space-y-6">
-          <div className="flex justify-between items-center border-b border-gray-800 pb-6">
-            <h3 className="text-xl font-black text-white uppercase tracking-tighter">Visibility Score</h3>
-            <span className={`text-6xl font-black ${getScoreColor(res.score)}`}>{res.score}</span>
+      )}
+
+      {/* STEP 3: THE VERDICT */}
+      {step === 3 && verdict && (
+        <div className="space-y-6 animate-fade-in">
+          <div ref={reportRef} className="p-10 bg-black border border-gray-800 rounded-[2.5rem] shadow-2xl">
+            <div className="flex justify-between items-center border-b border-gray-800 pb-8 mb-8">
+              <div>
+                <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em] mb-2">Diagnostic Score</h3>
+                <span className="text-7xl font-black text-yellow-500 leading-none">{verdict.score}</span>
+              </div>
+              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" className="w-16 h-16 rounded-full border border-yellow-500/20" alt="Logo"/>
+            </div>
+            <div className="text-gray-300 leading-relaxed space-y-6 text-sm" dangerouslySetInnerHTML={{ __html: formatText(verdict.text) }} />
           </div>
-          <p className="text-gray-300 text-lg leading-relaxed italic">"{res.summary}"</p>
-          <div className="space-y-3">
-             {res.truths.map((t: string, i: number) => (
-               <div key={i} className="flex gap-3 p-4 bg-red-500/5 rounded-xl border-l-4 border-red-500 text-red-200 text-sm">
-                 <AlertTriangle className="shrink-0" size={18}/> {t}
-               </div>
-             ))}
+          
+          <div className="grid grid-cols-2 gap-4">
+            <button onClick={downloadPDF} className="flex items-center justify-center gap-2 p-4 bg-gray-900 border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:bg-white hover:text-black transition-all">
+              <Download size={16}/> Vector PDF
+            </button>
+            <a href={`https://wa.me/27601016673?text=Hunter,%20I%20just%20scored%20a%20${verdict.score}%20on%20my%20scan.%20I%20need%20to%20fix%20my%20architecture.`} target="_blank" className="flex items-center justify-center gap-2 p-4 bg-yellow-500 text-black rounded-2xl font-black uppercase text-xs shadow-xl shadow-yellow-500/20">
+              <MessageSquare size={16}/> Retargeting
+            </a>
           </div>
-          <button onClick={() => setRes(null)} className="w-full py-4 text-gray-500 text-xs uppercase font-bold tracking-widest hover:text-white transition-colors">Run New Scan</button>
         </div>
       )}
     </div>
