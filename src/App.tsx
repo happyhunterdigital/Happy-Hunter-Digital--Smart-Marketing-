@@ -2,6 +2,8 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { AiAudit } from './components/AiAudit';
 import { Chatbot } from './components/Chatbot';
 import { CookieConsent } from './components/CookieConsent';
+import { ContentRibbon } from './components/ContentRibbon';
+import { EventPopup } from './components/EventPopup';
 import { Home } from './pages/Home';
 import { Founders } from './pages/Founders';
 import { CoreServices } from './pages/CoreServices';
@@ -12,6 +14,7 @@ import { BlogAnchor } from './pages/BlogAnchor';
 import { ArticleMegaphone } from './pages/ArticleMegaphone';
 import { ArticleRevenue } from './pages/ArticleRevenue';
 import { ArticleSynthesis } from './pages/ArticleSynthesis';
+import { SummitPage } from './pages/SummitPage';
 import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -29,9 +32,16 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black">
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black pt-8">
       
-      <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+      {/* 1. SUMMIT RIBBON (Fixed Top) */}
+      <ContentRibbon />
+      
+      {/* 2. SUMMIT POPUP */}
+      <EventPopup />
+
+      {/* 3. CAPSULE NAVBAR (Fixed below ribbon) */}
+      <div className="fixed top-10 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
         <nav className="w-full max-w-5xl bg-[#0a0a0a]/80 backdrop-blur-xl border border-gray-800/80 rounded-full px-5 py-3 flex justify-between items-center shadow-[0_8px_32px_rgba(0,0,0,0.6)] pointer-events-auto">
           <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <img 
@@ -66,6 +76,7 @@ function App() {
         </nav>
       </div>
 
+      {/* MOBILE MENU */}
       {menuOpen && (
         <div className="fixed top-28 left-4 right-4 z-40 bg-[#0a0a0a]/95 backdrop-blur-2xl border border-gray-800 rounded-3xl p-6 shadow-2xl animate-fade-in lg:hidden">
           <div className="flex flex-col space-y-6 text-center">
@@ -81,6 +92,7 @@ function App() {
         </div>
       )}
 
+      {/* ROUTING */}
       <main className="pt-32">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -93,10 +105,12 @@ function App() {
           <Route path="/blog/ai-megaphone" element={<ArticleMegaphone />} />
           <Route path="/blog/revenue-brain" element={<ArticleRevenue />} />
           <Route path="/blog/synthesis" element={<ArticleSynthesis />} />
+          <Route path="/summit-2026" element={<SummitPage />} />
           <Route path="/hq-command" element={<Admin />} /> 
         </Routes>
       </main>
 
+      {/* FOOTER */}
       <footer className="py-20 border-t border-gray-900 bg-black text-left">
         <div className="container mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           
