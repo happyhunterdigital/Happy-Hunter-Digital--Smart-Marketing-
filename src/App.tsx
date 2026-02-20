@@ -7,8 +7,11 @@ import { CoreServices } from './pages/CoreServices';
 import { EarnedMedia } from './pages/EarnedMedia';
 import { FAQ } from './pages/FAQ';
 import { Admin } from './pages/Admin';
-import { Blog } from './pages/Blog';
-import { BlogPost } from './pages/BlogPost';
+// NEW BLOG IMPORTS
+import { BlogAnchor } from './pages/BlogAnchor';
+import { ArticleMegaphone } from './pages/ArticleMegaphone';
+import { ArticleRevenue } from './pages/ArticleRevenue';
+import { ArticleSynthesis } from './pages/ArticleSynthesis';
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -34,7 +37,6 @@ function App() {
               alt="Logo" 
               className="w-10 h-10 rounded-full border border-yellow-500/30 object-cover"
             />
-            {/* The Specific Handwriting Logo */}
             <span className="font-handwriting text-2xl md:text-3xl tracking-wide drop-shadow-md pb-1">
               <span className="text-white">happy</span>
               <span className="text-yellow-500">hunter</span>
@@ -86,13 +88,18 @@ function App() {
           <Route path="/earned-media" element={<EarnedMedia />} />
           <Route path="/founders" element={<Founders />} />
           <Route path="/faq" element={<FAQ />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:id" element={<BlogPost />} />
+          
+          {/* NEW BLOG ROUTES */}
+          <Route path="/blog" element={<BlogAnchor />} />
+          <Route path="/blog/ai-megaphone" element={<ArticleMegaphone />} />
+          <Route path="/blog/revenue-brain" element={<ArticleRevenue />} />
+          <Route path="/blog/synthesis" element={<ArticleSynthesis />} />
+          
           <Route path="/hq-command" element={<Admin />} /> 
         </Routes>
       </main>
 
-      <footer className="py-12 border-t border-gray-900 text-center bg-black mt-20">
+      <footer className="py-12 border-t border-white/5 text-center bg-black mt-20">
         <div className="flex justify-center mb-6">
             <span className="font-handwriting text-3xl tracking-wide">
               <span className="text-gray-500">happy</span><span className="text-yellow-600">hunter</span><span className="text-gray-700">digital</span>
