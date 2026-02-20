@@ -14,7 +14,7 @@
     ],
     "headers": [
       {
-        "source": "**/*",
+        "source": "**",
         "headers": [
           {
             "key": "Strict-Transport-Security",
@@ -38,16 +38,7 @@
           },
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self' https://*.firebaseapp.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://us-central1-happy-hunter-systems.cloudfunctions.net; img-src 'self' data: https://res.cloudinary.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
-          }
-        ]
-      },
-      {
-        "source": "**/*.@(jpg|jpeg|gif|png|svg|webp)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "max-age=31536000"
+            "value": "default-src 'self' https://*.firebaseapp.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://*.googleapis.com https://*.cloudfunctions.net https://us-central1-happy-hunter-systems.cloudfunctions.net; img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
           }
         ]
       }
@@ -57,7 +48,12 @@
     {
       "source": "functions",
       "codebase": "default",
-      "ignore": [ "node_modules", ".git", "*.log*" ]
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
     }
   ]
 }
