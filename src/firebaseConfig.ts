@@ -15,19 +15,18 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// EXPORTS FOR THE SYSTEM
+// EXPORTS
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const functions = getFunctions(app, "us-central1");
 
 // SECRET SANITIZER
 const scrub = (key: string) => (key || "").replace(/['"\s]/g, "");
-
-const GEMINI_KEY = scrub(import.meta.env.VITE_GEMINI_API_KEY);
+export const GEMINI_KEY = scrub(import.meta.env.VITE_GEMINI_API_KEY);
 export const PLACES_KEY = scrub(import.meta.env.VITE_PLACES_API_KEY);
 
-// INITIALIZE GEMINI FLASH LATEST
+// INITIALIZE AI BRAIN - HARD-WIRED TO GEMINI FLASH LATEST
 const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 export const hunterModel = genAI.getGenerativeModel({ 
-  model: "gemini-2.0-flash" 
+  model: "gemini-flash-latest" 
 });
