@@ -8,87 +8,122 @@ const db = getFirestore();
 // 1. SMART MARKETING AUDIT
 export const performAudit = onCall({
   region: "us-central1",
-  cors: true,
-  maxInstances: 10,
+  cors: true,       // Allows requests from your website
+  maxInstances: 10, // Prevents cold start overloads
+  timeoutSeconds: 300, // CRITICAL FIX: Increased to 5 mins for deep AI analysis
+  memory: "512MiB", // Boosted memory for JSON parsing
 }, async (request) => {
   const { businessName, location, clientEmail } = request.data;
 
+  // 1. Environment Check
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
+
+  if (!G_KEY || !P_KEY) {
+    console.error("Missing API Keys on Server");
+    throw new HttpsError("failed-precondition", "Server misconfiguration: Missing Keys.");
+  }
 
   if (!businessName || !location || !clientEmail) {
     throw new HttpsError("invalid-argument", "Missing required fields.");
   }
-  if (!G_KEY || !P_KEY) {
-    throw new HttpsError("failed-precondition", "API keys not configured.");
-  }
 
   try {
-    const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    console.log(`Starting Audit: ${businessName} in ${location}`);
+
+    // 2. Google Places Intelligence (Live Data)
+    const placesUrl = "https://places.googleapis.com/v1/places:searchText";
+    const pRes = await fetch(placesUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": P_KEY },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": P_KEY,
+        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.businessStatus,places.formattedAddress"
+      },
       body: JSON.stringify({ textQuery: `${businessName} in ${location}` })
     });
 
+    if (!pRes.ok) {
+      const err = await pRes.text();
+      console.error("Maps API Error:", err);
+      // Don't crash, just log it and proceed with "Ghost" context
+    }
+
     const pData = await pRes.json() as any;
     const biz = pData.places?.[0];
-    const context = biz
-      ? `Data Found: ${biz.displayName?.text}. Rating: ${biz.rating || 'N/A'}. Reviews: ${biz.userRatingCount || 0}. Status: ${biz.businessStatus}.`
-      : `No Google Maps data found for "${businessName}" in ${location}.`;
-
-    let analysis;
     
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${G_KEY}`, {
+    const context = biz
+      ? `LIVE DATA: Name: ${biz.displayName?.text}. Rating: ${biz.rating || 'N/A'}. Reviews: ${biz.userRatingCount || 0}. Address: ${biz.formattedAddress}.`
+      : `GHOST DATA: No confirmed Google Maps profile found for "${businessName}" in "${location}".`;
+
+    // 3. Gemini 2.0 Flash Analysis
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${G_KEY}`;
+    
+    const aiRes = await fetch(geminiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `You are an expert Digital Marketing Strategist. Analyze: ${businessName}. Context: ${context}. Rate visibility 0-100. Identify 3 growth areas. Output STRICT JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }`
+            text: `You are Hunter AI, an elite digital marketing auditor.
+TARGET: ${businessName}
+LOCATION: ${location}
+INTELLIGENCE: ${context}
+
+TASK: Perform a forensic digital audit.
+1. Score their visibility (0-100). If 'GHOST DATA', score is automatically < 30.
+2. Write a 2-sentence executive summary.
+3. Identify 3 specific, brutal truths about their missing visibility.
+
+OUTPUT FORMAT (Strict JSON):
+{
+  "score": number,
+  "summary": "string",
+  "truths": ["string", "string", "string"]
+}`
           }]
         }],
-        generationConfig: { responseMimeType: "application/json" }
+        generationConfig: { responseMimeType: "application/json", temperature: 0.4 }
       })
     });
 
-    if (aiRes.status === 429) {
-      console.warn("Audit Rate Limit Hit. Using Fallback.");
-      analysis = {
-        score: biz ? 55 : 35,
-        summary: `Our AI is experiencing high traffic. Based on a rapid scan, ${businessName} shows opportunities for significant growth in local search visibility.`,
-        truths: [
-          "Optimize Google Business Profile categories for your specific niche.",
-          "Implement a strategy to consistently gather new, high-quality customer reviews.",
-          "Ensure your business Name, Address, and Phone (NAP) are identical across all online directories."
-        ]
-      };
-    } else if (!aiRes.ok) {
-      throw new Error(`AI error: ${aiRes.status}`);
-    } else {
-      const aiData = await aiRes.json() as any;
-      analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
+    if (!aiRes.ok) {
+      const aiErr = await aiRes.text();
+      console.error("Gemini API Error:", aiErr);
+      throw new Error(`AI Brain Offline: ${aiRes.status}`);
     }
 
-    const emailHtml = `...`; // Email logic remains
+    const aiData = await aiRes.json() as any;
+    const rawJSON = aiData.candidates[0].content.parts[0].text;
+    const analysis = JSON.parse(rawJSON);
+
+    // 4. Persistence & Dispatch
+    await db.collection("leads").add({
+      businessName,
+      location,
+      email: clientEmail,
+      score: analysis.score,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      model: "Gemini 2.0 Flash"
+    });
+
     await db.collection("mail").add({
       to: [clientEmail],
       message: {
-        subject: `Your Marketing Audit Results: ${businessName}`,
-        html: emailHtml,
-      },
+        subject: `[Intelligence Report] Digital Status: ${businessName}`,
+        html: `<h1>Audit Score: ${analysis.score}/100</h1><p>${analysis.summary}</p>`,
+      }
     });
 
-    await db.collection("leads").add({ businessName, location, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
-
-    return { success: true, score: analysis.score, summary: analysis.summary, truths: analysis.truths };
+    return { success: true, ...analysis, placeData: biz || null };
 
   } catch (e: any) {
-    console.error("Audit Failure:", e);
-    throw new HttpsError("internal", `Audit failed. Please try again.`);
+    console.error("Critical Audit Failure:", e);
+    throw new HttpsError("internal", e.message || "Audit Protocol Failed");
   }
 });
 
-// 2. STRATEGIC CHAT (UPGRADED WITH FALLBACK)
+// 2. STRATEGIC CHAT (Hunter AI)
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
@@ -97,40 +132,19 @@ export const hunterChat = onCall({
   const { message } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
 
-  if (!message || !G_KEY) {
-    throw new HttpsError("invalid-argument", "Invalid request.");
-  }
+  if (!message) throw new HttpsError("invalid-argument", "No message.");
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `You are a helpful, professional digital marketing assistant for Happy Hunter Systems. User says: "${message}". Respond in 1-2 friendly sentences.`
-          }]
-        }],
-        generationConfig: { temperature: 0.8, maxOutputTokens: 150 }
+        contents: [{ parts: [{ text: `System: Hunter AI. User: "${message}". Reply in 1 sentence, military-grade precision.` }] }]
       })
     });
-    
-    // THE FIX: Check for rate limit and provide a smart fallback
-    if (aiRes.status === 429) {
-        console.warn("Chatbot Rate Limit Hit. Using Fallback.");
-        return { success: true, reply: "Our AI is handling a high volume of requests at the moment. Please try the Smart Marketing Scan above for a detailed analysis, or ask me again in a minute!" };
-    }
-
-    if (!aiRes.ok) {
-        throw new Error(`AI error: ${aiRes.status}`);
-    }
-
     const data = await aiRes.json() as any;
-    return { success: true, reply: data.candidates[0].content.parts[0].text.trim() };
-
-  } catch (e: any) {
-    // This is the generic crash error
-    console.error("Chat Failure:", e);
-    return { success: true, reply: "My connection is unstable at the moment. For immediate help, please email our team at hello@happyhunterdigital.com" };
+    return { reply: data.candidates[0].content.parts[0].text.trim() };
+  } catch (e) {
+    return { reply: "Secure link unstable. Check your connection." };
   }
 });
