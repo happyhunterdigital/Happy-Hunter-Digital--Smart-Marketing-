@@ -6,6 +6,7 @@ import { Founders } from './pages/Founders';
 import { CoreServices } from './pages/CoreServices';
 import { EarnedMedia } from './pages/EarnedMedia';
 import { FAQ } from './pages/FAQ';
+import { Admin } from './pages/Admin'; // <-- IMPORT THIS
 import { ShieldCheck, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -14,7 +15,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-yellow selection:text-brand-dark">
-      {/* Navigation Protocol */}
+      {/* ... (Keep your existing Navigation Protocol exactly as it is) ... */}
       <nav className="fixed w-full z-50 bg-brand-dark/90 backdrop-blur-xl border-b border-white/5">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Link to="/" className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
@@ -57,6 +58,8 @@ function App() {
           <Route path="/earned-media" element={<EarnedMedia />} />
           <Route path="/founders" element={<Founders />} />
           <Route path="/faq" element={<FAQ />} />
+          {/* --> ADD THE ADMIN ROUTE HERE <-- */}
+          <Route path="/hq-command" element={<Admin />} /> 
         </Routes>
       </main>
 
