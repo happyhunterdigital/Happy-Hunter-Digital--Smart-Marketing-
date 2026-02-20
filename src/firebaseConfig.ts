@@ -1,5 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getFunctions } from "firebase/functions";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const firebaseConfig = {
@@ -12,19 +14,20 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
 
-// SECRET SANITIZER: Ensures keys are pure strings
+// EXPORTS FOR THE ENTIRE SYSTEM
+export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const functions = getFunctions(app, "us-central1");
+
+// SECRET SANITIZER
 const scrub = (key: string) => (key || "").replace(/['"\s]/g, "");
 
-const RAW_GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const RAW_PLACES_KEY = import.meta.env.VITE_PLACES_API_KEY;
+export const GEMINI_KEY = scrub(import.meta.env.VITE_GEMINI_API_KEY);
+export const PLACES_KEY = scrub(import.meta.env.VITE_PLACES_API_KEY);
 
-export const GEMINI_KEY = scrub(RAW_GEMINI_KEY);
-export const PLACES_KEY = scrub(RAW_PLACES_KEY);
-
-// INITIALIZE AI BRAIN
-export const genAI = new GoogleGenerativeAI(GEMINI_KEY);
+// INITIALIZE GEMINI FLASH LATEST
+const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 export const hunterModel = genAI.getGenerativeModel({ 
-  model: "gemini-flash-latest" 
+  model: "gemini-2.0-flash-exp" // This maps to the latest Flash architecture
 });
