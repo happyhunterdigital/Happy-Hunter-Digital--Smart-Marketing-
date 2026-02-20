@@ -41,7 +41,7 @@ export const Chatbot: React.FC = () => {
       </button>
 
       {open && (
-        <div className="fixed bottom-24 right-6 z-[150] w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden max-h-[500px] animate-fade-in">
+        <div className="fixed bottom-24 right-6 z-[150] w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
           <div className="bg-black p-4 border-b border-gray-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="text-yellow-500" size={20} />
