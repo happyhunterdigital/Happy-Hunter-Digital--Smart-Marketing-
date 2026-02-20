@@ -7,7 +7,7 @@ import { CoreServices } from './pages/CoreServices';
 import { EarnedMedia } from './pages/EarnedMedia';
 import { FAQ } from './pages/FAQ';
 import { Admin } from './pages/Admin';
-// NEW BLOG IMPORTS
+// NEW, CORRECTED BLOG IMPORTS
 import { BlogAnchor } from './pages/BlogAnchor';
 import { ArticleMegaphone } from './pages/ArticleMegaphone';
 import { ArticleRevenue } from './pages/ArticleRevenue';
@@ -27,7 +27,6 @@ function App() {
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black">
       
-      {/* 2026 CAPSULE NAVBAR - FLOATING & CENTERED */}
       <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
         <nav className="w-full max-w-5xl bg-[#0a0a0a]/80 backdrop-blur-xl border border-gray-800/80 rounded-full px-5 py-3 flex justify-between items-center shadow-[0_8px_32px_rgba(0,0,0,0.6)] pointer-events-auto">
           
@@ -44,7 +43,6 @@ function App() {
             </span>
           </Link>
 
-          {/* DESKTOP LINKS */}
           <div className="hidden lg:flex items-center gap-6 xl:gap-8 px-4">
             <Link to="/services" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 hover:text-yellow-500 transition-colors">Services</Link>
             <Link to="/earned-media" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 hover:text-yellow-500 transition-colors">Earned Media</Link>
@@ -89,7 +87,6 @@ function App() {
           <Route path="/founders" element={<Founders />} />
           <Route path="/faq" element={<FAQ />} />
           
-          {/* NEW BLOG ROUTES */}
           <Route path="/blog" element={<BlogAnchor />} />
           <Route path="/blog/ai-megaphone" element={<ArticleMegaphone />} />
           <Route path="/blog/revenue-brain" element={<ArticleRevenue />} />
