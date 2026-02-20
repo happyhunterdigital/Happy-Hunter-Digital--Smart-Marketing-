@@ -1,6 +1,7 @@
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { AiAudit } from './components/AiAudit';
-import { Chatbot } from './components/Chatbot'; // <-- THIS WAS MISSING
+import { Chatbot } from './components/Chatbot';
+import { CookieConsent } from './components/CookieConsent';
 import { Home } from './pages/Home';
 import { Founders } from './pages/Founders';
 import { CoreServices } from './pages/CoreServices';
@@ -11,10 +12,10 @@ import { BlogAnchor } from './pages/BlogAnchor';
 import { ArticleMegaphone } from './pages/ArticleMegaphone';
 import { ArticleRevenue } from './pages/ArticleRevenue';
 import { ArticleSynthesis } from './pages/ArticleSynthesis';
-import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Globe } from 'lucide-react'; // <-- ADDED 'Globe' HERE
+import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-// A simple SVG for TikTok and 'X'
+// SVG Icons for TikTok and 'X'
 const TikTokIcon = () => <svg fill="currentColor" width="18" height="18" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.022 1.61-.013 1.91-.02.08.53.63.91.75 1.17.12.11.71.62.24.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01.92.01.84-.03.75-.03.4-.54.79-1.35.94-1.31.92-3.58.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.1-3.34-3.12-3.59-5.43-.29-2.42.75-4.79 2.59-6.27 1.62-1.33.79-1.84 5.92-1.32v4.03c-1.02-.35-2.23-.14-3.05.55-.9.7-1.15 1.91-.73 2.93.31.83 1.11 1.48 2.01 1.6.86.13 1.8-.12 2.4-.76.54-.53.76-1.28.76-2.02V.02z"/></svg>;
 const XIcon = () => <svg fill="currentColor" width="18" height="18" viewBox="0 0 512 512"><path d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8l164.9-199.9L26.8 48h145.6l100.5 132.3L389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z"/></svg>;
 
@@ -30,7 +31,6 @@ function App() {
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black">
       
-      {/* 2026 CAPSULE NAVBAR */}
       <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
         <nav className="w-full max-w-5xl bg-[#0a0a0a]/80 backdrop-blur-xl border border-gray-800/80 rounded-full px-5 py-3 flex justify-between items-center shadow-[0_8px_32px_rgba(0,0,0,0.6)] pointer-events-auto">
           <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
@@ -146,7 +146,6 @@ function App() {
               <a href="https://www.facebook.com/Happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-gray-900 rounded-xl text-gray-400 hover:text-yellow-500 hover:border-yellow-500 border border-gray-800 transition-all"><Facebook/></a>
             </div>
           </div>
-
         </div>
         <div className="text-center text-gray-700 text-[10px] font-black uppercase tracking-[0.3em] mt-16 pt-8 border-t border-gray-900">
            &copy; 2026 HAPPYHUNTERDIGITAL // ENTITY ARCHITECTURE & AGENTIC REVENUE SYSTEMS
@@ -154,6 +153,7 @@ function App() {
       </footer>
 
       <Chatbot />
+      <CookieConsent />
     </div>
   );
 }
