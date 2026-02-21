@@ -1,6 +1,5 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
@@ -14,8 +13,5 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// EXPORTS FOR THE SYSTEM
 export const db = getFirestore(app);
-export const auth = getAuth(app);
-// Hard-wired to the backend region
 export const functions = getFunctions(app, "us-central1");
