@@ -1,14 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown } from 'lucide-react';
-import { db, hunterModel, PLACES_KEY } from '../firebaseConfig';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import React, { useState, useRef } from 'react';
+import { Search, AlertTriangle, Zap, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown } from 'lucide-react';
+import { functions } from '../firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
-  const [loading, setLoading] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [verdict, setVerdict] = useState<any>(null);
   const reportRef = useRef<HTMLDivElement>(null);
@@ -30,48 +29,47 @@ export const AiAudit: React.FC = () => {
   };
 
   const runForensicScan = async () => {
-    setStep(3); // Move to scanning animation
+    setStep(3); // Start scanning animation
+    
     let progress = 0;
     const interval = setInterval(() => {
-      progress += 1;
+      progress += 2;
       setScanProgress(progress);
-      if (progress >= 100) clearInterval(interval);
-    }, 40);
+      if (progress >= 95) clearInterval(interval); // Hold at 95% until server replies
+    }, 50);
 
     try {
-      // 1. Google Places Handshake
-      const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Goog-Api-Key": PLACES_KEY, "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.businessStatus" },
-        body: JSON.stringify({ textQuery: `${form.biz} in ${form.loc}` })
+      // 1. SECURE BACKEND HANDSHAKE
+      const performAudit = httpsCallable(functions, 'performAudit');
+      const response: any = await performAudit({
+        businessName: form.biz,
+        location: form.loc,
+        clientEmail: form.mail
       });
-      const pData = await pRes.json();
-      const biz = pData.places?.[0];
 
-      // 2. Gemini Flash Latest Strategic Intervention
-      const prompt = `You are Hunter AI. Perform a Forensic Audit for ${form.biz} in ${form.loc}. 
-        DATA: ${biz ? `Verified Name: ${biz.displayName.text}, Rating: ${biz.rating}, Reviews: ${biz.userRatingCount}` : "GHOST STATUS: No Maps data found"}.
-        TASK: Be brutal. Expose why they are invisible to AI. No asterisks. 
-        FORMAT: Output ONLY a JSON object: {"score": number, "summary": "2 sentences", "truths": ["truth1", "truth2", "truth3"]}`;
-      
-      const result = await hunterModel.generateContent(prompt);
-      const analysis = JSON.parse(result.response.text().replace(/```json|```/g, ''));
-      
-      const rev = calculateRevenueLoss(analysis.score);
-      setVerdict({ ...analysis, revenueLoss: rev });
+      const data = response.data;
+      if (!data.success) throw new Error("Server rejected audit.");
 
-      // 3. Log Lead
-      await addDoc(collection(db, 'leads'), { ...form, score: analysis.score, timestamp: serverTimestamp() });
+      // 2. PROCESS RESULTS
+      const rev = calculateRevenueLoss(data.score);
+      setVerdict({ ...data, revenueLoss: rev });
       
-      setStep(4);
-    } catch (err) {
-      alert("Neural Link Interrupted. Retry Scan.");
-      setStep(1);
+      clearInterval(interval);
+      setScanProgress(100);
+      
+      setTimeout(() => setStep(4), 500); // Small delay for visual completion
+
+    } catch (err: any) {
+      clearInterval(interval);
+      console.error(err);
+      alert("Neural Link Interrupted. Please check your connection and retry.");
+      setStep(1); // Reset on failure
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto mt-10 px-4 pb-20">
+      
       {/* STEP 1: THE HOOK */}
       {step === 1 && (
         <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-gray-800 backdrop-blur-xl animate-fade-in text-center">
@@ -90,7 +88,7 @@ export const AiAudit: React.FC = () => {
         </form>
       )}
 
-      {/* STEP 2: THE HANDSHAKE (Lead Capture) */}
+      {/* STEP 2: THE HANDSHAKE */}
       {step === 2 && (
         <form onSubmit={(e) => { e.preventDefault(); runForensicScan(); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-yellow-500/20 backdrop-blur-xl animate-fade-in">
           <div className="text-center mb-8">
@@ -118,7 +116,7 @@ export const AiAudit: React.FC = () => {
             <Search className="absolute inset-0 m-auto text-yellow-500" size={40} />
           </div>
           <h2 className="text-2xl font-black text-white uppercase mb-2">Scanning Digital Entity...</h2>
-          <p className="text-yellow-500 font-mono text-xs mb-8">{scanSteps[Math.floor(scanProgress / 15)]}</p>
+          <p className="text-yellow-500 font-mono text-xs mb-8">{scanSteps[Math.min(Math.floor(scanProgress / 15), 6)]}</p>
           <div className="w-64 h-1 bg-gray-800 mx-auto rounded-full overflow-hidden">
             <div className="h-full bg-yellow-500 transition-all duration-300" style={{ width: `${scanProgress}%` }}></div>
           </div>
@@ -143,7 +141,7 @@ export const AiAudit: React.FC = () => {
                 <TrendingDown className="text-red-500" size={32} />
                 <div>
                   <p className="text-red-500 font-black text-xl leading-none">{verdict.revenueLoss.amount}</p>
-                  <p className="text-red-500/60 text-[10px] uppercase font-bold mt-1">Monthly Revenue Loss</p>
+                  <p className="text-red-500/60 text-[10px] uppercase font-bold mt-1">Est. Monthly Revenue Loss</p>
                 </div>
               </div>
             </div>
@@ -170,7 +168,7 @@ export const AiAudit: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
-             <button onClick={() => window.print()} className="p-5 bg-gray-900 border border-gray-800 text-white rounded-2xl font-black uppercase text-xs hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
+             <button onClick={downloadPDF} className="p-5 bg-gray-900 border border-gray-800 text-white rounded-2xl font-black uppercase text-xs hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
                <Download size={18}/> Export Intelligence
              </button>
              <a 
