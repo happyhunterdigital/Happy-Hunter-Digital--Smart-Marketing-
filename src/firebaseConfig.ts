@@ -14,8 +14,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// EXPORTS FOR THE SYSTEM
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-// Hard-wired to the new systems region
 export const functions = getFunctions(app, "us-central1");
