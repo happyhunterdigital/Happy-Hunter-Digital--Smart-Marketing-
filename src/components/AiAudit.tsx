@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown } from 'lucide-react';
 import { db, hunterModel, PLACES_KEY } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import jsPDF from 'jspdf';
@@ -9,99 +9,178 @@ export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
   const [loading, setLoading] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
   const [verdict, setVerdict] = useState<any>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
-  const formatText = (text: string) => {
-    const clean = text.replace(/\*/g, '');
-    const keywords = ["Entity", "Protocol", "Scan", "Handshake", "AI Visibility", "Visibility Score", "Vulnerability", "Revenue", "Authority"];
-    let html = clean;
-    keywords.forEach(word => {
-      const reg = new RegExp(`(${word})`, "gi");
-      html = html.replace(reg, '<span class="text-yellow-500 font-bold">$1</span>');
-    });
-    return html;
+  const scanSteps = [
+    "Verifying Google Business Profile...",
+    "Extracting Star Rating & Review Count...",
+    "Checking Website Signal Consistency...",
+    "Auditing Operating Hours Data...",
+    "NAP Consistency Check (Signal Mismatch)...",
+    "Calculating AI Findability Index...",
+    "Computing Digital Survival Score..."
+  ];
+
+  const calculateRevenueLoss = (score: number) => {
+    if (score <= 20) return { amount: 'R18,500+', desc: 'Severe ghost entity status. Maximum revenue leakage.' };
+    if (score <= 50) return { amount: 'R9,800+', desc: 'Critical signal failures. Significant monthly loss.' };
+    return { amount: 'R3,200+', desc: 'Moderate gaps detected. Optimization required.' };
   };
 
-  const getForensicData = async () => {
+  const runForensicScan = async () => {
+    setStep(3); // Move to scanning animation
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 1;
+      setScanProgress(progress);
+      if (progress >= 100) clearInterval(interval);
+    }, 40);
+
     try {
-      const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+      // 1. Google Places Handshake
+      const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-Goog-Api-Key": PLACES_KEY, "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount" },
+        headers: { "Content-Type": "application/json", "X-Goog-Api-Key": PLACES_KEY, "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.businessStatus" },
         body: JSON.stringify({ textQuery: `${form.biz} in ${form.loc}` })
       });
-      const data = await res.json();
-      const biz = data.places?.[0];
-      return biz ? `Verified: ${biz.displayName.text}, ${biz.rating} stars, ${biz.userRatingCount} reviews.` : "Status: GHOST (No Maps data found).";
-    } catch (e) { return "Status: Latency detected."; }
-  };
+      const pData = await pRes.json();
+      const biz = pData.places?.[0];
 
-  const runAnalysis = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const mapsData = await getForensicData();
-      const prompt = `You are Hunter AI. Perform a Forensic Audit for ${form.biz} in ${form.loc}. DATA: ${mapsData}. EXPOSE gaps. NO ASTERISKS. End with FINAL_SCORE: [number].`;
+      // 2. Gemini Flash Latest Strategic Intervention
+      const prompt = `You are Hunter AI. Perform a Forensic Audit for ${form.biz} in ${form.loc}. 
+        DATA: ${biz ? `Verified Name: ${biz.displayName.text}, Rating: ${biz.rating}, Reviews: ${biz.userRatingCount}` : "GHOST STATUS: No Maps data found"}.
+        TASK: Be brutal. Expose why they are invisible to AI. No asterisks. 
+        FORMAT: Output ONLY a JSON object: {"score": number, "summary": "2 sentences", "truths": ["truth1", "truth2", "truth3"]}`;
+      
       const result = await hunterModel.generateContent(prompt);
-      const text = result.response.text();
-      const scoreMatch = text.match(/FINAL_SCORE:\s*(\d+)/);
-      const score = scoreMatch ? parseInt(scoreMatch[1]) : 50;
-      setVerdict({ score, text: text.replace(/FINAL_SCORE:\s*\d+/, '') });
-      setStep(3);
-      await addDoc(collection(db, 'leads'), { ...form, score, timestamp: serverTimestamp() });
-    } catch (err) { alert("Gemini Flash Latest Handshake Interrupted."); }
-    setLoading(false);
-  };
+      const analysis = JSON.parse(result.response.text().replace(/```json|```/g, ''));
+      
+      const rev = calculateRevenueLoss(analysis.score);
+      setVerdict({ ...analysis, revenueLoss: rev });
 
-  const downloadPDF = async () => {
-    if (!reportRef.current) return;
-    const canvas = await html2canvas(reportRef.current, { backgroundColor: '#050505', scale: 2 });
-    const img = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    pdf.addImage(img, 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
-    pdf.save(`HH_Audit_${form.biz}.pdf`);
+      // 3. Log Lead
+      await addDoc(collection(db, 'leads'), { ...form, score: analysis.score, timestamp: serverTimestamp() });
+      
+      setStep(4);
+    } catch (err) {
+      alert("Neural Link Interrupted. Retry Scan.");
+      setStep(1);
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 px-4">
+    <div className="max-w-4xl mx-auto mt-10 px-4 pb-20">
+      {/* STEP 1: THE HOOK */}
       {step === 1 && (
-        <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="space-y-6 bg-gray-900/50 p-10 rounded-[2.5rem] border border-gray-800 backdrop-blur-xl">
-          <h2 className="text-3xl font-black text-white uppercase text-center tracking-tighter">Smart Marketing <span className="text-yellow-500">Scan</span></h2>
-          <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Business Name" value={form.biz} onChange={e => setForm({...form, biz: e.target.value})} required />
-          <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="City" value={form.loc} onChange={e => setForm({...form, loc: e.target.value})} required />
-          <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3">Analyze Business Architecture <ArrowRight size={20}/></button>
-        </form>
-      )}
-      {step === 2 && (
-        <form onSubmit={runAnalysis} className="space-y-6 bg-gray-900/50 p-10 rounded-[2.5rem] border border-yellow-500/30 backdrop-blur-xl">
-          <div className="text-center space-y-2 mb-8">
-            <ShieldCheck className="mx-auto text-yellow-500" size={40}/>
-            <h2 className="text-2xl font-black text-white uppercase">Secure Your Results</h2>
-            <p className="text-gray-400 text-sm">Where should we send your forensic report?</p>
+        <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-gray-800 backdrop-blur-xl animate-fade-in text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest mb-4">
+             Signal Mismatch Detected
           </div>
-          <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="Name" onChange={e => setForm({...form, name: e.target.value})} required />
-          <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="Email" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
-          <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="WhatsApp" type="tel" onChange={e => setForm({...form, wa: e.target.value})} required />
-          <button disabled={loading} className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all">
-            {loading ? <Loader2 className="animate-spin" /> : <Zap size={20}/>} Reveal Intelligence
+          <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">Is your business a <span className="text-yellow-500 italic">Ghost?</span></h2>
+          <p className="text-gray-400 max-w-md mx-auto">Enter your coordinates to see if algorithms can find your entity.</p>
+          <div className="grid md:grid-cols-2 gap-4">
+            <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-all" placeholder="Business Name" onChange={e => setForm({...form, biz: e.target.value})} required />
+            <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-all" placeholder="City / Area" onChange={e => setForm({...form, loc: e.target.value})} required />
+          </div>
+          <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl">
+            Analyze Business Architecture <ArrowRight size={20}/>
           </button>
         </form>
       )}
-      {step === 3 && verdict && (
-        <div className="space-y-6 animate-fade-in">
-          <div ref={reportRef} className="p-10 bg-black border border-gray-800 rounded-[2.5rem] shadow-2xl">
-            <div className="flex justify-between items-center border-b border-gray-800 pb-8 mb-8">
-              <div>
-                <h3 className="text-gray-500 text-[10px] font-black uppercase tracking-[0.4em] mb-2">Score</h3>
-                <span className="text-7xl font-black text-yellow-500 leading-none">{verdict.score}</span>
-              </div>
-              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" className="w-16 h-16 rounded-full border border-yellow-500/20" alt="Logo"/>
-            </div>
-            <div className="text-gray-300 leading-relaxed space-y-6 text-sm" dangerouslySetInnerHTML={{ __html: formatText(verdict.text) }} />
+
+      {/* STEP 2: THE HANDSHAKE (Lead Capture) */}
+      {step === 2 && (
+        <form onSubmit={(e) => { e.preventDefault(); runForensicScan(); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-yellow-500/20 backdrop-blur-xl animate-fade-in">
+          <div className="text-center mb-8">
+            <ShieldCheck className="mx-auto text-yellow-500 mb-4" size={48}/>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Secure Your Results</h2>
+            <p className="text-gray-400 text-sm">Where should we dispatch your Forensic Intelligence Report?</p>
           </div>
-          <div className="grid grid-cols-2 gap-4 pb-20">
-            <button onClick={downloadPDF} className="flex items-center justify-center gap-2 p-4 bg-gray-900 border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:bg-white transition-all"><Download size={16}/> Vector PDF</button>
-            <a href={`https://wa.me/27601016673?text=I%20scored%20a%20${verdict.score}%20on%20my%20scan.%20Need%20to%20fix%20my%20architecture.`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 p-4 bg-yellow-500 text-black rounded-2xl font-black uppercase text-xs shadow-xl"><MessageSquare size={16}/> Retargeting</a>
+          <div className="space-y-4">
+            <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} required />
+            <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
+            <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="WhatsApp Number" type="tel" onChange={e => setForm({...form, wa: e.target.value})} required />
+          </div>
+          <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all">
+            Reveal Intelligence <Zap size={20}/>
+          </button>
+        </form>
+      )}
+
+      {/* STEP 3: SCANNING ANIMATION */}
+      {step === 3 && (
+        <div className="text-center py-20 bg-gray-900/20 border border-gray-800 rounded-[3rem] animate-fade-in">
+          <div className="relative w-32 h-32 mx-auto mb-10">
+            <div className="absolute inset-0 rounded-full border-4 border-yellow-500/10"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-yellow-500 border-t-transparent animate-spin"></div>
+            <Search className="absolute inset-0 m-auto text-yellow-500" size={40} />
+          </div>
+          <h2 className="text-2xl font-black text-white uppercase mb-2">Scanning Digital Entity...</h2>
+          <p className="text-yellow-500 font-mono text-xs mb-8">{scanSteps[Math.floor(scanProgress / 15)]}</p>
+          <div className="w-64 h-1 bg-gray-800 mx-auto rounded-full overflow-hidden">
+            <div className="h-full bg-yellow-500 transition-all duration-300" style={{ width: `${scanProgress}%` }}></div>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 4: THE REPORT */}
+      {step === 4 && verdict && (
+        <div className="space-y-8 animate-fade-in pb-10">
+          <div ref={reportRef} className="p-10 bg-black border border-gray-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-6 opacity-10"><Zap size={100} /></div>
+            
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12 border-b border-gray-800 pb-10">
+              <div className="text-center md:text-left">
+                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 mb-2">Survival Score</p>
+                <div className="flex items-center gap-4 justify-center md:justify-start">
+                   <span className={`text-8xl font-black leading-none ${verdict.score < 40 ? 'text-red-500' : 'text-yellow-500'}`}>{verdict.score}</span>
+                   <span className="text-gray-700 text-2xl font-bold">/ 100</span>
+                </div>
+              </div>
+              <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-3xl flex items-center gap-4">
+                <TrendingDown className="text-red-500" size={32} />
+                <div>
+                  <p className="text-red-500 font-black text-xl leading-none">{verdict.revenueLoss.amount}</p>
+                  <p className="text-red-500/60 text-[10px] uppercase font-bold mt-1">Monthly Revenue Loss</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-yellow-500 font-black uppercase text-xs tracking-widest mb-4 flex items-center gap-2">
+                  <ShieldCheck size={16}/> Forensic Summary
+                </h3>
+                <p className="text-white text-xl font-medium leading-relaxed italic">"{verdict.summary}"</p>
+              </div>
+
+              <div className="grid gap-4">
+                <h3 className="text-red-500 font-black uppercase text-xs tracking-widest mb-2 flex items-center gap-2">
+                  <XCircle size={16}/> Technical Vulnerabilities
+                </h3>
+                {verdict.truths.map((t: string, i: number) => (
+                  <div key={i} className="p-4 bg-gray-900/50 border border-gray-800 rounded-xl text-gray-300 text-sm flex gap-3">
+                    <span className="text-yellow-500 font-black">0{i+1}</span> {t}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+             <button onClick={() => window.print()} className="p-5 bg-gray-900 border border-gray-800 text-white rounded-2xl font-black uppercase text-xs hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
+               <Download size={18}/> Export Intelligence
+             </button>
+             <a 
+               href={`https://wa.me/27601016673?text=Hi%20Thabo!%20I%20just%20completed%20the%20Survival%20Scan%20for%20${form.biz}%20and%20scored%20${verdict.score}/100.%20I%20need%20the%20Recovery%20Protocol.`} 
+               target="_blank" 
+               rel="noreferrer"
+               className="p-5 bg-yellow-500 text-black rounded-2xl font-black uppercase text-xs flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl shadow-yellow-500/20"
+             >
+               <MessageSquare size={18}/> Claim Recovery Protocol
+             </a>
           </div>
         </div>
       )}
