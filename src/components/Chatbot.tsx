@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, Bot, Loader2 } from 'lucide-react';
-import { hunterModel } from '../firebaseConfig';
 
 export const Chatbot: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([{ role: 'bot', text: 'Protocol initialized. Awaiting command.' }]);
+  const [messages, setMessages] = useState([{ role: 'bot', text: 'Protocol initialized. I am Hunter AI. How can I help you dominate the AI search era?' }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -23,10 +22,14 @@ export const Chatbot: React.FC = () => {
     setLoading(true);
 
     try {
-      const prompt = `You are Hunter AI, strategic assistant for Happy Hunter Digital. User says: "${userMsg}". Respond in 1-2 sentences with military-grade precision.`;
-      const result = await hunterModel.generateContent(prompt);
-      const response = await result.response;
-      setMessages(prev => [...prev, { role: 'bot', text: response.text() }]);
+      const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+      const res = await fetch(`https://us-central1-${PROJECT_ID}.cloudfunctions.net/hunterChat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { message: userMsg } })
+      });
+      const json = await res.json();
+      setMessages(prev => [...prev, { role: 'bot', text: json.result.reply }]);
     } catch (err) {
       setMessages(prev => [...prev, { role: 'bot', text: "Signal interference. Please email HQ." }]);
     } finally {
@@ -56,7 +59,7 @@ export const Chatbot: React.FC = () => {
                 </div>
               </div>
             ))}
-            {loading && <div className="text-gray-500 text-[10px] animate-pulse">Analyzing Signal...</div>}
+            {loading && <div className="text-gray-500 text-[10px] animate-pulse flex items-center gap-2"><Loader2 className="animate-spin" size={12}/> Analyzing Signal...</div>}
             <div ref={scrollRef} />
           </div>
           <form onSubmit={sendMessage} className="p-3 bg-gray-900 border-t border-gray-800 flex gap-2">
