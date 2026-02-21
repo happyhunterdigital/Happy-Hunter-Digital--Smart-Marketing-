@@ -1,22 +1,17 @@
-name: Deploy Happy Hunter Systems
-
+name: Deploy Gemini 3 Protocol
 on:
   push:
     branches: [main]
-
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install and Build Frontend
+      - name: Build Frontend
         run: |
           npm install
           npm run build
@@ -27,20 +22,24 @@ jobs:
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
-          VITE_EMAILJS_SERVICE_ID: ${{ secrets.VITE_EMAILJS_SERVICE_ID }}
-          VITE_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
 
-      - name: Install and Compile Backend Functions
+      - name: Build Backend
         run: |
           cd functions
           npm install
           npm run build
 
-      - name: Force Deploy to Firebase (Hosting & Functions)
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only hosting,functions --non-interactive
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+
+      # This step injects your keys into the server environment
+      - name: Set Functions Secrets
         run: |
-          echo "$GCP_SA_KEY" > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
-          npx firebase-tools deploy --only hosting,functions --force --non-interactive
+          npx firebase-tools functions:secrets:set GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" --force
+          npx firebase-tools functions:secrets:set PLACES_API_KEY="${{ secrets.PLACES_API_KEY }}" --force
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
