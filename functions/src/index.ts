@@ -10,7 +10,6 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
-  // We removed the 'secrets' array here to stop the 403 validation error
 }, async (request) => {
   const { businessName, location, clientEmail } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
@@ -19,7 +18,7 @@ export const performAudit = onCall({
   if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
 
   try {
-    // Stage 1: Google Maps Forensic Data
+    // Maps Intelligence
     const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Goog-Api-Key": P_KEY, "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount" },
@@ -28,16 +27,12 @@ export const performAudit = onCall({
     const pData = await pRes.json() as any;
     const biz = pData.places?.[0];
 
-    const context = biz 
-      ? `Verified: ${biz.displayName?.text}. Rating: ${biz.rating}. Reviews: ${biz.userRatingCount}.`
-      : `Ghost: No Maps data found for ${businessName}.`;
-
-    // Stage 2: Intelligence Generation (Gemini 2.0 Flash)
+    // AI Generation (Gemini 2.0 Flash)
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Hunter AI. Audit: ${businessName}. Data: ${context}. No asterisks. Format JSON: { "score": number, "summary": "string", "truths": ["string"] }` }] }],
+        contents: [{ parts: [{ text: `Audit: ${businessName}. Data: ${biz ? 'Found' : 'Ghost'}. JSON format: { "score": number, "summary": "string", "truths": ["string"] }` }] }],
         generationConfig: { responseMimeType: "application/json" }
       })
     });
@@ -45,7 +40,7 @@ export const performAudit = onCall({
     const aiData = await aiRes.json() as any;
     const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
 
-    // Stage 3: Persistence & Email
+    // Persistence
     await db.collection("mail").add({
       to: [clientEmail],
       message: {
@@ -56,7 +51,7 @@ export const performAudit = onCall({
 
     return { success: true, ...analysis };
   } catch (e) {
-    throw new HttpsError("internal", "Neural Link Interrupted.");
+    throw new HttpsError("internal", "Neural Handshake Interrupted.");
   }
 });
 
@@ -71,7 +66,7 @@ export const hunterChat = onCall({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Hunter AI. User: ${message}. Respond in 1 sentence.` }] }]
+        contents: [{ parts: [{ text: `You are Hunter AI. User: ${message}. 1 sentence response.` }] }]
       })
     });
     const data = await aiRes.json() as any;
