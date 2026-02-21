@@ -1,67 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, Bot, Loader2 } from 'lucide-react';
-import { hunterModel } from '../firebaseConfig';
+import React, { useState } from 'react';
+import { MessageSquare, Send, X, Bot } from 'lucide-react';
+import { functions } from '../firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
 
 export const Chatbot: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([{ role: 'bot', text: 'Protocol initialized. I am Hunter AI. How can I help you dominate the AI search era?' }]);
+  const [chat, setChat] = useState([{ role: 'bot', text: 'Hunter AI linked. Commands?' }]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const sendMessage = async (e: React.FormEvent) => {
+  const send = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
-
-    const userMsg = input.trim();
-    setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setLoading(true);
-
+    const msg = input; setInput('');
+    setChat(prev => [...prev, { role: 'user', text: msg }]);
     try {
-      const prompt = `You are Hunter AI, strategic assistant for Happy Hunter Digital. User says: "${userMsg}". Respond in 1-2 sentences with military-grade precision.`;
-      const result = await hunterModel.generateContent(prompt);
-      const response = await result.response;
-      setMessages(prev => [...prev, { role: 'bot', text: response.text() }]);
-    } catch (err) {
-      setMessages(prev => [...prev, { role: 'bot', text: "Signal interference. Please email HQ." }]);
-    } finally {
-      setLoading(false);
+      const hunterChat = httpsCallable(functions, 'hunterChat');
+      const result: any = await hunterChat({ message: msg });
+      setChat(prev => [...prev, { role: 'bot', text: result.data.reply }]);
+    } catch (e) {
+      setChat(prev => [...prev, { role: 'bot', text: "Signal lost." }]);
     }
   };
 
   return (
     <>
-      <button onClick={() => setOpen(!open)} className="fixed bottom-6 right-6 z-[150] bg-yellow-500 text-black p-4 rounded-full shadow-2xl hover:scale-110 transition-transform">
-        {open ? <X /> : <MessageSquare />}
-      </button>
-
+      <button onClick={() => setOpen(!open)} className="fixed bottom-6 right-6 bg-yellow-500 p-4 rounded-full text-black z-50 shadow-xl">{open ? <X/> : <MessageSquare/>}</button>
       {open && (
-        <div className="fixed bottom-24 right-6 z-[150] w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
-          <div className="bg-black p-4 border-b border-gray-800 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bot className="text-yellow-500" size={20} />
-              <span className="font-bold text-white text-xs uppercase tracking-wider">Hunter AI</span>
-            </div>
+        <div className="fixed bottom-24 right-6 w-80 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl flex flex-col z-50 overflow-hidden">
+          <div className="p-4 bg-black border-b border-gray-800 flex gap-2 items-center font-bold text-xs uppercase text-yellow-500"><Bot size={16}/> Hunter AI</div>
+          <div className="h-64 overflow-y-auto p-4 space-y-4 bg-black/40">
+            {chat.map((c, i) => <div key={i} className={`text-xs p-2 rounded ${c.role === 'user' ? 'bg-yellow-500 text-black ml-8' : 'bg-gray-800 text-white mr-8'}`}>{c.text}</div>)}
           </div>
-          <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-black/50 scrollbar-hide">
-            {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-3 rounded-2xl text-xs ${m.role === 'user' ? 'bg-yellow-500 text-black font-bold' : 'bg-gray-800 text-gray-300'}`}>
-                  {m.text}
-                </div>
-              </div>
-            ))}
-            {loading && <div className="text-gray-500 text-[10px] animate-pulse">Analyzing Signal...</div>}
-            <div ref={scrollRef} />
-          </div>
-          <form onSubmit={sendMessage} className="p-3 bg-gray-900 border-t border-gray-800 flex gap-2">
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Enter command..." className="flex-1 bg-black text-white text-xs p-3 rounded-xl border border-gray-800 focus:border-yellow-500 outline-none" />
-            <button type="submit" disabled={loading} className="text-yellow-500 p-2"><Send size={18} /></button>
+          <form onSubmit={send} className="p-2 bg-black flex gap-2">
+            <input value={input} onChange={e => setInput(e.target.value)} className="flex-1 bg-gray-900 text-white p-2 rounded text-xs outline-none border border-gray-800" placeholder="Command..." />
+            <button className="text-yellow-500"><Send size={16}/></button>
           </form>
         </div>
       )}
