@@ -1,7 +1,9 @@
-name: Deploy Gemini 3 Protocol
+name: Deploy Happy Hunter Systems
+
 on:
   push:
     branches: [main]
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -11,7 +13,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build Frontend
+      - name: Install & Build Frontend
         run: |
           npm install
           npm run build
@@ -23,23 +25,18 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
-      - name: Build Backend
+      - name: Prepare Backend
         run: |
           cd functions
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+          echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
           npm install
           npm run build
 
       - name: Deploy to Firebase
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only hosting,functions --non-interactive
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-
-      # This step injects your keys into the server environment
-      - name: Set Functions Secrets
         run: |
-          npx firebase-tools functions:secrets:set GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" --force
-          npx firebase-tools functions:secrets:set PLACES_API_KEY="${{ secrets.PLACES_API_KEY }}" --force
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          echo "$GCP_SA_KEY" > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
+          npx firebase-tools deploy --only hosting,functions --force --non-interactive
