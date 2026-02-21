@@ -1,16 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { Search, AlertTriangle, Zap, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown } from 'lucide-react';
-import { functions } from '../firebaseConfig';
-import { httpsCallable } from 'firebase/functions';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import React, { useState } from 'react';
+import { Search, AlertTriangle, Loader2, Zap, CheckCircle, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown } from 'lucide-react';
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
+  const [loading, setLoading] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [verdict, setVerdict] = useState<any>(null);
-  const reportRef = useRef<HTMLDivElement>(null);
 
   const scanSteps = [
     "Verifying Google Business Profile...",
@@ -23,8 +19,8 @@ export const AiAudit: React.FC = () => {
   ];
 
   const calculateRevenueLoss = (score: number) => {
-    if (score <= 20) return { amount: 'R18,500+', desc: 'Severe ghost entity status. Maximum revenue leakage.' };
-    if (score <= 50) return { amount: 'R9,800+', desc: 'Critical signal failures. Significant monthly loss.' };
+    if (score <= 30) return { amount: 'R18,500+', desc: 'Severe ghost entity status. Maximum revenue leakage.' };
+    if (score <= 55) return { amount: 'R9,800+', desc: 'Critical signal failures. Significant monthly loss.' };
     return { amount: 'R3,200+', desc: 'Moderate gaps detected. Optimization required.' };
   };
 
@@ -35,50 +31,47 @@ export const AiAudit: React.FC = () => {
     const interval = setInterval(() => {
       progress += 2;
       setScanProgress(progress);
-      if (progress >= 95) clearInterval(interval); // Hold at 95% until server replies
+      if (progress >= 95) clearInterval(interval);
     }, 50);
 
     try {
-      // 1. SECURE BACKEND HANDSHAKE
-      const performAudit = httpsCallable(functions, 'performAudit');
-      const response: any = await performAudit({
-        businessName: form.biz,
-        location: form.loc,
-        clientEmail: form.mail
+      // Direct call to your backend function URL
+      const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
+      const res = await fetch(`https://us-central1-${PROJECT_ID}.cloudfunctions.net/performAudit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: { businessName: form.biz, location: form.loc, clientEmail: form.mail } })
       });
 
-      const data = response.data;
-      if (!data.success) throw new Error("Server rejected audit.");
+      if (!res.ok) throw new Error("Server Error");
+      
+      const json = await res.json();
+      const data = json.result; // httpsCallable format wraps in 'result'
 
-      // 2. PROCESS RESULTS
       const rev = calculateRevenueLoss(data.score);
       setVerdict({ ...data, revenueLoss: rev });
       
       clearInterval(interval);
       setScanProgress(100);
-      
-      setTimeout(() => setStep(4), 500); // Small delay for visual completion
+      setTimeout(() => setStep(4), 500);
 
-    } catch (err: any) {
+    } catch (err) {
       clearInterval(interval);
-      console.error(err);
       alert("Neural Link Interrupted. Please check your connection and retry.");
-      setStep(1); // Reset on failure
+      setStep(1);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto mt-10 px-4 pb-20">
-      
-      {/* STEP 1: THE HOOK */}
       {step === 1 && (
-        <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-gray-800 backdrop-blur-xl animate-fade-in text-center">
+        <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-gray-800 backdrop-blur-xl animate-fade-in text-center shadow-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest mb-4">
              Signal Mismatch Detected
           </div>
-          <h2 className="text-4xl font-black text-white uppercase tracking-tighter leading-none">Is your business a <span className="text-yellow-500 italic">Ghost?</span></h2>
-          <p className="text-gray-400 max-w-md mx-auto">Enter your coordinates to see if algorithms can find your entity.</p>
-          <div className="grid md:grid-cols-2 gap-4">
+          <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">Is your business a <span className="text-yellow-500 italic">Ghost?</span></h2>
+          <p className="text-gray-400 max-w-md mx-auto mb-8">Enter your coordinates to see if algorithms can find your entity.</p>
+          <div className="grid md:grid-cols-2 gap-4 mb-6">
             <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-all" placeholder="Business Name" onChange={e => setForm({...form, biz: e.target.value})} required />
             <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-all" placeholder="City / Area" onChange={e => setForm({...form, loc: e.target.value})} required />
           </div>
@@ -88,34 +81,32 @@ export const AiAudit: React.FC = () => {
         </form>
       )}
 
-      {/* STEP 2: THE HANDSHAKE */}
       {step === 2 && (
-        <form onSubmit={(e) => { e.preventDefault(); runForensicScan(); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-yellow-500/20 backdrop-blur-xl animate-fade-in">
+        <form onSubmit={(e) => { e.preventDefault(); runForensicScan(); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-yellow-500/20 backdrop-blur-xl animate-fade-in shadow-2xl">
           <div className="text-center mb-8">
             <ShieldCheck className="mx-auto text-yellow-500 mb-4" size={48}/>
             <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Secure Your Results</h2>
             <p className="text-gray-400 text-sm">Where should we dispatch your Forensic Intelligence Report?</p>
           </div>
-          <div className="space-y-4">
-            <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} required />
-            <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
-            <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white" placeholder="WhatsApp Number" type="tel" onChange={e => setForm({...form, wa: e.target.value})} required />
+          <div className="space-y-4 mb-6">
+            <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} required />
+            <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
+            <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="WhatsApp Number" type="tel" onChange={e => setForm({...form, wa: e.target.value})} required />
           </div>
-          <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all">
+          <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl">
             Reveal Intelligence <Zap size={20}/>
           </button>
         </form>
       )}
 
-      {/* STEP 3: SCANNING ANIMATION */}
       {step === 3 && (
-        <div className="text-center py-20 bg-gray-900/20 border border-gray-800 rounded-[3rem] animate-fade-in">
+        <div className="text-center py-24 bg-gray-900/20 border border-gray-800 rounded-[3rem] animate-fade-in shadow-2xl">
           <div className="relative w-32 h-32 mx-auto mb-10">
             <div className="absolute inset-0 rounded-full border-4 border-yellow-500/10"></div>
             <div className="absolute inset-0 rounded-full border-4 border-yellow-500 border-t-transparent animate-spin"></div>
             <Search className="absolute inset-0 m-auto text-yellow-500" size={40} />
           </div>
-          <h2 className="text-2xl font-black text-white uppercase mb-2">Scanning Digital Entity...</h2>
+          <h2 className="text-2xl font-black text-white uppercase mb-4">Scanning Digital Entity...</h2>
           <p className="text-yellow-500 font-mono text-xs mb-8">{scanSteps[Math.min(Math.floor(scanProgress / 15), 6)]}</p>
           <div className="w-64 h-1 bg-gray-800 mx-auto rounded-full overflow-hidden">
             <div className="h-full bg-yellow-500 transition-all duration-300" style={{ width: `${scanProgress}%` }}></div>
@@ -123,17 +114,16 @@ export const AiAudit: React.FC = () => {
         </div>
       )}
 
-      {/* STEP 4: THE REPORT */}
       {step === 4 && verdict && (
         <div className="space-y-8 animate-fade-in pb-10">
-          <div ref={reportRef} className="p-10 bg-black border border-gray-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
+          <div className="p-10 bg-black border border-gray-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10"><Zap size={100} /></div>
             
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12 border-b border-gray-800 pb-10">
               <div className="text-center md:text-left">
                 <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 mb-2">Survival Score</p>
                 <div className="flex items-center gap-4 justify-center md:justify-start">
-                   <span className={`text-8xl font-black leading-none ${verdict.score < 40 ? 'text-red-500' : 'text-yellow-500'}`}>{verdict.score}</span>
+                   <span className={`text-8xl font-black leading-none ${verdict.score < 55 ? 'text-red-500' : 'text-yellow-500'}`}>{verdict.score}</span>
                    <span className="text-gray-700 text-2xl font-bold">/ 100</span>
                 </div>
               </div>
@@ -167,17 +157,14 @@ export const AiAudit: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-             <button onClick={downloadPDF} className="p-5 bg-gray-900 border border-gray-800 text-white rounded-2xl font-black uppercase text-xs hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2">
-               <Download size={18}/> Export Intelligence
-             </button>
+          <div className="flex justify-center">
              <a 
                href={`https://wa.me/27601016673?text=Hi%20Thabo!%20I%20just%20completed%20the%20Survival%20Scan%20for%20${form.biz}%20and%20scored%20${verdict.score}/100.%20I%20need%20the%20Recovery%20Protocol.`} 
                target="_blank" 
                rel="noreferrer"
-               className="p-5 bg-yellow-500 text-black rounded-2xl font-black uppercase text-xs flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl shadow-yellow-500/20"
+               className="w-full md:w-auto px-12 py-5 bg-yellow-500 text-black rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl shadow-yellow-500/20"
              >
-               <MessageSquare size={18}/> Claim Recovery Protocol
+               <MessageSquare size={20}/> Claim Recovery Protocol
              </a>
           </div>
         </div>
