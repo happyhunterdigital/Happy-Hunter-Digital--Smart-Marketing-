@@ -46,35 +46,31 @@ export const performAudit = onCall({
     // Save lead
     await db.collection("leads").add({ businessName, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
     
-    // --- UPDATED EMAIL HTML BLOCK ---
+    // Email Dispatch
     const isGoodScore = analysis.score >= 70;
     const isBadScore = analysis.score < 50;
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-w: 600px; margin: 0 auto; color: #333; background-color: #050505; padding: 40px; border-radius: 16px; border: 1px solid #1f2937;">
-        
         <div style="text-align: center; margin-bottom: 30px;">
           <h2 style="color: #eab308; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-size: 14px;">Smart Marketing Engine</h2>
           <h1 style="color: #ffffff; margin: 10px 0 0 0; text-transform: uppercase;">Digital Survival Report</h1>
         </div>
-
         <div style="background-color: #0a0a0a; border: 1px solid #1f2937; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
           <p style="color: #9ca3af; margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Target Entity</p>
           <p style="color: #ffffff; margin: 0; font-size: 18px; font-weight: bold;">${businessName}</p>
           <p style="color: #6b7280; margin: 5px 0 0 0; font-size: 14px;">${location}</p>
         </div>
-
         <div style="text-align: center; margin-bottom: 40px;">
           <p style="color: #9ca3af; margin: 0 0 10px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Visibility Score</p>
           <div style="font-size: 72px; font-weight: 900; line-height: 1; color: ${isGoodScore ? '#22c55e' : isBadScore ? '#ef4444' : '#eab308'};">
             ${analysis.score}<span style="font-size: 24px; color: #4b5563;">/100</span>
           </div>
         </div>
-
         ${isGoodScore ? `
           <div style="background-color: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
             <h3 style="color: #22c55e; margin: 0 0 10px 0; font-size: 16px;">✓ Entity Verified: Strong Baseline</h3>
-            <p style="color: #d1d5db; margin: 0; font-size: 14px; line-height: 1.5;">Congratulations. Your traditional SEO and Google Maps foundation is solid. However, standard search is evolving rapidly. To prevent competitors from overtaking you in AI-driven search (ChatGPT, Gemini), you must upgrade from basic SEO to Generative Engine Optimization (GEO).</p>
+            <p style="color: #d1d5db; margin: 0; font-size: 14px; line-height: 1.5;">Congratulations. Your traditional SEO and Google Maps foundation is solid. However, standard search is evolving rapidly. To prevent competitors from overtaking you in AI-driven search, you must upgrade from basic SEO to Generative Engine Optimization (GEO).</p>
           </div>
         ` : `
           <div style="background-color: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
@@ -82,37 +78,30 @@ export const performAudit = onCall({
             <p style="color: #d1d5db; margin: 0; font-size: 14px; line-height: 1.5;">Your digital architecture is actively repelling algorithms. You are experiencing the "Ghost Effect"—meaning high-intent customers searching for your services are being routed directly to your competitors. Immediate intervention is required.</p>
           </div>
         `}
-
         <div style="margin-bottom: 30px;">
           <h3 style="color: #eab308; margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Forensic AI Summary</h3>
           <p style="color: #ffffff; margin: 0; font-size: 16px; line-height: 1.6; font-style: italic; border-left: 3px solid #eab308; padding-left: 15px;">"${analysis.summary}"</p>
         </div>
-
         <div style="margin-bottom: 40px;">
           <h3 style="color: #ef4444; margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Specific Technical Weak Spots</h3>
-          ${analysis.truths.map((truth: any, index: any) => `
+          ${analysis.truths.map((truth: string, index: number) => `
             <div style="background-color: #111827; border: 1px solid #1f2937; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
               <span style="color: #eab308; font-weight: bold; margin-right: 10px;">0${index + 1}</span>
               <span style="color: #d1d5db; font-size: 14px;">${truth}</span>
             </div>
           `).join('')}
         </div>
-
-        <!-- THE THABO INTERVENTION CTA -->
         <div style="background-color: #111827; border: 1px solid rgba(234, 179, 8, 0.3); padding: 30px; border-radius: 16px; text-align: center;">
           <h2 style="color: #ffffff; margin: 0 0 15px 0; font-size: 24px; text-transform: uppercase;">Stop The Revenue Leakage</h2>
           <p style="color: #9ca3af; margin: 0 0 25px 0; font-size: 14px; line-height: 1.6;">Book a Free 30-Minute Discovery Call with <strong>Thabo</strong>, Head of happyhunterdigital. We will review this exact report together and map out your custom Recovery Protocol.</p>
           <a href="https://calendly.com/motsumitl/30min" style="display: inline-block; background-color: #eab308; color: #000000; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: bold; text-transform: uppercase; font-size: 14px; letter-spacing: 1px;">Schedule Strategy Call</a>
         </div>
-
         <div style="text-align: center; margin-top: 40px; border-top: 1px solid #1f2937; padding-top: 20px;">
           <p style="color: #6b7280; margin: 0; font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">© 2026 happyhunterdigital // Agentic Operations Core</p>
         </div>
       </div>
     `;
-    // --- END UPDATED EMAIL HTML BLOCK ---
 
-    // Trigger email
     await db.collection("mail").add({
       to: [clientEmail],
       message: {
@@ -127,23 +116,49 @@ export const performAudit = onCall({
   }
 });
 
-// 2. STRATEGIC CHAT
+// 2. STRATEGIC CHAT (UPGRADED WITH GROUND TRUTH)
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
 }, async (request) => {
   const { message } = request.data;
+  
+  // THE FIX: Injecting your agency's exact facts into the AI's "brain"
+  const SYSTEM_PROMPT = `
+    You are Hunter AI, the official digital marketing assistant for Happy Hunter Digital (also known as Happy Hunter Systems).
+    
+    YOUR KNOWLEDGE BASE:
+    - Founder & Head Strategist: Thabo Leslie Motsumi.
+    - Our Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses.
+    - Our Services: 1) Trust Synchronization (Google Maps, NAP consistency). 2) AI Visibility (AEO, Schema markup for ChatGPT/Gemini). 3) Agentic Revenue (Automated lead capture).
+    - Our Tool: The "Smart Marketing Scan" (provides a Digital Survival Score).
+    - Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com. Website: www.happyhunterdigital.com
+    - Upcoming Event: We are speaking at the Integrated Wellth Summit on 28 Feb in Waterfall City.
+
+    RULES:
+    1. NEVER make up information. Use ONLY the Knowledge Base above.
+    2. If someone asks who the founder is, say "Thabo Leslie Motsumi".
+    3. Be direct, professional, and slightly authoritative (Military-grade precision).
+    4. Keep answers to 1 or 2 sentences MAX.
+    5. If you cannot answer based on the knowledge base, direct them to run the Smart Scan or contact Thabo.
+    
+    USER MESSAGE: "${message}"
+  `;
+
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Hunter AI. User: ${message}. Respond in 1 sentence.` }] }]
+        contents: [{ parts: [{ text: SYSTEM_PROMPT }] }],
+        // Setting temperature to 0.2 makes the AI strictly stick to facts, stopping hallucinations
+        generationConfig: { temperature: 0.2, maxOutputTokens: 200 }
       })
     });
+    
     const data = await aiRes.json() as any;
     return { reply: data.candidates[0].content.parts[0].text };
   } catch (e) {
-    return { reply: "Comms offline." };
+    return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
   }
 });
