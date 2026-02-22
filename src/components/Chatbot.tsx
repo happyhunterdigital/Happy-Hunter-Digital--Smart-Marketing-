@@ -24,20 +24,15 @@ export const Chatbot: React.FC = () => {
     setLoading(true);
 
     try {
-      const hunterChat = httpsCallable(functions, 'hunterChat');
-      const response = await hunterChat({ message: userMsg });
-      const data = response.data as { reply: string };
-
-      setMessages(prev => [...prev, {
-        role: 'bot',
-        text: data.reply || "Signal interference. Please retry."
-      }]);
-    } catch (err) {
-      console.error("Chat error:", err);
-      setMessages(prev => [...prev, {
-        role: 'bot',
-        text: "Comms link offline. Please email HQ at hello@happyhunterdigital.com"
-      }]);
+      const hunterChatCall = httpsCallable(functions, 'hunterChat');
+      const response = await hunterChatCall({ message: userMsg }) as any;
+      
+      const replyText = response.data?.reply || "I received no response from the database.";
+      
+      setMessages(prev => [...prev, { role: 'bot', text: replyText }]);
+    } catch (err: any) {
+      console.error("Frontend Chat Error:", err);
+      setMessages(prev => [...prev, { role: 'bot', text: "Signal interference. Please retry." }]);
     } finally {
       setLoading(false);
     }
@@ -56,12 +51,16 @@ export const Chatbot: React.FC = () => {
               <Bot className="text-yellow-500" size={20} />
               <span className="font-bold text-white text-sm uppercase tracking-wider">Hunter AI</span>
             </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="text-xs text-gray-500">Online</span>
+            </div>
           </div>
 
           <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-black/50 scrollbar-hide">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-3 rounded-xl text-sm ${m.role === 'user' ? 'bg-yellow-500 text-black font-medium' : 'bg-gray-800 text-gray-300'}`}>
+                <div className={`max-w-[80%] p-3 rounded-xl text-sm leading-relaxed ${m.role === 'user' ? 'bg-yellow-500 text-black font-medium' : 'bg-gray-800 text-gray-200'}`}>
                   {m.text}
                 </div>
               </div>
@@ -77,7 +76,13 @@ export const Chatbot: React.FC = () => {
           </div>
 
           <form onSubmit={sendMessage} className="p-3 bg-gray-900 border-t border-gray-800 flex gap-2">
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Enter command..." className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none" disabled={loading} />
+            <input 
+              value={input} 
+              onChange={(e) => setInput(e.target.value)} 
+              placeholder="Enter command..." 
+              className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none" 
+              disabled={loading}
+            />
             <button type="submit" disabled={loading || !input.trim()} className="text-yellow-500 hover:text-white p-3 disabled:opacity-50 transition-colors">
               <Send size={18} />
             </button>
