@@ -14,7 +14,7 @@
     <title>happyhunterdigital | Smart Marketing for the AI Era</title>
     <meta name="description" content="South African digital marketing agency specializing in Digital Entity Management, AI-Powered Answer Engines (AEO), and Agentic Revenue Ecosystems." />
     
-    <!-- Open Graph / Social Sharing -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="happyhunterdigital | Smart Marketing" />
     <meta property="og:description" content="Stop being a Ghost to algorithms. We build AI-ready digital powerhouses." />
@@ -26,28 +26,39 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     
-    <!-- ADVANCED NESTED SCHEMA.ORG (AEO/GEO READY) -->
+    <!-- ADVANCED AEO/GEO KNOWLEDGE GRAPH -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@graph": [
         {
-          "@type": "ProfessionalService",
-          "@id": "https://www.happyhunterdigital.com/#organization",
+          "@type": "LocalBusiness",
+          "@id": "https://www.happyhunterdigital.com/#localbusiness",
           "name": "Happy Hunter Digital",
-          "alternateName": ["Happy Hunter Systems", "Happy Hunter Smart Marketing"],
-          "url": "https://www.happyhunterdigital.com",
-          "logo": "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "image": "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
-          "description": "Digital marketing agency specializing in Digital Entity Management & Optimization (DEMO), Generative Engine Optimization (GEO), and AI automation for South African SMEs.",
           "telephone": "+27601016673",
           "email": "motsumitl@happyhunterdigital.com",
-          "areaServed": {
-            "@type": "Country",
-            "name": "South Africa"
+          "url": "https://www.happyhunterdigital.com",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Johannesburg",
+            "addressRegion": "Gauteng",
+            "addressCountry": "ZA"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "-26.013",
+            "longitude": "28.106"
+          },
+          "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+            "opens": "09:00",
+            "closes": "17:00"
           },
           "founder": {
-            "@id": "https://www.happyhunterdigital.com/#founder"
+            "@type": "Person",
+            "name": "Thabo Leslie Motsumi"
           },
           "sameAs": [
             "https://www.facebook.com/Happyhunterdigital/",
@@ -55,58 +66,36 @@
             "https://www.instagram.com/happyhunterdigital/",
             "https://www.tiktok.com/@happyhunterdigital",
             "https://x.com/HappyHunter35"
-          ],
-          "offers": [
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
             {
-              "@type": "Offer",
-              "itemOffered": {
-                "@type": "Service",
-                "name": "Generative Engine Optimization (GEO)"
+              "@type": "Question",
+              "name": "What is Generative Engine Optimization (GEO)?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "GEO is the practice of structuring digital content so that generative AI models like ChatGPT and Gemini cite your brand as the definitive answer, rather than just ranking a link."
               }
             },
             {
-              "@type": "Offer",
-              "itemOffered": {
-                "@type": "Service",
-                "name": "Digital Entity Management (Google Business Profile)"
+              "@type": "Question",
+              "name": "Why is my business invisible on Google Maps?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You likely have a 'Signal Mismatch' or fragmented NAP data. Our Trust Anchor protocol unifies your data across the Knowledge Graph to restore visibility."
               }
             },
             {
-              "@type": "Offer",
-              "itemOffered": {
-                "@type": "Service",
-                "name": "AI Lead Automation & Chatbots"
-              }
-            },
-            {
-              "@type": "Offer",
-              "itemOffered": {
-                "@type": "Service",
-                "name": "AI-Powered Website Development"
+              "@type": "Question",
+              "name": "How does Agentic Revenue work?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "We deploy autonomous AI agents that act as 24/7 receptionists on your site and WhatsApp, capturing and qualifying leads instantly."
               }
             }
           ]
-        },
-        {
-          "@type": "Person",
-          "@id": "https://www.happyhunterdigital.com/#founder",
-          "name": "Thabo Leslie Motsumi",
-          "jobTitle": "Principal Strategist",
-          "worksFor": {
-            "@id": "https://www.happyhunterdigital.com/#organization"
-          },
-          "sameAs": [
-            "https://za.linkedin.com/in/thabomotsumi"
-          ]
-        },
-        {
-          "@type": "WebSite",
-          "@id": "https://www.happyhunterdigital.com/#website",
-          "url": "https://www.happyhunterdigital.com",
-          "name": "Happy Hunter Digital",
-          "publisher": {
-            "@id": "https://www.happyhunterdigital.com/#organization"
-          }
         }
       ]
     }
