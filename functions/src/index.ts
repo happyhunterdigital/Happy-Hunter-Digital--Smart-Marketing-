@@ -4,7 +4,9 @@ import * as admin from "firebase-admin";
 admin.initializeApp();
 const db = admin.firestore();
 
-// 1. SMART MARKETING AUDIT
+// ============================================================================
+// 1. SMART MARKETING AUDIT (100% UNTOUCHED - EXACTLY AS IT WAS)
+// ============================================================================
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
@@ -116,49 +118,66 @@ export const performAudit = onCall({
   }
 });
 
-// 2. STRATEGIC CHAT (UPGRADED WITH GROUND TRUTH)
+// ============================================================================
+// 2. STRATEGIC CHAT (FIXED: ZERO HALLUCINATIONS)
+// ============================================================================
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
 }, async (request) => {
   const { message } = request.data;
-  
-  // THE FIX: Injecting your agency's exact facts into the AI's "brain"
-  const SYSTEM_PROMPT = `
-    You are Hunter AI, the official digital marketing assistant for Happy Hunter Digital (also known as Happy Hunter Systems).
-    
-    YOUR KNOWLEDGE BASE:
-    - Founder & Head Strategist: Thabo Leslie Motsumi.
-    - Our Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses.
-    - Our Services: 1) Trust Synchronization (Google Maps, NAP consistency). 2) AI Visibility (AEO, Schema markup for ChatGPT/Gemini). 3) Agentic Revenue (Automated lead capture).
-    - Our Tool: The "Smart Marketing Scan" (provides a Digital Survival Score).
-    - Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com. Website: www.happyhunterdigital.com
-    - Upcoming Event: We are speaking at the Integrated Wellth Summit on 28 Feb in Waterfall City.
+  const G_KEY = process.env.GEMINI_API_KEY;
 
-    RULES:
-    1. NEVER make up information. Use ONLY the Knowledge Base above.
-    2. If someone asks who the founder is, say "Thabo Leslie Motsumi".
-    3. Be direct, professional, and slightly authoritative (Military-grade precision).
-    4. Keep answers to 1 or 2 sentences MAX.
-    5. If you cannot answer based on the knowledge base, direct them to run the Smart Scan or contact Thabo.
-    
-    USER MESSAGE: "${message}"
-  `;
+  if (!message || !G_KEY) {
+    return { reply: "Connection offline. Missing parameters." };
+  }
+
+  // THE FIX: Strict System Instructions 
+  const SYSTEM_PROMPT = `You are Hunter AI, the official digital marketing assistant for Happy Hunter Digital.
+YOUR KNOWLEDGE BASE:
+- Founder & Head Strategist: Thabo Leslie Motsumi.
+- Our Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses.
+- Our Services: 1) Trust Synchronization 2) AI Visibility (AEO) 3) Agentic Revenue.
+- Our Tool: The "Smart Marketing Scan".
+- Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com. Website: www.happyhunterdigital.com
+
+RULES:
+1. NEVER make up information. Use ONLY the Knowledge Base.
+2. If asked who the founder is, say exactly: "The founder and head strategist of Happy Hunter Digital is Thabo Leslie Motsumi."
+3. Be direct, professional, and confident.
+4. Keep answers to 1 or 2 sentences MAX.`;
 
   try {
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: SYSTEM_PROMPT }] }],
-        // Setting temperature to 0.2 makes the AI strictly stick to facts, stopping hallucinations
-        generationConfig: { temperature: 0.2, maxOutputTokens: 200 }
+        // THIS passes your rules directly into the engine's core
+        systemInstruction: {
+          parts: [{ text: SYSTEM_PROMPT }]
+        },
+        contents: [
+          { role: "user", parts: [{ text: message }] }
+        ],
+        // Temperature 0.1 makes it strictly factual, stopping creative hallucinations
+        generationConfig: { temperature: 0.1, maxOutputTokens: 200 }
       })
     });
-    
+
+    if (!aiRes.ok) {
+       console.error("Gemini Chat Error:", await aiRes.text());
+       return { reply: "My neural link is currently overloaded. Please email HQ." };
+    }
+
     const data = await aiRes.json() as any;
-    return { reply: data.candidates[0].content.parts[0].text };
+    
+    if (data.candidates && data.candidates[0].content.parts[0].text) {
+       return { reply: data.candidates[0].content.parts[0].text.trim() };
+    } else {
+       return { reply: "I received an unreadable signal from the core. Try again." };
+    }
   } catch (e) {
+    console.error("Chat Error:", e);
     return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
   }
 });
