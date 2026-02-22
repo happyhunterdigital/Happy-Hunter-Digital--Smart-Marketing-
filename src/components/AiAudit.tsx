@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
-import { Search, AlertTriangle, Loader2, Zap, CheckCircle, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown } from 'lucide-react';
+import { db, functions } from '../firebaseConfig';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -7,13 +12,14 @@ export const AiAudit: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [verdict, setVerdict] = useState<any>(null);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const scanSteps = [
     "Verifying Google Business Profile...",
     "Extracting Star Rating & Review Count...",
     "Checking Website Signal Consistency...",
     "Auditing Operating Hours Data...",
-    "NAP Consistency Check (Signal Mismatch)...",
+    "NAP Consistency Check...",
     "Calculating AI Findability Index...",
     "Computing Digital Survival Score..."
   ];
@@ -25,7 +31,7 @@ export const AiAudit: React.FC = () => {
   };
 
   const runForensicScan = async () => {
-    setStep(3); // Start scanning animation
+    setStep(3);
     
     let progress = 0;
     const interval = setInterval(() => {
@@ -35,18 +41,15 @@ export const AiAudit: React.FC = () => {
     }, 50);
 
     try {
-      // Direct call to your backend function URL
-      const PROJECT_ID = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-      const res = await fetch(`https://us-central1-${PROJECT_ID}.cloudfunctions.net/performAudit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: { businessName: form.biz, location: form.loc, clientEmail: form.mail } })
+      const performAudit = httpsCallable(functions, 'performAudit');
+      const response = await performAudit({
+        businessName: form.biz,
+        location: form.loc,
+        clientEmail: form.mail
       });
 
-      if (!res.ok) throw new Error("Server Error");
-      
-      const json = await res.json();
-      const data = json.result; // httpsCallable format wraps in 'result'
+      const data = response.data as any;
+      if (!data.success) throw new Error("Server rejected audit.");
 
       const rev = calculateRevenueLoss(data.score);
       setVerdict({ ...data, revenueLoss: rev });
@@ -55,11 +58,21 @@ export const AiAudit: React.FC = () => {
       setScanProgress(100);
       setTimeout(() => setStep(4), 500);
 
-    } catch (err) {
+    } catch (err: any) {
       clearInterval(interval);
+      console.error(err);
       alert("Neural Link Interrupted. Please check your connection and retry.");
       setStep(1);
     }
+  };
+
+  const downloadPDF = async () => {
+    if (!reportRef.current) return;
+    const canvas = await html2canvas(reportRef.current, { backgroundColor: '#050505', scale: 2 });
+    const img = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    pdf.addImage(img, 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
+    pdf.save(`HH_Audit_${form.biz}.pdf`);
   };
 
   return (
@@ -93,8 +106,8 @@ export const AiAudit: React.FC = () => {
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="WhatsApp Number" type="tel" onChange={e => setForm({...form, wa: e.target.value})} required />
           </div>
-          <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl">
-            Reveal Intelligence <Zap size={20}/>
+          <button disabled={loading} type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl">
+            {loading ? <Loader2 className="animate-spin" /> : <Zap size={20}/>} Reveal Intelligence 
           </button>
         </form>
       )}
@@ -116,7 +129,7 @@ export const AiAudit: React.FC = () => {
 
       {step === 4 && verdict && (
         <div className="space-y-8 animate-fade-in pb-10">
-          <div className="p-10 bg-black border border-gray-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
+          <div ref={reportRef} className="p-10 bg-black border border-gray-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10"><Zap size={100} /></div>
             
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12 border-b border-gray-800 pb-10">
@@ -157,7 +170,10 @@ export const AiAudit: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex flex-col md:flex-row gap-4 justify-center">
+             <button onClick={downloadPDF} className="w-full md:w-auto px-8 py-5 bg-gray-900 border border-gray-800 text-white rounded-2xl font-black uppercase text-sm hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3">
+               <Download size={20}/> Export Intelligence
+             </button>
              <a 
                href={`https://wa.me/27601016673?text=Hi%20Thabo!%20I%20just%20completed%20the%20Survival%20Scan%20for%20${form.biz}%20and%20scored%20${verdict.score}/100.%20I%20need%20the%20Recovery%20Protocol.`} 
                target="_blank" 
