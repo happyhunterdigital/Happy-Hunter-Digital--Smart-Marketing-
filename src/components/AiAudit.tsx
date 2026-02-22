@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown } from 'lucide-react';
+import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown, Calendar } from 'lucide-react';
 import { db, functions } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -106,8 +106,8 @@ export const AiAudit: React.FC = () => {
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="WhatsApp Number" type="tel" onChange={e => setForm({...form, wa: e.target.value})} required />
           </div>
-          <button disabled={loading} type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl">
-            {loading ? <Loader2 className="animate-spin" /> : <Zap size={20}/>} Reveal Intelligence 
+          <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl">
+            Reveal Intelligence <Zap size={20}/>
           </button>
         </form>
       )}
@@ -127,60 +127,100 @@ export const AiAudit: React.FC = () => {
         </div>
       )}
 
+      {/* --- MODIFIED UI REPORT SECTION STARTS HERE --- */}
       {step === 4 && verdict && (
         <div className="space-y-8 animate-fade-in pb-10">
-          <div ref={reportRef} className="p-10 bg-black border border-gray-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-6 opacity-10"><Zap size={100} /></div>
+          <div ref={reportRef} className="p-8 md:p-12 bg-[#050505] border border-gray-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
             
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12 border-b border-gray-800 pb-10">
+            {/* Dynamic Header based on Score */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-10 border-b border-gray-800 pb-10">
               <div className="text-center md:text-left">
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 mb-2">Survival Score</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 mb-2">Digital Survival Score</p>
                 <div className="flex items-center gap-4 justify-center md:justify-start">
-                   <span className={`text-8xl font-black leading-none ${verdict.score < 55 ? 'text-red-500' : 'text-yellow-500'}`}>{verdict.score}</span>
+                   <span className={`text-7xl md:text-8xl font-black leading-none ${verdict.score >= 70 ? 'text-green-500' : verdict.score >= 40 ? 'text-yellow-500' : 'text-red-500'}`}>{verdict.score}</span>
                    <span className="text-gray-700 text-2xl font-bold">/ 100</span>
                 </div>
               </div>
-              <div className="bg-red-500/10 border border-red-500/20 p-6 rounded-3xl flex items-center gap-4">
-                <TrendingDown className="text-red-500" size={32} />
-                <div>
-                  <p className="text-red-500 font-black text-xl leading-none">{verdict.revenueLoss.amount}</p>
-                  <p className="text-red-500/60 text-[10px] uppercase font-bold mt-1">Est. Monthly Revenue Loss</p>
+              
+              {/* Revenue Loss Widget (Only shows if score is below 80 to agitate pain) */}
+              {verdict.score < 80 && (
+                <div className="bg-red-500/5 border border-red-500/20 p-6 rounded-3xl flex items-center gap-4 w-full md:w-auto">
+                  <TrendingDown className="text-red-500" size={32} />
+                  <div>
+                    <p className="text-red-500 font-black text-2xl leading-none">{verdict.revenueLoss.amount}</p>
+                    <p className="text-red-500/70 text-[9px] uppercase font-bold mt-1 tracking-widest">Est. Monthly Revenue Loss</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            <div className="space-y-8">
+            {/* Conditional Messaging Block */}
+            {verdict.score >= 70 ? (
+              <div className="mb-10 p-6 bg-green-500/10 border border-green-500/20 rounded-2xl">
+                <h3 className="text-green-500 font-black uppercase tracking-tight flex items-center gap-2 mb-2">
+                  <CheckCircle size={18} /> Entity Verified: Strong Baseline
+                </h3>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  Congratulations. Your traditional SEO and Google Maps foundation is solid. However, standard search is evolving rapidly. To prevent competitors from overtaking you in AI-driven search (ChatGPT, Gemini, SGE), you must upgrade from basic SEO to <strong>Generative Engine Optimization (GEO)</strong> and implement Agentic Revenue systems.
+                </p>
+              </div>
+            ) : (
+              <div className="mb-10 p-6 bg-orange-500/10 border border-orange-500/20 rounded-2xl">
+                <h3 className="text-orange-500 font-black uppercase tracking-tight flex items-center gap-2 mb-2">
+                  <AlertTriangle size={18} /> Critical Vulnerability Detected
+                </h3>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  Your digital architecture is actively repelling algorithms. You are experiencing the "Ghost Effect"—meaning high-intent customers searching for your services are being routed directly to your competitors. Immediate intervention is required.
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-10">
               <div>
                 <h3 className="text-yellow-500 font-black uppercase text-xs tracking-widest mb-4 flex items-center gap-2">
-                  <ShieldCheck size={16}/> Forensic Summary
+                  <ShieldCheck size={16}/> Forensic AI Summary
                 </h3>
-                <p className="text-white text-xl font-medium leading-relaxed italic">"{verdict.summary}"</p>
+                <p className="text-white text-lg font-medium leading-relaxed italic border-l-4 border-gray-800 pl-4">"{verdict.summary}"</p>
               </div>
 
               <div className="grid gap-4">
-                <h3 className="text-red-500 font-black uppercase text-xs tracking-widest mb-2 flex items-center gap-2">
-                  <XCircle size={16}/> Technical Vulnerabilities
+                <h3 className="text-gray-500 font-black uppercase text-xs tracking-widest mb-2 flex items-center gap-2">
+                  <XCircle size={16}/> Specific Technical Weak Spots
                 </h3>
                 {verdict.truths.map((t: string, i: number) => (
-                  <div key={i} className="p-4 bg-gray-900/50 border border-gray-800 rounded-xl text-gray-300 text-sm flex gap-3">
-                    <span className="text-yellow-500 font-black">0{i+1}</span> {t}
+                  <div key={i} className="p-5 bg-gray-900/30 border border-gray-800 rounded-xl text-gray-300 text-sm flex gap-4 items-start">
+                    <span className="text-yellow-500 font-black bg-yellow-500/10 px-2 py-1 rounded">0{i+1}</span> 
+                    <p className="mt-1">{t}</p>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* THE THABO INTERVENTION CTA */}
+            <div className="mt-12 p-8 md:p-10 bg-gradient-to-br from-[#0a0a0a] to-black border border-yellow-500/30 rounded-[2rem] text-center relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
+               <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-4">Stop The Revenue Leakage</h3>
+               <p className="text-gray-400 mb-8 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
+                 Book a Free 30-Minute Discovery Call with <strong>Thabo</strong>, Head of happyhunterdigital. We will review this exact report together and map out your custom Recovery Protocol.
+               </p>
+               <a href="https://calendly.com/motsumitl/30min" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-8 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(234,179,8,0.2)] w-full md:w-auto">
+                 <Calendar size={18} /> Schedule Strategy Call
+               </a>
+            </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
-             <button onClick={downloadPDF} className="w-full md:w-auto px-8 py-5 bg-gray-900 border border-gray-800 text-white rounded-2xl font-black uppercase text-sm hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3">
-               <Download size={20}/> Export Intelligence
+          {/* Secondary Actions */}
+          <div className="grid md:grid-cols-2 gap-4">
+             <button onClick={downloadPDF} className="w-full p-5 bg-[#0a0a0a] border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:bg-gray-900 transition-all flex items-center justify-center gap-3">
+               <Download size={18}/> Export Report to PDF
              </button>
              <a 
-               href={`https://wa.me/27601016673?text=Hi%20Thabo!%20I%20just%20completed%20the%20Survival%20Scan%20for%20${form.biz}%20and%20scored%20${verdict.score}/100.%20I%20need%20the%20Recovery%20Protocol.`} 
+               href={`https://wa.me/27601016673?text=Hi%20Thabo!%20I%20just%20completed%20the%20Survival%20Scan%20for%20${form.biz}%20and%20scored%20${verdict.score}/100.%20Let's%20talk%20about%20my%20Recovery%20Protocol.`} 
                target="_blank" 
                rel="noreferrer"
-               className="w-full md:w-auto px-12 py-5 bg-yellow-500 text-black rounded-2xl font-black uppercase text-sm flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl shadow-yellow-500/20"
+               className="w-full p-5 bg-[#0a0a0a] border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:text-yellow-500 hover:border-yellow-500 transition-all flex items-center justify-center gap-3"
              >
-               <MessageSquare size={20}/> Claim Recovery Protocol
+               <MessageSquare size={18}/> Message Thabo on WhatsApp
              </a>
           </div>
         </div>
