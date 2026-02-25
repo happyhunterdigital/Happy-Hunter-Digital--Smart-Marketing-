@@ -1,153 +1,132 @@
-import React, { useRef } from 'react';
-import { Download, CheckCircle2, MapPin, Calendar, Percent, BrainCircuit, MonitorSmartphone, ShieldCheck, Zap } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import React from 'react';
+import { Target, Globe, Server, Code, ShoppingCart, LayoutTemplate, BrainCircuit, Mail, MapPin, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-export const SummitPoster = () => {
-  const posterRef = useRef<HTMLDivElement>(null);
+const SMART_MARKETING = [
+  {
+    title: "AI-Powered Marketing Strategy",
+    desc: "We integrate elite AI tools for content creation, customer service, and predictive data analysis to help startups scale efficiently. Work smarter, not harder.",
+    icon: <BrainCircuit size={32}/>
+  },
+  {
+    title: "Local Lead Generation ZA Long-Tail",
+    desc: "We execute hyper-localized SEO protocols to capture the South African 'Near Me' economy.",
+    icon: <MapPin size={32}/>
+  },
+  {
+    title: "Marketing Automation and Personalization",
+    desc: "We deploy automated email drip campaigns and real-time customer personalization to remove manual operational tasks.",
+    icon: <Mail size={32}/>
+  },
+  {
+    title: "Strategic Opportunity Audits",
+    desc: "We perform intense marketing gap analyses to identify exactly where competitors are winning.",
+    icon: <Search size={32}/>
+  }
+];
 
-  const downloadPoster = async () => {
-    if (!posterRef.current) return;
-    try {
-      const canvas = await html2canvas(posterRef.current, { 
-        backgroundColor: '#000000', 
-        scale: 4, // 4K Resolution
-        useCORS: true,
-        logging: false
-      });
-      const link = document.createElement('a');
-      link.download = 'HappyHunter_Powerhouse_Summit_2026.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    } catch (err) {
-      console.error('Asset Generation Failed', err);
-    }
-  };
+const DIGITAL_INFRASTRUCTURE = [
+  {
+    title: "eCommerce Architecture",
+    desc: "Scalable Shopify and WooCommerce stores designed for the complete customer journey, maximizing Return on Ad Spend (ROAS).",
+    icon: <ShoppingCart size={32}/>
+  },
+  {
+    title: "Corporate Authority Sites",
+    desc: "Clean, modern layouts with clear value propositions and integrated trust-building elements (case studies, reviews).",
+    icon: <LayoutTemplate size={32}/>
+  },
+  {
+    title: "Performance Landing Pages",
+    desc: "Single-purpose, high-velocity assets built for A/B testing and heavy optimization across Google and Meta ad traffic.",
+    icon: <Target size={32}/>
+  },
+  {
+    title: "Custom Web Applications",
+    desc: "Engineering complex technical builds including secure Client Portals, Project Management dashboards, and Automated Catalogues.",
+    icon: <Code size={32}/>
+  }
+];
 
-  return (
-    <div className="min-h-screen bg-[#050505] pt-32 pb-20 flex flex-col items-center justify-center animate-fade-in px-4">
-      
-      {/* CONTROL PANEL */}
-      <div className="mb-12 text-center">
-        <p className="text-yellow-500 font-black uppercase tracking-[0.4em] text-[10px] mb-4">Tactical Asset Hub</p>
-        <button 
-          onClick={downloadPoster} 
-          className="bg-yellow-500 text-black px-12 py-5 rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-white hover:scale-105 transition-all flex items-center gap-3 mx-auto shadow-[0_0_40px_rgba(234,179,8,0.4)]"
-        >
-          <Download size={20}/> Export 4K Powerhouse Poster
-        </button>
+export const CoreServices = () => (
+  <div className="bg-[#050505] min-h-screen pb-20 animate-fade-in pt-32 text-white font-sans">
+    
+    <div className="container mx-auto px-6 text-center max-w-4xl mb-24">
+      <span className="inline-block px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[10px] font-black uppercase tracking-[0.3em] mb-6">
+        The Dual-Threat Agency
+      </span>
+      <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 leading-none">
+        Architectural <span className="text-yellow-500 italic text-white underline decoration-yellow-500/30 underline-offset-[12px]">Alignment</span>
+      </h1>
+      <p className="text-gray-400 text-lg leading-relaxed max-w-2xl mx-auto">
+        We operate at the intersection of Technical Web Development and Agentic AI Strategy. We build the infrastructure, and we deploy the intelligence.
+      </p>
+    </div>
+
+    {/* Division 1: Smart Marketing */}
+    <section className="container mx-auto px-6 max-w-6xl mb-32">
+      <div className="flex flex-col md:flex-row items-center gap-6 mb-12 border-b border-gray-800 pb-6">
+        <h2 className="text-4xl font-black text-white uppercase tracking-tight">
+          Happy Hunter <span className="text-yellow-500">Smart Marketing</span>
+        </h2>
+        <span className="hidden md:block text-gray-700">|</span>
+        <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">AI Strategy and Growth Automation</p>
       </div>
 
-      {/* THE POSTER (1080x1350 optimized) */}
-      <div 
-        ref={posterRef}
-        className="w-full max-w-[540px] bg-black border-[1px] border-white/10 relative overflow-hidden flex flex-col shadow-2xl"
-        style={{ width: '540px', height: '675px' }} 
-      >
-        
-        {/* CINEMATIC HERO LAYER */}
-        <div className="absolute inset-0 z-0 h-[55%]">
-          <img 
-            src="https://res.cloudinary.com/dka0498ns/image/upload/v1762761706/Happy_Hunter_work_space_jovfrh.png" 
-            alt="Workspace" 
-            className="w-full h-full object-cover opacity-80 grayscale"
-            crossOrigin="anonymous"
-          />
-          {/* Multi-stage gradient for depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-transparent"></div>
-        </div>
-
-        {/* CONTENT OVERLAY */}
-        <div className="relative z-10 flex flex-col h-full p-10">
-          
-          {/* BRAND HEADER */}
-          <div className="flex justify-between items-center mb-12">
-            <div className="flex items-center gap-3">
-              <img 
-                src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" 
-                className="w-12 h-12 rounded-full border-2 border-yellow-500 shadow-lg" 
-                alt="Logo" 
-                crossOrigin="anonymous"
-              />
-              <span className="font-handwriting text-[2.2rem] text-white lowercase leading-none pt-1">
-                happyhunterdigital
-              </span>
+      <div className="grid md:grid-cols-2 gap-8">
+        {SMART_MARKETING.map((item, i) => (
+          <div key={i} className="p-8 bg-[#0a0a0a] border border-gray-800 rounded-3xl hover:border-yellow-500/30 transition-all group flex gap-6 items-start shadow-xl">
+            <div className="text-yellow-500 bg-yellow-500/10 p-4 rounded-2xl group-hover:scale-110 transition-transform shrink-0">
+              {item.icon}
             </div>
-            <div className="bg-yellow-500 text-black px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-tighter shadow-[0_0_20px_rgba(234,179,8,0.5)]">
-               50% Summit Special
+            <div>
+              <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-tight">{item.title}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{item.desc}</p>
             </div>
           </div>
+        ))}
+      </div>
+    </section>
 
-          {/* MAIN TITLES */}
-          <div className="mb-10">
-             <div className="flex items-center gap-2 mb-3">
-               <div className="w-8 h-[2px] bg-yellow-500"></div>
-               <p className="text-yellow-500 font-black uppercase tracking-[0.4em] text-[10px]">Waterfall City // Feb 2026</p>
-             </div>
-             <h2 className="text-white font-black uppercase tracking-tighter text-[3.8rem] leading-[0.8] mb-4">
-               DIGITAL <br/><span className="text-yellow-500 italic">DOMINANCE</span>
-             </h2>
-             <p className="text-gray-400 text-sm font-bold uppercase tracking-widest flex items-center gap-2">
-               <ShieldCheck size={16} className="text-yellow-500"/> The Dual-Threat Protocol
-             </p>
+    {/* Division 2: Digital Infrastructure */}
+    <section className="container mx-auto px-6 max-w-6xl mb-24">
+      <div className="flex flex-col md:flex-row items-center gap-6 mb-12 border-b border-gray-800 pb-6">
+        <h2 className="text-4xl font-black text-white uppercase tracking-tight">
+          Happy Hunter <span className="text-white">Digital</span>
+        </h2>
+        <span className="hidden md:block text-gray-700">|</span>
+        <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Web Dev and eCommerce Builds</p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-8">
+        {DIGITAL_INFRASTRUCTURE.map((web, index) => (
+          <div key={index} className="p-8 bg-[#0a0a0a] border border-gray-800 rounded-3xl hover:border-white/30 transition-all group flex gap-6 items-start shadow-xl">
+            <div className="text-white bg-white/5 p-4 rounded-2xl group-hover:scale-110 transition-transform shrink-0">
+              {web.icon}
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-tight">{web.title}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{web.desc}</p>
+            </div>
           </div>
+        ))}
+      </div>
+    </section>
 
-          {/* SERVICE MATRIX (Designed like the page icons) */}
-          <div className="grid grid-cols-2 gap-8 mb-auto">
-             
-             {/* Column 1: Intelligence */}
-             <div className="space-y-4">
-                <div className="flex items-center gap-2 text-yellow-500 border-b border-yellow-500/20 pb-2">
-                  <BrainCircuit size={18}/><span className="font-black uppercase text-[11px] tracking-widest">Smart Marketing</span>
-                </div>
-                <ul className="space-y-2.5">
-                  <li className="flex items-start gap-2 text-gray-300 text-[10px] font-bold uppercase leading-tight">
-                    <Zap size={10} className="text-yellow-500 mt-0.5 shrink-0"/> AI Strategy and Growth
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-300 text-[10px] font-bold uppercase leading-tight">
-                    <Zap size={10} className="text-yellow-500 mt-0.5 shrink-0"/> Lead Gen Automation
-                  </li>
-                </ul>
-             </div>
-
-             {/* Column 2: Infrastructure */}
-             <div className="space-y-4">
-                <div className="flex items-center gap-2 text-white border-b border-white/20 pb-2">
-                  <MonitorSmartphone size={18}/><span className="font-black uppercase text-[11px] tracking-widest text-gray-300">Infrastructure</span>
-                </div>
-                <ul className="space-y-2.5">
-                  <li className="flex items-start gap-2 text-gray-300 text-[10px] font-bold uppercase leading-tight">
-                    <Zap size={10} className="text-gray-500 mt-0.5 shrink-0"/> eCommerce Architecture
-                  </li>
-                  <li className="flex items-start gap-2 text-gray-300 text-[10px] font-bold uppercase leading-tight">
-                    <Zap size={10} className="text-gray-500 mt-0.5 shrink-0"/> Corporate Lead Gen
-                  </li>
-                </ul>
-             </div>
-
-          </div>
-
-          {/* LOGISTICS & AUTHENTICITY */}
-          <div className="mt-12 pt-8 border-t border-white/10 flex justify-between items-end">
-             <div className="space-y-3">
-               <div className="flex items-center gap-3 text-white font-black uppercase text-[11px] tracking-tighter">
-                 <Calendar size={14} className="text-yellow-500"/> Saturday 28 February
-               </div>
-               <div className="flex items-center gap-3 text-white font-black uppercase text-[11px] tracking-tighter">
-                 <MapPin size={14} className="text-yellow-500"/> Waterfall City, JHB
-               </div>
-             </div>
-             <div className="text-right">
-               <p className="text-white font-black text-xl tracking-tighter leading-none mb-1">HAPPYHUNTERDIGITAL.COM</p>
-               <p className="text-yellow-500 text-[8px] font-black uppercase tracking-[0.4em]">Official Agency Partner</p>
-             </div>
-          </div>
-
-        </div>
-
-        {/* Tactical Corner Accent */}
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-yellow-500/5 blur-[80px] rounded-full pointer-events-none"></div>
+    {/* Summary CTA */}
+    <div className="container mx-auto px-6 max-w-4xl">
+      <div className="p-10 bg-gradient-to-br from-gray-900 to-black border border-yellow-500/20 rounded-[3rem] text-center shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
+        <Server className="mx-auto text-yellow-500 mb-6" size={40} />
+        <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-4">Identify Your Untapped Opportunities</h3>
+        <p className="text-gray-400 mb-8 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+          Whether you need a high-converting Shopify store or an AI workflow to handle your local lead generation, it begins with an audit of your current digital entity.
+        </p>
+        <Link to="/audit" className="inline-block bg-yellow-500 text-black px-12 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(234,179,8,0.2)]">
+          Execute Smart Business Scan
+        </Link>
       </div>
     </div>
-  );
-};
+
+  </div>
+);
