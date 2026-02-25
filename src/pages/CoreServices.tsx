@@ -105,7 +105,7 @@ export const CoreServices = () => (
               {web.icon}
             </div>
             <div>
-              <h3 className="text-xl font-bold text-white mb-3">{s.title}</h3>
+              <h3 className="text-xl font-bold text-white mb-3">{web.title}</h3>
               <p className="text-gray-400 text-sm leading-relaxed">{web.desc}</p>
             </div>
           </div>
@@ -113,7 +113,6 @@ export const CoreServices = () => (
       </div>
     </section>
 
-    {/* Summary CTA */}
     <div className="container mx-auto px-6 max-w-4xl">
       <div className="p-10 bg-gradient-to-br from-gray-900 to-black border border-yellow-500/20 rounded-[3rem] text-center shadow-2xl">
         <Server className="mx-auto text-yellow-500 mb-6" size={40} />
@@ -121,7 +120,7 @@ export const CoreServices = () => (
         <p className="text-gray-400 mb-8 max-w-xl mx-auto">
           Whether you need a high-converting Shopify store or an AI workflow to handle your local lead generation, it begins with an audit of your current digital entity.
         </p>
-        <Link to="/audit" className="inline-block bg-yellow-500 text-black px-10 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-white transition-colors shadow-lg">
+        <Link to="/audit" className="inline-block bg-yellow-500 text-black px-12 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-colors shadow-lg">
           Execute 15-Minute Audit
         </Link>
       </div>
