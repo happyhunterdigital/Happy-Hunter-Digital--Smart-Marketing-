@@ -1,92 +1,131 @@
 import React from 'react';
-import { Target, Globe, Server, Code } from 'lucide-react';
+import { Target, Globe, Server, Code, ShoppingCart, LayoutTemplate, Smartphone, BrainCircuit, Mail, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const SERVICES = [
+const SMART_MARKETING = [
   {
-    title: "Generative Engine Optimization (GEO)",
-    quickAnswer: "We engineer inbound search pipelines that systematically lower your Customer Acquisition Cost (CAC) by making your brand the primary cited source in AI models.",
-    methodology: [
-      "Source Citation Integration & Footnoting",
-      "Statistical Injection & Benchmarking",
-      "Expert Quotation Formatting"
-    ],
-    evidence: "Princeton University research indicates a +40% improvement in AI impression scores when rigorous GEO frameworks are deployed.",
-    icon: <Globe size={40}/>
+    title: "AI-Powered Marketing Strategy",
+    desc: "We integrate elite AI tools for content creation, customer service, and predictive data analysis to help startups scale efficiently. Work smarter, not harder.",
+    icon: <BrainCircuit size={32}/>
   },
   {
-    title: "Answer Engine Optimization (AEO)",
-    quickAnswer: "We map your content directly to the conversational funnel, focusing on Middle-of-Funnel (MOFU) and Bottom-of-Funnel (BOFU) assets that AI engines rely on for synthesis.",
-    methodology: [
-      "Natural Language Q&A Architecture",
-      "FAQPage & HowTo Schema.org deployment",
-      "Semantic Entity Linking"
-    ],
-    evidence: "Secures your Share of Model (SoM) and directly addresses the 60% of B2B searches that now end in 'zero-click' outcomes.",
-    icon: <Target size={40}/>
+    title: "Local Lead Generation (ZA Long-Tail)",
+    desc: "We execute hyper-localized SEO protocols (e.g., 'best solar installers in Pretoria East'). We map intent to capture the South African 'Near Me' economy.",
+    icon: <MapPin size={32}/>
   },
   {
-    title: "Automated AARRR Pipeline Infrastructure",
-    quickAnswer: "We construct digital retention loops and qualification architectures that drive Net Revenue Retention (NRR) well above B2B SaaS industry benchmarks.",
-    methodology: [
-      "LLM-powered Chatbot Integration",
-      "Lead-to-MQL Qualification Scoring",
-      "Cross-channel data alignment"
-    ],
-    evidence: "Drastically shortens your overall CAC payback period to under three months by eliminating manual founder-led sales bottlenecks.",
-    icon: <Server size={40}/>
+    title: "Marketing Automation & Personalization",
+    desc: "We deploy automated email drip campaigns and real-time customer personalization to remove manual operational tasks from your sales funnel.",
+    icon: <Mail size={32}/>
+  },
+  {
+    title: "Strategic Opportunity Audits",
+    desc: "We perform intense marketing gap analyses to identify exactly where competitors are winning and how AI can lower your Customer Acquisition Cost (CAC).",
+    icon: <Search size={32}/>
+  }
+];
+
+const DIGITAL_INFRASTRUCTURE = [
+  {
+    title: "eCommerce Architecture",
+    desc: "Scalable Shopify and WooCommerce stores designed for the complete customer journey, maximizing Return on Ad Spend (ROAS) via mobile-first design.",
+    icon: <ShoppingCart size={32}/>
+  },
+  {
+    title: "Corporate Authority Sites",
+    desc: "Clean, modern layouts with clear value propositions and integrated trust-building elements (case studies, reviews) designed to generate high-quality B2B leads.",
+    icon: <LayoutTemplate size={32}/>
+  },
+  {
+    title: "Performance Landing Pages",
+    desc: "Single-purpose, high-velocity assets built for A/B testing and heavy optimization across Google and Meta ad traffic.",
+    icon: <Target size={32}/>
+  },
+  {
+    title: "Custom Web Applications",
+    desc: "Engineering complex technical builds including secure Client Portals, Project Management dashboards, and Automated Catalogues.",
+    icon: <Code size={32}/>
   }
 ];
 
 export const CoreServices = () => (
-  <div className="container mx-auto px-6 py-20 animate-fade-in">
-    <div className="text-center max-w-4xl mx-auto mb-20">
-      <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 text-white">
-        Architectural <span className="text-yellow-500">Alignment</span>
+  <div className="bg-[#050505] min-h-screen pb-20 animate-fade-in pt-32">
+    
+    <div className="container mx-auto px-6 text-center max-w-4xl mb-24">
+      <span className="inline-block px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[10px] font-black uppercase tracking-[0.3em] mb-6">
+        The Dual-Threat Agency
+      </span>
+      <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 text-white leading-none">
+        Architectural <span className="text-yellow-500 italic">Alignment</span>
       </h1>
-      <p className="text-gray-400 text-lg leading-relaxed">
-        We execute complex structural optimization to ensure AI engines accurately parse, trust, and cite your corporate language.
+      <p className="text-gray-400 text-lg leading-relaxed max-w-2xl mx-auto">
+        We operate at the intersection of Technical Web Development and Agentic AI Strategy. We build the infrastructure, and we deploy the intelligence.
       </p>
     </div>
 
-    <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-      {SERVICES.map((s, i) => (
-        <div key={i} className="p-8 bg-[#0a0a0a] border border-gray-800/60 rounded-3xl hover:border-yellow-500/40 transition-all group flex flex-col h-full">
-          <div className="text-yellow-500 mb-6 bg-yellow-500/10 w-fit p-4 rounded-2xl group-hover:scale-110 transition-transform">
-            {s.icon}
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-4 leading-tight">{s.title}</h2>
-          
-          <div className="space-y-6 flex-grow">
-            <div>
-              <span className="text-[10px] uppercase font-black tracking-widest text-gray-500 mb-2 block">Executive Summary</span>
-              <p className="text-gray-300 text-sm leading-relaxed">{s.quickAnswer}</p>
-            </div>
-            
-            <div>
-              <span className="text-[10px] uppercase font-black tracking-widest text-gray-500 mb-2 block">Deployment Methodology</span>
-              <ul className="space-y-2">
-                {s.methodology.map((method, idx) => (
-                  <li key={idx} className="text-gray-400 text-sm flex items-start gap-2">
-                    <Code size={14} className="text-yellow-500 shrink-0 mt-0.5" /> {method}
-                  </li>
-                ))}
-              </ul>
-            </div>
+    {/* Division 1: Smart Marketing */}
+    <section className="container mx-auto px-6 max-w-6xl mb-32">
+      <div className="flex flex-col md:flex-row items-center gap-6 mb-12 border-b border-gray-800 pb-6">
+        <h2 className="text-4xl font-black text-white uppercase tracking-tight">
+          Happy Hunter <span className="text-yellow-500">Smart Marketing</span>
+        </h2>
+        <span className="hidden md:block text-gray-700">|</span>
+        <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">AI Strategy & Growth Automation</p>
+      </div>
 
-            <div className="p-4 bg-gray-900 rounded-xl border border-gray-800 mt-auto">
-              <span className="text-[10px] uppercase font-black tracking-widest text-yellow-500 mb-1 block">Performance Data</span>
-              <p className="text-gray-400 text-xs italic">{s.evidence}</p>
+      <div className="grid md:grid-cols-2 gap-8">
+        {SMART_MARKETING.map((s, i) => (
+          <div key={i} className="p-8 bg-[#0a0a0a] border border-gray-800 rounded-3xl hover:border-yellow-500/30 transition-all group flex gap-6 items-start">
+            <div className="text-yellow-500 bg-yellow-500/10 p-4 rounded-2xl group-hover:scale-110 transition-transform shrink-0">
+              {s.icon}
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white mb-3">{s.title}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{s.desc}</p>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
+    </section>
+
+    {/* Division 2: Digital Infrastructure */}
+    <section className="container mx-auto px-6 max-w-6xl mb-24">
+      <div className="flex flex-col md:flex-row items-center gap-6 mb-12 border-b border-gray-800 pb-6">
+        <h2 className="text-4xl font-black text-white uppercase tracking-tight">
+          Happy Hunter <span className="text-white">Digital</span>
+        </h2>
+        <span className="hidden md:block text-gray-700">|</span>
+        <p className="text-gray-500 text-sm font-bold uppercase tracking-widest">Web Dev & eCommerce Builds</p>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-8">
+        {DIGITAL_INFRASTRUCTURE.map((web, index) => (
+          <div key={index} className="p-8 bg-[#0a0a0a] border border-gray-800 rounded-3xl hover:border-white/30 transition-all group flex gap-6 items-start">
+            <div className="text-white bg-white/5 p-4 rounded-2xl group-hover:scale-110 transition-transform shrink-0">
+              {web.icon}
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-white mb-3">{s.title}</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">{web.desc}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* Summary CTA */}
+    <div className="container mx-auto px-6 max-w-4xl">
+      <div className="p-10 bg-gradient-to-br from-gray-900 to-black border border-yellow-500/20 rounded-[3rem] text-center shadow-2xl">
+        <Server className="mx-auto text-yellow-500 mb-6" size={40} />
+        <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-4">Identify Your Untapped Opportunities</h3>
+        <p className="text-gray-400 mb-8 max-w-xl mx-auto">
+          Whether you need a high-converting Shopify store or an AI workflow to handle your local lead generation, it begins with an audit of your current digital entity.
+        </p>
+        <Link to="/audit" className="inline-block bg-yellow-500 text-black px-10 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-white transition-colors shadow-lg">
+          Execute 15-Minute Audit
+        </Link>
+      </div>
     </div>
 
-    <div className="mt-20 text-center">
-      <Link to="/audit" className="inline-block bg-yellow-500 text-black px-10 py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors shadow-xl">
-        Initiate System Analysis
-      </Link>
-    </div>
   </div>
 );
