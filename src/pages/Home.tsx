@@ -1,5 +1,5 @@
 import React from 'react';
-// FIX: Added 'TrendingDown' to the import list
+// FIXED: Added TrendingDown to the imports
 import { Target, Zap, ShieldCheck, Search, ArrowRight, BarChart3, Database, TrendingDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
