@@ -1,8 +1,7 @@
 import React, { useRef } from 'react';
 import { 
-  Download, CheckCircle2, MapPin, Calendar, Percent, 
-  BrainCircuit, Mail, Globe, MonitorSmartphone, 
-  Linkedin, Facebook, Instagram, Phone, Zap, ShieldCheck
+  Download, MapPin, Calendar, Percent, 
+  Mail, Globe, Phone, Facebook, Linkedin, Instagram, Zap
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
@@ -18,7 +17,7 @@ export const SummitPoster = () => {
     try {
       const canvas = await html2canvas(posterRef.current, { 
         backgroundColor: '#000000', 
-        scale: 4, // 4K Resolution
+        scale: 4, // 4K High Resolution
         useCORS: true 
       });
       const link = document.createElement('a');
@@ -26,7 +25,7 @@ export const SummitPoster = () => {
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (err) {
-      console.error('Handshake failed during asset export.', err);
+      console.error('Asset Generation Error', err);
     }
   };
 
@@ -34,118 +33,126 @@ export const SummitPoster = () => {
     <div className="min-h-screen bg-[#050505] pt-32 pb-20 flex flex-col items-center justify-center animate-fade-in px-4">
       
       <div className="mb-12 text-center">
-        <h1 className="text-gray-500 font-black uppercase tracking-[0.6em] text-[10px] mb-4">Tactical Asset Hub</h1>
+        <h1 className="text-gray-600 font-black uppercase tracking-[0.6em] text-[10px] mb-4">Tactical Asset Hub Core</h1>
         <button 
           onClick={exportPoster} 
-          className="bg-yellow-500 text-black px-10 py-4 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-white transition-all shadow-[0_0_50px_rgba(234,179,8,0.3)]"
+          className="bg-yellow-500 text-black px-12 py-5 rounded-2xl font-black uppercase text-sm tracking-widest hover:bg-white transition-all shadow-[0_0_50px_rgba(234,179,8,0.3)]"
         >
           <Download size={20} className="mr-2 inline" /> Export 4K Promo Poster
         </button>
       </div>
 
-      {/* THE POSTER (1080x1350) */}
+      {/* THE POSTER (1080x1350 optimized) */}
       <div 
         ref={posterRef}
         className="w-[540px] h-[675px] bg-[#050505] relative overflow-hidden flex flex-col shadow-2xl"
       >
         
-        {/* TOP: THE HERO IMAGE (WORKSPACE) - NO TEXT OVERLAY */}
-        <div className="h-[38%] relative overflow-hidden">
+        {/* TOP: THE HERO IMAGE (WORKSPACE) - NO TEXT ON FACE */}
+        <div className="h-[35%] relative overflow-hidden">
           <img 
             src="https://res.cloudinary.com/dka0498ns/image/upload/v1762761706/Happy_Hunter_work_space_jovfrh.png" 
             alt="Workspace" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover grayscale"
             crossOrigin="anonymous"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent"></div>
           
-          {/* Logo Pushed to Edge */}
-          <div className="absolute top-6 left-6 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-             <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" className="w-6 h-6 rounded-full" alt="Logo" crossOrigin="anonymous" />
-             <span className="font-handwriting text-xl text-white pt-1">happyhunterdigital</span>
+          {/* Logo Pushed to Safety Zone */}
+          <div className="absolute top-6 left-6 flex items-center gap-3 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+             <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" className="w-8 h-8 rounded-full border border-yellow-500/50" alt="Logo" crossOrigin="anonymous" />
+             <span className="font-handwriting text-2xl text-white pt-1">happyhunterdigital</span>
           </div>
         </div>
 
-        {/* MIDDLE: THE CAMPAIGN HEADLINE */}
-        <div className="px-10 pt-4 pb-2 relative z-10">
-           <div className="flex justify-between items-end mb-4">
+        {/* MIDDLE: THE CAMPAIGN DATA */}
+        <div className="px-10 py-2 relative z-10 flex-grow flex flex-col">
+           <div className="flex justify-between items-start mb-6">
               <div className="space-y-1">
-                <p className="text-yellow-500 font-black uppercase tracking-[0.4em] text-[8px]">Integrated Wellth Summit 2026</p>
-                <h2 className="text-white font-black uppercase tracking-tighter text-[3.2rem] leading-[0.85]">
+                <p className="text-yellow-500 font-black uppercase tracking-[0.4em] text-[8px]">Integrated Wellth Summit // 20 Feb 2026</p>
+                <h2 className="text-white font-black uppercase tracking-tighter text-[2.8rem] leading-[0.85]">
                   DIGITAL <br/><span className="text-yellow-500 italic">DOMINANCE</span>
                 </h2>
               </div>
-              <div className="bg-yellow-500 text-black p-4 rounded-2xl flex flex-col items-center shadow-xl rotate-3 transform border-4 border-black">
-                 <span className="text-3xl font-black leading-none">50%</span>
-                 <span className="text-[8px] font-black uppercase tracking-widest">Off Protocol</span>
+              <div className="bg-yellow-500 text-black px-4 py-2 rounded-xl flex flex-col items-center shadow-xl border-2 border-black rotate-2">
+                 <span className="text-2xl font-black leading-none">50% OFF</span>
+                 <span className="text-[7px] font-black uppercase tracking-widest mt-1">Limited Offer</span>
+              </div>
+           </div>
+
+           {/* CAPABILITIES GALLERY (THE 4 SCREENSHOTS AS SERVICES) */}
+           <div className="mb-6">
+              <p className="text-[8px] font-black uppercase text-gray-500 tracking-[0.3em] mb-4 text-left border-b border-white/5 pb-2">Core Service Architecture</p>
+              <div className="grid grid-cols-2 gap-4">
+                 
+                 {/* Division 1: Smart Marketing */}
+                 <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                       <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span>
+                       <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">Smart Marketing</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                       <div className="relative rounded-lg overflow-hidden border border-white/10 h-16">
+                          <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1772025720/Screenshot_2026-02-25_140902_engsus.png" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                          <div className="absolute inset-0 bg-yellow-500/10"></div>
+                       </div>
+                       <div className="relative rounded-lg overflow-hidden border border-white/10 h-16">
+                          <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1772025720/Screenshot_2026-02-25_140834_muzdbo.png" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                          <div className="absolute inset-0 bg-yellow-500/10"></div>
+                       </div>
+                    </div>
+                 </div>
+
+                 {/* Division 2: Digital Infrastructure */}
+                 <div className="space-y-3 border-l border-white/5 pl-4">
+                    <div className="flex items-center gap-2">
+                       <span className="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                       <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Digital Assets</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                       <div className="relative rounded-lg overflow-hidden border border-white/10 h-16">
+                          <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1772025720/Screenshot_2026-02-25_140636_wa3a4w.png" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                       </div>
+                       <div className="relative rounded-lg overflow-hidden border border-white/10 h-16">
+                          <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1772025720/Screenshot_2026-02-25_142842_r45gxo.png" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
+
+           {/* CONTACT FOOTPRINT */}
+           <div className="mt-auto border-t border-white/10 pt-6 pb-6 grid grid-cols-2 items-end">
+              <div className="space-y-2">
+                 <div className="flex items-center gap-2 text-white text-[9px] font-bold uppercase tracking-widest">
+                    <Mail size={12} className="text-yellow-500" /> motsumitl@happyhunterdigital.com
+                 </div>
+                 <div className="flex items-center gap-2 text-white text-[9px] font-bold uppercase tracking-widest">
+                    <Phone size={12} className="text-yellow-500" /> +27 (0) 60 101 6673
+                 </div>
+                 <div className="flex items-center gap-2 text-white text-[9px] font-bold uppercase tracking-widest">
+                    <Globe size={12} className="text-yellow-500" /> happyhunterdigital.com
+                 </div>
+              </div>
+
+              <div className="flex flex-col items-end gap-3">
+                 <div className="flex gap-2">
+                    <div className="p-1.5 bg-white/5 rounded border border-white/10 text-gray-500"><Linkedin size={14} /></div>
+                    <div className="p-1.5 bg-white/5 rounded border border-white/10 text-gray-500"><XIcon /></div>
+                    <div className="p-1.5 bg-white/5 rounded border border-white/10 text-gray-500"><Instagram size={14} /></div>
+                    <div className="p-1.5 bg-white/5 rounded border border-white/10 text-gray-500"><TikTokIcon /></div>
+                    <div className="p-1.5 bg-white/5 rounded border border-white/10 text-gray-500"><Facebook size={14} /></div>
+                 </div>
+                 <div className="text-right">
+                    <p className="text-yellow-500 font-black text-[9px] uppercase tracking-tighter">Promotion Ends: 07 March 2026</p>
+                    <p className="text-gray-600 text-[6px] uppercase font-bold tracking-[0.3em] mt-1">Waterfall City, Johannesburg, ZA</p>
+                 </div>
               </div>
            </div>
         </div>
 
-        {/* SERVICE MATRIX (MIRRORING WEBSITE) */}
-        <div className="grid grid-cols-2 gap-8 px-10 mb-6">
-           <div className="space-y-4">
-              <div className="flex items-center gap-2 text-yellow-500 border-b border-yellow-500/20 pb-2">
-                <BrainCircuit size={16}/>
-                <span className="font-black uppercase text-[10px] tracking-widest">Smart Marketing</span>
-              </div>
-              <div className="space-y-1.5 text-[9px] font-bold text-gray-300 uppercase leading-tight">
-                <p className="flex gap-2"><CheckCircle2 size={10} className="text-yellow-500 shrink-0"/> AI Growth Strategy</p>
-                <p className="flex gap-2"><CheckCircle2 size={10} className="text-yellow-500 shrink-0"/> Local Lead Gen</p>
-                <p className="flex gap-2"><CheckCircle2 size={10} className="text-yellow-500 shrink-0"/> Conversion Automation</p>
-              </div>
-           </div>
-           <div className="space-y-4 border-l border-white/5 pl-8">
-              <div className="flex items-center gap-2 text-white border-b border-white/20 pb-2">
-                <MonitorSmartphone size={16}/>
-                <span className="font-black uppercase text-[10px] tracking-widest text-gray-500">Infrastructure</span>
-              </div>
-              <div className="space-y-1.5 text-[9px] font-bold text-gray-300 uppercase leading-tight">
-                <p className="flex gap-2"><CheckCircle2 size={10} className="text-gray-500 shrink-0"/> eCommerce Builds</p>
-                <p className="flex gap-2"><CheckCircle2 size={10} className="text-gray-500 shrink-0"/> Authority Sites</p>
-                <p className="flex gap-2"><CheckCircle2 size={10} className="text-gray-500 shrink-0"/> Custom Web Apps</p>
-              </div>
-           </div>
-        </div>
-
-        {/* PROOF NODES (THE 4 SCREENSHOTS) */}
-        <div className="px-10 mb-6">
-           <p className="text-[8px] font-black uppercase text-gray-600 tracking-[0.3em] mb-3 text-center">Verified Success Proof</p>
-           <div className="grid grid-cols-4 gap-2">
-              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1772025720/Screenshot_2026-02-25_140902_engsus.png" className="rounded-lg border border-white/5 grayscale hover:grayscale-0 transition-all h-10 w-full object-cover" crossOrigin="anonymous"/>
-              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1772025720/Screenshot_2026-02-25_140834_muzdbo.png" className="rounded-lg border border-white/5 grayscale hover:grayscale-0 transition-all h-10 w-full object-cover" crossOrigin="anonymous"/>
-              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1772025720/Screenshot_2026-02-25_140636_wa3a4w.png" className="rounded-lg border border-white/5 grayscale hover:grayscale-0 transition-all h-10 w-full object-cover" crossOrigin="anonymous"/>
-              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1772025720/Screenshot_2026-02-25_142842_r45gxo.png" className="rounded-lg border border-white/5 grayscale hover:grayscale-0 transition-all h-10 w-full object-cover" crossOrigin="anonymous"/>
-           </div>
-        </div>
-
-        {/* FOOTER: CONTACT & DEADLINE */}
-        <div className="mt-auto bg-black p-8 border-t border-white/10 flex justify-between items-center relative">
-           <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-white font-black uppercase text-[10px] tracking-tighter">
-                <Calendar size={12} className="text-yellow-500"/> Summit: 28 Feb
-              </div>
-              <div className="flex items-center gap-2 text-white font-black uppercase text-[10px] tracking-tighter">
-                <Zap size={12} className="text-yellow-500"/> Promo Ends: 07 March
-              </div>
-              <div className="flex items-center gap-2 text-gray-500 font-bold uppercase text-[8px] tracking-widest pt-1">
-                <MapPin size={10}/> Waterfall City, JHB
-              </div>
-           </div>
-
-           <div className="flex flex-col items-end gap-3">
-              <div className="flex gap-3">
-                 <div className="p-2 bg-white/5 rounded-lg border border-white/10 text-gray-500"><Linkedin size={14}/></div>
-                 <div className="p-2 bg-white/5 rounded-lg border border-white/10 text-gray-500"><XIcon/></div>
-                 <div className="p-2 bg-white/5 rounded-lg border border-white/10 text-gray-500"><TikTokIcon/></div>
-                 <div className="p-2 bg-white/5 rounded-lg border border-white/10 text-gray-500"><Facebook size={14}/></div>
-              </div>
-              <p className="text-white font-black text-xs tracking-widest">WWW.HAPPYHUNTERDIGITAL.COM</p>
-           </div>
-        </div>
-
-        {/* Tactical Accent Glow */}
-        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-yellow-500/5 blur-[60px] rounded-full pointer-events-none"></div>
+        {/* Tactical Glow Effect */}
+        <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-yellow-500/5 blur-[120px] rounded-full pointer-events-none"></div>
       </div>
     </div>
   );
