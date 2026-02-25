@@ -15,6 +15,7 @@ import { ArticleMegaphone } from './pages/ArticleMegaphone';
 import { ArticleRevenue } from './pages/ArticleRevenue';
 import { ArticleSynthesis } from './pages/ArticleSynthesis';
 import { SummitPage } from './pages/SummitPage';
+import { Architecture } from './pages/Architecture'; // <-- NEW IMPORT
 import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Globe } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -46,12 +47,12 @@ function App() {
             </span>
           </Link>
 
-          <div className="hidden lg:flex items-center gap-8 px-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-300">
-            <Link to="/services" className="hover:text-yellow-500 transition-all">Services</Link>
-            <Link to="/earned-media" className="hover:text-yellow-500 transition-all">Earned Media</Link>
-            <Link to="/intelligence" className="hover:text-yellow-500 transition-all">Intelligence</Link>
-            <Link to="/founders" className="hover:text-yellow-500 transition-all">Founders</Link>
-            <Link to="/faq" className="hover:text-yellow-500 transition-all">FAQ</Link>
+          <div className="hidden lg:flex items-center gap-8 px-4">
+            <Link to="/architecture" className="text-[10px] font-black uppercase tracking-[0.2em] text-yellow-500 hover:text-white transition-all">The Architecture</Link>
+            <Link to="/services" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 hover:text-yellow-500 transition-all">Services</Link>
+            <Link to="/earned-media" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 hover:text-yellow-500 transition-all">Earned Media</Link>
+            <Link to="/intelligence" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 hover:text-yellow-500 transition-all">Intelligence</Link>
+            <Link to="/founders" className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-300 hover:text-yellow-500 transition-all">Founders</Link>
           </div>
 
           <Link to="/audit" className="hidden lg:block bg-yellow-500 text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white shadow-xl transition-all">Start Audit</Link>
@@ -63,11 +64,11 @@ function App() {
       {menuOpen && (
         <div className="fixed top-32 left-4 right-4 z-[100] bg-black/95 backdrop-blur-2xl border border-gray-800 rounded-3xl p-8 shadow-2xl animate-fade-in lg:hidden">
           <div className="flex flex-col space-y-6 text-center font-bold uppercase tracking-widest text-sm">
+            <Link to="/architecture" className="text-yellow-500 hover:text-white">The Architecture</Link>
             <Link to="/services" className="hover:text-yellow-500">Services</Link>
             <Link to="/earned-media" className="hover:text-yellow-500">Earned Media</Link>
             <Link to="/intelligence" className="hover:text-yellow-500">Intelligence</Link>
             <Link to="/founders" className="hover:text-yellow-500">Founders</Link>
-            <Link to="/faq" className="hover:text-yellow-500">FAQ</Link>
             <div className="pt-4 border-t border-white/10">
               <Link to="/audit" className="inline-block bg-yellow-500 text-black px-8 py-3 rounded-full text-xs font-black w-full uppercase">Start Audit</Link>
             </div>
@@ -75,6 +76,7 @@ function App() {
         </div>
       )}
 
+      {/* ROUTES */}
       <main className="pt-24">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -88,10 +90,12 @@ function App() {
           <Route path="/blog/revenue-brain" element={<ArticleRevenue />} />
           <Route path="/blog/synthesis" element={<ArticleSynthesis />} />
           <Route path="/summit-2026" element={<SummitPage />} />
+          <Route path="/architecture" element={<Architecture />} /> {/* <-- NEW ROUTE */}
           <Route path="/hq-command" element={<Admin />} /> 
         </Routes>
       </main>
 
+      {/* FOOTER */}
       <footer className="py-24 border-t border-gray-900 bg-black text-left mt-20 px-6">
         <div className="container mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-16">
           <div className="space-y-6">
@@ -114,11 +118,10 @@ function App() {
           <div className="space-y-6">
             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Internal Hubs</h3>
             <div className="flex flex-col gap-4 text-xs font-bold uppercase tracking-widest text-gray-400">
-              <Link to="/services" className="hover:text-yellow-500 transition-all">The Protocol</Link>
-              <Link to="/earned-media" className="hover:text-yellow-500 transition-all">Success Nodes</Link>
-              <Link to="/intelligence" className="hover:text-yellow-500 transition-all">Intelligence Hub</Link>
-              <Link to="/founders" className="hover:text-yellow-500 transition-all">The Architect</Link>
-              <Link to="/faq" className="hover:text-yellow-500 transition-all">Strategic FAQ</Link>
+              <Link to="/architecture" className="hover:text-yellow-500 transition-colors text-yellow-500">Master Architecture</Link>
+              <Link to="/services" className="hover:text-yellow-500 transition-colors">The Protocol</Link>
+              <Link to="/earned-media" className="hover:text-yellow-500 transition-colors">Success Nodes</Link>
+              <Link to="/intelligence" className="hover:text-yellow-500 transition-colors">Intelligence Hub</Link>
             </div>
           </div>
 
