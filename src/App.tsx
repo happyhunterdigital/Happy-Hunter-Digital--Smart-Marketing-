@@ -16,7 +16,8 @@ import { ArticleRevenue } from './pages/ArticleRevenue';
 import { ArticleSynthesis } from './pages/ArticleSynthesis';
 import { SummitPage } from './pages/SummitPage';
 import { Architecture } from './pages/Architecture';
-import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Globe } from 'lucide-react';
+import { ClientPortal } from './pages/ClientPortal'; // <-- NEW IMPORT
+import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Globe, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const TikTokIcon = () => <svg fill="currentColor" width="20" height="20" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.022 1.61-.013 1.91-.02.08.53.63.91.75 1.17.12.11.71.62.24.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01.92.01.84-.03.75-.03.4-.54.79-1.35.94-1.31.92-3.58.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.1-3.34-3.12-3.59-5.43-.29-2.42.75-4.79 2.59-6.27 1.62-1.33.79-1.84 5.92-1.32v4.03c-1.02-.35-2.23-.14-3.05.55-.9.7-1.15 1.91-.73 2.93.31.83 1.11 1.48 2.01 1.6.86.13 1.8-.12 2.4-.76.54-.53.76-1.28.76-2.02V.02z"/></svg>;
@@ -32,12 +33,12 @@ function App() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans pt-12">
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black pt-12">
       
       <ContentRibbon />
       <EventPopup />
 
-      {/* REFINED CAPSULE NAVBAR - Wider max-width, no-wrap on links */}
+      {/* CAPSULE NAVBAR */}
       <div className="fixed top-16 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
         <nav className="w-full max-w-6xl bg-black/60 backdrop-blur-xl border border-white/10 rounded-full px-5 py-3 flex justify-between items-center shadow-2xl pointer-events-auto">
           
@@ -48,16 +49,17 @@ function App() {
             </span>
           </Link>
 
-          {/* Nav Links - Added whitespace-nowrap and optimized gap spacing */}
           <div className="hidden lg:flex items-center gap-6 px-4">
             <Link to="/architecture" className="text-[10px] font-black uppercase tracking-[0.15em] text-yellow-500 hover:text-white transition-all whitespace-nowrap">Architecture</Link>
             <Link to="/services" className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Services</Link>
             <Link to="/earned-media" className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Earned Media</Link>
             <Link to="/intelligence" className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Intelligence</Link>
             <Link to="/founders" className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Founders</Link>
+            {/* NEW SECURE PORTAL LINK */}
+            <Link to="/portal" className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-500 hover:text-yellow-500 transition-all whitespace-nowrap flex items-center gap-1"><Lock size={12}/> Portal</Link>
           </div>
 
-          <Link to="/audit" className="hidden lg:block bg-yellow-500 text-black px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white shadow-xl transition-all whitespace-nowrap shrink-0">
+          <Link to="/audit" className="hidden lg:block bg-yellow-500 text-black px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white shadow-xl shadow-yellow-500/20 transition-all whitespace-nowrap shrink-0">
             Start Audit
           </Link>
           
@@ -67,7 +69,7 @@ function App() {
         </nav>
       </div>
 
-      {/* MOBILE INTERFACE */}
+      {/* MOBILE MENU */}
       {menuOpen && (
         <div className="fixed top-32 left-4 right-4 z-[100] bg-black/95 backdrop-blur-2xl border border-gray-800 rounded-3xl p-8 shadow-2xl animate-fade-in lg:hidden">
           <div className="flex flex-col space-y-6 text-center font-bold uppercase tracking-widest text-sm">
@@ -77,6 +79,7 @@ function App() {
             <Link to="/intelligence" className="hover:text-yellow-500">Intelligence</Link>
             <Link to="/founders" className="hover:text-yellow-500">Founders</Link>
             <Link to="/faq" className="hover:text-yellow-500">FAQ</Link>
+            <Link to="/portal" className="text-gray-500 flex items-center justify-center gap-2 hover:text-yellow-500"><Lock size={14}/> Client Portal</Link>
             <div className="pt-4 border-t border-white/10">
               <Link to="/audit" className="inline-block bg-yellow-500 text-black px-8 py-4 rounded-full text-xs font-black w-full uppercase">Start Audit</Link>
             </div>
@@ -100,6 +103,8 @@ function App() {
           <Route path="/summit-2026" element={<SummitPage />} />
           <Route path="/architecture" element={<Architecture />} />
           <Route path="/hq-command" element={<Admin />} /> 
+          {/* NEW PORTAL ROUTE */}
+          <Route path="/portal" element={<ClientPortal />} /> 
         </Routes>
       </main>
 
@@ -118,7 +123,7 @@ function App() {
             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Direct Lines</h3>
             <div className="space-y-4 text-xs font-medium">
               <a href="mailto:motsumitl@happyhunterdigital.com" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Mail size={16} className="text-yellow-500"/> motsumitl@happyhunterdigital.com</a>
-              <a href="https://wa.me/27601016673" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Phone size={16} className="text-yellow-500"/> +27 (0) 60 101 6673</a>
+              <a href="https://wa.me/27601016673" target="_blank" rel="noreferrer" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Phone size={16} className="text-yellow-500"/> +27 (0) 60 101 6673</a>
               <a href="https://www.happyhunterdigital.com" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Globe size={16} className="text-yellow-500"/> www.happyhunterdigital.com</a>
             </div>
           </div>
@@ -130,17 +135,18 @@ function App() {
               <Link to="/services" className="hover:text-yellow-500 transition-colors">The Protocol</Link>
               <Link to="/earned-media" className="hover:text-yellow-500 transition-colors">Success Nodes</Link>
               <Link to="/intelligence" className="hover:text-yellow-500 transition-colors">Intelligence Hub</Link>
+              <Link to="/portal" className="hover:text-yellow-500 transition-colors flex items-center gap-1"><Lock size={10}/> Client Portal</Link>
             </div>
           </div>
 
           <div className="space-y-6">
             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Social Signals</h3>
             <div className="flex flex-wrap gap-4">
-              <a href="https://za.linkedin.com/in/thabomotsumi" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><Linkedin size={20}/></a>
-              <a href="https://x.com/HappyHunter35" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><XIcon/></a>
-              <a href="https://www.instagram.com/happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><Instagram size={20}/></a>
-              <a href="https://www.tiktok.com/@happyhunterdigital" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><TikTokIcon/></a>
-              <a href="https://www.facebook.com/Happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><Facebook size={20}/></a>
+              <a href="https://za.linkedin.com/in/thabomotsumi" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 hover:border-yellow-500 border border-gray-800 transition-all shadow-lg"><Linkedin size={20}/></a>
+              <a href="https://x.com/HappyHunter35" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 hover:border-yellow-500 border border-gray-800 transition-all shadow-lg"><XIcon/></a>
+              <a href="https://www.instagram.com/happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 hover:border-yellow-500 border border-gray-800 transition-all shadow-lg"><Instagram size={20}/></a>
+              <a href="https://www.tiktok.com/@happyhunterdigital" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 hover:border-yellow-500 border border-gray-800 transition-all shadow-lg"><TikTokIcon/></a>
+              <a href="https://www.facebook.com/Happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 hover:border-yellow-500 border border-gray-800 transition-all shadow-lg"><Facebook size={20}/></a>
             </div>
           </div>
         </div>
