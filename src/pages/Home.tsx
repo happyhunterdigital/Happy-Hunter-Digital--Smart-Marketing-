@@ -1,24 +1,20 @@
 import React from 'react';
-import { Target, Zap, ShieldCheck, Search, ArrowRight, BarChart3, Database } from 'lucide-react';
+// FIX: Added 'TrendingDown' to the import list
+import { Target, Zap, ShieldCheck, Search, ArrowRight, BarChart3, Database, TrendingDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Home = () => {
   return (
     <div className="animate-fade-in">
       
-      {/* 
-        HERO SECTION
-        Using the "Happy Hunter Workspace" image.
-      */}
+      {/* HERO SECTION */}
       <section className="relative container-fluid px-6 text-center py-32 md:py-48 overflow-hidden min-h-[90vh] flex flex-col justify-center">
         
-        {/* NEW WORKSPACE BACKGROUND IMAGE */}
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-40 grayscale"
           style={{ backgroundImage: "url('https://res.cloudinary.com/dka0498ns/image/upload/v1762761706/Happy_Hunter_work_space_jovfrh.png')" }}
         ></div>
 
-        {/* Deepened the gradient slightly for better contrast against the new image */}
         <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#020617]/90 via-[#020617]/90 to-[#050505]"></div>
 
         <div className="absolute inset-0 z-10 opacity-30 pointer-events-none">
@@ -26,7 +22,7 @@ export const Home = () => {
              <path d="M 100 200 L 300 500 L 600 300 L 800 700 L 950 400" fill="none" stroke="#eab308" strokeWidth="1" strokeDasharray="4,4" className="animate-pulse" />
              <path d="M 200 800 L 400 600 L 700 800 L 850 500" fill="none" stroke="#eab308" strokeWidth="0.5" />
              <circle cx="100" cy="200" r="4" fill="#eab308" />
-             <circle cx="300" cy="500" r="6" fill="#eab308" />
+             <circle cx="300" cy="500" r="6" fill="#eab308" className="animate-ping" />
              <circle cx="600" cy="300" r="4" fill="#eab308" />
              <circle cx="800" cy="700" r="8" fill="#eab308" className="animate-pulse" />
              <circle cx="950" cy="400" r="3" fill="#eab308" />
