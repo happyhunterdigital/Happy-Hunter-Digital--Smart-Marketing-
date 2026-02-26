@@ -41,17 +41,13 @@ export const ClientPortal = () => {
     setLoading(true);
     setLoginError("");
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
     
     try { 
-      // This will now pass because of the firebase.json header update
       await signInWithPopup(auth, provider); 
     } catch (e: any) { 
-      console.error(e);
-      if (e.code === 'auth/popup-blocked') {
-        setLoginError("Popup Blocked by Browser. Please allow popups for this site.");
-      } else {
-        setLoginError("Authentication Protocol Interrupted."); 
-      }
+      console.error("Login Error:", e);
+      setLoginError("Access Denied: " + (e.message.includes('api-key-not-valid') ? "Invalid API Key" : "Connection Interrupted")); 
     } finally {
       setLoading(false);
     }
@@ -65,8 +61,8 @@ export const ClientPortal = () => {
         <div className="max-w-md w-full p-10 border border-gray-800 rounded-[3rem] bg-[#0a0a0a] text-center shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
           <Lock className="text-yellow-500 mx-auto mb-6" size={40} />
-          <h2 className="text-3xl font-black uppercase text-white mb-2">Entity Portal</h2>
-          <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-10">Restricted Client Access</p>
+          <h2 className="text-3xl font-black uppercase text-white mb-2 tracking-tighter leading-none">Entity Portal</h2>
+          <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-10">Restricted Client Access</p>
           <div className="space-y-4">
             {loginError && <p className="text-red-500 text-xs font-bold mb-4">{loginError}</p>}
             <button onClick={handleGoogleLogin} className="w-full bg-white text-black py-4 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-gray-200 transition-colors">
@@ -84,14 +80,14 @@ export const ClientPortal = () => {
         <div>
           <span className="text-yellow-500 font-black uppercase tracking-[0.4em] text-[10px] mb-2 block">Client Command Node</span>
           <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white leading-none">{entityData.name}</h2>
-          <p className="text-gray-500 text-sm mt-3">Active Node: <strong className="text-white">{user.email}</strong></p>
+          <p className="text-gray-500 text-sm mt-3">Node Identity: <strong className="text-white">{user.email}</strong></p>
         </div>
         <div className="flex flex-col md:items-end gap-4">
-          <p className="text-green-500 font-black uppercase text-lg tracking-widest flex items-center gap-2">
+          <p className="text-green-500 font-black uppercase text-lg tracking-widest flex items-center gap-2 leading-none">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> {entityData.status}
           </p>
-          <button onClick={() => signOut(auth)} className="text-gray-500 hover:text-red-500 transition-colors text-[10px] font-bold uppercase tracking-widest bg-gray-900 px-4 py-2 rounded-lg">
-            <LogOut size={14}/> Secure Logout
+          <button onClick={() => signOut(auth)} className="text-gray-500 hover:text-red-500 transition-colors text-[10px] font-bold uppercase tracking-widest bg-gray-900 px-4 py-2 rounded-lg leading-none">
+            Secure Logout
           </button>
         </div>
       </div>
@@ -106,13 +102,13 @@ export const ClientPortal = () => {
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center rotate-0">
                <span className="text-6xl font-black text-white">{entityData.trustScore}</span>
-               <span className="text-[10px] font-bold text-gray-500">/ 100</span>
+               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">/ 100</span>
             </div>
           </div>
         </div>
 
         <div className="lg:col-span-2 p-10 border border-gray-800 rounded-[3rem] bg-[#0a0a0a] shadow-xl">
-           <h3 className="text-yellow-500 font-black uppercase text-xs tracking-widest mb-10 flex items-center gap-3 border-b border-gray-800 pb-4">
+           <h3 className="text-yellow-500 font-black uppercase text-xs tracking-widest mb-10 flex items-center gap-3 border-b border-gray-800 pb-4 leading-none">
              <Clock size={16} /> Node Verification Timeline
            </h3>
            <div className="space-y-8 relative">
