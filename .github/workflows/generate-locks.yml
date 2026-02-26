@@ -1,0 +1,36 @@
+name: System - Generate Lock Files
+on: workflow_dispatch # This allows you to trigger it manually with a button
+
+permissions:
+  contents: write # Gives the agent permission to save files to your repo
+
+jobs:
+  generate-locks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate Frontend Lockfile
+        run: npm install --package-lock-only --ignore-scripts
+
+      - name: Generate Backend Lockfile
+        run: cd functions && npm install --package-lock-only --ignore-scripts
+
+      - name: Commit and Push to Vault
+        run: |
+          git config --global user.name 'Happy Hunter Bot'
+          git config --global user.email 'bot@happyhunterdigital.com'
+          git add package-lock.json functions/package-lock.json
+          # Only commit if there are changes
+          if [[ -n $(git status -s) ]]; then
+            git commit -m "chore: Auto-generate lockfiles for system stability"
+            git push
+          else
+            echo "No changes detected. Lockfiles already exist."
+          fi
