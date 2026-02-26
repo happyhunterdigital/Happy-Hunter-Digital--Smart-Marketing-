@@ -1,9 +1,7 @@
 name: Deploy Happy Hunter Systems
-
 on:
   push:
     branches: [main]
-
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -13,11 +11,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-
+          cache: 'npm'
+          
       # FRONTEND BUILD
       - name: Install & Build Frontend
         run: |
-          npm install
+          npm ci
           npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
@@ -26,16 +25,60 @@ jobs:
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-
+          
       # BACKEND PREP: Inject Secrets into .env file
       - name: Prepare Backend
         run: |
           cd functions
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
           echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
-          npm install
+          npm ci
           npm run build
-
+          
+      # DEPLOY: Use official CLI with Force flag
+      - name: Deploy to Firebase
+        env:
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          echo "$GCP_SA_KEY" > gcp-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
+          npx firebase-tools deploy --only hosting,functions --force --non-interactivename: Deploy Happy Hunter Systems
+on:
+  push:
+    branches: [main]
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          
+      # FRONTEND BUILD
+      - name: Install & Build Frontend
+        run: |
+          npm ci
+          npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          
+      # BACKEND PREP: Inject Secrets into .env file
+      - name: Prepare Backend
+        run: |
+          cd functions
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+          echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
+          npm ci
+          npm run build
+          
       # DEPLOY: Use official CLI with Force flag
       - name: Deploy to Firebase
         env:
