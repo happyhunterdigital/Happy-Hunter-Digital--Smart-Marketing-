@@ -11,11 +11,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
           
       # FRONTEND BUILD
       - name: Install & Build Frontend
         run: |
-          npm install
+          npm ci
           npm run build
         env:
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
@@ -31,7 +32,7 @@ jobs:
           cd functions
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
           echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
-          npm install
+          npm ci
           npm run build
           
       # DEPLOY: Use official CLI with Force flag
