@@ -5,9 +5,9 @@ import { getFirestore } from "firebase-admin/firestore";
 admin.initializeApp();
 const db = getFirestore();
 
-// ============================================================================
-// 1. SMART MARKETING AUDIT (100% UNTOUCHED - DO NOT MODIFY)
-// ============================================================================
+// ==========================================
+// 1. SMART MARKETING AUDIT (UPGRADED WITH RUBRIC)
+// ==========================================
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
@@ -24,21 +24,39 @@ export const performAudit = onCall({
   try {
     const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": P_KEY, "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount" },
+      headers: { 
+        "Content-Type": "application/json", 
+        "X-Goog-Api-Key": P_KEY,
+        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount" 
+      },
       body: JSON.stringify({ textQuery: `${businessName} in ${location}` })
     });
+
     const pData = await pRes.json() as any;
     const biz = pData.places?.[0];
 
-    const context = biz 
+    const context = biz
       ? `Verified: ${biz.displayName?.text}. Rating: ${biz.rating}. Reviews: ${biz.userRatingCount}.`
       : `Ghost: No Maps data found for ${businessName}.`;
+
+    // THE UPGRADE: Mathematical Scoring Rubric added to the Prompt
+    const RUBRIC = `
+      SCORING RUBRIC (0-100):
+      - Start at a baseline of 40.
+      - If the data says "Verified", add 20 points.
+      - If the rating is 4.5 or higher, add 20 points.
+      - If the rating is between 3.5 and 4.4, add 10 points.
+      - If the reviews are over 50, add 20 points.
+      - If the data says "Ghost", deduct 40 points (Score must be 0-30 max).
+    `;
 
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Hunter AI. Audit: ${businessName}. Data: ${context}. No asterisks. Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
+        contents: [{ 
+          parts: [{ text: `You are Hunter AI. Audit: ${businessName}. Data: ${context}. ${RUBRIC} No asterisks. Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] 
+        }],
         generationConfig: { responseMimeType: "application/json" }
       })
     });
@@ -47,14 +65,19 @@ export const performAudit = onCall({
     const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
 
     // Save lead
-    await db.collection("leads").add({ businessName, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
-    
+    await db.collection("leads").add({ 
+      businessName, 
+      email: clientEmail, 
+      score: analysis.score, 
+      timestamp: admin.firestore.FieldValue.serverTimestamp() 
+    });
+
     // Email Dispatch
     const isGoodScore = analysis.score >= 70;
     const isBadScore = analysis.score < 50;
 
     const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-w: 600px; margin: 0 auto; color: #333; background-color: #050505; padding: 40px; border-radius: 16px; border: 1px solid #1f2937;">
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; background-color: #050505; padding: 40px; border-radius: 16px; border: 1px solid #1f2937;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h2 style="color: #eab308; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-size: 14px;">Smart Marketing Engine</h2>
           <h1 style="color: #ffffff; margin: 10px 0 0 0; text-transform: uppercase;">Digital Survival Report</h1>
@@ -71,15 +94,15 @@ export const performAudit = onCall({
           </div>
         </div>
         ${isGoodScore ? `
-          <div style="background-color: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
-            <h3 style="color: #22c55e; margin: 0 0 10px 0; font-size: 16px;">✓ Entity Verified: Strong Baseline</h3>
-            <p style="color: #d1d5db; margin: 0; font-size: 14px; line-height: 1.5;">Congratulations. Your traditional SEO and Google Maps foundation is solid. However, standard search is evolving rapidly. To prevent competitors from overtaking you in AI-driven search, you must upgrade from basic SEO to Generative Engine Optimization (GEO).</p>
-          </div>
+        <div style="background-color: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+          <h3 style="color: #22c55e; margin: 0 0 10px 0; font-size: 16px;">Verified: Strong Baseline</h3>
+          <p style="color: #d1d5db; margin: 0; font-size: 14px; line-height: 1.5;">Congratulations. Your traditional SEO and Google Maps foundation is solid. However, standard search is evolving rapidly. To prevent competitors from overtaking you in AI-driven search, you must upgrade from basic SEO to Generative Engine Optimization (GEO).</p>
+        </div>
         ` : `
-          <div style="background-color: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
-            <h3 style="color: #f97316; margin: 0 0 10px 0; font-size: 16px;">⚠ Critical Vulnerability Detected</h3>
-            <p style="color: #d1d5db; margin: 0; font-size: 14px; line-height: 1.5;">Your digital architecture is actively repelling algorithms. You are experiencing the "Ghost Effect"—meaning high-intent customers searching for your services are being routed directly to your competitors. Immediate intervention is required.</p>
-          </div>
+        <div style="background-color: rgba(249, 115, 22, 0.1); border: 1px solid rgba(249, 115, 22, 0.2); padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+          <h3 style="color: #f97316; margin: 0 0 10px 0; font-size: 16px;">▲ Critical Vulnerability Detected</h3>
+          <p style="color: #d1d5db; margin: 0; font-size: 14px; line-height: 1.5;">Your digital architecture is actively repelling algorithms. You are experiencing the "Ghost Effect" meaning high-intent customers searching for your services are being routed directly to your competitors. Immediate intervention is required.</p>
+        </div>
         `}
         <div style="margin-bottom: 30px;">
           <h3 style="color: #eab308; margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Forensic AI Summary</h3>
@@ -119,65 +142,66 @@ export const performAudit = onCall({
   }
 });
 
-// ============================================================================
-// 2. STRATEGIC CHAT (UPGRADED: INCREASED TOKENS + BETTER PROMPTING)
-// ============================================================================
+// ==========================================
+// 2. STRATEGIC CHAT (UPGRADED WITH MEMORY)
+// ==========================================
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
 }, async (request) => {
-  const { message } = request.data;
+  // THE UPGRADE: Accept the 'history' array from the frontend
+  const { message, history = [] } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
 
   if (!message || !G_KEY) {
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  // UPDATED: Strict Knowledge Base + Completion Instruction
   const SYSTEM_PROMPT = `You are Hunter AI, the official digital marketing assistant for Happy Hunter Digital (also known as Happy Hunter Systems).
-    
-    YOUR KNOWLEDGE BASE:
-    - Founder & Head Strategist: Thabo Leslie Motsumi.
-    - Our Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses.
-    - Our Services: 1) Trust Synchronization (Google Maps, NAP consistency). 2) AI Visibility (AEO, Schema markup for ChatGPT/Gemini). 3) Agentic Revenue (Automated lead capture).
-    - Our Tool: The "Smart Marketing Scan" (provides a Digital Survival Score).
-    - Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com. Website: www.happyhunterdigital.com
-    - Upcoming Event: We are speaking at the Integrated Wellth Summit on 28 Feb in Waterfall City.
+  YOUR KNOWLEDGE BASE:
+  - Founder & Head Strategist: Thabo Leslie Motsumi.
+  - Our Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses.
+  - Our Services: 1) Trust Synchronization (Google Maps, NAP consistency). 2) AI Visibility (AEO, Schema markup for ChatGPT/Gemini). 3) Agentic Revenue (Automated lead capture).
+  - Our Tool: The "Smart Marketing Scan" (provides a Digital Survival Score). Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com. Website: www.happyhunterdigital.com
+  - Upcoming Event: We are speaking at the Integrated Wellth Summit on 28 Feb in Waterfall City.
 
-    RULES:
-    1. NEVER make up information. Use ONLY the Knowledge Base.
-    2. If someone asks who the founder is, say "Thabo Leslie Motsumi".
-    3. Be direct, professional, and slightly authoritative (Military-grade precision).
-    4. COMPLETE YOUR SENTENCES. Do not trail off.
-    5. Keep answers to 2-3 sentences max.`;
+  RULES:
+  1. NEVER make up information. Use ONLY the Knowledge Base.
+  2. If someone asks who the founder is, say "Thabo Leslie Motsumi".
+  3. Be direct, professional, and slightly authoritative (Military-grade precision).
+  4. COMPLETE YOUR SENTENCES. Do not trail off.
+  5. Keep answers to 2-3 sentences max.`;
+
+  // THE UPGRADE: Format the previous history for Gemini's memory
+  const formattedHistory = history.map((msg: any) => ({
+    role: msg.role === 'bot' ? 'model' : 'user',
+    parts: [{ text: msg.text }]
+  }));
+
+  // Append the newest message to the end
+  formattedHistory.push({ role: "user", parts: [{ text: message }] });
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        systemInstruction: {
-          parts: [{ text: SYSTEM_PROMPT }]
-        },
-        contents: [
-          { role: "user", parts: [{ text: message }] }
-        ],
-        // UPDATED: Increased maxOutputTokens to 500 to prevent cut-offs
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        contents: formattedHistory,
         generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
       })
     });
 
     if (!aiRes.ok) {
-       console.error("Gemini Chat Error:", await aiRes.text());
-       return { reply: "My neural link is currently overloaded. Please email HQ." };
+      console.error("Gemini Chat Error:", await aiRes.text());
+      return { reply: "My neural link is currently overloaded. Please email HQ." };
     }
 
     const data = await aiRes.json() as any;
-    
     if (data.candidates && data.candidates[0].content.parts[0].text) {
-       return { reply: data.candidates[0].content.parts[0].text.trim() };
+      return { reply: data.candidates[0].content.parts[0].text.trim() };
     } else {
-       return { reply: "I received an unreadable signal from the core. Try again." };
+      return { reply: "I received an unreadable signal from the core. Try again." };
     }
   } catch (e) {
     console.error("Chat Error:", e);
