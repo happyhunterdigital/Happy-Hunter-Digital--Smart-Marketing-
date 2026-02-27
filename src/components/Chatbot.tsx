@@ -20,16 +20,25 @@ export const Chatbot: React.FC = () => {
 
     const userMsg = input.trim();
     setInput('');
+
+    // Capture the current history before adding the new message
+    const currentHistory = [...messages];
+
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
     setLoading(true);
 
     try {
       const hunterChatCall = httpsCallable(functions, 'hunterChat');
-      const response = await hunterChatCall({ message: userMsg }) as any;
       
+      // THE UPGRADE: Injecting the history array directly into the payload
+      const response = await hunterChatCall({ 
+        message: userMsg,
+        history: currentHistory
+      }) as any;
+
       const replyText = response.data?.reply || "I received no response from the database.";
-      
       setMessages(prev => [...prev, { role: 'bot', text: replyText }]);
+
     } catch (err: any) {
       console.error("Frontend Chat Error:", err);
       setMessages(prev => [...prev, { role: 'bot', text: "Signal interference. Please retry." }]);
@@ -43,7 +52,7 @@ export const Chatbot: React.FC = () => {
       <button onClick={() => setOpen(!open)} className="fixed bottom-6 right-6 z-[150] bg-yellow-500 text-black p-4 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:scale-110 transition-transform">
         {open ? <X size={24} /> : <MessageSquare size={24} />}
       </button>
-
+      
       {open && (
         <div className="fixed bottom-24 right-6 z-[150] w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
           <div className="bg-black p-4 border-b border-gray-800 flex items-center justify-between">
@@ -76,11 +85,11 @@ export const Chatbot: React.FC = () => {
           </div>
 
           <form onSubmit={sendMessage} className="p-3 bg-gray-900 border-t border-gray-800 flex gap-2">
-            <input 
-              value={input} 
-              onChange={(e) => setInput(e.target.value)} 
-              placeholder="Enter command..." 
-              className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none" 
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Enter command..."
+              className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none"
               disabled={loading}
             />
             <button type="submit" disabled={loading || !input.trim()} className="text-yellow-500 hover:text-white p-3 disabled:opacity-50 transition-colors">
