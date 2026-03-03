@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Network, Database, BrainCircuit, ArrowRight, Zap, CheckCircle2, Activity, Volume2, ShieldCheck, PlaySquare } from 'lucide-react';
+import { Network, Database, BrainCircuit, ArrowRight, Zap, CheckCircle2, Activity, Volume2, ShieldCheck, PlaySquare, ChevronDown } from 'lucide-react';
 import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export const MegaphoneLanding: React.FC = () => {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', website: '', niche: '', email: '' });
+  // UPGRADE: Changed 'niche' to 'service' in the state
+  const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
   const [loading, setLoading] = useState(false);
 
   // The Indestructible Submit Protocol
@@ -15,17 +16,15 @@ export const MegaphoneLanding: React.FC = () => {
     setLoading(true);
     
     try {
-      // 1. Attempt to capture the lead in the background
       await addDoc(collection(db, "leads"), {
         ...form,
-        source: "AI Megaphone Landing Page",
+        source: "AI Megaphone Landing Page - Service Request",
         timestamp: serverTimestamp()
       });
     } catch (error) {
-      // 2. If Firebase blocks it, log the error but DO NOT stop the user
       console.error("Lead capture warning:", error);
     } finally {
-      // 3. GUARANTEED REDIRECT: Force the user to the Audit page immediately
+      // GUARANTEED REDIRECT: Force the user to the Audit page immediately
       navigate('/audit');
     }
   };
@@ -233,7 +232,7 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. WHY US & LEAD CAPTURE */}
+      {/* 5. WHY US & LEAD CAPTURE (SERVICE REQUEST) */}
       <section className="py-24 px-6 bg-black text-white">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           
@@ -254,8 +253,8 @@ export const MegaphoneLanding: React.FC = () => {
 
           <div className="bg-yellow-500 p-10 rounded-[2.5rem] shadow-2xl text-black relative">
             <div className="absolute top-0 left-0 w-full h-2 bg-white rounded-t-[2.5rem]"></div>
-            <h3 className="text-3xl font-black uppercase tracking-tighter mb-2 mt-2">Ready to turn up the volume?</h3>
-            <p className="font-bold text-black/70 mb-8 text-sm">Enter your coordinates below. We will immediately route you to our AI Entity Scanner.</p>
+            <h3 className="text-3xl font-black uppercase tracking-tighter mb-2 mt-2">Deploy System Architecture</h3>
+            <p className="font-bold text-black/70 mb-8 text-sm">Select your required protocol below. We will capture your request and immediately initialize your AI Entity Scanner.</p>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <input 
@@ -263,26 +262,44 @@ export const MegaphoneLanding: React.FC = () => {
                 className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
                 onChange={e => setForm({...form, name: e.target.value})}
               />
+              
+              {/* UPGRADE: The Custom Service Select Dropdown */}
+              <div className="relative">
+                <select 
+                  required
+                  defaultValue=""
+                  className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold text-gray-900 transition-all appearance-none cursor-pointer"
+                  onChange={e => setForm({...form, service: e.target.value})}
+                >
+                  <option value="" disabled className="font-normal text-gray-500">Select Requested Architecture...</option>
+                  <option value="RAG-Ready Authority Site">RAG-Ready Authority Architecture</option>
+                  <option value="Entity Based Architecture">Entity-Based Digital Passport</option>
+                  <option value="Agentic Revenue Engine">Agentic Revenue Engine</option>
+                  <option value="Smart Inbound Hub">Smart Inbound Hub</option>
+                </select>
+                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                  <ChevronDown size={20} />
+                </div>
+              </div>
+
               <input 
                 type="text" placeholder="Website URL (e.g. www.yourbrand.com)" required
                 className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
                 onChange={e => setForm({...form, website: e.target.value})}
               />
-              <input 
-                type="text" placeholder="Primary Industry Niche" required
-                className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
-                onChange={e => setForm({...form, niche: e.target.value})}
-              />
+              
               <input 
                 type="email" placeholder="Secure Email Address" required
                 className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
                 onChange={e => setForm({...form, email: e.target.value})}
               />
+
+              {/* UPGRADE: The updated CTA Button */}
               <button 
                 type="submit" disabled={loading}
                 className="w-full bg-black text-yellow-500 py-5 rounded-xl font-black uppercase tracking-widest text-sm hover:bg-gray-900 transition-colors mt-4 shadow-xl disabled:opacity-70 flex justify-center items-center gap-2"
               >
-                {loading ? 'Initializing Protocol...' : 'Make Me The Recommended Choice'} <Zap size={16} />
+                {loading ? 'Transmitting Request...' : 'Request Service Protocol'} <Zap size={16} />
               </button>
             </form>
           </div>
