@@ -1,12 +1,14 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
+import axios from "axios";
+import * as cheerio from "cheerio";
 
 admin.initializeApp();
 const db = getFirestore();
 
 // ==========================================
-// 1. SMART MARKETING AUDIT (UPGRADED WITH RUBRIC)
+// 1. FULL DIGITAL FOOTPRINT AUDIT
 // ==========================================
 export const performAudit = onCall({
   region: "us-central1",
@@ -22,32 +24,59 @@ export const performAudit = onCall({
   if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
 
   try {
+    // 1. Fetch Google Maps Data (Unchanged logic, just added websiteUri to FieldMask)
     const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
       headers: { 
         "Content-Type": "application/json", 
         "X-Goog-Api-Key": P_KEY,
-        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount" 
+        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri" 
       },
       body: JSON.stringify({ textQuery: `${businessName} in ${location}` })
     });
 
     const pData = await pRes.json() as any;
     const biz = pData.places?.[0];
+    const websiteUrl = biz?.websiteUri;
 
+    // 2. The Web Scraper (Protected by Fallback Architecture)
+    let webScrapeData = "No website found on Google Maps.";
+    let hasSchema = false;
+
+    if (websiteUrl) {
+      try {
+        // Visit the site. If it takes longer than 5 seconds, abort safely.
+        const webRes = await axios.get(websiteUrl, { timeout: 5000 });
+        const $ = cheerio.load(webRes.data);
+        
+        // Check for AI-friendly Schema Markup (The Happy Hunter specialty)
+        if ($('script[type="application/ld+json"]').length > 0) {
+          hasSchema = true;
+        }
+
+        // Extract homepage text, clean it, and limit to 2000 characters to prevent AI overload
+        const bodyText = $('body').text().replace(/\s+/g, ' ').trim().substring(0, 2000);
+        webScrapeData = `Website active (${websiteUrl}). Schema Markup Detected: ${hasSchema}. Homepage Content Snippet: ${bodyText}`;
+      } catch (err) {
+        webScrapeData = `Website listed (${websiteUrl}) but our forensic scanner was blocked from reading it or it is offline.`;
+      }
+    }
+
+    // 3. Compile Full Context for Gemini
     const context = biz
-      ? `Verified: ${biz.displayName?.text}. Rating: ${biz.rating}. Reviews: ${biz.userRatingCount}.`
-      : `Ghost: No Maps data found for ${businessName}.`;
+      ? `Verified Maps Entity: ${biz.displayName?.text}. Rating: ${biz.rating}. Reviews: ${biz.userRatingCount}. WEB DATA: ${webScrapeData}`
+      : `Ghost Entity: No Maps data found for ${businessName}. WEB DATA: None.`;
 
-    // THE UPGRADE: Mathematical Scoring Rubric added to the Prompt
+    // 4. The Upgraded Scoring Rubric
     const RUBRIC = `
       SCORING RUBRIC (0-100):
-      - Start at a baseline of 40.
-      - If the data says "Verified", add 20 points.
-      - If the rating is 4.5 or higher, add 20 points.
-      - If the rating is between 3.5 and 4.4, add 10 points.
-      - If the reviews are over 50, add 20 points.
-      - If the data says "Ghost", deduct 40 points (Score must be 0-30 max).
+      - Start at a baseline of 30.
+      - If Verified on Maps, add 20 points.
+      - If rating is 4.0 or higher, add 15 points.
+      - If they have an active, scannable website, add 15 points.
+      - If Schema Markup is Detected (true), add 20 points (This shows they are AI-ready).
+      - If the business is a "Ghost" (No Maps), deduct 40 points.
+      - Adjust slightly based on the quality of their website text.
     `;
 
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
@@ -55,16 +84,15 @@ export const performAudit = onCall({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ 
-          parts: [{ text: `You are Hunter AI. Audit: ${businessName}. Data: ${context}. ${RUBRIC} No asterisks. Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] 
+          parts: [{ text: `You are Hunter AI, a forensic digital auditor. Audit this business: ${businessName}. Data Context: ${context}. ${RUBRIC} No asterisks. Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] 
         }],
-        generationConfig: { responseMimeType: "application/json" }
+        generationConfig: { responseMimeType: "application/json", temperature: 0.2 }
       })
     });
 
     const aiData = await aiRes.json() as any;
     const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
 
-    // Save lead
     await db.collection("leads").add({ 
       businessName, 
       email: clientEmail, 
@@ -72,7 +100,6 @@ export const performAudit = onCall({
       timestamp: admin.firestore.FieldValue.serverTimestamp() 
     });
 
-    // Email Dispatch
     const isGoodScore = analysis.score >= 70;
     const isBadScore = analysis.score < 50;
 
@@ -80,7 +107,7 @@ export const performAudit = onCall({
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; background-color: #050505; padding: 40px; border-radius: 16px; border: 1px solid #1f2937;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h2 style="color: #eab308; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-size: 14px;">Smart Marketing Engine</h2>
-          <h1 style="color: #ffffff; margin: 10px 0 0 0; text-transform: uppercase;">Digital Survival Report</h1>
+          <h1 style="color: #ffffff; margin: 10px 0 0 0; text-transform: uppercase;">Full Digital Footprint Report</h1>
         </div>
         <div style="background-color: #0a0a0a; border: 1px solid #1f2937; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
           <p style="color: #9ca3af; margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Target Entity</p>
@@ -143,13 +170,12 @@ export const performAudit = onCall({
 });
 
 // ==========================================
-// 2. STRATEGIC CHAT (UPGRADED WITH MEMORY)
+// 2. STRATEGIC CHAT (UNCHANGED / STABLE)
 // ==========================================
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
 }, async (request) => {
-  // THE UPGRADE: Accept the 'history' array from the frontend
   const { message, history = [] } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
 
@@ -172,13 +198,10 @@ export const hunterChat = onCall({
   4. COMPLETE YOUR SENTENCES. Do not trail off.
   5. Keep answers to 2-3 sentences max.`;
 
-  // THE UPGRADE: Format the previous history for Gemini's memory
   const formattedHistory = history.map((msg: any) => ({
     role: msg.role === 'bot' ? 'model' : 'user',
     parts: [{ text: msg.text }]
   }));
-
-  // Append the newest message to the end
   formattedHistory.push({ role: "user", parts: [{ text: message }] });
 
   try {
@@ -192,10 +215,7 @@ export const hunterChat = onCall({
       })
     });
 
-    if (!aiRes.ok) {
-      console.error("Gemini Chat Error:", await aiRes.text());
-      return { reply: "My neural link is currently overloaded. Please email HQ." };
-    }
+    if (!aiRes.ok) return { reply: "My neural link is currently overloaded. Please email HQ." };
 
     const data = await aiRes.json() as any;
     if (data.candidates && data.candidates[0].content.parts[0].text) {
@@ -204,7 +224,6 @@ export const hunterChat = onCall({
       return { reply: "I received an unreadable signal from the core. Try again." };
     }
   } catch (e) {
-    console.error("Chat Error:", e);
     return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
   }
 });
