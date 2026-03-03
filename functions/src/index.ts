@@ -8,7 +8,7 @@ admin.initializeApp();
 const db = getFirestore();
 
 // ==========================================
-// 1. FULL DIGITAL FOOTPRINT AUDIT
+// 1. FULL DIGITAL FOOTPRINT AUDIT (DOUBLE-TAP ENABLED)
 // ==========================================
 export const performAudit = onCall({
   region: "us-central1",
@@ -24,19 +24,24 @@ export const performAudit = onCall({
   if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline. Missing API Keys.");
 
   try {
-    const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json", 
-        "X-Goog-Api-Key": P_KEY,
-        "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri" 
-      },
-      body: JSON.stringify({ textQuery: `${businessName} in ${location}` })
-    });
+    // Helper function to execute API calls cleanly
+    const getPlaces = async (query: string) => {
+        const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json", 
+                "X-Goog-Api-Key": P_KEY,
+                "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri" 
+            },
+            body: JSON.stringify({ textQuery: query })
+        });
+        return res.json() as any;
+    };
 
-    const pData = await pRes.json() as any;
+    // 1. PASS ONE: Strict Location Search
+    let pData = await getPlaces(`${businessName} in ${location}`);
 
-    if (!pRes.ok || pData.error) {
+    if (pData.error) {
         return {
             success: true, score: 0,
             summary: `SYSTEM DIAGNOSTIC: Google API Handshake Failed. Code: ${pData.error?.code || 'Unknown'}`,
@@ -45,10 +50,17 @@ export const performAudit = onCall({
         };
     }
 
-    const biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
+    let biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
+
+    // 2. PASS TWO (THE DOUBLE-TAP): Broad Search for Service Area Businesses
+    if (!biz) {
+        pData = await getPlaces(businessName);
+        biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
+    }
+
     const foundName = biz?.displayName?.text || "";
 
-    // Hijack Detection
+    // 3. Hijack Detection
     let isHijacked = false;
     if (biz) {
         const searchedClean = businessName.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -58,7 +70,7 @@ export const performAudit = onCall({
         }
     }
 
-    // The Web Scraper
+    // 4. The Web Scraper
     let webScrapeData = "No website linked to Google Maps profile.";
     let hasSchema = false;
     const websiteUrl = biz?.websiteUri || "";
@@ -75,7 +87,7 @@ export const performAudit = onCall({
       }
     }
 
-    // Context & Prompting (Forced Footprint Reporting)
+    // 5. Context Compilation
     let context = "";
     if (!biz) {
          context = `Ghost Entity: No Maps data found for "${businessName}". WEB DATA: None.`;
