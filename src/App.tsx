@@ -19,6 +19,7 @@ import { Architecture } from './pages/Architecture';
 import { ClientPortal } from './pages/ClientPortal';
 import { SummitPoster } from './pages/SummitPoster';
 import { MegaphoneLanding } from './pages/MegaphoneLanding';
+import { LiveSummit } from './pages/LiveSummit';
 import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Globe, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -113,6 +114,7 @@ function App() {
           <Route path="/promo" element={<SummitPoster />} />
           <Route path="/the-ai-megaphone" element={<MegaphoneLanding />} />
           <Route path="/hq-command" element={<Admin />} />
+          <Route path="/live" element={<LiveSummit />} />
         </Routes>
       </main>
 
