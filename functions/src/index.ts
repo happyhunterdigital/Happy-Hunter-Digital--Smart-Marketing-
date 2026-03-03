@@ -8,7 +8,7 @@ admin.initializeApp();
 const db = getFirestore();
 
 // ==========================================
-// 1. FULL DIGITAL FOOTPRINT AUDIT (INDESTRUCTIBLE)
+// 1. FULL DIGITAL FOOTPRINT AUDIT (SELF-AWARE)
 // ==========================================
 export const performAudit = onCall({
   region: "us-central1",
@@ -46,41 +46,55 @@ export const performAudit = onCall({
         };
     }
 
-    // Safely extract business if it exists
     const biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
-    const websiteUrl = biz?.websiteUri;
+    const foundName = biz?.displayName?.text || "";
 
-    // 2. The Web Scraper (Protected by Fallback Architecture & Regex Cleaning)
+    // THE UPGRADE: Identity Verification & Hijack Detection
+    let isHijacked = false;
+    if (biz) {
+        const searchedClean = businessName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const foundClean = foundName.toLowerCase().replace(/[^a-z0-9]/g, '');
+        
+        // If the names don't share a significant match, Google returned a competitor
+        if (!foundClean.includes(searchedClean) && !searchedClean.includes(foundClean)) {
+             isHijacked = true;
+        }
+    }
+
+    // 2. The Web Scraper (Only scrape if it is the correct business)
     let webScrapeData = "No website found on Google Maps.";
     let hasSchema = false;
 
-    if (websiteUrl) {
+    if (biz && !isHijacked && biz.websiteUri) {
       try {
-        const webRes = await axios.get(websiteUrl, { timeout: 5000 });
+        const webRes = await axios.get(biz.websiteUri, { timeout: 5000 });
         const $ = cheerio.load(webRes.data);
         if ($('script[type="application/ld+json"]').length > 0) hasSchema = true;
-        
-        // Clean text aggressively to prevent Gemini safety filters from blocking weird characters
         const bodyText = $('body').text().replace(/[^a-zA-Z0-9.,!? ]/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 1000);
-        webScrapeData = `Website active (${websiteUrl}). Schema Markup Detected: ${hasSchema}. Content: ${bodyText}`;
+        webScrapeData = `Website active (${biz.websiteUri}). Schema Markup Detected: ${hasSchema}. Content: ${bodyText}`;
       } catch (err) {
-        webScrapeData = `Website listed (${websiteUrl}) but our scanner was blocked.`;
+        webScrapeData = `Website listed (${biz.websiteUri}) but our scanner was blocked.`;
       }
     }
 
     // 3. Compile Full Context for Gemini
-    const context = biz
-      ? `Verified Maps Entity: ${biz.displayName?.text}. Rating: ${biz.rating}. Reviews: ${biz.userRatingCount}. WEB DATA: ${webScrapeData}`
-      : `Ghost Entity: No Maps data found via strict API search for "${businessName}". WEB DATA: ${webScrapeData}`;
+    let context = "";
+    if (!biz) {
+         context = `Ghost Entity: No Maps data found via strict API search for "${businessName}". WEB DATA: None.`;
+    } else if (isHijacked) {
+         context = `TRAFFIC HIJACK DETECTED: The user searched for "${businessName}", but Google Maps routed the query to a completely different competitor named "${foundName}". This means "${businessName}" is a Ghost Entity actively losing branded search traffic. Do not use the competitor's data to score them.`;
+    } else {
+         context = `Verified Maps Entity: ${foundName}. Rating: ${biz.rating}. Reviews: ${biz.userRatingCount}. WEB DATA: ${webScrapeData}`;
+    }
 
     // 4. The Upgraded Scoring Rubric
     const RUBRIC = `
       SCORING RUBRIC (0-100):
       - Start at baseline 30.
-      - If Verified Maps Entity, add 20 points.
+      - If Verified Maps Entity (and NOT hijacked), add 20 points.
       - If rating is 4.0 or higher, add 15 points.
       - If Schema Markup is true, add 20 points.
-      - If Ghost Entity, deduct 30 points.
+      - If Ghost Entity OR Traffic Hijack Detected, deduct 30 points (Score must be terribly low).
     `;
 
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
@@ -96,17 +110,12 @@ export const performAudit = onCall({
 
     const aiData = await aiRes.json() as any;
 
-    // FAIL-SAFE: Intercept Gemini crashes (Safety Blocks, Quota limits, API errors)
     if (!aiData.candidates || !aiData.candidates[0].content?.parts[0]?.text) {
         return {
             success: true,
-            score: biz ? 45 : 0,
-            summary: `SYSTEM DIAGNOSTIC: Gemini AI Neural Link Failed. The LLM blocked the request or timed out.`,
-            truths: [
-                `Maps Data Found: ${biz ? 'Yes' : 'No'}`,
-                "Gemini Payload Empty",
-                `Block Reason: ${aiData.promptFeedback?.blockReason || 'Unknown API Failure'}`
-            ]
+            score: biz && !isHijacked ? 45 : 0,
+            summary: `SYSTEM DIAGNOSTIC: Gemini AI Neural Link Failed.`,
+            truths: [`Maps Data Found: ${biz ? 'Yes' : 'No'}`, "Gemini Payload Empty", "Retry Audit"]
         };
     }
 
@@ -117,8 +126,8 @@ export const performAudit = onCall({
         return {
             success: true,
             score: 50,
-            summary: "SYSTEM DIAGNOSTIC: Gemini returned invalid JSON format. Manual override required.",
-            truths: ["JSON Parsing Failed", "AI Hallucination Detected", "Retry Audit"]
+            summary: "SYSTEM DIAGNOSTIC: Gemini returned invalid JSON format.",
+            truths: ["JSON Parsing Failed", "Retry Audit"]
         };
     }
 
