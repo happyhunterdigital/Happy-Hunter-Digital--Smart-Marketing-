@@ -4,29 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
-    <!-- SECURITY META TAGS -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <!-- BRAND IDENTITY & SEO -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.googleapis.com;
+      connect-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.googleapis.com https://stream.mux.com https://inferred.litix.io https://api.mux.com wss://*.firebaseio.com;
+      img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com https://*.googleusercontent.com https://image.mux.com;
+      media-src 'self' https://stream.mux.com blob:;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseapp.com https://*.googleapis.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      worker-src 'self' blob:;
+    " />
+
     <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dka0498ns/image/upload/v1765901353/favicon_kzkevq.jpg" />
     <title>happyhunterdigital | Smart Marketing for the AI Era</title>
     <meta name="description" content="South African digital marketing agency specializing in Digital Entity Management, AI-Powered Answer Engines (AEO), and Agentic Revenue Ecosystems." />
     
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="happyhunterdigital | Smart Marketing" />
     <meta property="og:description" content="Stop being a Ghost to algorithms. We build AI-ready digital powerhouses." />
     <meta property="og:image" content="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" />
     <meta property="og:url" content="https://www.happyhunterdigital.com" />
 
-    <!-- GOOGLE FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     
-    <!-- ADVANCED AEO/GEO KNOWLEDGE GRAPH -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
