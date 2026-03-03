@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
@@ -257,7 +258,6 @@ export const submitServiceRequest = onCall({
   }
 
   try {
-    // 1. Securely save the lead to Firestore
     await db.collection("leads").add({
       name,
       website: website || "Not provided",
@@ -267,7 +267,6 @@ export const submitServiceRequest = onCall({
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // 2. Dynamic Intelligence Routing for the Email
     let dynamicProblem = "";
     if (service.includes("RAG-Ready")) {
       dynamicProblem = "Your brand is present online, but AI models like Gemini and ChatGPT aren't citing you as the expert source yet.";
@@ -310,7 +309,6 @@ export const submitServiceRequest = onCall({
       </div>
     `;
 
-    // 3. Securely dispatch the personalized email using Admin privileges
     await db.collection("mail").add({
       to: [email],
       message: {
@@ -322,5 +320,72 @@ export const submitServiceRequest = onCall({
     return { success: true };
   } catch (error: any) {
     throw new HttpsError("internal", `System Engine Failed to Compile Data. ${error.message}`);
+  }
+});
+
+// ==========================================
+// 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
+// ==========================================
+export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
+  console.log("CMS Data change detected. Recompiling Entity Schema...");
+
+  try {
+    // 1. Fetch the Core Brand Identity (The Digital Passport)
+    const brandSnapshot = await db.collection("brand_identity").limit(1).get();
+    if (brandSnapshot.empty) {
+      console.log("No brand identity found. Aborting compilation.");
+      return null;
+    }
+    const brandData = brandSnapshot.docs[0].data();
+
+    // 2. Fetch the AEO Knowledge (Q&A for AI Overviews)
+    const aeoSnapshot = await db.collection("aeo_knowledge").where("speakable", "==", true).get();
+    const faqItems = aeoSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        "@type": "Question",
+        "name": data.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": data.answer
+        }
+      };
+    });
+
+    // 3. Construct the Master JSON-LD Knowledge Graph
+    const masterSchema: any = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": brandData.orgType || "Organization",
+          "@id": `${brandData.websiteUrl || "https://happyhunterdigital.com"}#organization`,
+          "name": brandData.legalName,
+          "description": brandData.description,
+          "foundingDate": brandData.foundingDate ? brandData.foundingDate.toDate().toISOString().split('T')[0] : undefined,
+          "sameAs": brandData.sameAs || []
+        }
+      ]
+    };
+
+    // 4. Append FAQ Page Schema if AEO Knowledge exists
+    if (faqItems.length > 0) {
+      masterSchema["@graph"].push({
+        "@type": "FAQPage",
+        "mainEntity": faqItems
+      });
+    }
+
+    // 5. Save the compiled payload to a single, public read-only document
+    await db.collection("public_seo").doc("master_schema").set({
+      compiled_json_ld: JSON.stringify(masterSchema),
+      last_updated: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    console.log("Successfully compiled and deployed Master Entity Schema.");
+    return null;
+
+  } catch (error) {
+    console.error("Critical Error compiling Entity Schema:", error);
+    return null;
   }
 });
