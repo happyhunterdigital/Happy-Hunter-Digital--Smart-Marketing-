@@ -3,11 +3,10 @@ import MuxPlayer from '@mux/mux-player-react';
 import { motion } from 'framer-motion';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, limitToLast } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { Send, Users, Heart, Flame, ThumbsUp, ShieldAlert } from 'lucide-react';
+import { Send, Users, Heart, Flame, ThumbsUp } from 'lucide-react';
 
 // ==========================================
 // 1. FLOATING REACTION COMPONENT
-// Handles the "fly-up" animation
 // ==========================================
 const FloatingReaction: React.FC<{ emoji: string; onComplete: () => void }> = ({ emoji, onComplete }) => {
   const randomX = Math.floor(Math.random() * 100) - 50; 
@@ -36,10 +35,10 @@ export const LiveSummit: React.FC = () => {
   const [hasJoined, setHasJoined] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // YOUR MUX PLAYBACK ID (Replace with your actual Live Stream ID from Mux)
-  const MUX_PLAYBACK_ID = "YOUR_MUX_PLAYBACK_ID_HERE"; 
+  // ---> YOUR OFFICIAL MUX PLAYBACK ID <---
+  const MUX_PLAYBACK_ID = "h1EYLahxhqMk68pdR8fzODNTadhobMaOa4kvOCVIWkI"; 
 
-  // Listen to Live Chat in Real-time
+  // Real-time Chat Listener
   useEffect(() => {
     const q = query(collection(db, "messages"), orderBy("createdAt", "asc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -49,7 +48,7 @@ export const LiveSummit: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Listen for new reactions (limited to last 10 to prevent lag)
+  // Real-time Reactions Listener
   useEffect(() => {
     const q = query(collection(db, "reactions"), orderBy("createdAt", "desc"), limitToLast(10));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -63,7 +62,7 @@ export const LiveSummit: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Send Message function
+  // Transmit Chat Message
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !hasJoined) return;
@@ -79,7 +78,7 @@ export const LiveSummit: React.FC = () => {
     }
   };
 
-  // Trigger floating reaction
+  // Transmit Floating Reaction
   const sendReaction = async (emoji: string) => {
     try {
       await addDoc(collection(db, "reactions"), {
@@ -91,6 +90,7 @@ export const LiveSummit: React.FC = () => {
     }
   };
 
+  // Gatekeeper for Chat
   const handleJoinChat = (e: React.FormEvent) => {
     e.preventDefault();
     if (viewerName.trim()) setHasJoined(true);
@@ -118,24 +118,16 @@ export const LiveSummit: React.FC = () => {
         {/* LEFT: Video & Reactions Section */}
         <section className="relative bg-black border border-gray-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
           <div className="flex-1 relative bg-[#0a0a0a]">
-            {MUX_PLAYBACK_ID !== "YOUR_MUX_PLAYBACK_ID_HERE" ? (
-              <MuxPlayer
-                playbackId={MUX_PLAYBACK_ID}
-                streamType="live"
-                primaryColor="#eab308"
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                autoPlay
-                muted={false}
-              />
-            ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-600 font-mono text-sm px-6 text-center">
-                <ShieldAlert size={48} className="text-yellow-500/50 mb-4" />
-                <p>Awaiting Mux Stream Key Deployment.</p>
-                <p>Broadcast Offline.</p>
-              </div>
-            )}
+            
+            <MuxPlayer
+              playbackId={MUX_PLAYBACK_ID}
+              streamType="live"
+              primaryColor="#eab308"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              autoPlay
+              muted={false}
+            />
 
-            {/* Render Floating Reactions */}
             {reactions.map(r => (
               <FloatingReaction 
                 key={r.id} 
@@ -145,7 +137,6 @@ export const LiveSummit: React.FC = () => {
             ))}
           </div>
 
-          {/* Bottom Toolbar: Reaction Buttons Overlay */}
           <div className="h-16 bg-[#050505] border-t border-gray-800 flex items-center justify-between px-6 z-20">
             <span className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Happy Hunter Digital</span>
             <div className="flex gap-4">
