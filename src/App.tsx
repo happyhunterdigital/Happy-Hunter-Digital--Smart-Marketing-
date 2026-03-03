@@ -18,6 +18,7 @@ import { SummitPage } from './pages/SummitPage';
 import { Architecture } from './pages/Architecture';
 import { ClientPortal } from './pages/ClientPortal';
 import { SummitPoster } from './pages/SummitPoster';
+import { MegaphoneLanding } from './pages/MegaphoneLanding';
 import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Globe, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -35,7 +36,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black pt-12">
-      
       <ContentRibbon />
       <EventPopup />
 
@@ -63,7 +63,7 @@ function App() {
           <Link to="/audit" className="hidden lg:block bg-yellow-500 text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl whitespace-nowrap shrink-0">
             Start Audit
           </Link>
-          
+
           <button className="lg:hidden text-white pr-2 shrink-0" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X size={24}/> : <Menu size={24}/>}
           </button>
@@ -105,7 +105,8 @@ function App() {
           <Route path="/architecture" element={<Architecture />} />
           <Route path="/portal" element={<ClientPortal />} />
           <Route path="/promo" element={<SummitPoster />} />
-          <Route path="/hq-command" element={<Admin />} /> 
+          <Route path="/the-ai-megaphone" element={<MegaphoneLanding />} />
+          <Route path="/hq-command" element={<Admin />} />
         </Routes>
       </main>
 
@@ -150,11 +151,11 @@ function App() {
           </div>
         </div>
         <div className="container mx-auto mt-24 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500">
-           <p className="text-gray-800 text-[9px] font-black uppercase tracking-[0.5em] opacity-40">&copy; 2026 // HAPPYHUNTERDIGITAL SYSTEMS // AGENTIC OPERATIONS CORE</p>
-           <div className="flex gap-6 text-[8px] font-bold uppercase tracking-widest">
-             <Link to="/faq" className="hover:text-white transition-colors">POPI Act</Link>
-             <Link to="/faq" className="hover:text-white transition-colors">Privacy Protocol</Link>
-           </div>
+          <p className="text-gray-800 text-[9px] font-black uppercase tracking-[0.5em] opacity-40">&copy; 2026 // HAPPYHUNTERDIGITAL SYSTEMS // AGENTIC OPERATIONS CORE</p>
+          <div className="flex gap-6 text-[8px] font-bold uppercase tracking-widest">
+            <Link to="/faq" className="hover:text-white transition-colors">POPI Act</Link>
+            <Link to="/faq" className="hover:text-white transition-colors">Privacy Protocol</Link>
+          </div>
         </div>
       </footer>
 
