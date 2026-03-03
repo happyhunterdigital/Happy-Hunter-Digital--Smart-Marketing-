@@ -21,10 +21,10 @@ export const performAudit = onCall({
   const P_KEY = process.env.PLACES_API_KEY;
 
   if (!businessName || !location || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
-  if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
+  if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline. Missing API Keys.");
 
   try {
-    // 1. Fetch Google Maps Data (Unchanged logic, just added websiteUri to FieldMask)
+    // 1. Fetch Google Maps Data
     const pRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
       headers: { 
@@ -36,6 +36,21 @@ export const performAudit = onCall({
     });
 
     const pData = await pRes.json() as any;
+
+    // THE DIAGNOSTIC UPGRADE: Catch silent Google API failures immediately
+    if (!pRes.ok || pData.error) {
+        return {
+            success: true,
+            score: 0,
+            summary: `SYSTEM DIAGNOSTIC: Google API Handshake Failed. The API returned an error: "${pData.error?.message || 'Check your PLACES_API_KEY and ensure Places API (New) is enabled.'}"`,
+            truths: [
+                "API Connection Rejected by Google",
+                `Error Code: ${pData.error?.code || pData.error?.status || 'Unknown'}`,
+                "Verify Google Cloud Billing & GitHub Secrets"
+            ]
+        };
+    }
+
     const biz = pData.places?.[0];
     const websiteUrl = biz?.websiteUri;
 
@@ -45,16 +60,9 @@ export const performAudit = onCall({
 
     if (websiteUrl) {
       try {
-        // Visit the site. If it takes longer than 5 seconds, abort safely.
         const webRes = await axios.get(websiteUrl, { timeout: 5000 });
         const $ = cheerio.load(webRes.data);
-        
-        // Check for AI-friendly Schema Markup (The Happy Hunter specialty)
-        if ($('script[type="application/ld+json"]').length > 0) {
-          hasSchema = true;
-        }
-
-        // Extract homepage text, clean it, and limit to 2000 characters to prevent AI overload
+        if ($('script[type="application/ld+json"]').length > 0) hasSchema = true;
         const bodyText = $('body').text().replace(/\s+/g, ' ').trim().substring(0, 2000);
         webScrapeData = `Website active (${websiteUrl}). Schema Markup Detected: ${hasSchema}. Homepage Content Snippet: ${bodyText}`;
       } catch (err) {
@@ -74,8 +82,8 @@ export const performAudit = onCall({
       - If Verified on Maps, add 20 points.
       - If rating is 4.0 or higher, add 15 points.
       - If they have an active, scannable website, add 15 points.
-      - If Schema Markup is Detected (true), add 20 points (This shows they are AI-ready).
-      - If the business is a "Ghost" (No Maps), deduct 40 points.
+      - If Schema Markup is Detected (true), add 20 points.
+      - If the business is a "Ghost" (No Maps data found), deduct 40 points.
       - Adjust slightly based on the quality of their website text.
     `;
 
@@ -165,7 +173,7 @@ export const performAudit = onCall({
 
     return { success: true, ...analysis };
   } catch (e: any) {
-    throw new HttpsError("internal", `Neural Handshake Interrupted.`);
+    throw new HttpsError("internal", `Neural Handshake Interrupted. System Message: ${e.message}`);
   }
 });
 
