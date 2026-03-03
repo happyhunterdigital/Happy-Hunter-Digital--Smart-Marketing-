@@ -4,7 +4,10 @@ import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import * as dotenv from "dotenv";
 
+// Load environment variables explicitly
+dotenv.config();
 admin.initializeApp();
 const db = getFirestore();
 
@@ -19,8 +22,9 @@ export const performAudit = onCall({
 }, async (request) => {
     const { businessName, location, clientEmail } = request.data;
     
-    const G_KEY = process.env.GEMINI_API_KEY;
-    const P_KEY = process.env.PLACES_API_KEY;
+    // Explicitly grab the keys and trim any accidental whitespace
+    const G_KEY = (process.env.GEMINI_API_KEY || "").trim();
+    const P_KEY = (process.env.PLACES_API_KEY || "").trim();
 
     if (!businessName || !location || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
     if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline. Missing API Keys.");
@@ -221,9 +225,9 @@ export const hunterChat = onCall({
     cors: true,
 }, async (request) => {
     const { message, history = [] } = request.data;
-    const G_KEY = process.env.GEMINI_API_KEY;
+    const G_KEY = (process.env.GEMINI_API_KEY || "").trim();
 
-    if (!message || !G_KEY) return { reply: "Connection offline. Missing parameters." };
+    if (!message || !G_KEY) return { reply: "Connection offline. Missing parameters or API Key." };
 
     const SYSTEM_PROMPT = `You are Hunter AI, the official digital marketing assistant for Happy Hunter Digital (also known as Happy Hunter Systems).
     YOUR KNOWLEDGE BASE:
@@ -249,12 +253,19 @@ export const hunterChat = onCall({
             body: JSON.stringify({ systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] }, contents: formattedHistory, generationConfig: { temperature: 0.1, maxOutputTokens: 500 } })
         });
 
-        if (!aiRes.ok) return { reply: "My neural link is currently overloaded. Please email HQ." };
+        if (!aiRes.ok) {
+            console.error("Gemini API Error:", await aiRes.text());
+            return { reply: "My neural link is currently overloaded. Please email HQ." };
+        }
+        
         const data = await aiRes.json() as any;
         if (data.candidates && data.candidates[0].content.parts[0].text) return { reply: data.candidates[0].content.parts[0].text.trim() };
         
         return { reply: "I received an unreadable signal from the core. Try again." };
-    } catch (e) { return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" }; }
+    } catch (e) { 
+        console.error("Fetch Catch Error:", e);
+        return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" }; 
+    }
 });
 
 // ==========================================
