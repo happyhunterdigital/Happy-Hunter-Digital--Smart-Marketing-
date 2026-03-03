@@ -9,19 +9,24 @@ export const MegaphoneLanding: React.FC = () => {
   const [form, setForm] = useState({ name: '', website: '', niche: '', email: '' });
   const [loading, setLoading] = useState(false);
 
+  // The Indestructible Submit Protocol
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
+      // 1. Attempt to capture the lead in the background
       await addDoc(collection(db, "leads"), {
         ...form,
         source: "AI Megaphone Landing Page",
         timestamp: serverTimestamp()
       });
-      navigate('/audit');
     } catch (error) {
-      console.error("Lead capture failed", error);
-      setLoading(false);
+      // 2. If Firebase blocks it, log the error but DO NOT stop the user
+      console.error("Lead capture warning:", error);
+    } finally {
+      // 3. GUARANTEED REDIRECT: Force the user to the Audit page immediately
+      navigate('/audit');
     }
   };
 
@@ -127,7 +132,7 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* 4. THE DIGITAL ENTITY BREAKDOWN (New Section) */}
+      {/* 4. THE DIGITAL ENTITY BREAKDOWN */}
       <section className="bg-[#050505] text-white py-24 px-6 relative border-t-8 border-black">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -258,7 +263,6 @@ export const MegaphoneLanding: React.FC = () => {
                 className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
                 onChange={e => setForm({...form, name: e.target.value})}
               />
-              {/* THE FIX: Changed from type="url" to type="text" to prevent browser validation blocks */}
               <input 
                 type="text" placeholder="Website URL (e.g. www.yourbrand.com)" required
                 className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
