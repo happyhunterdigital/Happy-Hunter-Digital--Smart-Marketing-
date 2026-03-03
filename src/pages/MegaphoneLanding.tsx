@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Network, Database, BrainCircuit, ArrowRight, Zap, CheckCircle2, Activity, Volume2 } from 'lucide-react';
+import { Network, Database, BrainCircuit, ArrowRight, Zap, CheckCircle2, Activity, Volume2, ShieldCheck, PlaySquare } from 'lucide-react';
 import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -13,13 +13,11 @@ export const MegaphoneLanding: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Capture lead into Firestore
       await addDoc(collection(db, "leads"), {
         ...form,
         source: "AI Megaphone Landing Page",
         timestamp: serverTimestamp()
       });
-      // Route them directly into the Audit Engine to prove the point
       navigate('/audit');
     } catch (error) {
       console.error("Lead capture failed", error);
@@ -30,9 +28,8 @@ export const MegaphoneLanding: React.FC = () => {
   return (
     <div className="min-h-screen bg-yellow-500 font-sans animate-fade-in selection:bg-black selection:text-yellow-500">
       
-      {/* 1. THE HERO SECTION (70% Yellow Domination) */}
-      <section className="relative pt-32 pb-24 md:pt-48 md:pb-32 px-6 overflow-hidden border-b-[16px] border-black">
-        {/* Abstract Tech Pulse Background */}
+      {/* 1. THE HERO SECTION */}
+      <section className="relative pt-24 pb-24 md:pt-32 md:pb-32 px-6 overflow-hidden border-b-[16px] border-black">
         <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
           <svg className="w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
             <path d="M 0 500 Q 250 300 500 500 T 1000 500" fill="none" stroke="#000" strokeWidth="4" />
@@ -61,7 +58,7 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. THE REALITY CHECK (25% Black Contrast Block) */}
+      {/* 2. THE REALITY CHECK */}
       <section className="bg-black text-white py-24 px-6 relative overflow-hidden">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -88,8 +85,8 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* 3. INSIDE THE AI MEGAPHONE (Back to Yellow) */}
-      <section className="py-24 px-6 border-b-8 border-black">
+      {/* 3. INSIDE THE AI MEGAPHONE */}
+      <section className="py-24 px-6 border-b border-black">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-black text-black uppercase tracking-tighter mb-4">Inside the AI Megaphone</h2>
@@ -119,7 +116,7 @@ export const MegaphoneLanding: React.FC = () => {
 
             <div className="bg-black text-white p-8 rounded-3xl shadow-2xl relative">
               <Activity size={40} className="text-yellow-500 mb-6" />
-              <h3 className="text-xl font-black uppercase mb-2">Generative Engine Optimization</h3>
+              <h3 className="text-xl font-black uppercase mb-2">Generative Optimization</h3>
               <p className="text-gray-400 text-sm mb-6">Optimizes your entire digital footprint for the unique algorithms of AI models.</p>
               <div className="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl mt-auto">
                 <span className="text-[10px] font-black uppercase tracking-widest text-yellow-500 block mb-1">The Result</span>
@@ -130,7 +127,108 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* 4 & 5. WHY US & LEAD CAPTURE (The Final Push) */}
+      {/* 4. THE DIGITAL ENTITY BREAKDOWN (New Section) */}
+      <section className="bg-[#050505] text-white py-24 px-6 relative border-t-8 border-black">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6 text-white">
+              We Don't Build "Websites." <br/>
+              <span className="text-yellow-500">We Architect Digital Entities.</span>
+            </h2>
+            <p className="text-gray-400 text-lg max-w-3xl mx-auto leading-relaxed">
+              In the 2026 landscape, a website that just looks good is a "ghost." Our approach focuses on building a <strong>Smart Authority Ecosystem</strong> where the architecture acts as the central hub for both human users and AI agents to find, verify, and recommend your business.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-20">
+            <div className="p-8 border border-gray-800 rounded-3xl bg-[#0a0a0a] hover:border-yellow-500/30 transition-all">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-yellow-500/10 text-yellow-500 rounded-xl"><Database size={24} /></div>
+                <h3 className="text-xl font-black uppercase">1. RAG-Ready Authority</h3>
+              </div>
+              <p className="text-gray-400 text-sm mb-4 leading-relaxed">Built with Retrieval-Augmented Generation (RAG) in mind. The backend is structured so AI models can easily "crawl and cite" your data.</p>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li className="flex items-start gap-2"><CheckCircle2 size={14} className="text-yellow-500 shrink-0 mt-1"/> <strong>Explicit Formatting:</strong> Advanced Schema for pricing and FAQs.</li>
+                <li className="flex items-start gap-2"><CheckCircle2 size={14} className="text-yellow-500 shrink-0 mt-1"/> <strong>Citable Architecture:</strong> Engineered to be the definitive industry source.</li>
+              </ul>
+            </div>
+
+            <div className="p-8 border border-gray-800 rounded-3xl bg-[#0a0a0a] hover:border-yellow-500/30 transition-all">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-yellow-500/10 text-yellow-500 rounded-xl"><ShieldCheck size={24} /></div>
+                <h3 className="text-xl font-black uppercase">2. Entity Architectures</h3>
+              </div>
+              <p className="text-gray-400 text-sm mb-4 leading-relaxed">Rather than a collection of pages, these sites are built to establish a verified "Digital Passport" across the web.</p>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li className="flex items-start gap-2"><CheckCircle2 size={14} className="text-yellow-500 shrink-0 mt-1"/> <strong>Knowledge Graphing:</strong> Unifies your data across Google.</li>
+                <li className="flex items-start gap-2"><CheckCircle2 size={14} className="text-yellow-500 shrink-0 mt-1"/> <strong>Trust Synchronization:</strong> Consistent NAP data proving active authority.</li>
+              </ul>
+            </div>
+
+            <div className="p-8 border border-gray-800 rounded-3xl bg-[#0a0a0a] hover:border-yellow-500/30 transition-all">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-yellow-500/10 text-yellow-500 rounded-xl"><Activity size={24} /></div>
+                <h3 className="text-xl font-black uppercase">3. Agentic Revenue Engines</h3>
+              </div>
+              <p className="text-gray-400 text-sm mb-4 leading-relaxed">Conversion-heavy architectures that uncouple revenue from linear effort by utilizing continuous Agentic Workflows.</p>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li className="flex items-start gap-2"><CheckCircle2 size={14} className="text-yellow-500 shrink-0 mt-1"/> <strong>24/7 AI Receptionists:</strong> Chatbots that qualify and book instantly.</li>
+                <li className="flex items-start gap-2"><CheckCircle2 size={14} className="text-yellow-500 shrink-0 mt-1"/> <strong>Automated Pipelines:</strong> Triggers sequences based on prospect intent.</li>
+              </ul>
+            </div>
+
+            <div className="p-8 border border-gray-800 rounded-3xl bg-[#0a0a0a] hover:border-yellow-500/30 transition-all">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="p-3 bg-yellow-500/10 text-yellow-500 rounded-xl"><PlaySquare size={24} /></div>
+                <h3 className="text-xl font-black uppercase">4. Smart Inbound Hubs</h3>
+              </div>
+              <p className="text-gray-400 text-sm mb-4 leading-relaxed">While AI-focused in the backend, the frontend remains deeply rooted in the psychology of the Inbound Methodology.</p>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li className="flex items-start gap-2"><CheckCircle2 size={14} className="text-yellow-500 shrink-0 mt-1"/> <strong>Dynamic Personalization:</strong> Adapts to the visitor's buyer persona.</li>
+                <li className="flex items-start gap-2"><CheckCircle2 size={14} className="text-yellow-500 shrink-0 mt-1"/> <strong>Video-First Engagement:</strong> Humanizes the brand in an AI market.</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Comparison Table */}
+          <div className="overflow-x-auto border border-gray-800 rounded-2xl shadow-2xl bg-[#0a0a0a]">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-900 border-b border-gray-800 text-yellow-500">
+                  <th className="p-5 font-bold uppercase tracking-widest text-xs">Feature</th>
+                  <th className="p-5 font-bold uppercase tracking-widest text-xs text-gray-400">Traditional Website (Old Way)</th>
+                  <th className="p-5 font-bold uppercase tracking-widest text-xs">Happy Hunter Entity (Smart Way)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800 text-sm">
+                <tr className="hover:bg-gray-900/30">
+                  <td className="p-5 font-bold text-white uppercase text-[10px] tracking-wider">Primary Goal</td>
+                  <td className="p-5 text-gray-400">Ranking on Page 1 (Blue Links)</td>
+                  <td className="p-5 text-yellow-500 font-bold">Being Recommended by AI & LLMs</td>
+                </tr>
+                <tr className="hover:bg-gray-900/30">
+                  <td className="p-5 font-bold text-white uppercase text-[10px] tracking-wider">Structure</td>
+                  <td className="p-5 text-gray-400">Standard HTML/CSS</td>
+                  <td className="p-5 text-white font-medium">RAG-Ready & Entity-Mapped JSON-LD</td>
+                </tr>
+                <tr className="hover:bg-gray-900/30">
+                  <td className="p-5 font-bold text-white uppercase text-[10px] tracking-wider">Lead Handling</td>
+                  <td className="p-5 text-gray-400">Static Contact Forms (Wait for email)</td>
+                  <td className="p-5 text-white font-medium">24/7 Agentic Revenue Pipelines</td>
+                </tr>
+                <tr className="hover:bg-gray-900/30">
+                  <td className="p-5 font-bold text-white uppercase text-[10px] tracking-wider">Authority</td>
+                  <td className="p-5 text-gray-400">Backlinks & Keywords</td>
+                  <td className="p-5 text-white font-medium">Trust Anchors & Mathematical Verification</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 5. WHY US & LEAD CAPTURE */}
       <section className="py-24 px-6 bg-black text-white">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           
@@ -160,8 +258,9 @@ export const MegaphoneLanding: React.FC = () => {
                 className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
                 onChange={e => setForm({...form, name: e.target.value})}
               />
+              {/* THE FIX: Changed from type="url" to type="text" to prevent browser validation blocks */}
               <input 
-                type="url" placeholder="Website URL (For Entity Scan)" required
+                type="text" placeholder="Website URL (e.g. www.yourbrand.com)" required
                 className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
                 onChange={e => setForm({...form, website: e.target.value})}
               />
