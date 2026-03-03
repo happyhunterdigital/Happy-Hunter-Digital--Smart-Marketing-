@@ -61,6 +61,12 @@ function App() {
               <Link to="/architecture" className="text-[9px] font-black uppercase tracking-[0.1em] text-yellow-500 hover:text-white transition-all whitespace-nowrap">Architecture</Link>
               <Link to="/services" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Services</Link>
               <Link to="/earned-media" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Earned Media</Link>
+              
+              {/* NEW LIVE BUTTON */}
+              <Link to="/live" className="text-[9px] font-black uppercase tracking-[0.15em] text-red-500 hover:text-white transition-all whitespace-nowrap flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>LIVE
+              </Link>
+              
               <Link to="/intelligence" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Intelligence</Link>
               <Link to="/founders" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Founders</Link>
               <Link to="/portal" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-500 hover:text-yellow-500 transition-all whitespace-nowrap flex items-center gap-1"><Lock size={10}/> Portal</Link>
@@ -83,6 +89,12 @@ function App() {
           <div className="flex flex-col space-y-6 text-center font-bold uppercase tracking-widest text-sm">
             <Link to="/architecture" className="text-yellow-500 hover:text-white">Architecture</Link>
             <Link to="/services" className="hover:text-yellow-500 text-white">Services</Link>
+            
+            {/* NEW MOBILE LIVE BUTTON */}
+            <Link to="/live" className="text-red-500 hover:text-white flex items-center justify-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> LIVE BROADCAST
+            </Link>
+
             <Link to="/earned-media" className="hover:text-yellow-500 text-white">Earned Media</Link>
             <Link to="/intelligence" className="hover:text-yellow-500 text-white">Intelligence Hub</Link>
             <Link to="/founders" className="hover:text-yellow-500 text-white">Founders</Link>
