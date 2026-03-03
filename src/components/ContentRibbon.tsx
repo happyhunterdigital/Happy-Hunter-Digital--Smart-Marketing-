@@ -1,64 +1,29 @@
 import React from 'react';
-import { Zap, Globe, Target, ShieldCheck } from 'lucide-react';
+import { Zap, ShieldCheck, Database, Globe } from 'lucide-react';
 
-export const ContentRibbon = () => {
-  const content = (
-    <div className="flex items-center gap-10 px-8">
-      {/* SERVICE 1 */}
-      <div className="flex items-center gap-2">
-        <Target size={12} className="text-yellow-500 opacity-60" />
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70 whitespace-nowrap">Entity Architecture</span>
-      </div>
+export const ContentRibbon: React.FC = () => {
+  // We pair the technical architecture with the layman's result, and removed the Summit.
+  const items = [
+    { text: "Entity Architecture (AI-Optimized Websites)", icon: <Database size={14} /> },
+    { text: "AI Visibility (Recommended by ChatGPT & Gemini)", icon: <Globe size={14} /> },
+    { text: "Trust Synchronization (Google Maps Verification)", icon: <ShieldCheck size={14} /> },
+    { text: "Agentic Revenue (24/7 AI Lead Automation)", icon: <Zap size={14} /> },
+  ];
 
-      <span className="text-white/10 font-thin">/</span>
-
-      {/* SERVICE 2 */}
-      <div className="flex items-center gap-2">
-        <Globe size={12} className="text-yellow-500 opacity-60" />
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70 whitespace-nowrap">AI Visibility (AEO)</span>
-      </div>
-
-      <span className="text-white/10 font-thin">/</span>
-
-      {/* THE HIGHLIGHTED SUMMIT BADGE */}
-      <div className="flex items-center gap-3 bg-yellow-500 px-4 py-1 rounded-full shadow-[0_0_15px_rgba(234,179,8,0.4)] transition-all hover:scale-105">
-        <Zap size={12} className="text-black fill-black" />
-        <span className="text-[10px] font-black uppercase tracking-[0.1em] text-black whitespace-nowrap">
-          SUMMIT 28TH FEB
-        </span>
-      </div>
-
-      <span className="text-white/10 font-thin">/</span>
-
-      {/* SERVICE 3 */}
-      <div className="flex items-center gap-2">
-        <ShieldCheck size={12} className="text-yellow-500 opacity-60" />
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70 whitespace-nowrap">Trust Synchronization</span>
-      </div>
-
-      <span className="text-white/10 font-thin">/</span>
-
-      {/* SERVICE 4 */}
-      <div className="flex items-center gap-2">
-        <Zap size={12} className="text-yellow-500 opacity-60" />
-        <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/70 whitespace-nowrap">Agentic Revenue</span>
-      </div>
-
-      <span className="text-white/10 font-thin">/</span>
-    </div>
-  );
+  // Repeat items to create a seamless infinite scroll effect
+  const scrollingItems = [...items, ...items, ...items, ...items];
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[110] bg-black/40 backdrop-blur-xl h-12 flex items-center overflow-hidden border-b border-white/5">
-      <div className="flex animate-marquee py-2">
-        {content}
-        {content}
-        {content}
+    <div className="fixed top-0 left-0 right-0 z-[110] bg-yellow-500 text-black border-b border-yellow-600 overflow-hidden h-8 flex items-center shadow-md">
+      <div className="flex animate-marquee whitespace-nowrap items-center">
+        {scrollingItems.map((item, index) => (
+          <div key={index} className="flex items-center mx-4 text-[10px] font-black uppercase tracking-[0.2em]">
+            <span className="mr-2 text-black/70">{item.icon}</span>
+            {item.text}
+            <span className="mx-8 text-black/30">/</span>
+          </div>
+        ))}
       </div>
-      
-      {/* Subtle overlay gradients for fade effect on edges */}
-      <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none"></div>
-      <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none"></div>
     </div>
   );
 };
