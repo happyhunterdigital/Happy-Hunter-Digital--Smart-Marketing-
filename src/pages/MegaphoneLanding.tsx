@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Network, Database, BrainCircuit, ArrowRight, Zap, CheckCircle2, Activity, Volume2, ShieldCheck, PlaySquare, ChevronDown } from 'lucide-react';
 import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export const MegaphoneLanding: React.FC = () => {
-  const navigate = useNavigate();
   const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  // The Indestructible Submit & Email Protocol
+  // The Frictionless Submit & Email Protocol
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -77,8 +77,9 @@ export const MegaphoneLanding: React.FC = () => {
     } catch (error) {
       console.error("Lead/Email capture warning:", error);
     } finally {
-      // 4. GUARANTEED REDIRECT: Force the user to the Audit page immediately
-      navigate('/audit');
+      setLoading(false);
+      // 4. Switch the UI to the Success State instead of navigating away
+      setSubmitted(true);
     }
   };
 
@@ -304,56 +305,72 @@ export const MegaphoneLanding: React.FC = () => {
             </ul>
           </div>
 
-          <div className="bg-yellow-500 p-10 rounded-[2.5rem] shadow-2xl text-black relative">
+          <div className="bg-yellow-500 p-10 rounded-[2.5rem] shadow-2xl text-black relative min-h-[450px] flex flex-col justify-center">
             <div className="absolute top-0 left-0 w-full h-2 bg-white rounded-t-[2.5rem]"></div>
-            <h3 className="text-3xl font-black uppercase tracking-tighter mb-2 mt-2">Deploy System Architecture</h3>
-            <p className="font-bold text-black/70 mb-8 text-sm">Select your required protocol below. We will capture your request and immediately initialize your AI Entity Scanner.</p>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input 
-                type="text" placeholder="Full Name" required
-                className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
-                onChange={e => setForm({...form, name: e.target.value})}
-              />
-              
-              {/* THE UPGRADE: Clear, layman-friendly dropdown options paired with the jargon */}
-              <div className="relative">
-                <select 
-                  required
-                  defaultValue=""
-                  className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold text-gray-900 transition-all appearance-none cursor-pointer"
-                  onChange={e => setForm({...form, service: e.target.value})}
-                >
-                  <option value="" disabled className="font-normal text-gray-500">Select Requested Architecture...</option>
-                  <option value="RAG-Ready Authority Site (AI-Optimized Website)">RAG-Ready Authority Site (AI-Optimized Website)</option>
-                  <option value="Entity-Based Digital Passport (Google & Maps Verification)">Entity-Based Digital Passport (Google & Maps Verification)</option>
-                  <option value="Agentic Revenue Engine (24/7 AI Lead Automation)">Agentic Revenue Engine (24/7 AI Lead Automation)</option>
-                  <option value="Smart Inbound Hub (Personalized Marketing Funnel)">Smart Inbound Hub (Personalized Marketing Funnel)</option>
-                </select>
-                <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
-                  <ChevronDown size={20} />
-                </div>
+            {/* CONDITIONAL RENDERING: Form vs Success State */}
+            {submitted ? (
+              <div className="text-center animate-fade-in">
+                <ShieldCheck className="mx-auto text-black mb-6" size={72} />
+                <h3 className="text-4xl font-black uppercase tracking-tighter mb-4">Request Secured</h3>
+                <p className="font-bold text-black/80 mb-8 text-sm leading-relaxed max-w-sm mx-auto">
+                  Your intelligence brief has been dispatched to <strong>{form.email}</strong>. Thabo and the team are reviewing your entity data and will contact you shortly.
+                </p>
+                <Link to="/" className="inline-block w-full bg-black text-yellow-500 py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-gray-900 transition-colors shadow-xl">
+                  Return to Command Center
+                </Link>
               </div>
+            ) : (
+              <div className="animate-fade-in">
+                <h3 className="text-3xl font-black uppercase tracking-tighter mb-2 mt-2">Deploy System Architecture</h3>
+                <p className="font-bold text-black/70 mb-8 text-sm">Select your required protocol below. We will capture your request and immediately initialize your AI Entity Scanner.</p>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <input 
+                    type="text" placeholder="Full Name" required
+                    className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
+                    onChange={e => setForm({...form, name: e.target.value})}
+                  />
+                  
+                  <div className="relative">
+                    <select 
+                      required
+                      defaultValue=""
+                      className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold text-gray-900 transition-all appearance-none cursor-pointer"
+                      onChange={e => setForm({...form, service: e.target.value})}
+                    >
+                      <option value="" disabled className="font-normal text-gray-500">Select Requested Architecture...</option>
+                      <option value="RAG-Ready Authority Site (AI-Optimized Website)">RAG-Ready Authority Site (AI-Optimized Website)</option>
+                      <option value="Entity-Based Digital Passport (Google & Maps Verification)">Entity-Based Digital Passport (Google & Maps Verification)</option>
+                      <option value="Agentic Revenue Engine (24/7 AI Lead Automation)">Agentic Revenue Engine (24/7 AI Lead Automation)</option>
+                      <option value="Smart Inbound Hub (Personalized Marketing Funnel)">Smart Inbound Hub (Personalized Marketing Funnel)</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-gray-500">
+                      <ChevronDown size={20} />
+                    </div>
+                  </div>
 
-              <input 
-                type="text" placeholder="Website URL (e.g. www.yourbrand.com)" required
-                className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
-                onChange={e => setForm({...form, website: e.target.value})}
-              />
-              
-              <input 
-                type="email" placeholder="Secure Email Address" required
-                className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
-                onChange={e => setForm({...form, email: e.target.value})}
-              />
+                  <input 
+                    type="text" placeholder="Website URL (e.g. www.yourbrand.com)" required
+                    className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
+                    onChange={e => setForm({...form, website: e.target.value})}
+                  />
+                  
+                  <input 
+                    type="email" placeholder="Secure Email Address" required
+                    className="w-full bg-white p-4 rounded-xl border-2 border-black/10 outline-none focus:border-black font-bold placeholder:font-normal transition-all"
+                    onChange={e => setForm({...form, email: e.target.value})}
+                  />
 
-              <button 
-                type="submit" disabled={loading}
-                className="w-full bg-black text-yellow-500 py-5 rounded-xl font-black uppercase tracking-widest text-sm hover:bg-gray-900 transition-colors mt-4 shadow-xl disabled:opacity-70 flex justify-center items-center gap-2"
-              >
-                {loading ? 'Transmitting Request...' : 'Request Service Protocol'} <Zap size={16} />
-              </button>
-            </form>
+                  <button 
+                    type="submit" disabled={loading}
+                    className="w-full bg-black text-yellow-500 py-5 rounded-xl font-black uppercase tracking-widest text-sm hover:bg-gray-900 transition-colors mt-4 shadow-xl disabled:opacity-70 flex justify-center items-center gap-2"
+                  >
+                    {loading ? 'Transmitting Request...' : 'Request Service Protocol'} <Zap size={16} />
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
 
         </div>
