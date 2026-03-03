@@ -29,49 +29,55 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
+  // Check if we are on the landing page to hide navigation elements
+  const isLandingPage = location.pathname === '/the-ai-megaphone';
+
   useEffect(() => {
     setMenuOpen(false);
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black pt-12">
-      <ContentRibbon />
-      <EventPopup />
+    <div className={`min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black ${isLandingPage ? '' : 'pt-12'}`}>
+      
+      {!isLandingPage && <ContentRibbon />}
+      {!isLandingPage && <EventPopup />}
 
       {/* REFINED CAPSULE NAVBAR - PRO ALIGNMENT */}
-      <div className="fixed top-16 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
-        <nav className="w-full max-w-7xl bg-black/60 backdrop-blur-xl border border-white/10 rounded-full px-5 py-3 flex justify-between items-center shadow-2xl pointer-events-auto">
-          
-          <Link to="/" className="flex items-center gap-2 pl-1 shrink-0">
-            <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" alt="Logo" className="w-9 h-9 rounded-full border border-yellow-500/30 object-cover" />
-            <span className="font-handwriting text-2xl md:text-3xl tracking-wide lowercase whitespace-nowrap text-white">
-              happy<span className="text-yellow-500">hunter</span>digital
-            </span>
-          </Link>
+      {!isLandingPage && (
+        <div className="fixed top-16 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
+          <nav className="w-full max-w-7xl bg-black/60 backdrop-blur-xl border border-white/10 rounded-full px-5 py-3 flex justify-between items-center shadow-2xl pointer-events-auto">
+            
+            <Link to="/" className="flex items-center gap-2 pl-1 shrink-0">
+              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" alt="Logo" className="w-9 h-9 rounded-full border border-yellow-500/30 object-cover" />
+              <span className="font-handwriting text-2xl md:text-3xl tracking-wide lowercase whitespace-nowrap text-white">
+                happy<span className="text-yellow-500">hunter</span>digital
+              </span>
+            </Link>
 
-          {/* Nav Links - Adjusted font and gaps for professional fit */}
-          <div className="hidden lg:flex items-center gap-4 xl:gap-6 px-4">
-            <Link to="/architecture" className="text-[9px] font-black uppercase tracking-[0.1em] text-yellow-500 hover:text-white transition-all whitespace-nowrap">Architecture</Link>
-            <Link to="/services" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Services</Link>
-            <Link to="/earned-media" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Earned Media</Link>
-            <Link to="/intelligence" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Intelligence</Link>
-            <Link to="/founders" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Founders</Link>
-            <Link to="/portal" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-500 hover:text-yellow-500 transition-all whitespace-nowrap flex items-center gap-1"><Lock size={10}/> Portal</Link>
-          </div>
+            {/* Nav Links */}
+            <div className="hidden lg:flex items-center gap-4 xl:gap-6 px-4">
+              <Link to="/architecture" className="text-[9px] font-black uppercase tracking-[0.1em] text-yellow-500 hover:text-white transition-all whitespace-nowrap">Architecture</Link>
+              <Link to="/services" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Services</Link>
+              <Link to="/earned-media" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Earned Media</Link>
+              <Link to="/intelligence" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Intelligence</Link>
+              <Link to="/founders" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Founders</Link>
+              <Link to="/portal" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-500 hover:text-yellow-500 transition-all whitespace-nowrap flex items-center gap-1"><Lock size={10}/> Portal</Link>
+            </div>
 
-          <Link to="/audit" className="hidden lg:block bg-yellow-500 text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl whitespace-nowrap shrink-0">
-            Start Audit
-          </Link>
+            <Link to="/audit" className="hidden lg:block bg-yellow-500 text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl whitespace-nowrap shrink-0">
+              Start Audit
+            </Link>
 
-          <button className="lg:hidden text-white pr-2 shrink-0" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X size={24}/> : <Menu size={24}/>}
-          </button>
-        </nav>
-      </div>
+            <button className="lg:hidden text-white pr-2 shrink-0" onClick={() => setMenuOpen(!menuOpen)}>
+              {menuOpen ? <X size={24}/> : <Menu size={24}/>}
+            </button>
+          </nav>
+        </div>
+      )}
 
       {/* MOBILE MENU */}
-      {menuOpen && (
+      {menuOpen && !isLandingPage && (
         <div className="fixed top-32 left-4 right-4 z-[100] bg-black/95 backdrop-blur-2xl border border-gray-800 rounded-3xl p-8 shadow-2xl animate-fade-in lg:hidden">
           <div className="flex flex-col space-y-6 text-center font-bold uppercase tracking-widest text-sm">
             <Link to="/architecture" className="text-yellow-500 hover:text-white">Architecture</Link>
@@ -89,7 +95,7 @@ function App() {
       )}
 
       {/* ROUTES */}
-      <main className="pt-24">
+      <main className={isLandingPage ? "" : "pt-24"}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/audit" element={<AiAudit />} />
@@ -110,56 +116,58 @@ function App() {
         </Routes>
       </main>
 
-      <footer className="py-24 border-t border-gray-900 bg-black text-left mt-20 px-6">
-        <div className="container mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-16">
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" className="w-12 h-12 rounded-full border border-yellow-500/30 object-cover" alt="Logo" />
-              <span className="font-handwriting text-3xl lowercase"><span className="text-white">happy</span><span className="text-yellow-500">hunter</span><span className="text-gray-400">digital</span></span>
+      {!isLandingPage && (
+        <footer className="py-24 border-t border-gray-900 bg-black text-left mt-20 px-6">
+          <div className="container mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-16">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" className="w-12 h-12 rounded-full border border-yellow-500/30 object-cover" alt="Logo" />
+                <span className="font-handwriting text-3xl lowercase"><span className="text-white">happy</span><span className="text-yellow-500">hunter</span><span className="text-gray-400">digital</span></span>
+              </div>
+              <p className="text-gray-500 text-sm leading-relaxed max-w-xs">Architecting digital dominance for ambitious South African entities. Bridging financial clarity with market visibility.</p>
             </div>
-            <p className="text-gray-500 text-sm leading-relaxed max-w-xs">Architecting digital dominance for ambitious South African entities. Bridging financial clarity with market visibility.</p>
-          </div>
 
-          <div className="space-y-6">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Direct Lines</h3>
-            <div className="space-y-4 text-xs font-medium">
-              <a href="mailto:motsumitl@happyhunterdigital.com" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Mail size={16} className="text-yellow-500"/> motsumitl@happyhunterdigital.com</a>
-              <a href="https://wa.me/27601016673" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Phone size={16} className="text-yellow-500"/> +27 (0) 60 101 6673</a>
-              <a href="https://www.happyhunterdigital.com" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Globe size={16} className="text-yellow-500"/> www.happyhunterdigital.com</a>
+            <div className="space-y-6">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Direct Lines</h3>
+              <div className="space-y-4 text-xs font-medium">
+                <a href="mailto:motsumitl@happyhunterdigital.com" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Mail size={16} className="text-yellow-500"/> motsumitl@happyhunterdigital.com</a>
+                <a href="https://wa.me/27601016673" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Phone size={16} className="text-yellow-500"/> +27 (0) 60 101 6673</a>
+                <a href="https://www.happyhunterdigital.com" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all leading-none"><Globe size={16} className="text-yellow-500"/> www.happyhunterdigital.com</a>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Internal Hubs</h3>
+              <div className="flex flex-col gap-4 text-xs font-bold uppercase tracking-widest text-gray-400">
+                <Link to="/architecture" className="hover:text-yellow-500 transition-colors text-yellow-500">Master Architecture</Link>
+                <Link to="/services" className="hover:text-yellow-500 transition-colors text-white">The Protocol</Link>
+                <Link to="/earned-media" className="hover:text-yellow-500 transition-colors text-white">Success Nodes</Link>
+                <Link to="/intelligence" className="hover:text-yellow-500 transition-colors text-white">Intelligence Hub</Link>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Social Signals</h3>
+              <div className="flex flex-wrap gap-4">
+                <a href="https://za.linkedin.com/in/thabomotsumi" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><Linkedin size={20}/></a>
+                <a href="https://x.com/HappyHunter35" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><XIcon/></a>
+                <a href="https://www.instagram.com/happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><Instagram size={20}/></a>
+                <a href="https://www.tiktok.com/@happyhunterdigital" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><TikTokIcon/></a>
+                <a href="https://www.facebook.com/Happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><Facebook size={20}/></a>
+              </div>
             </div>
           </div>
-
-          <div className="space-y-6">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Internal Hubs</h3>
-            <div className="flex flex-col gap-4 text-xs font-bold uppercase tracking-widest text-gray-400">
-              <Link to="/architecture" className="hover:text-yellow-500 transition-colors text-yellow-500">Master Architecture</Link>
-              <Link to="/services" className="hover:text-yellow-500 transition-colors text-white">The Protocol</Link>
-              <Link to="/earned-media" className="hover:text-yellow-500 transition-colors text-white">Success Nodes</Link>
-              <Link to="/intelligence" className="hover:text-yellow-500 transition-colors text-white">Intelligence Hub</Link>
+          <div className="container mx-auto mt-24 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500">
+            <p className="text-gray-800 text-[9px] font-black uppercase tracking-[0.5em] opacity-40">&copy; 2026 // HAPPYHUNTERDIGITAL SYSTEMS // AGENTIC OPERATIONS CORE</p>
+            <div className="flex gap-6 text-[8px] font-bold uppercase tracking-widest">
+              <Link to="/faq" className="hover:text-white transition-colors">POPI Act</Link>
+              <Link to="/faq" className="hover:text-white transition-colors">Privacy Protocol</Link>
             </div>
           </div>
+        </footer>
+      )}
 
-          <div className="space-y-6">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Social Signals</h3>
-            <div className="flex flex-wrap gap-4">
-              <a href="https://za.linkedin.com/in/thabomotsumi" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><Linkedin size={20}/></a>
-              <a href="https://x.com/HappyHunter35" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><XIcon/></a>
-              <a href="https://www.instagram.com/happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><Instagram size={20}/></a>
-              <a href="https://www.tiktok.com/@happyhunterdigital" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><TikTokIcon/></a>
-              <a href="https://www.facebook.com/Happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-[#0a0a0a] rounded-xl text-gray-400 hover:text-yellow-500 border border-gray-800 transition-all shadow-lg"><Facebook size={20}/></a>
-            </div>
-          </div>
-        </div>
-        <div className="container mx-auto mt-24 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-500">
-          <p className="text-gray-800 text-[9px] font-black uppercase tracking-[0.5em] opacity-40">&copy; 2026 // HAPPYHUNTERDIGITAL SYSTEMS // AGENTIC OPERATIONS CORE</p>
-          <div className="flex gap-6 text-[8px] font-bold uppercase tracking-widest">
-            <Link to="/faq" className="hover:text-white transition-colors">POPI Act</Link>
-            <Link to="/faq" className="hover:text-white transition-colors">Privacy Protocol</Link>
-          </div>
-        </div>
-      </footer>
-
-      <Chatbot />
+      {!isLandingPage && <Chatbot />}
       <CookieConsent />
     </div>
   );
