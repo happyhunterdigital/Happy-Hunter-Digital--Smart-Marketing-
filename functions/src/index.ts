@@ -9,7 +9,7 @@ admin.initializeApp();
 const db = getFirestore();
 
 // ============================================================================
-// 1. SMART MARKETING AUDIT (UPGRADED: HIJACK DETECTION & SCHEMA SCRAPER)
+// 1. SMART MARKETING AUDIT (UPGRADED: AI-DRIVEN HIJACK DETECTION)
 // ============================================================================
 export const performAudit = onCall({
     region: "us-central1",
@@ -26,6 +26,7 @@ export const performAudit = onCall({
     if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
 
     try {
+        // --- 1. PROGRESSIVE GOOGLE PLACES SEARCH ---
         const getPlaces = async (query: string) => {
             const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
                 method: "POST",
@@ -42,30 +43,16 @@ export const performAudit = onCall({
         let pData = await getPlaces(`${businessName} in ${location}`);
         let biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
 
+        // Broad fallback search if strict location fails
         if (!biz) {
             pData = await getPlaces(businessName);
             biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
         }
 
-        // --- TRAFFIC HIJACK & FUZZY MATCH DETECTION ---
-        let isHijacked = false;
-        let foundName = "";
+        // We DO NOT guess the URL anymore. If Google doesn't know it, it's a Ghost.
+        const websiteUrl = biz?.websiteUri || null;
         
-        if (biz) {
-            foundName = biz.displayName?.text || "";
-            const searchedClean = businessName.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const foundClean = foundName.toLowerCase().replace(/[^a-z0-9]/g, '');
-            
-            // If the names do not cross-match, Google routed the search to a competitor.
-            if (!foundClean.includes(searchedClean) && !searchedClean.includes(foundClean)) {
-                isHijacked = true;
-            }
-        }
-
-        // Only use the website URL if it's the CORRECT business
-        const websiteUrl = (!isHijacked && biz?.websiteUri) ? biz.websiteUri : null;
-        
-        // --- DEEP WEBSITE & SCHEMA SCRAPING ---
+        // --- 2. DEEP WEBSITE & SCHEMA SCRAPING ---
         let detectedSchemas: string[] = [];
         let hasSchema = false;
         
@@ -102,30 +89,40 @@ export const performAudit = onCall({
             }
         }
 
-        // --- CONTEXT INJECTION FOR AI ---
-        let context = "";
+        // --- 3. CONTEXT INJECTION FOR AI ---
         const schemaString = detectedSchemas.length > 0 ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
+        const bizNameStr = biz?.displayName?.text || "NONE FOUND";
         
+        let context = "";
         if (!biz) {
             context = `GHOST ENTITY: No Google Maps data found for "${businessName}". No Website verified. ${schemaString}`;
-        } else if (isHijacked) {
-            context = `TRAFFIC HIJACK DETECTED: The user searched for "${businessName}", but because their digital footprint is weak, Google Maps algorithm routed the search query directly to a competitor named "${foundName}". This is a severe Ghost Effect. DO NOT SCORE THE COMPETITOR. Score the target 0/100 for identity loss.`;
         } else {
-            context = `Verified Maps Entity: ${foundName}. Rating: ${biz.rating || 0}. Reviews: ${biz.userRatingCount || 0}. Website: ${websiteUrl || 'NO WEBSITE LINKED IN MAPS'}. ${schemaString}`;
+            // We pass both names to the AI so it can detect the Traffic Hijack autonomously
+            context = `
+            - User Searched For: "${businessName}"
+            - Google Maps Returned: "${bizNameStr}"
+            - Maps Rating: ${biz.rating || 0} (${biz.userRatingCount || 0} reviews)
+            - Website Linked in Maps: ${websiteUrl || 'NONE LINKED'}
+            - ${schemaString}
+            `;
         }
 
         const RUBRIC = `
         SCORING RUBRIC (0-100):
         - Baseline 30.
-        - Verified Maps Entity: +20 points.
+        - Verified Maps Entity (Names Match Exactly): +20 points.
         - Rating >= 4.0: +15 points.
-        - Schema Markup Detected (true): +25 points (Crucial for AEO).
-        - Ghost Entity, Traffic Hijack, OR No Schema: Deduct 30 points.
+        - Schema Markup Detected (true): +25 points.
+        - Ghost Entity OR No Schema: Deduct 30 points.
         
-        INSTRUCTIONS FOR 'truths' ARRAY:
-        Truth 1: State explicitly if they are Verified on Maps, a Ghost, or if a Traffic Hijack occurred to a competitor.
-        Truth 2: Mention their Website status (If no website is linked, tell them it is a critical failure).
-        Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is missing.
+        CRITICAL TRAFFIC HIJACK INSTRUCTION:
+        If the "User Searched For" name and the "Google Maps Returned" name are fundamentally different businesses (e.g. "IntegratedWellth" vs "Integrated Health"), you MUST treat this as a TRAFFIC HIJACK. 
+        If hijacked, set their total score to 0. Do NOT praise the competitor's rating. In your summary, explicitly state that because their digital footprint is weak, Google algorithms are routing their high-intent customers directly to a competitor named "[Google Maps Returned name]". Agitate this pain point.
+        
+        INSTRUCTIONS FOR 'truths' ARRAY (Must be exactly 3 items):
+        Truth 1: State if they are Verified, a Ghost, or if a Traffic Hijack occurred (name the competitor).
+        Truth 2: Mention their Website status (If NO website is linked, state it is a critical algorithmic failure).
+        Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is completely missing.
         `;
 
         const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
@@ -139,6 +136,9 @@ export const performAudit = onCall({
 
         const aiData = await aiRes.json() as any;
         const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
+
+        // Determine if Gemini classified it as a Hijack based on a 0 score despite finding a Maps Node
+        const isHijacked = (biz && analysis.score === 0);
 
         const telemetry = {
             mapsStatus: !biz ? "GHOST (NOT FOUND)" : isHijacked ? "HIJACKED (COMPETITOR FOUND)" : "VERIFIED",
