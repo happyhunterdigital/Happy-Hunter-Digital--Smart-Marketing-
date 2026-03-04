@@ -165,7 +165,7 @@ export const AiAudit: React.FC = () => {
                                     <AlertTriangle size={18} /> Critical Vulnerability Detected
                                 </h3>
                                 <p className="text-gray-300 text-sm leading-relaxed">
-                                    Your digital architecture is actively repelling algorithms. You are experiencing the "Ghost Effect"—meaning high-intent customers searching for your services are being routed directly to your competitors. Immediate intervention is required.
+                                    Your digital architecture is actively repelling algorithms. You are experiencing the &quot;Ghost Effect&quot;—meaning high-intent customers searching for your services are being routed directly to your competitors. Immediate intervention is required.
                                 </p>
                             </div>
                         )}
@@ -175,7 +175,7 @@ export const AiAudit: React.FC = () => {
                                 <h3 className="text-yellow-500 font-black uppercase text-xs tracking-widest mb-4 flex items-center gap-2">
                                     <ShieldCheck size={16}/> Forensic AI Summary
                                 </h3>
-                                <p className="text-white text-lg font-medium leading-relaxed italic border-l-4 border-gray-800 pl-4">"{verdict.summary}"</p>
+                                <p className="text-white text-lg font-medium leading-relaxed italic border-l-4 border-gray-800 pl-4">&quot;{verdict.summary}&quot;</p>
                             </div>
 
                             {/* --- THE GOOGLE RICH RESULTS TEST UI BLOCK --- */}
@@ -189,21 +189,21 @@ export const AiAudit: React.FC = () => {
                                 <div className="p-6">
                                     <div className="flex items-center gap-4 mb-6 bg-[#f0fdf4] border border-[#bbf7d0] p-4 rounded-lg">
                                         {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 ? (
-                                            <>
+                                            <React.Fragment>
                                                 <CheckCircle2 size={32} className="text-[#16a34a] shrink-0" />
                                                 <div>
                                                     <h4 className="text-lg font-bold text-[#16a34a]">{verdict.telemetry.schemasDetected.length} valid items detected</h4>
                                                     <p className="text-sm text-gray-600">Valid items are eligible for Google Search&apos;s rich results.</p>
                                                 </div>
-                                            </>
+                                            </React.Fragment>
                                         ) : (
-                                            <>
+                                            <React.Fragment>
                                                 <XCircle size={32} className="text-[#dc2626] shrink-0" />
                                                 <div>
                                                     <h4 className="text-lg font-bold text-[#dc2626]">0 valid items detected</h4>
                                                     <p className="text-sm text-gray-600">This entity is invisible to AI overviews and rich snippet extraction.</p>
                                                 </div>
-                                            </>
+                                            </React.Fragment>
                                         )}
                                     </div>
                                     
