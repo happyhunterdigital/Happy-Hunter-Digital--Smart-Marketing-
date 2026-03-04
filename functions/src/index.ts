@@ -9,7 +9,7 @@ admin.initializeApp();
 const db = getFirestore();
 
 // ============================================================================
-// 1. SMART MARKETING AUDIT (UPGRADED: DEEP SCHEMA SCRAPER + MAPS FALLBACK)
+// 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + MAPS FALLBACK)
 // ============================================================================
 export const performAudit = onCall({
     region: "us-central1",
@@ -40,11 +40,10 @@ export const performAudit = onCall({
             return res.json() as any;
         };
 
-        // Attempt 1: Strict local search
         let pData = await getPlaces(`${businessName} in ${location}`);
         let biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
 
-        // Attempt 2: Broad entity search (Resolves the "Ghost" error for legitimate businesses)
+        // Broad fallback search to prevent false "Ghost" readings
         if (!biz) {
             pData = await getPlaces(businessName);
             biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
@@ -53,7 +52,7 @@ export const performAudit = onCall({
         const websiteUrl = biz?.websiteUri || `https://www.${businessName.replace(/\s+/g, '').toLowerCase()}.com`;
         
         // --- 2. DEEP WEBSITE & SCHEMA SCRAPING ---
-        let detectedSchemas: string[] =[];
+        let detectedSchemas: string[] = [];
         let hasSchema = false;
         
         try {
@@ -74,7 +73,6 @@ export const performAudit = onCall({
                 } catch(e) { }
             });
             
-            // Deduplicate and filter schemas
             detectedSchemas = [...new Set(detectedSchemas)];
             if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
 
@@ -104,7 +102,6 @@ export const performAudit = onCall({
         Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is missing.
         `;
 
-        // Using exactly the V3 AI Logic you confirmed works perfectly
         const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -117,7 +114,6 @@ export const performAudit = onCall({
         const aiData = await aiRes.json() as any;
         const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
 
-        // Package telemetry for the new Rich Results UI Component
         const telemetry = {
             mapsStatus: biz ? "VERIFIED" : "GHOST (NOT FOUND)",
             website: websiteUrl,
@@ -125,15 +121,17 @@ export const performAudit = onCall({
             schemasDetected: detectedSchemas
         };
 
-        // Save lead
         await db.collection("leads").add({ businessName, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
 
-        // Email Dispatch Logic (omitted for brevity in this snippet but kept identical to your structure)
+        // Email Dispatch Logic
         const isGoodScore = analysis.score >= 70;
-        const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;"><h1>Digital Survival Score: ${analysis.score}/100</h1><p>${analysis.summary}</p></div>`;
+        const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
+            <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'};">Digital Survival Score: ${analysis.score}/100</h1>
+            <p>${analysis.summary}</p>
+        </div>`;
+        
         await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml } });
 
-        // Return telemetry to the frontend
         return { success: true, ...analysis, telemetry };
 
     } catch (e: any) {
@@ -142,7 +140,7 @@ export const performAudit = onCall({
 });
 
 // ============================================================================
-// 2. STRATEGIC CHAT (FROM V3 - WORKS PERFECTLY)
+// 2. STRATEGIC CHAT
 // ============================================================================
 export const hunterChat = onCall({
     region: "us-central1",
