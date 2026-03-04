@@ -19,7 +19,7 @@ export const AiAudit: React.FC = () => {
         "Extracting Star Rating & Review Count...",
         "Checking Website Signal Consistency...",
         "Scanning for AI Schema (JSON-LD)...",
-        "Validating Rich Results Compliance...",
+        "Validating Answer Engine Compliance...",
         "Calculating AI Findability Index...",
         "Computing Digital Survival Score..."
     ];
@@ -178,52 +178,53 @@ export const AiAudit: React.FC = () => {
                                 <p className="text-white text-lg font-medium leading-relaxed italic border-l-4 border-gray-800 pl-4">&quot;{verdict.summary}&quot;</p>
                             </div>
 
-                            {/* --- THE GOOGLE RICH RESULTS TEST UI BLOCK --- */}
-                            <div className="mb-10 bg-[#ffffff] text-black rounded-xl overflow-hidden shadow-lg border border-gray-200">
-                                <div className="bg-[#f8f9fa] p-4 border-b border-gray-200 flex justify-between items-center">
-                                    <h3 className="text-gray-600 font-bold text-sm flex items-center gap-2">
-                                        <Database size={16} /> Rich Results Test Detection
+                            {/* --- BRANDED SCHEMA DETECTION UI BLOCK --- */}
+                            <div className="mb-10 bg-[#0a0a0a] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl relative">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
+                                <div className="bg-[#111827] p-4 border-b border-gray-800 flex justify-between items-center">
+                                    <h3 className="text-white font-bold text-sm flex items-center gap-2 uppercase tracking-wide">
+                                        <Database size={16} className="text-yellow-500" /> Entity Schema Parsing
                                     </h3>
-                                    <span className="text-[10px] text-gray-400 font-mono uppercase">search.google.com/test</span>
+                                    <span className="text-[10px] text-yellow-500 font-mono uppercase tracking-widest bg-yellow-500/10 px-2 py-1 rounded">happyhunterdigital // AEO Core</span>
                                 </div>
                                 <div className="p-6">
-                                    <div className="flex items-center gap-4 mb-6 bg-[#f0fdf4] border border-[#bbf7d0] p-4 rounded-lg">
+                                    <div className={`flex items-center gap-4 mb-6 p-4 rounded-xl border ${verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
                                         {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 ? (
                                             <React.Fragment>
-                                                <CheckCircle2 size={32} className="text-[#16a34a] shrink-0" />
+                                                <CheckCircle2 size={32} className="text-green-500 shrink-0" />
                                                 <div>
-                                                    <h4 className="text-lg font-bold text-[#16a34a]">{verdict.telemetry.schemasDetected.length} valid items detected</h4>
-                                                    <p className="text-sm text-gray-600">Valid items are eligible for Google Search&apos;s rich results.</p>
+                                                    <h4 className="text-lg font-black text-green-500">{verdict.telemetry.schemasDetected.length} Valid Protocols Detected</h4>
+                                                    <p className="text-xs text-gray-400 mt-1">These items are explicitly structured for AI Overviews and Generative Engine extraction.</p>
                                                 </div>
                                             </React.Fragment>
                                         ) : (
                                             <React.Fragment>
-                                                <XCircle size={32} className="text-[#dc2626] shrink-0" />
+                                                <XCircle size={32} className="text-red-500 shrink-0" />
                                                 <div>
-                                                    <h4 className="text-lg font-bold text-[#dc2626]">0 valid items detected</h4>
-                                                    <p className="text-sm text-gray-600">This entity is invisible to AI overviews and rich snippet extraction.</p>
+                                                    <h4 className="text-lg font-black text-red-500">0 Valid Protocols Detected</h4>
+                                                    <p className="text-xs text-gray-400 mt-1">This entity is missing machine-readable code. You are invisible to AI agents.</p>
                                                 </div>
                                             </React.Fragment>
                                         )}
                                     </div>
                                     
                                     {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 && (
-                                        <div className="border border-gray-200 rounded-lg divide-y divide-gray-200">
-                                            <div className="p-3 bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">Detected structured data</div>
+                                        <div className="border border-gray-800 rounded-xl divide-y divide-gray-800 overflow-hidden">
+                                            <div className="p-3 bg-[#111827] text-[10px] font-black text-gray-500 uppercase tracking-widest">Extracted Structured Data</div>
                                             {verdict.telemetry.schemasDetected.map((schemaType: string, idx: number) => (
-                                                <div key={idx} className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors">
+                                                <div key={idx} className="p-4 flex items-center justify-between hover:bg-gray-900/50 cursor-pointer transition-colors bg-black">
                                                     <div className="flex items-center gap-4">
-                                                        <CheckCircle size={18} className="text-[#16a34a]" />
-                                                        <span className="text-gray-800 font-bold">{schemaType}</span>
+                                                        <CheckCircle size={18} className="text-green-500" />
+                                                        <span className="text-white font-bold">{schemaType}</span>
                                                     </div>
-                                                    <span className="text-gray-500 text-sm">1 valid item detected</span>
+                                                    <span className="text-gray-500 text-xs font-medium bg-gray-900 px-3 py-1 rounded-full border border-gray-800">1 Item Active</span>
                                                 </div>
                                             ))}
                                         </div>
                                     )}
                                 </div>
                             </div>
-                            {/* --- END RICH RESULTS UI --- */}
+                            {/* --- END BRANDED SCHEMA UI --- */}
 
                             <div className="grid gap-4">
                                 <h3 className="text-gray-500 font-black uppercase text-xs tracking-widest mb-2 flex items-center gap-2">
