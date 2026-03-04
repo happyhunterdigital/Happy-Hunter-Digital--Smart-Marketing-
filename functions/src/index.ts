@@ -9,7 +9,7 @@ admin.initializeApp();
 const db = getFirestore();
 
 // ============================================================================
-// 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + MAPS FALLBACK)
+// 1. SMART MARKETING AUDIT (ENTERPRISE UPGRADE)
 // ============================================================================
 export const performAudit = onCall({
     region: "us-central1",
@@ -26,7 +26,6 @@ export const performAudit = onCall({
     if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
 
     try {
-        // --- 1. PROGRESSIVE GOOGLE PLACES SEARCH ---
         const getPlaces = async (query: string) => {
             const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
                 method: "POST",
@@ -43,50 +42,62 @@ export const performAudit = onCall({
         let pData = await getPlaces(`${businessName} in ${location}`);
         let biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
 
-        // Broad fallback search to prevent false "Ghost" readings
         if (!biz) {
             pData = await getPlaces(businessName);
             biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
         }
 
-        const websiteUrl = biz?.websiteUri || `https://www.${businessName.replace(/\s+/g, '').toLowerCase()}.com`;
+        // IMPROVEMENT 1: Removed the dangerous "URL guesser". If Google doesn't know their website, we assume they don't have one.
+        const websiteUrl = biz?.websiteUri || null; 
         
-        // --- 2. DEEP WEBSITE & SCHEMA SCRAPING ---
         let detectedSchemas: string[] = [];
         let hasSchema = false;
         
-        try {
-            const webRes = await axios.get(websiteUrl, { timeout: 6000 });
-            const $ = cheerio.load(webRes.data);
-            
-            $('script[type="application/ld+json"]').each((_, element) => {
-                hasSchema = true;
-                try {
-                    const jsonData = JSON.parse($(element).html() || "{}");
-                    if (jsonData['@graph']) {
-                        jsonData['@graph'].forEach((item: any) => {
-                            if (item['@type']) detectedSchemas.push(item['@type']);
-                        });
-                    } else if (jsonData['@type']) {
-                        detectedSchemas.push(jsonData['@type']);
+        // IMPROVEMENT 2: Only scrape if a verified URL exists, and use a Stealth User-Agent to bypass basic Cloudflare/Bot blockers.
+        if (websiteUrl) {
+            try {
+                const webRes = await axios.get(websiteUrl, { 
+                    timeout: 6000,
+                    headers: {
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
                     }
-                } catch(e) { }
-            });
-            
-            detectedSchemas = [...new Set(detectedSchemas)];
-            if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
+                });
+                const $ = cheerio.load(webRes.data);
+                
+                // IMPROVEMENT 3: Advanced JSON-LD array extraction (catches nested Yoast/Shopify schemas)
+                $('script[type="application/ld+json"]').each((_, element) => {
+                    hasSchema = true;
+                    try {
+                        const rawHtml = $(element).html() || "{}";
+                        const jsonData = JSON.parse(rawHtml);
+                        
+                        const extractType = (obj: any) => {
+                            if (!obj) return;
+                            if (Array.isArray(obj)) {
+                                obj.forEach(extractType);
+                            } else if (typeof obj === 'object') {
+                                if (obj['@type']) detectedSchemas.push(obj['@type']);
+                                if (obj['@graph']) extractType(obj['@graph']);
+                            }
+                        };
+                        extractType(jsonData);
+                    } catch(e) { }
+                });
+                
+                detectedSchemas = [...new Set(detectedSchemas)];
+                if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
 
-        } catch (err) {
-            console.log("Web scrape failed or timed out for:", websiteUrl);
+            } catch (err) {
+                console.log("Web scrape failed or timed out for:", websiteUrl);
+            }
         }
 
-        // --- 3. CONTEXT INJECTION FOR AI ---
         const schemaString = detectedSchemas.length > 0 ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
         const bizNameStr = biz?.displayName?.text || businessName;
         
         const context = biz
-            ? `Verified Maps Entity: ${bizNameStr}. Rating: ${biz.rating || 0}. Reviews: ${biz.userRatingCount || 0}. Website: ${websiteUrl}. ${schemaString}`
-            : `Ghost: No Maps data found for ${businessName}. Assumed Website: ${websiteUrl}. ${schemaString}`;
+            ? `Verified Maps Entity: ${bizNameStr}. Rating: ${biz.rating || 0}. Reviews: ${biz.userRatingCount || 0}. Website: ${websiteUrl || 'NO WEBSITE LINKED IN MAPS'}. ${schemaString}`
+            : `Ghost: No Maps data found for ${businessName}. No Website verified. ${schemaString}`;
 
         const RUBRIC = `
         SCORING RUBRIC (0-100):
@@ -98,7 +109,7 @@ export const performAudit = onCall({
         
         INSTRUCTIONS FOR 'truths' ARRAY:
         Truth 1: State explicitly if they are Verified on Maps (mention their rating) or a Ghost.
-        Truth 2: Mention their Website status.
+        Truth 2: Mention their Website status (If no website is linked, tell them that is a critical failure).
         Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is missing.
         `;
 
@@ -116,7 +127,7 @@ export const performAudit = onCall({
 
         const telemetry = {
             mapsStatus: biz ? "VERIFIED" : "GHOST (NOT FOUND)",
-            website: websiteUrl,
+            website: websiteUrl || "None Linked",
             schema: hasSchema,
             schemasDetected: detectedSchemas
         };
