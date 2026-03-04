@@ -9,7 +9,7 @@ admin.initializeApp();
 const db = getFirestore();
 
 // ============================================================================
-// 1. SMART MARKETING AUDIT (ENTERPRISE UPGRADE)
+// 1. SMART MARKETING AUDIT (UPGRADED: HIJACK DETECTION & SCHEMA SCRAPER)
 // ============================================================================
 export const performAudit = onCall({
     region: "us-central1",
@@ -47,30 +47,40 @@ export const performAudit = onCall({
             biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
         }
 
-        // IMPROVEMENT 1: Removed the dangerous "URL guesser". If Google doesn't know their website, we assume they don't have one.
-        const websiteUrl = biz?.websiteUri || null; 
+        // --- TRAFFIC HIJACK & FUZZY MATCH DETECTION ---
+        let isHijacked = false;
+        let foundName = "";
         
+        if (biz) {
+            foundName = biz.displayName?.text || "";
+            const searchedClean = businessName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const foundClean = foundName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            
+            // If the names do not cross-match, Google routed the search to a competitor.
+            if (!foundClean.includes(searchedClean) && !searchedClean.includes(foundClean)) {
+                isHijacked = true;
+            }
+        }
+
+        // Only use the website URL if it's the CORRECT business
+        const websiteUrl = (!isHijacked && biz?.websiteUri) ? biz.websiteUri : null;
+        
+        // --- DEEP WEBSITE & SCHEMA SCRAPING ---
         let detectedSchemas: string[] = [];
         let hasSchema = false;
         
-        // IMPROVEMENT 2: Only scrape if a verified URL exists, and use a Stealth User-Agent to bypass basic Cloudflare/Bot blockers.
         if (websiteUrl) {
             try {
                 const webRes = await axios.get(websiteUrl, { 
                     timeout: 6000,
-                    headers: {
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                    }
+                    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
                 });
                 const $ = cheerio.load(webRes.data);
                 
-                // IMPROVEMENT 3: Advanced JSON-LD array extraction (catches nested Yoast/Shopify schemas)
                 $('script[type="application/ld+json"]').each((_, element) => {
                     hasSchema = true;
                     try {
-                        const rawHtml = $(element).html() || "{}";
-                        const jsonData = JSON.parse(rawHtml);
-                        
+                        const jsonData = JSON.parse($(element).html() || "{}");
                         const extractType = (obj: any) => {
                             if (!obj) return;
                             if (Array.isArray(obj)) {
@@ -92,12 +102,17 @@ export const performAudit = onCall({
             }
         }
 
+        // --- CONTEXT INJECTION FOR AI ---
+        let context = "";
         const schemaString = detectedSchemas.length > 0 ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
-        const bizNameStr = biz?.displayName?.text || businessName;
         
-        const context = biz
-            ? `Verified Maps Entity: ${bizNameStr}. Rating: ${biz.rating || 0}. Reviews: ${biz.userRatingCount || 0}. Website: ${websiteUrl || 'NO WEBSITE LINKED IN MAPS'}. ${schemaString}`
-            : `Ghost: No Maps data found for ${businessName}. No Website verified. ${schemaString}`;
+        if (!biz) {
+            context = `GHOST ENTITY: No Google Maps data found for "${businessName}". No Website verified. ${schemaString}`;
+        } else if (isHijacked) {
+            context = `TRAFFIC HIJACK DETECTED: The user searched for "${businessName}", but because their digital footprint is weak, Google Maps algorithm routed the search query directly to a competitor named "${foundName}". This is a severe Ghost Effect. DO NOT SCORE THE COMPETITOR. Score the target 0/100 for identity loss.`;
+        } else {
+            context = `Verified Maps Entity: ${foundName}. Rating: ${biz.rating || 0}. Reviews: ${biz.userRatingCount || 0}. Website: ${websiteUrl || 'NO WEBSITE LINKED IN MAPS'}. ${schemaString}`;
+        }
 
         const RUBRIC = `
         SCORING RUBRIC (0-100):
@@ -105,11 +120,11 @@ export const performAudit = onCall({
         - Verified Maps Entity: +20 points.
         - Rating >= 4.0: +15 points.
         - Schema Markup Detected (true): +25 points (Crucial for AEO).
-        - Ghost Entity OR No Schema: Deduct 30 points.
+        - Ghost Entity, Traffic Hijack, OR No Schema: Deduct 30 points.
         
         INSTRUCTIONS FOR 'truths' ARRAY:
-        Truth 1: State explicitly if they are Verified on Maps (mention their rating) or a Ghost.
-        Truth 2: Mention their Website status (If no website is linked, tell them that is a critical failure).
+        Truth 1: State explicitly if they are Verified on Maps, a Ghost, or if a Traffic Hijack occurred to a competitor.
+        Truth 2: Mention their Website status (If no website is linked, tell them it is a critical failure).
         Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is missing.
         `;
 
@@ -126,7 +141,7 @@ export const performAudit = onCall({
         const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
 
         const telemetry = {
-            mapsStatus: biz ? "VERIFIED" : "GHOST (NOT FOUND)",
+            mapsStatus: !biz ? "GHOST (NOT FOUND)" : isHijacked ? "HIJACKED (COMPETITOR FOUND)" : "VERIFIED",
             website: websiteUrl || "None Linked",
             schema: hasSchema,
             schemasDetected: detectedSchemas
