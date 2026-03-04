@@ -1,242 +1,270 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { onDocumentWritten } from "firebase-functions/v2/firestore";
-import * as admin from "firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
-import axios from "axios";
-import * as cheerio from "cheerio";
+import React, { useState, useRef } from 'react';
+import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown, Calendar, Database, CheckCircle2 } from 'lucide-react';
+import { db, functions } from '../firebaseConfig';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
-admin.initializeApp();
-const db = getFirestore();
+export const AiAudit: React.FC = () => {
+    const [step, setStep] = useState(1);
+    const[form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
+    const [loading, setLoading] = useState(false);
+    const[scanProgress, setScanProgress] = useState(0);
+    const [verdict, setVerdict] = useState<any>(null);
+    const reportRef = useRef<HTMLDivElement>(null);
 
-// ============================================================================
-// 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + MAPS FALLBACK)
-// ============================================================================
-export const performAudit = onCall({
-    region: "us-central1",
-    cors: true,
-    maxInstances: 10,
-    timeoutSeconds: 300
-}, async (request) => {
-    const { businessName, location, clientEmail } = request.data;
-    
-    const G_KEY = process.env.GEMINI_API_KEY;
-    const P_KEY = process.env.PLACES_API_KEY;
+    const scanSteps =[
+        "Verifying Google Business Profile...",
+        "Extracting Star Rating & Review Count...",
+        "Checking Website Signal Consistency...",
+        "Scanning for AI Schema (JSON-LD)...",
+        "Validating Rich Results Compliance...",
+        "Calculating AI Findability Index...",
+        "Computing Digital Survival Score..."
+    ];
 
-    if (!businessName || !location || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
-    if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
+    const calculateRevenueLoss = (score: number) => {
+        if (score <= 30) return { amount: 'R18,500+', desc: 'Severe ghost entity status. Maximum revenue leakage.' };
+        if (score <= 55) return { amount: 'R9,800+', desc: 'Critical signal failures. Significant monthly loss.' };
+        return { amount: 'R3,200+', desc: 'Moderate gaps detected. Optimization required.' };
+    };
 
-    try {
-        // --- 1. PROGRESSIVE GOOGLE PLACES SEARCH ---
-        const getPlaces = async (query: string) => {
-            const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json", 
-                    "X-Goog-Api-Key": P_KEY, 
-                    "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri" 
-                },
-                body: JSON.stringify({ textQuery: query })
-            });
-            return res.json() as any;
-        };
+    const runForensicScan = async () => {
+        setStep(3);
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 2;
+            setScanProgress(progress);
+            if (progress >= 95) clearInterval(interval);
+        }, 50);
 
-        let pData = await getPlaces(`${businessName} in ${location}`);
-        let biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
-
-        // Broad fallback search to prevent false "Ghost" readings
-        if (!biz) {
-            pData = await getPlaces(businessName);
-            biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
-        }
-
-        const websiteUrl = biz?.websiteUri || `https://www.${businessName.replace(/\s+/g, '').toLowerCase()}.com`;
-        
-        // --- 2. DEEP WEBSITE & SCHEMA SCRAPING ---
-        let detectedSchemas: string[] = [];
-        let hasSchema = false;
-        
         try {
-            const webRes = await axios.get(websiteUrl, { timeout: 6000 });
-            const $ = cheerio.load(webRes.data);
-            
-            $('script[type="application/ld+json"]').each((_, element) => {
-                hasSchema = true;
-                try {
-                    const jsonData = JSON.parse($(element).html() || "{}");
-                    if (jsonData['@graph']) {
-                        jsonData['@graph'].forEach((item: any) => {
-                            if (item['@type']) detectedSchemas.push(item['@type']);
-                        });
-                    } else if (jsonData['@type']) {
-                        detectedSchemas.push(jsonData['@type']);
-                    }
-                } catch(e) { }
+            const performAudit = httpsCallable(functions, 'performAudit');
+            const response = await performAudit({
+                businessName: form.biz,
+                location: form.loc,
+                clientEmail: form.mail
             });
-            
-            detectedSchemas = [...new Set(detectedSchemas)];
-            if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
 
-        } catch (err) {
-            console.log("Web scrape failed or timed out for:", websiteUrl);
+            const data = response.data as any;
+            if (!data.success) throw new Error("Server rejected audit.");
+
+            const rev = calculateRevenueLoss(data.score);
+            setVerdict({ ...data, revenueLoss: rev });
+
+            clearInterval(interval);
+            setScanProgress(100);
+            setTimeout(() => setStep(4), 500);
+
+        } catch (err: any) {
+            clearInterval(interval);
+            console.error(err);
+            alert("Neural Link Interrupted. Please check your connection and retry.");
+            setStep(1);
         }
+    };
 
-        // --- 3. CONTEXT INJECTION FOR AI ---
-        const schemaString = detectedSchemas.length > 0 ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
-        const bizNameStr = biz?.displayName?.text || businessName;
-        
-        const context = biz
-            ? `Verified Maps Entity: ${bizNameStr}. Rating: ${biz.rating || 0}. Reviews: ${biz.userRatingCount || 0}. Website: ${websiteUrl}. ${schemaString}`
-            : `Ghost: No Maps data found for ${businessName}. Assumed Website: ${websiteUrl}. ${schemaString}`;
+    const downloadPDF = async () => {
+        if (!reportRef.current) return;
+        const canvas = await html2canvas(reportRef.current, { backgroundColor: '#050505', scale: 2 });
+        const img = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(img, 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
+        pdf.save(`HH_Audit_${form.biz}.pdf`);
+    };
 
-        const RUBRIC = `
-        SCORING RUBRIC (0-100):
-        - Baseline 30.
-        - Verified Maps Entity: +20 points.
-        - Rating >= 4.0: +15 points.
-        - Schema Markup Detected (true): +25 points (Crucial for AEO).
-        - Ghost Entity OR No Schema: Deduct 30 points.
-        
-        INSTRUCTIONS FOR 'truths' ARRAY:
-        Truth 1: State explicitly if they are Verified on Maps (mention their rating) or a Ghost.
-        Truth 2: Mention their Website status.
-        Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is missing.
-        `;
+    return (
+        <div className="max-w-4xl mx-auto mt-10 px-4 pb-20">
+            {step === 1 && (
+                <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-gray-800 backdrop-blur-xl animate-fade-in text-center shadow-2xl">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest mb-4">
+                        Signal Mismatch Detected
+                    </div>
+                    <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">Is your business a <span className="text-yellow-500 italic">Ghost?</span></h2>
+                    <p className="text-gray-400 max-w-md mx-auto mb-8">Enter your coordinates to see if algorithms can find your entity.</p>
+                    <div className="grid md:grid-cols-2 gap-4 mb-6">
+                        <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-all" placeholder="Business Name" onChange={e => setForm({...form, biz: e.target.value})} required />
+                        <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-all" placeholder="City / Area" onChange={e => setForm({...form, loc: e.target.value})} required />
+                    </div>
+                    <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl">
+                        Analyze Business Architecture <ArrowRight size={20}/>
+                    </button>
+                </form>
+            )}
 
-        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
-                generationConfig: { responseMimeType: "application/json" }
-            })
-        });
+            {step === 2 && (
+                <form onSubmit={(e) => { e.preventDefault(); runForensicScan(); }} className="space-y-6 bg-gray-900/40 p-10 rounded-[2.5rem] border border-yellow-500/20 backdrop-blur-xl animate-fade-in shadow-2xl">
+                    <div className="text-center mb-8">
+                        <ShieldCheck className="mx-auto text-yellow-500 mb-4" size={48}/>
+                        <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Secure Your Results</h2>
+                        <p className="text-gray-400 text-sm">Where should we dispatch your Forensic Intelligence Report?</p>
+                    </div>
+                    <div className="space-y-4 mb-6">
+                        <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} required />
+                        <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
+                        <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="WhatsApp Number" type="tel" onChange={e => setForm({...form, wa: e.target.value})} required />
+                    </div>
+                    <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl">
+                        Reveal Intelligence <Zap size={20}/>
+                    </button>
+                </form>
+            )}
 
-        const aiData = await aiRes.json() as any;
-        const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
+            {step === 3 && (
+                <div className="text-center py-24 bg-gray-900/20 border border-gray-800 rounded-[3rem] animate-fade-in shadow-2xl">
+                    <div className="relative w-32 h-32 mx-auto mb-10">
+                        <div className="absolute inset-0 rounded-full border-4 border-yellow-500/10"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-yellow-500 border-t-transparent animate-spin"></div>
+                        <Search className="absolute inset-0 m-auto text-yellow-500" size={40} />
+                    </div>
+                    <h2 className="text-2xl font-black text-white uppercase mb-4">Scanning Digital Entity...</h2>
+                    <p className="text-yellow-500 font-mono text-xs mb-8">{scanSteps[Math.min(Math.floor(scanProgress / 14), 6)]}</p>
+                    <div className="w-64 h-1 bg-gray-800 mx-auto rounded-full overflow-hidden">
+                        <div className="h-full bg-yellow-500 transition-all duration-300" style={{ width: `${scanProgress}%` }}></div>
+                    </div>
+                </div>
+            )}
 
-        const telemetry = {
-            mapsStatus: biz ? "VERIFIED" : "GHOST (NOT FOUND)",
-            website: websiteUrl,
-            schema: hasSchema,
-            schemasDetected: detectedSchemas
-        };
+            {step === 4 && verdict && (
+                <div className="space-y-8 animate-fade-in pb-10">
+                    <div ref={reportRef} className="p-8 md:p-12 bg-[#050505] border border-gray-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
+                        
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-10 border-b border-gray-800 pb-10">
+                            <div className="text-center md:text-left">
+                                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 mb-2">Digital Survival Score</p>
+                                <div className="flex items-center gap-4 justify-center md:justify-start">
+                                    <span className={`text-7xl md:text-8xl font-black leading-none ${verdict.score >= 70 ? 'text-green-500' : verdict.score >= 40 ? 'text-yellow-500' : 'text-red-500'}`}>{verdict.score}</span>
+                                    <span className="text-gray-700 text-2xl font-bold">/ 100</span>
+                                </div>
+                            </div>
+                            
+                            {verdict.score < 80 && (
+                                <div className="bg-red-500/5 border border-red-500/20 p-6 rounded-3xl flex items-center gap-4 w-full md:w-auto">
+                                    <TrendingDown className="text-red-500" size={32} />
+                                    <div>
+                                        <p className="text-red-500 font-black text-2xl leading-none">{verdict.revenueLoss?.amount || 'R9,800+'}</p>
+                                        <p className="text-red-500/70 text-[9px] uppercase font-bold mt-1 tracking-widest">Est. Monthly Revenue Loss</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
-        await db.collection("leads").add({ businessName, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
+                        {verdict.score >= 70 ? (
+                            <div className="mb-10 p-6 bg-green-500/10 border border-green-500/20 rounded-2xl">
+                                <h3 className="text-green-500 font-black uppercase tracking-tight flex items-center gap-2 mb-2">
+                                    <CheckCircle size={18} /> Entity Verified: Strong Baseline
+                                </h3>
+                                <p className="text-gray-300 text-sm leading-relaxed">
+                                    Congratulations. Your traditional SEO and Google Maps foundation is solid. However, standard search is evolving rapidly. To prevent competitors from overtaking you in AI-driven search (ChatGPT, Gemini, SGE), you must upgrade from basic SEO to <strong>Generative Engine Optimization (GEO)</strong>.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="mb-10 p-6 bg-orange-500/10 border border-orange-500/20 rounded-2xl">
+                                <h3 className="text-orange-500 font-black uppercase tracking-tight flex items-center gap-2 mb-2">
+                                    <AlertTriangle size={18} /> Critical Vulnerability Detected
+                                </h3>
+                                <p className="text-gray-300 text-sm leading-relaxed">
+                                    Your digital architecture is actively repelling algorithms. You are experiencing the "Ghost Effect"—meaning high-intent customers searching for your services are being routed directly to your competitors. Immediate intervention is required.
+                                </p>
+                            </div>
+                        )}
 
-        // Email Dispatch Logic
-        const isGoodScore = analysis.score >= 70;
-        const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
-            <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'};">Digital Survival Score: ${analysis.score}/100</h1>
-            <p>${analysis.summary}</p>
-        </div>`;
-        
-        await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml } });
+                        <div className="space-y-10">
+                            <div>
+                                <h3 className="text-yellow-500 font-black uppercase text-xs tracking-widest mb-4 flex items-center gap-2">
+                                    <ShieldCheck size={16}/> Forensic AI Summary
+                                </h3>
+                                <p className="text-white text-lg font-medium leading-relaxed italic border-l-4 border-gray-800 pl-4">"{verdict.summary}"</p>
+                            </div>
 
-        return { success: true, ...analysis, telemetry };
+                            {/* --- THE GOOGLE RICH RESULTS TEST UI BLOCK --- */}
+                            <div className="mb-10 bg-[#ffffff] text-black rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                                <div className="bg-[#f8f9fa] p-4 border-b border-gray-200 flex justify-between items-center">
+                                    <h3 className="text-gray-600 font-bold text-sm flex items-center gap-2">
+                                        <Database size={16} /> Rich Results Test Detection
+                                    </h3>
+                                    <span className="text-[10px] text-gray-400 font-mono uppercase">search.google.com/test</span>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex items-center gap-4 mb-6 bg-[#f0fdf4] border border-[#bbf7d0] p-4 rounded-lg">
+                                        {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 ? (
+                                            <>
+                                                <CheckCircle2 size={32} className="text-[#16a34a] shrink-0" />
+                                                <div>
+                                                    <h4 className="text-lg font-bold text-[#16a34a]">{verdict.telemetry.schemasDetected.length} valid items detected</h4>
+                                                    <p className="text-sm text-gray-600">Valid items are eligible for Google Search&apos;s rich results.</p>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <XCircle size={32} className="text-[#dc2626] shrink-0" />
+                                                <div>
+                                                    <h4 className="text-lg font-bold text-[#dc2626]">0 valid items detected</h4>
+                                                    <p className="text-sm text-gray-600">This entity is invisible to AI overviews and rich snippet extraction.</p>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                    
+                                    {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 && (
+                                        <div className="border border-gray-200 rounded-lg divide-y divide-gray-200">
+                                            <div className="p-3 bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">Detected structured data</div>
+                                            {verdict.telemetry.schemasDetected.map((schemaType: string, idx: number) => (
+                                                <div key={idx} className="p-4 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors">
+                                                    <div className="flex items-center gap-4">
+                                                        <CheckCircle size={18} className="text-[#16a34a]" />
+                                                        <span className="text-gray-800 font-bold">{schemaType}</span>
+                                                    </div>
+                                                    <span className="text-gray-500 text-sm">1 valid item detected</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            {/* --- END RICH RESULTS UI --- */}
 
-    } catch (e: any) {
-        throw new HttpsError("internal", `Neural Handshake Interrupted. ${e.message}`);
-    }
-});
+                            <div className="grid gap-4">
+                                <h3 className="text-gray-500 font-black uppercase text-xs tracking-widest mb-2 flex items-center gap-2">
+                                    <XCircle size={16}/> Specific Technical Weak Spots
+                                </h3>
+                                {verdict.truths.map((t: string, i: number) => (
+                                    <div key={i} className="p-5 bg-gray-900/30 border border-gray-800 rounded-xl text-gray-300 text-sm flex gap-4 items-start">
+                                        <span className="text-yellow-500 font-black bg-yellow-500/10 px-2 py-1 rounded">0{i+1}</span>
+                                        <p className="mt-1">{t}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
-// ============================================================================
-// 2. STRATEGIC CHAT
-// ============================================================================
-export const hunterChat = onCall({
-    region: "us-central1",
-    cors: true,
-}, async (request) => {
-    const { message } = request.data;
-    const G_KEY = process.env.GEMINI_API_KEY;
+                        <div className="mt-12 p-8 md:p-10 bg-gradient-to-br from-[#0a0a0a] to-black border border-yellow-500/30 rounded-[2rem] text-center relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
+                            <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-4">Stop The Revenue Leakage</h3>
+                            <p className="text-gray-400 mb-8 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
+                                Book a Free 30-Minute Discovery Call with <strong>Thabo</strong>, Head of happyhunterdigital. We will review this exact report together and map out your custom Recovery Protocol.
+                            </p>
+                            <a href="https://calendly.com/motsumitl/30min" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-8 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(234,179,8,0.2)] w-full md:w-auto">
+                                <Calendar size={18} /> Schedule Strategy Call
+                            </a>
+                        </div>
+                    </div>
 
-    if (!message || !G_KEY) {
-        return { reply: "Connection offline. Missing parameters." };
-    }
-
-    const SYSTEM_PROMPT = `You are Hunter AI, the official digital marketing assistant for Happy Hunter Digital (also known as Happy Hunter Systems).
-    YOUR KNOWLEDGE BASE:
-    - Founder & Head Strategist: Thabo Leslie Motsumi.
-    - Our Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses.
-    - Our Services: 1) Trust Synchronization (Google Maps, NAP consistency). 2) AI Visibility (AEO, Schema markup for ChatGPT/Gemini). 3) Agentic Revenue (Automated lead capture).
-    - Our Tool: The "Smart Marketing Scan" (provides a Digital Survival Score).
-    - Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com. Website: www.happyhunterdigital.com
-    - Upcoming Event: We are speaking at the Integrated Wellth Summit on 28 Feb in Waterfall City.
-    RULES:
-    1. NEVER make up information. Use ONLY the Knowledge Base.
-    2. Be direct, professional, and slightly authoritative. Keep answers to 2-3 sentences max.`;
-
-    try {
-        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
-                contents: [{ role: "user", parts: [{ text: message }] }],
-                generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
-            })
-        });
-
-        if (!aiRes.ok) return { reply: "My neural link is currently overloaded. Please email HQ." };
-        const data = await aiRes.json() as any;
-        if (data.candidates && data.candidates[0].content.parts[0].text) return { reply: data.candidates[0].content.parts[0].text.trim() };
-        return { reply: "I received an unreadable signal from the core. Try again." };
-    } catch (e) {
-        return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
-    }
-});
-
-// ==========================================
-// 3. LANDING PAGE SERVICE REQUEST
-// ==========================================
-export const submitServiceRequest = onCall({
-    region: "us-central1",
-    cors: true,
-}, async (request) => {
-    const { name, website, service, email } = request.data;
-    if (!name || !email || !service) throw new HttpsError("invalid-argument", "Missing required fields.");
-    try {
-        await db.collection("leads").add({ name, website: website || "Not provided", service, email, source: "AI Megaphone Landing Page", timestamp: admin.firestore.FieldValue.serverTimestamp() });
-        return { success: true };
-    } catch (error: any) {
-        throw new HttpsError("internal", `System Engine Failed. ${error.message}`);
-    }
-});
-
-// ==========================================
-// 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
-// ==========================================
-export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
-    console.log("CMS Data change detected. Recompiling Entity Schema...");
-    try {
-        const brandSnapshot = await db.collection("brand_identity").limit(1).get();
-        if (brandSnapshot.empty) return null;
-        
-        const brandData = brandSnapshot.docs[0].data();
-        const aeoSnapshot = await db.collection("aeo_knowledge").where("speakable", "==", true).get();
-        
-        const faqItems = aeoSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return { "@type": "Question", "name": data.question, "acceptedAnswer": { "@type": "Answer", "text": data.answer } };
-        });
-
-        const masterSchema: any = {
-            "@context": "https://schema.org",
-            "@graph":[
-                {
-                    "@type": brandData.orgType || "Organization",
-                    "@id": `${brandData.websiteUrl || "https://happyhunterdigital.com"}#organization`,
-                    "name": brandData.legalName,
-                    "description": brandData.description,
-                    "sameAs": brandData.sameAs || []
-                }
-            ]
-        };
-
-        if (faqItems.length > 0) { masterSchema["@graph"].push({ "@type": "FAQPage", "mainEntity": faqItems }); }
-        await db.collection("public_seo").doc("master_schema").set({ compiled_json_ld: JSON.stringify(masterSchema), last_updated: admin.firestore.FieldValue.serverTimestamp() });
-        return null;
-    } catch (error) {
-        console.error("Critical Error compiling Entity Schema:", error);
-        return null;
-    }
-});
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <button onClick={downloadPDF} className="w-full p-5 bg-[#0a0a0a] border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:bg-gray-900 transition-all flex items-center justify-center gap-3">
+                            <Download size={18}/> Export Report to PDF
+                        </button>
+                        <a 
+                            href={`https://wa.me/27601016673?text=Hi%20Thabo!%20I%20just%20completed%20the%20Survival%20Scan%20for%20${form.biz}%20and%20scored%20${verdict.score}/100.%20Let%27s%20talk%20about%20my%20Recovery%20Protocol.`}
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="w-full p-5 bg-[#0a0a0a] border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:text-yellow-500 hover:border-yellow-500 transition-all flex items-center justify-center gap-3"
+                        >
+                            <MessageSquare size={18}/> Message Thabo on WhatsApp
+                        </a>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
