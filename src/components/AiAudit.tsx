@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown, Calendar, Database } from 'lucide-react';
+import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown, Calendar, Database, CheckCircle2 } from 'lucide-react';
 import { db, functions } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -10,7 +10,7 @@ export const AiAudit: React.FC = () => {
     const [step, setStep] = useState(1);
     const[form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
     const [loading, setLoading] = useState(false);
-    const [scanProgress, setScanProgress] = useState(0);
+    const[scanProgress, setScanProgress] = useState(0);
     const [verdict, setVerdict] = useState<any>(null);
     const reportRef = useRef<HTMLDivElement>(null);
 
@@ -18,9 +18,8 @@ export const AiAudit: React.FC = () => {
         "Verifying Google Business Profile...",
         "Extracting Star Rating & Review Count...",
         "Checking Website Signal Consistency...",
-        "Auditing Operating Hours Data...",
-        "NAP Consistency Check...",
-        "Extracting JSON-LD Knowledge Graph Data...",
+        "Scanning for AI Schema (JSON-LD)...",
+        "Validating Rich Results Compliance...",
         "Calculating AI Findability Index...",
         "Computing Digital Survival Score..."
     ];
@@ -120,7 +119,7 @@ export const AiAudit: React.FC = () => {
                         <Search className="absolute inset-0 m-auto text-yellow-500" size={40} />
                     </div>
                     <h2 className="text-2xl font-black text-white uppercase mb-4">Scanning Digital Entity...</h2>
-                    <p className="text-yellow-500 font-mono text-xs mb-8">{scanSteps[Math.min(Math.floor(scanProgress / 14), 7)]}</p>
+                    <p className="text-yellow-500 font-mono text-xs mb-8">{scanSteps[Math.min(Math.floor(scanProgress / 14), 6)]}</p>
                     <div className="w-64 h-1 bg-gray-800 mx-auto rounded-full overflow-hidden">
                         <div className="h-full bg-yellow-500 transition-all duration-300" style={{ width: `${scanProgress}%` }}></div>
                     </div>
@@ -179,80 +178,34 @@ export const AiAudit: React.FC = () => {
                                 <p className="text-white text-lg font-medium leading-relaxed italic border-l-4 border-gray-800 pl-4">"{verdict.summary}"</p>
                             </div>
 
-                            {/* --- THE NEW RICH RESULTS / JSON-LD VISUALIZER --- */}
-                            <div className="mb-10">
-                                <h3 className="text-yellow-500 font-black uppercase text-xs tracking-widest mb-4 flex items-center gap-2">
-                                    <Database size={16}/> Detected Structured Data (JSON-LD)
-                                </h3>
-                                <div className="bg-[#111827] border border-[#1f2937] rounded-xl overflow-hidden">
-                                    <div className="p-4 border-b border-[#1f2937] flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            {verdict.telemetry?.schema ? <CheckCircle size={20} className="text-green-500" /> : <XCircle size={20} className="text-red-500" />}
-                                            <span className="text-white font-bold">{verdict.telemetry?.schema ? "Valid items detected" : "No Schema Markup Detected"}</span>
-                                        </div>
-                                        <span className="text-xs text-gray-500 font-mono">search.google.com/test</span>
+                            {/* --- THE GOOGLE RICH RESULTS TEST UI BLOCK --- */}
+                            <div className="mb-10 bg-[#ffffff] text-black rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                                <div className="bg-[#f8f9fa] p-4 border-b border-gray-200 flex justify-between items-center">
+                                    <h3 className="text-gray-600 font-bold text-sm flex items-center gap-2">
+                                        <Database size={16} /> Rich Results Test Detection
+                                    </h3>
+                                    <span className="text-[10px] text-gray-400 font-mono uppercase">search.google.com/test</span>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex items-center gap-4 mb-6 bg-[#f0fdf4] border border-[#bbf7d0] p-4 rounded-lg">
+                                        {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 ? (
+                                            <>
+                                                <CheckCircle2 size={32} className="text-[#16a34a] shrink-0" />
+                                                <div>
+                                                    <h4 className="text-lg font-bold text-[#16a34a]">{verdict.telemetry.schemasDetected.length} valid items detected</h4>
+                                                    <p className="text-sm text-gray-600">Valid items are eligible for Google Search's rich results.</p>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <XCircle size={32} className="text-[#dc2626] shrink-0" />
+                                                <div>
+                                                    <h4 className="text-lg font-bold text-[#dc2626]">0 valid items detected</h4>
+                                                    <p className="text-sm text-gray-600">This entity is invisible to AI overviews and rich snippet extraction.</p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                     
-                                    {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 ? (
-                                        <div className="divide-y divide-[#1f2937]">
-                                            {verdict.telemetry.schemasDetected.map((schemaType: string, idx: number) => (
-                                                <div key={idx} className="p-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors cursor-pointer group">
-                                                    <div className="flex items-center gap-3">
-                                                        <CheckCircle size={16} className="text-green-500" />
-                                                        <span className="text-gray-300 font-medium group-hover:text-yellow-500 transition-colors">{schemaType}</span>
-                                                    </div>
-                                                    <ArrowRight size={14} className="text-gray-500 group-hover:text-yellow-500 transition-colors" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="p-4 text-sm text-gray-500">
-                                            Algorithms cannot mathematically parse your website data. You are invisible to Answer Engines.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="grid gap-4">
-                                <h3 className="text-gray-500 font-black uppercase text-xs tracking-widest mb-2 flex items-center gap-2">
-                                    <XCircle size={16}/> Specific Technical Weak Spots
-                                </h3>
-                                {verdict.truths.map((t: string, i: number) => (
-                                    <div key={i} className="p-5 bg-gray-900/30 border border-gray-800 rounded-xl text-gray-300 text-sm flex gap-4 items-start">
-                                        <span className="text-yellow-500 font-black bg-yellow-500/10 px-2 py-1 rounded">0{i+1}</span>
-                                        <p className="mt-1">{t}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="mt-12 p-8 md:p-10 bg-gradient-to-br from-[#0a0a0a] to-black border border-yellow-500/30 rounded-[2rem] text-center relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
-                            <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-4">Stop The Revenue Leakage</h3>
-                            <p className="text-gray-400 mb-8 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-                                Book a Free 30-Minute Discovery Call with <strong>Thabo</strong>, Head of happyhunterdigital. We will review this exact report together and map out your custom Recovery Protocol.
-                            </p>
-                            <a href="https://calendly.com/motsumitl/30min" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-8 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(234,179,8,0.2)] w-full md:w-auto">
-                                <Calendar size={18} /> Schedule Strategy Call
-                            </a>
-                        </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <button onClick={downloadPDF} className="w-full p-5 bg-[#0a0a0a] border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:bg-gray-900 transition-all flex items-center justify-center gap-3">
-                            <Download size={18}/> Export Report to PDF
-                        </button>
-                        <a 
-                            href={`https://wa.me/27601016673?text=Hi%20Thabo!%20I%20just%20completed%20the%20Survival%20Scan%20for%20${form.biz}%20and%20scored%20${verdict.score}/100.%20Let's%20talk%20about%20my%20Recovery%20Protocol.`}
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="w-full p-5 bg-[#0a0a0a] border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:text-yellow-500 hover:border-yellow-500 transition-all flex items-center justify-center gap-3"
-                        >
-                            <MessageSquare size={18}/> Message Thabo on WhatsApp
-                        </a>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
+                                    {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 && (
+                                        <div className="border border-gray-200 rounded-lg di
