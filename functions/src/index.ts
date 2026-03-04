@@ -9,7 +9,7 @@ admin.initializeApp();
 const db = getFirestore();
 
 // ============================================================================
-// 1. SMART MARKETING AUDIT (UPGRADED: AI-DRIVEN HIJACK DETECTION)
+// 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
 // ============================================================================
 export const performAudit = onCall({
     region: "us-central1",
@@ -43,13 +43,12 @@ export const performAudit = onCall({
         let pData = await getPlaces(`${businessName} in ${location}`);
         let biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
 
-        // Broad fallback search if strict location fails
+        // Broad fallback search to prevent false "Ghost" readings
         if (!biz) {
             pData = await getPlaces(businessName);
             biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
         }
 
-        // We DO NOT guess the URL anymore. If Google doesn't know it, it's a Ghost.
         const websiteUrl = biz?.websiteUri || null;
         
         // --- 2. DEEP WEBSITE & SCHEMA SCRAPING ---
@@ -112,7 +111,7 @@ export const performAudit = onCall({
         - Baseline 30.
         - Verified Maps Entity (Names Match Exactly): +20 points.
         - Rating >= 4.0: +15 points.
-        - Schema Markup Detected (true): +25 points.
+        - Schema Markup Detected (true): +25 points (Crucial for AEO).
         - Ghost Entity OR No Schema: Deduct 30 points.
         
         CRITICAL TRAFFIC HIJACK INSTRUCTION:
@@ -228,7 +227,7 @@ export const submitServiceRequest = onCall({
 });
 
 // ==========================================
-// 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
+// 4. ENTITY ORCHESTRATION ENGINE (JSON-LD TRUTH TABLE)
 // ==========================================
 export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
     console.log("CMS Data change detected. Recompiling Entity Schema...");
@@ -237,29 +236,89 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
         if (brandSnapshot.empty) return null;
         
         const brandData = brandSnapshot.docs[0].data();
-        const aeoSnapshot = await db.collection("aeo_knowledge").where("speakable", "==", true).get();
         
+        // Fetch FAQs
+        const aeoSnapshot = await db.collection("aeo_knowledge").where("speakable", "==", true).get();
         const faqItems = aeoSnapshot.docs.map(doc => {
             const data = doc.data();
             return { "@type": "Question", "name": data.question, "acceptedAnswer": { "@type": "Answer", "text": data.answer } };
+        });
+
+        // Fetch Verified Claims for the "Truth Table"
+        const claimsSnapshot = await db.collection("verified_claims").get();
+        const offerItems = claimsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                "@type": "Offer",
+                "itemOffered": {
+                    "@type": "Service",
+                    "name": data.serviceName || "Digital Protocol",
+                    "description": data.serviceDescription || "Verified AI Marketing Solutions",
+                    "subjectOf": {
+                        "@type": "ClaimReview",
+                        "claimReviewed": data.claim || "AI-Ready Digital Infrastructure",
+                        "reviewRating": {
+                            "@type": "Rating",
+                            "ratingValue": data.rating || "5",
+                            "bestRating": "5"
+                        },
+                        "author": {
+                            "@type": "Organization",
+                            "name": data.authorName || "Happy Hunter Systems Verification"
+                        },
+                        "itemReviewed": {
+                            "@type": "CreativeWork",
+                            "name": data.evidenceName || "System Audit",
+                            "url": data.evidenceUrl || "https://www.happyhunterdigital.com/audit"
+                        }
+                    }
+                }
+            };
         });
 
         const masterSchema: any = {
             "@context": "https://schema.org",
             "@graph":[
                 {
-                    "@type": brandData.orgType || "Organization",
-                    "@id": `${brandData.websiteUrl || "https://happyhunterdigital.com"}#organization`,
-                    "name": brandData.legalName,
-                    "description": brandData.description,
-                    "sameAs": brandData.sameAs || []
+                    "@type": brandData.orgType || "LocalBusiness",
+                    "@id": `${brandData.websiteUrl || "https://www.happyhunterdigital.com"}#organization`,
+                    "name": brandData.legalName || "Happy Hunter Digital",
+                    "description": brandData.description || "",
+                    "url": brandData.websiteUrl || "https://www.happyhunterdigital.com",
+                    "telephone": brandData.telephone || "+27 60 101 6673",
+                    "logo": brandData.logo || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
+                    "image": brandData.image || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
+                    "priceRange": brandData.priceRange || "ZAR",
+                    "sameAs": brandData.sameAs || [
+                        "https://www.facebook.com/Happyhunterdigital/",
+                        "https://za.linkedin.com/in/thabomotsumi",
+                        "https://www.instagram.com/happyhunterdigital/",
+                        "https://x.com/HappyHunter35"
+                    ]
                 }
             ]
         };
 
-        if (faqItems.length > 0) { masterSchema["@graph"].push({ "@type": "FAQPage", "mainEntity": faqItems }); }
-        await db.collection("public_seo").doc("master_schema").set({ compiled_json_ld: JSON.stringify(masterSchema), last_updated: admin.firestore.FieldValue.serverTimestamp() });
+        // Attach the Truth Table to the primary Business Node
+        if (offerItems.length > 0) {
+            masterSchema["@graph"][0]["hasOfferCatalog"] = {
+                "@type": "OfferCatalog",
+                "name": "Verified AI Marketing Solutions",
+                "itemListElement": offerItems
+            };
+        }
+
+        if (faqItems.length > 0) { 
+            masterSchema["@graph"].push({ "@type": "FAQPage", "mainEntity": faqItems }); 
+        }
+
+        await db.collection("public_seo").doc("master_schema").set({ 
+            compiled_json_ld: JSON.stringify(masterSchema), 
+            last_updated: admin.firestore.FieldValue.serverTimestamp() 
+        });
+        
         return null;
+
     } catch (error) {
         console.error("Critical Error compiling Entity Schema:", error);
         return null;
