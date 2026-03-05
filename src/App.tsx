@@ -10,10 +10,12 @@ import { EarnedMedia } from './pages/EarnedMedia';
 import { FAQ } from './pages/FAQ';
 import { Admin } from './pages/Admin';
 import { BlogAnchor } from './pages/BlogAnchor';
+import { BlogPost } from './pages/BlogPost';
 import { ArticleMegaphone } from './pages/ArticleMegaphone';
 import { ArticleRevenue } from './pages/ArticleRevenue';
 import { ArticleSynthesis } from './pages/ArticleSynthesis';
 import { ArticleEntity } from './pages/ArticleEntity';
+import { ArticleBlueLink } from './pages/ArticleBlueLink';
 import { SummitPage } from './pages/SummitPage';
 import { Architecture } from './pages/Architecture';
 import { ClientPortal } from './pages/ClientPortal';
@@ -116,11 +118,20 @@ function App() {
                     <Route path="/earned-media" element={<EarnedMedia />} />
                     <Route path="/founders" element={<Founders />} />
                     <Route path="/faq" element={<FAQ />} />
+                    
+                    {/* Primary Blog Hub */}
                     <Route path="/intelligence" element={<BlogAnchor />} />
+                    
+                    {/* Specific Articles */}
                     <Route path="/blog/ai-megaphone" element={<ArticleMegaphone />} />
                     <Route path="/blog/revenue-brain" element={<ArticleRevenue />} />
                     <Route path="/blog/synthesis" element={<ArticleSynthesis />} />
                     <Route path="/blog/entity-architect" element={<ArticleEntity />} />
+                    <Route path="/blog/beyond-the-blue-link" element={<ArticleBlueLink />} />
+                    
+                    {/* Dynamic Fallback for older posts */}
+                    <Route path="/blog/:id" element={<BlogPost />} />
+                    
                     <Route path="/summit-2026" element={<SummitPage />} />
                     <Route path="/architecture" element={<Architecture />} />
                     <Route path="/portal" element={<ClientPortal />} />
