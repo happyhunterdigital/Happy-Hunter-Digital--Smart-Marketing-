@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ArrowRight, BrainCircuit, Globe, Target } from 'lucide-react';
+import { BookOpen, ArrowRight, BrainCircuit, Globe, Target, Database } from 'lucide-react';
 
 export const blogPosts = [
   {
@@ -13,7 +13,16 @@ export const blogPosts = [
     icon: <Target size={24} className="text-yellow-500" />
   },
   {
-    id: "generative-engine-optimization-2026",
+    id: "entity-architect",
+    category: "Agency Protocol",
+    title: "From Web Developer to Entity Architect",
+    excerpt: "In the 2026 AI landscape, building a static website is a liability. We must own the digital truth.",
+    date: "Mar 2026",
+    readTime: "4 min read",
+    icon: <Database size={24} className="text-yellow-500" />
+  },
+  {
+    id: "ai-megaphone",
     category: "AI Architecture",
     title: "The Architecture of Generative Engine Optimization (GEO)",
     excerpt: "Why traditional SEO is obsolete, and how to structure your digital content for LLM ingestion and zero-click search dominance.",
@@ -22,21 +31,21 @@ export const blogPosts = [
     icon: <BrainCircuit size={24} className="text-yellow-500" />
   },
   {
-    id: "saas-metrics-revenue-retention",
-    category: "B2B SaaS Strategy",
-    title: "Operationalizing SaaS Metrics: From TOFU to NRR",
-    excerpt: "Stop paying for zero-intent traffic. How to refine search intent modeling to double your Lead-to-MQL conversion rate.",
+    id: "revenue-brain",
+    category: "Agentic Automation",
+    title: "The Revenue Brain: Agentic Lead Automation",
+    excerpt: "Replacing static contact forms with intelligent, 24/7 AI Receptionists that qualify intent.",
     date: "Feb 2026",
-    readTime: "8 min read",
+    readTime: "5 min read",
     icon: <Globe size={24} className="text-yellow-500" />
   },
   {
-    id: "schema-markup-aeo",
-    category: "Technical AEO",
-    title: "The Structural Imperative: Schema.org for LLM Parsing",
-    excerpt: "LLMs are blind crawlers. Discover the exact JSON-LD frameworks required to feed the Google Knowledge Graph.",
+    id: "synthesis",
+    category: "GTM Strategy",
+    title: "Synthesis: A Comprehensive 2026 Go-to-Market Strategy",
+    excerpt: "How the Trust Anchor, AI Megaphone, and Revenue Brain converge into a self-reinforcing revenue loop.",
     date: "Jan 2026",
-    readTime: "5 min read",
+    readTime: "7 min read",
     icon: <BookOpen size={24} className="text-yellow-500" />
   }
 ];
