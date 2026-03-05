@@ -5,14 +5,17 @@ import { ArrowLeft } from 'lucide-react';
 export const ArticleBlueLink = () => {
   return (
     <div className="bg-[#050505] min-h-screen pb-20 animate-fade-in">
-      <header className="relative pt-40 pb-20 border-b border-gray-800 overflow-hidden bg-[#0a0a0a]">
+      <header className="relative pt-40 pb-20 border-b border-gray-800 overflow-hidden bg-[#050505]">
+        
+        {/* UPDATED HERO IMAGE LOGIC */}
         <div className="absolute inset-0 z-0">
           <img 
             src="https://res.cloudinary.com/dka0498ns/image/upload/v1772709343/google-business-profile-expert-presentation-midrand.jpg_zsrqbh.jpg" 
             alt="Beyond the Blue Link" 
-            className="w-full h-full object-cover opacity-20 grayscale hover:grayscale-0 transition-all duration-1000"
+            className="w-full h-full object-cover object-top opacity-50 transition-all duration-1000"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/90 to-transparent"></div>
+          {/* Adjusted gradient so the top half of the photo remains clearly visible */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-[#050505]/10"></div>
         </div>
 
         <div className="relative z-10 container mx-auto px-6 max-w-4xl text-center">
