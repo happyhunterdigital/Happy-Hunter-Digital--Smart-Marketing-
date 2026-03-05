@@ -9,8 +9,11 @@ import { CoreServices } from './pages/CoreServices';
 import { EarnedMedia } from './pages/EarnedMedia';
 import { FAQ } from './pages/FAQ';
 import { Admin } from './pages/Admin';
+
+// Fix: Import the Blog Hub so the grid appears
+import { Blog } from './pages/Blog';
 import { BlogAnchor } from './pages/BlogAnchor';
-import { BlogPost } from './pages/BlogPost';
+
 import { ArticleMegaphone } from './pages/ArticleMegaphone';
 import { ArticleRevenue } from './pages/ArticleRevenue';
 import { ArticleSynthesis } from './pages/ArticleSynthesis';
@@ -52,7 +55,7 @@ function App() {
     }, [location.pathname]);
 
     return (
-        <div className={`min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black ${isLandingPage ? '' : 'pt-12'}`}>
+        <div className={`min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black`}>
             <AIEntityEngine />
             {!isLandingPage && <ContentRibbon />}
             
@@ -109,8 +112,8 @@ function App() {
                 </div>
             )}
 
-            {/* ROUTES */}
-            <main className={isLandingPage ? "" : "pt-24"}>
+            {/* ROUTES - Fixed Padding to clear floating headers */}
+            <main className={isLandingPage ? "" : "pt-32 md:pt-40"}>
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/audit" element={<AiAudit />} />
@@ -119,18 +122,15 @@ function App() {
                     <Route path="/founders" element={<Founders />} />
                     <Route path="/faq" element={<FAQ />} />
                     
-                    {/* Primary Blog Hub */}
-                    <Route path="/intelligence" element={<BlogAnchor />} />
+                    {/* Primary Blog Hub is now correctly linked to the grid */}
+                    <Route path="/intelligence" element={<Blog />} />
                     
-                    {/* Specific Articles */}
+                    {/* Specific Articles mapped to their exact route IDs */}
                     <Route path="/blog/ai-megaphone" element={<ArticleMegaphone />} />
                     <Route path="/blog/revenue-brain" element={<ArticleRevenue />} />
                     <Route path="/blog/synthesis" element={<ArticleSynthesis />} />
                     <Route path="/blog/entity-architect" element={<ArticleEntity />} />
                     <Route path="/blog/beyond-the-blue-link" element={<ArticleBlueLink />} />
-                    
-                    {/* Dynamic Fallback for older posts */}
-                    <Route path="/blog/:id" element={<BlogPost />} />
                     
                     <Route path="/summit-2026" element={<SummitPage />} />
                     <Route path="/architecture" element={<Architecture />} />
