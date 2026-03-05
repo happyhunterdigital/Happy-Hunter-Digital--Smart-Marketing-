@@ -1,8 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ArrowRight, BrainCircuit, Globe } from 'lucide-react';
+import { BookOpen, ArrowRight, BrainCircuit, Globe, Target } from 'lucide-react';
 
 export const blogPosts = [
+  {
+    id: "beyond-the-blue-link",
+    category: "Strategic Intelligence",
+    title: "Beyond the Blue Link: Why Ranking on Page One is Obsolete in 2026",
+    excerpt: "Insights from our Digital Strategy Session with IntegratedWellth in Munyaka, Midrand. The era of scrolling through pages of blue links is officially over.",
+    date: "Mar 2026",
+    readTime: "5 min read",
+    icon: <Target size={24} className="text-yellow-500" />
+  },
   {
     id: "generative-engine-optimization-2026",
     category: "AI Architecture",
@@ -49,23 +58,23 @@ export const Blog = () => {
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
         {blogPosts.map((post) => (
-          <Link 
-            key={post.id} 
+          <Link
+            key={post.id}
             to={`/blog/${post.id}`}
             className="group flex flex-col bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-yellow-500/50 transition-all shadow-lg hover:shadow-yellow-500/10"
           >
             <div className="mb-6 bg-black w-14 h-14 rounded-2xl flex items-center justify-center border border-gray-800 group-hover:scale-110 transition-transform">
               {post.icon}
             </div>
-            
+
             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3 block">
               {post.category}
             </span>
-            
+
             <h2 className="text-2xl font-bold text-white mb-4 leading-tight group-hover:text-yellow-500 transition-colors">
               {post.title}
             </h2>
-            
+
             <p className="text-gray-400 text-sm leading-relaxed mb-8 flex-grow">
               {post.excerpt}
             </p>
