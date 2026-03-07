@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, CheckCircle2, Volume2, ShieldCheck, ChevronDown } from 'lucide-react';
-import { db } from '../firebaseConfig';
+import { db, functions } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../firebaseConfig';
 
 export const MegaphoneLanding: React.FC = () => {
     const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
@@ -33,7 +32,7 @@ export const MegaphoneLanding: React.FC = () => {
         setLoading(true);
 
         try {
-            // Call the Cloud Function instead of direct client-side write to ensure email sends reliably
+            // Call the Cloud Function
             const submitServiceRequest = httpsCallable(functions, 'submitServiceRequest');
             await submitServiceRequest({
                 name: form.name,
@@ -45,7 +44,7 @@ export const MegaphoneLanding: React.FC = () => {
             setSubmitted(true);
         } catch (error) {
             console.error("Submission Error:", error);
-            // Fallback: If cloud function fails, at least save the lead locally so we don't lose data
+            // Fallback: If cloud function fails, save locally
              await addDoc(collection(db, "leads"), {
                 ...form,
                 source: "Fallback Client-Side Capture",
@@ -431,7 +430,7 @@ export const MegaphoneLanding: React.FC = () => {
                       </div>
                       <div className="text-left md:text-right shrink-0">
                         <p className="text-yellow-500 font-black text-xl">R9,500</p>
-                        <p className="text-[10px] font-bold tracking-widest text-yellow-500/70 uppercase ml-2">(for the period of 3 months)</p>
+                        <p className="text-[10px] font-bold tracking-widest text-yellow-500/70 uppercase ml-2">(Monthly)</p>
                       </div>
                     </div>
                   </div>
@@ -440,26 +439,27 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </section>
 
-    {/* SHARED FOOTER IMAGE BANNER */}
-    <section className="relative h-[60vh] min-h-[500px] border-t border-black overflow-hidden bg-[#050505] flex items-center justify-center text-center">
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893091/happyhunterdigital_smart_marketing_contacts_v3w73g.png" 
-          alt="Digital Dominance Footer" 
-          className="w-full h-full object-cover object-bottom opacity-50 mix-blend-screen transition-all duration-1000"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-[#050505]/30"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-transparent h-32"></div>
-      </div>
-      <div className="relative z-10 container mx-auto px-6 max-w-3xl">
-        <ShieldCheck className="mx-auto text-yellow-500 mb-6" size={56} />
-        <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter mb-6 leading-none drop-shadow-2xl">Initialize <br/><span className="text-yellow-500">The Protocol</span></h2>
-        <p className="text-gray-300 text-xl md:text-2xl font-medium mb-10 drop-shadow-lg">Stop losing revenue to invisible algorithms. Secure your digital passport today.</p>
-        <Link to="/audit" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-12 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:scale-105">
-          Commence Onboarding <ArrowRight size={20} />
-        </Link>
-      </div>
-    </section>
+            {/* SHARED FOOTER IMAGE BANNER */}
+            <section className="relative h-[60vh] min-h-[500px] border-t border-black overflow-hidden bg-[#050505] flex items-center justify-center text-center">
+              <div className="absolute inset-0 z-0">
+                <img 
+                  src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893091/happyhunterdigital_smart_marketing_contacts_v3w73g.png" 
+                  alt="Digital Dominance Footer" 
+                  className="w-full h-full object-cover object-bottom opacity-50 mix-blend-screen transition-all duration-1000"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-[#050505]/30"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-transparent h-32"></div>
+              </div>
+              <div className="relative z-10 container mx-auto px-6 max-w-3xl">
+                <ShieldCheck className="mx-auto text-yellow-500 mb-6" size={56} />
+                <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter mb-6 leading-none drop-shadow-2xl">Initialize <br/><span className="text-yellow-500">The Protocol</span></h2>
+                <p className="text-gray-300 text-xl md:text-2xl font-medium mb-10 drop-shadow-lg">Stop losing revenue to invisible algorithms. Secure your digital passport today.</p>
+                <Link to="/audit" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-12 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:scale-105">
+                  Commence Onboarding <ArrowRight size={20} />
+                </Link>
+              </div>
+            </section>
 
-  </div>
-);
+        </div>
+    );
+};
