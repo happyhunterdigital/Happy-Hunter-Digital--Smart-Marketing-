@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Target, Globe, Server, Code, ShoppingCart, LayoutTemplate, BrainCircuit, Mail, MapPin, Search, ShieldCheck, Zap, BarChart, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const CoreServices = () => (
@@ -9,7 +9,7 @@ export const CoreServices = () => (
     <header className="relative pt-40 pb-24 border-b border-gray-800 overflow-hidden bg-[#0a0a0a]">
       <div className="absolute inset-0 z-0">
         <img 
-          src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893108/Untitled_design_4_jghatq.png" 
+          src="https://res.cloudinary.com/dka0498ns/image/upload/v1772910873/happyhunterdigital_background_tczv4w.png" 
           alt="Strategic Services" 
           className="w-full h-full object-cover object-center opacity-50 mix-blend-overlay transition-all duration-1000"
         />
@@ -62,6 +62,7 @@ export const CoreServices = () => (
               <p className="text-gray-500 line-through text-sm">R7,500 – R12,500</p>
               <p className="text-3xl font-black text-white">R4,500 <span className="text-lg text-gray-500 font-medium">to</span> R12,500</p>
               <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 mb-6">Once-Off Investment</p>
+              <Link to="/the-ai-megaphone" className="block w-full text-center bg-gray-900 hover:bg-yellow-500 hover:text-black text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs transition-colors">Request Protocol</Link>
             </div>
           </div>
 
@@ -88,6 +89,7 @@ export const CoreServices = () => (
               <p className="text-gray-500 line-through text-sm">R18,000 – R28,000</p>
               <p className="text-3xl font-black text-yellow-500">R14,000 <span className="text-lg text-gray-500 font-medium">to</span> R19,000</p>
               <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 mb-6">Once-Off Investment</p>
+              <Link to="/the-ai-megaphone" className="block w-full text-center bg-yellow-500 text-black py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-white transition-colors shadow-lg">Request Protocol</Link>
             </div>
           </div>
 
@@ -113,6 +115,7 @@ export const CoreServices = () => (
               <p className="text-gray-500 line-through text-sm">R38,000 – R55,000+</p>
               <p className="text-3xl font-black text-white">R25,000 <span className="text-lg text-gray-500 font-medium">to</span> R55,000+</p>
               <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 mb-6">Once-Off Investment</p>
+              <Link to="/the-ai-megaphone" className="block w-full text-center bg-gray-900 hover:bg-yellow-500 hover:text-black text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs transition-colors">Request Protocol</Link>
             </div>
           </div>
         </div>
@@ -147,7 +150,7 @@ export const CoreServices = () => (
             </div>
             <div className="mt-auto pt-6 border-t border-gray-800/50">
               <p className="text-gray-500 line-through text-xs">R8,500 – R12,500</p>
-              <p className="text-2xl font-black text-white">R5,500 – R9,500 <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
+              <p className="text-2xl font-black text-white">R5,500 – R9,500 <span className="text-xs text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
             </div>
           </div>
 
@@ -169,7 +172,7 @@ export const CoreServices = () => (
             </div>
             <div className="mt-auto pt-6 border-t border-gray-800/50">
               <p className="text-gray-500 line-through text-xs">R30,000 – R45,000</p>
-              <p className="text-2xl font-black text-yellow-500">R21,000 – R34,000 <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
+              <p className="text-2xl font-black text-yellow-500">R21,000 – R34,000 <span className="text-xs text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
             </div>
           </div>
 
@@ -191,7 +194,7 @@ export const CoreServices = () => (
             </div>
             <div className="mt-auto pt-6 border-t border-gray-800/50">
               <p className="text-gray-500 line-through text-xs">R75,000 – R120,000+</p>
-              <p className="text-2xl font-black text-white">R55,000 – R109,000+ <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
+              <p className="text-2xl font-black text-white">R55,000 – R109,000+ <span className="text-xs text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
             </div>
           </div>
         </div>
@@ -366,11 +369,11 @@ export const CoreServices = () => (
             <div className="flex flex-col md:flex-row justify-between gap-6">
               <div className="flex-1">
                 <h4 className="font-bold text-yellow-500 mb-2">Strategic Consulting</h4>
-                <p className="text-sm text-gray-300">Purely strategic, bi-weekly consultation based on real-time algorithmic weather and data tracking.</p>
+                <p className="text-sm text-gray-300 mb-6 flex-grow">Purely strategic, bi-weekly consultation based on real-time algorithmic weather and data tracking.</p>
               </div>
               <div className="text-left md:text-right shrink-0">
                 <p className="text-yellow-500 font-black text-xl">R9,500</p>
-                <p className="text-[10px] font-bold tracking-widest text-yellow-500 uppercase mt-1">for the period of 3 months</p>
+                <p className="text-[10px] font-bold tracking-widest text-yellow-500/70 uppercase ml-2">(Monthly)</p>
               </div>
             </div>
           </div>
@@ -383,7 +386,7 @@ export const CoreServices = () => (
     <section className="relative h-[60vh] min-h-[500px] border-t border-black overflow-hidden bg-[#050505] flex items-center justify-center text-center">
       <div className="absolute inset-0 z-0">
         <img 
-          src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893091/happyhunterdigital_smart_marketing_contacts_v3w73g.png" 
+          src="https://res.cloudinary.com/dka0498ns/image/upload/v1772910872/happyhunterdigital_mock_logo_rybzv3.png" 
           alt="Digital Dominance Footer" 
           className="w-full h-full object-cover object-bottom opacity-50 mix-blend-screen transition-all duration-1000"
         />
