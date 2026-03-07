@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, CheckCircle2, Volume2, ShieldCheck, ChevronDown } from 'lucide-react';
 import { db } from '../firebaseConfig';
@@ -8,6 +8,23 @@ export const MegaphoneLanding: React.FC = () => {
     const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+
+    // Cycling Hero Text Logic
+    const heroServices = [
+        "Generative Engine Optimization",
+        "Google Business Profile",
+        "Agentic Revenue Systems",
+        "Entity Architecture",
+        "Truth Table Verification"
+    ];
+    const [currentServiceIndex, setCurrentServiceIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentServiceIndex((prev) => (prev + 1) % heroServices.length);
+        }, 3000); 
+        return () => clearInterval(interval);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -93,7 +110,8 @@ export const MegaphoneLanding: React.FC = () => {
                 
                 <div className="relative z-10 max-w-5xl mx-auto text-center">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black text-yellow-500 text-[10px] font-black uppercase tracking-[0.3em] mb-8 shadow-xl">
-                        <Volume2 size={14} className="animate-pulse" /> Generative Engine Optimization
+                        <Volume2 size={14} className="animate-pulse" /> 
+                        <span key={currentServiceIndex} className="animate-fade-in">{heroServices[currentServiceIndex]}</span>
                     </div>
                     
                     <h1 className="text-6xl md:text-8xl lg:text-[7rem] font-black text-black uppercase tracking-tighter leading-[0.85] mb-8">
@@ -227,7 +245,7 @@ export const MegaphoneLanding: React.FC = () => {
                     </div>
                     <div className="mt-auto pt-6 border-t border-gray-800/50">
                       <p className="text-gray-500 line-through text-xs">R8,500 – R12,500</p>
-                      <p className="text-2xl font-black text-white">R5,500 – R9,500 <span className="text-sm text-gray-500 font-normal">/mo</span></p>
+                      <p className="text-2xl font-black text-white">R5,500 – R9,500 <span className="text-xs text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
                     </div>
                   </div>
 
@@ -249,7 +267,7 @@ export const MegaphoneLanding: React.FC = () => {
                     </div>
                     <div className="mt-auto pt-6 border-t border-gray-800/50">
                       <p className="text-gray-500 line-through text-xs">R30,000 – R45,000</p>
-                      <p className="text-2xl font-black text-yellow-500">R21,000 – R34,000 <span className="text-sm text-gray-500 font-normal">/mo</span></p>
+                      <p className="text-2xl font-black text-yellow-500">R21,000 – R34,000 <span className="text-xs text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
                     </div>
                   </div>
 
@@ -271,7 +289,7 @@ export const MegaphoneLanding: React.FC = () => {
                     </div>
                     <div className="mt-auto pt-6 border-t border-gray-800/50">
                       <p className="text-gray-500 line-through text-xs">R75,000 – R120,000+</p>
-                      <p className="text-2xl font-black text-white">R55,000 – R109,000+ <span className="text-sm text-gray-500 font-normal">/mo</span></p>
+                      <p className="text-2xl font-black text-white">R55,000 – R109,000+ <span className="text-xs text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
                     </div>
                   </div>
                 </div>
@@ -293,7 +311,7 @@ export const MegaphoneLanding: React.FC = () => {
                         <th className="p-6 font-bold uppercase tracking-widest text-xs w-1/4">Package Name</th>
                         <th className="p-6 font-bold uppercase tracking-widest text-xs w-1/4">Content &amp; Output</th>
                         <th className="p-6 font-bold uppercase tracking-widest text-xs w-1/3">Professional Services</th>
-                        <th className="p-6 font-bold uppercase tracking-widest text-xs text-right w-auto">Investment (Monthly)</th>
+                        <th className="p-6 font-bold uppercase tracking-widest text-xs text-right w-auto">Investment (For the period of 3 months)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -425,7 +443,7 @@ export const MegaphoneLanding: React.FC = () => {
                     <h4 className="font-bold text-white text-lg mb-2">AEO &quot;Answer Blocks&quot;</h4>
                     <p className="text-sm text-gray-400 mb-6 flex-grow">Restructuring existing pages into concise, schema-rich snippets designed for &quot;position zero&quot; extraction.</p>
                     <div className="pt-4 border-t border-gray-800/50">
-                      <p className="text-yellow-500 font-black text-xl">R1,440 <span className="text-[10px] font-bold tracking-widest text-gray-500 uppercase ml-2">(Per keyword/page)</span></p>
+                      <p className="text-yellow-500 font-black text-xl">R1,440</p>
                     </div>
                   </div>
 
@@ -438,10 +456,15 @@ export const MegaphoneLanding: React.FC = () => {
                   </div>
 
                   <div className="p-8 bg-yellow-500/10 border border-yellow-500/30 rounded-3xl flex flex-col lg:col-span-2">
-                    <h4 className="font-bold text-yellow-500 text-lg mb-2">Strategic Consulting</h4>
-                    <p className="text-sm text-gray-300 mb-6 flex-grow">Purely strategic, bi-weekly consultation based on real-time algorithmic weather and data tracking.</p>
-                    <div className="pt-4 border-t border-yellow-500/20">
-                      <p className="text-yellow-500 font-black text-2xl">R9,500 <span className="text-[10px] font-bold tracking-widest text-yellow-500/70 uppercase ml-2">(Monthly)</span></p>
+                    <div className="flex flex-col md:flex-row justify-between gap-6">
+                      <div className="flex-1">
+                        <h4 className="font-bold text-yellow-500 mb-2">Strategic Consulting</h4>
+                        <p className="text-sm text-gray-300 mb-6 flex-grow">Purely strategic, bi-weekly consultation based on real-time algorithmic weather and data tracking.</p>
+                      </div>
+                      <div className="text-left md:text-right shrink-0">
+                        <p className="text-yellow-500 font-black text-xl">R9,500</p>
+                        <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest">(for the period of 3 months)</p>
+                      </div>
                     </div>
                   </div>
 
@@ -565,26 +588,26 @@ export const MegaphoneLanding: React.FC = () => {
                 </div>
             </section>
 
-    {/* SHARED FOOTER IMAGE BANNER */}
-    <section className="relative h-[60vh] min-h-[500px] border-t border-black overflow-hidden bg-[#050505] flex items-center justify-center text-center">
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893091/happyhunterdigital_smart_marketing_contacts_v3w73g.png" 
-          alt="Digital Dominance Footer" 
-          className="w-full h-full object-cover object-bottom opacity-50 mix-blend-screen transition-all duration-1000"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-[#050505]/30"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-transparent h-32"></div>
-      </div>
-      <div className="relative z-10 container mx-auto px-6 max-w-3xl">
-        <ShieldCheck className="mx-auto text-yellow-500 mb-6" size={56} />
-        <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter mb-6 leading-none drop-shadow-2xl">Initialize <br/><span className="text-yellow-500">The Protocol</span></h2>
-        <p className="text-gray-300 text-xl md:text-2xl font-medium mb-10 drop-shadow-lg">Stop losing revenue to invisible algorithms. Secure your digital passport today.</p>
-        <Link to="/audit" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-12 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:scale-105">
-          Commence Onboarding <ArrowRight size={20} />
-        </Link>
-      </div>
-    </section>
+            {/* SHARED FOOTER IMAGE BANNER */}
+            <section className="relative h-[60vh] min-h-[500px] border-t border-black overflow-hidden bg-[#050505] flex items-center justify-center text-center">
+              <div className="absolute inset-0 z-0">
+                <img 
+                  src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893091/happyhunterdigital_smart_marketing_contacts_v3w73g.png" 
+                  alt="Digital Dominance Footer" 
+                  className="w-full h-full object-cover object-bottom opacity-50 mix-blend-screen transition-all duration-1000"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-[#050505]/30"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-transparent h-32"></div>
+              </div>
+              <div className="relative z-10 container mx-auto px-6 max-w-3xl">
+                <ShieldCheck className="mx-auto text-yellow-500 mb-6" size={56} />
+                <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter mb-6 leading-none drop-shadow-2xl">Initialize <br/><span className="text-yellow-500">The Protocol</span></h2>
+                <p className="text-gray-300 text-xl md:text-2xl font-medium mb-10 drop-shadow-lg">Stop losing revenue to invisible algorithms. Secure your digital passport today.</p>
+                <Link to="/audit" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-12 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:scale-105">
+                  Commence Onboarding <ArrowRight size={20} />
+                </Link>
+              </div>
+            </section>
 
         </div>
     );
