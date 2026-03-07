@@ -147,7 +147,7 @@ export const CoreServices = () => (
             </div>
             <div className="mt-auto pt-6 border-t border-gray-800/50">
               <p className="text-gray-500 line-through text-xs">R8,500 – R12,500</p>
-              <p className="text-2xl font-black text-white">R5,500 – R9,500 <span className="text-sm text-gray-500 font-normal">/mo</span></p>
+              <p className="text-2xl font-black text-white">R5,500 – R9,500 <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
             </div>
           </div>
 
@@ -169,7 +169,7 @@ export const CoreServices = () => (
             </div>
             <div className="mt-auto pt-6 border-t border-gray-800/50">
               <p className="text-gray-500 line-through text-xs">R30,000 – R45,000</p>
-              <p className="text-2xl font-black text-yellow-500">R21,000 – R34,000 <span className="text-sm text-gray-500 font-normal">/mo</span></p>
+              <p className="text-2xl font-black text-yellow-500">R21,000 – R34,000 <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
             </div>
           </div>
 
@@ -191,7 +191,7 @@ export const CoreServices = () => (
             </div>
             <div className="mt-auto pt-6 border-t border-gray-800/50">
               <p className="text-gray-500 line-through text-xs">R75,000 – R120,000+</p>
-              <p className="text-2xl font-black text-white">R55,000 – R109,000+ <span className="text-sm text-gray-500 font-normal">/mo</span></p>
+              <p className="text-2xl font-black text-white">R55,000 – R109,000+ <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest block mt-2">for the period of 3 months</span></p>
             </div>
           </div>
         </div>
@@ -214,7 +214,7 @@ export const CoreServices = () => (
                 <th className="p-6 font-bold uppercase tracking-widest text-xs w-1/4">Package Name</th>
                 <th className="p-6 font-bold uppercase tracking-widest text-xs w-1/4">Content &amp; Output</th>
                 <th className="p-6 font-bold uppercase tracking-widest text-xs w-1/3">Professional Services</th>
-                <th className="p-6 font-bold uppercase tracking-widest text-xs text-right w-auto">Investment (Monthly)</th>
+                <th className="p-6 font-bold uppercase tracking-widest text-xs text-right w-auto">Investment</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
@@ -231,6 +231,7 @@ export const CoreServices = () => (
                 <td className="p-6 align-top text-right">
                   <p className="text-gray-500 line-through text-xs">R4,900</p>
                   <p className="font-black text-white text-xl">R3,500</p>
+                  <p className="text-[10px] text-yellow-500 uppercase tracking-widest mt-1">for the period of 3 months</p>
                 </td>
               </tr>
               <tr className="hover:bg-gray-900/30 transition-colors">
@@ -246,6 +247,7 @@ export const CoreServices = () => (
                 <td className="p-6 align-top text-right">
                   <p className="text-gray-500 line-through text-xs">R8,500</p>
                   <p className="font-black text-yellow-500 text-xl">R6,500</p>
+                  <p className="text-[10px] text-yellow-500 uppercase tracking-widest mt-1">for the period of 3 months</p>
                 </td>
               </tr>
               <tr className="hover:bg-gray-900/30 transition-colors">
@@ -261,6 +263,7 @@ export const CoreServices = () => (
                 <td className="p-6 align-top text-right">
                   <p className="text-gray-500 line-through text-xs">R14,500</p>
                   <p className="font-black text-white text-xl">R10,500</p>
+                  <p className="text-[10px] text-yellow-500 uppercase tracking-widest mt-1">for the period of 3 months</p>
                 </td>
               </tr>
             </tbody>
@@ -347,7 +350,7 @@ export const CoreServices = () => (
             <h4 className="font-bold text-white text-lg mb-2">AEO &quot;Answer Blocks&quot;</h4>
             <p className="text-sm text-gray-400 mb-6 flex-grow">Restructuring existing pages into concise, schema-rich snippets designed for &quot;position zero&quot; extraction.</p>
             <div className="pt-4 border-t border-gray-800/50">
-              <p className="text-yellow-500 font-black text-xl">R1,440 <span className="text-[10px] font-bold tracking-widest text-gray-500 uppercase ml-2">(Per keyword/page)</span></p>
+              <p className="text-yellow-500 font-black text-xl">R1,440</p>
             </div>
           </div>
 
@@ -360,10 +363,15 @@ export const CoreServices = () => (
           </div>
 
           <div className="p-8 bg-yellow-500/10 border border-yellow-500/30 rounded-3xl flex flex-col lg:col-span-2">
-            <h4 className="font-bold text-yellow-500 text-lg mb-2">Strategic Consulting</h4>
-            <p className="text-sm text-gray-300 mb-6 flex-grow">Purely strategic, bi-weekly consultation based on real-time algorithmic weather and data tracking.</p>
-            <div className="pt-4 border-t border-yellow-500/20">
-              <p className="text-yellow-500 font-black text-2xl">R9,500 <span className="text-[10px] font-bold tracking-widest text-yellow-500/70 uppercase ml-2">(Monthly)</span></p>
+            <div className="flex flex-col md:flex-row justify-between gap-6">
+              <div className="flex-1">
+                <h4 className="font-bold text-yellow-500 mb-2">Strategic Consulting</h4>
+                <p className="text-sm text-gray-300">Purely strategic, bi-weekly consultation based on real-time algorithmic weather and data tracking.</p>
+              </div>
+              <div className="text-left md:text-right shrink-0">
+                <p className="text-yellow-500 font-black text-xl">R9,500</p>
+                <p className="text-[10px] font-bold tracking-widest text-yellow-500 uppercase mt-1">for the period of 3 months</p>
+              </div>
             </div>
           </div>
 
@@ -391,5 +399,6 @@ export const CoreServices = () => (
         </Link>
       </div>
     </section>
+
   </div>
 );
