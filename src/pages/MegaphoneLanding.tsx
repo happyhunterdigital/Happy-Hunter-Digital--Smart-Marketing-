@@ -175,9 +175,6 @@ export const MegaphoneLanding: React.FC = () => {
                 </div>
             </section>
 
-            {/* ONBOARDING FORM - WORKING EMAIL SECTION */}
-            <OnboardingForm />
-
             {/* 2. COMPREHENSIVE PRICING ARCHITECTURE */}
             <section className="py-24 px-6 relative border-t-8 border-black border-b border-gray-900 bg-[#050505]">
               <div className="container mx-auto max-w-7xl">
@@ -517,7 +514,8 @@ export const MegaphoneLanding: React.FC = () => {
                         <p className="text-sm text-gray-300 mb-6 flex-grow">Purely strategic, bi-weekly consultation based on real-time algorithmic weather and data tracking.</p>
                       </div>
                       <div className="text-left md:text-right shrink-0">
-                        <p className="text-yellow-500 font-black text-xl">R9,500</p>
+                        <p className="text-gray-500 line-through text-sm">R1,600</p>
+                        <p className="text-yellow-500 font-black text-xl">R950</p>
                         <p className="text-[10px] font-bold tracking-widest text-yellow-500/70 uppercase ml-2">(Monthly)</p>
                       </div>
                     </div>
@@ -526,6 +524,9 @@ export const MegaphoneLanding: React.FC = () => {
                 </div>
               </div>
             </section>
+
+            {/* ONBOARDING FORM - MOVED TO AFTER ALL SERVICES */}
+            <OnboardingForm />
 
             {/* SHARED FOOTER IMAGE BANNER */}
             <section className="relative h-[60vh] min-h-[500px] border-t border-black overflow-hidden bg-[#050505] flex items-center justify-center text-center">
