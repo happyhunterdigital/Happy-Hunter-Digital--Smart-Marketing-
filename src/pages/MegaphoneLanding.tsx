@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, CheckCircle2, Volume2, ShieldCheck, ChevronDown } from 'lucide-react';
 import { db } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebaseConfig';
 
 export const MegaphoneLanding: React.FC = () => {
     const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
@@ -31,67 +33,27 @@ export const MegaphoneLanding: React.FC = () => {
         setLoading(true);
 
         try {
-            await addDoc(collection(db, "leads"), {
+            // Call the Cloud Function instead of direct client-side write to ensure email sends reliably
+            const submitServiceRequest = httpsCallable(functions, 'submitServiceRequest');
+            await submitServiceRequest({
+                name: form.name,
+                website: form.website,
+                service: form.service,
+                email: form.email
+            });
+            
+            setSubmitted(true);
+        } catch (error) {
+            console.error("Submission Error:", error);
+            // Fallback: If cloud function fails, at least save the lead locally so we don't lose data
+             await addDoc(collection(db, "leads"), {
                 ...form,
-                source: "AI Megaphone Landing Page - Service Request",
+                source: "Fallback Client-Side Capture",
                 timestamp: serverTimestamp()
             });
-
-            let dynamicProblem = "";
-            if (form.service.includes("RAG-Ready")) {
-                dynamicProblem = "Your brand is present online, but AI models like Gemini and ChatGPT aren&apos;t citing you as the expert source yet.";
-            } else if (form.service.includes("Digital Passport")) {
-                dynamicProblem = "Your digital footprint is fragmented, making it hard for both Google and potential customers to verify that you&apos;re the safest choice.";
-            } else if (form.service.includes("Agentic Revenue")) {
-                dynamicProblem = "You have traffic, but your team is losing leads because you don&apos;t have a 24/7 intelligent system to capture and qualify them instantly.";
-            } else {
-                dynamicProblem = "You have digital assets, but they aren&apos;t working together as a cohesive ecosystem to attract, convert, and retain high-value clients.";
-            }
-
-            const firstName = form.name.split(' ')[0] || 'there';
-            
-            const emailHtml = `
-            <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; line-height: 1.6; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
-                <p style="font-size: 16px;">Hi ${firstName},</p>
-                <p style="font-size: 16px;">Welcome to the hunt for smarter growth.</p>
-                <p style="font-size: 16px;">I noticed you were looking into <strong>${form.service}</strong>. Most businesses come to us because they realize that simply "ranking" on page one isn't enough anymore. In 2026, if you aren't being synthesized into the answers provided by AI assistants, you're effectively invisible.</p>
-                
-                <h3 style="color: #000; margin-top: 30px;">The Problem We Identified:</h3>
-                <p style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #eab308; margin-bottom: 20px; font-size: 16px; border-radius: 0 8px 8px 0;">
-                    Based on your interest, it sounds like you're facing a common challenge: <br/><br/><strong>${dynamicProblem}</strong>
-                </p>
-
-                <h3 style="color: #000; margin-top: 30px;">How Happy Hunter Solves This:</h3>
-                <p style="font-size: 16px;">We don't just "do marketing." We build a Smart Authority Ecosystem for you. By applying our Digital Entity Management & Optimization (DEMO) framework, we ensure that:</p>
-                <ul style="font-size: 16px; margin-bottom: 30px;">
-                    <li style="margin-bottom: 10px;"><strong>You are Verified:</strong> Your digital passport is flawless.</li>
-                    <li style="margin-bottom: 10px;"><strong>You are Recommended:</strong> AI engines cite you as the authority.</li>
-                    <li><strong>You are Automated:</strong> Leads are converted while you sleep.</li>
-                </ul>
-
-                <div style="background-color: #050505; color: #fff; padding: 30px; text-align: center; border-radius: 12px; margin-top: 40px;">
-                    <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
-                    <p style="color: #d1d5db; margin-bottom: 25px;">Our system has already started a preliminary scan of your digital entity. I'd love to walk you through the results.</p>
-                    <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book Entity Strategy Session</a>
-                </div>
-
-                <p style="margin-top: 40px; font-size: 16px;">Stay Smart,<br/><br/><strong>Thabo Leslie Motsumi</strong><br/><span style="color: #666; font-size: 14px;">Happy Hunter -Smart Marketing-</span></p>
-            </div>
-            `;
-
-            await addDoc(collection(db, "mail"), {
-                to: [form.email],
-                message: {
-                    subject: `Regarding your interest in ${form.service} – Let's solve the "Invisibility" problem.`,
-                    html: emailHtml
-                }
-            });
-
-        } catch (error) {
-            console.error("Lead/Email capture warning:", error);
+            setSubmitted(true);
         } finally {
             setLoading(false);
-            setSubmitted(true);
         }
     };
 
@@ -218,6 +180,7 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </section>
 
+            {/* PHASE 2: GOVERNANCE & AEO RETAINERS */}
             <section className="py-24 px-6 relative border-b border-gray-900 bg-[#020202]">
               <div className="container mx-auto max-w-7xl">
                 <div className="mb-16 text-center">
@@ -296,6 +259,7 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </section>
 
+            {/* PHASE 3: AGENTIC SOCIAL MEDIA */}
             <section className="py-24 px-6 relative border-b border-gray-900 bg-[#050505]">
               <div className="container mx-auto max-w-6xl">
                 <div className="mb-16 text-center">
@@ -311,7 +275,7 @@ export const MegaphoneLanding: React.FC = () => {
                         <th className="p-6 font-bold uppercase tracking-widest text-xs w-1/4">Package Name</th>
                         <th className="p-6 font-bold uppercase tracking-widest text-xs w-1/4">Content &amp; Output</th>
                         <th className="p-6 font-bold uppercase tracking-widest text-xs w-1/3">Professional Services</th>
-                        <th className="p-6 font-bold uppercase tracking-widest text-xs text-right w-auto">Investment (For the period of 3 months)</th>
+                        <th className="p-6 font-bold uppercase tracking-widest text-xs text-right w-auto">Investment</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -328,6 +292,7 @@ export const MegaphoneLanding: React.FC = () => {
                         <td className="p-6 align-top text-right">
                           <p className="text-gray-500 line-through text-xs">R4,900</p>
                           <p className="font-black text-white text-xl">R3,500</p>
+                          <p className="text-[10px] text-yellow-500 uppercase tracking-widest mt-1">for the period of 3 months</p>
                         </td>
                       </tr>
                       <tr className="hover:bg-gray-900/30 transition-colors">
@@ -343,6 +308,7 @@ export const MegaphoneLanding: React.FC = () => {
                         <td className="p-6 align-top text-right">
                           <p className="text-gray-500 line-through text-xs">R8,500</p>
                           <p className="font-black text-yellow-500 text-xl">R6,500</p>
+                          <p className="text-[10px] text-yellow-500 uppercase tracking-widest mt-1">for the period of 3 months</p>
                         </td>
                       </tr>
                       <tr className="hover:bg-gray-900/30 transition-colors">
@@ -358,6 +324,7 @@ export const MegaphoneLanding: React.FC = () => {
                         <td className="p-6 align-top text-right">
                           <p className="text-gray-500 line-through text-xs">R14,500</p>
                           <p className="font-black text-white text-xl">R10,500</p>
+                          <p className="text-[10px] text-yellow-500 uppercase tracking-widest mt-1">for the period of 3 months</p>
                         </td>
                       </tr>
                     </tbody>
@@ -366,6 +333,7 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </section>
 
+            {/* PHASE 4: A LA CARTE SERVICES */}
             <section className="py-24 px-6 relative bg-[#020202]">
               <div className="container mx-auto max-w-7xl">
                 <div className="mb-16 text-center">
@@ -463,7 +431,7 @@ export const MegaphoneLanding: React.FC = () => {
                       </div>
                       <div className="text-left md:text-right shrink-0">
                         <p className="text-yellow-500 font-black text-xl">R9,500</p>
-                        <p className="text-xs text-gray-500 mt-1 uppercase tracking-widest">(for the period of 3 months)</p>
+                        <p className="text-[10px] font-bold tracking-widest text-yellow-500/70 uppercase ml-2">(for the period of 3 months)</p>
                       </div>
                     </div>
                   </div>
@@ -472,143 +440,26 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </section>
 
-            {/* 3. LEAD CAPTURE (SERVICE REQUEST) */}
-            <section className="py-24 px-6 bg-black text-white border-t-8 border-yellow-500">
-                <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-                    
-                    <div>
-                        <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">
-                            You don&apos;t need another &quot;agency.&quot;<br/>
-                            <span className="text-yellow-500">You need an Entity Manager.</span>
-                        </h2>
-                        <p className="text-gray-400 text-lg leading-relaxed mb-8">
-                            At Happy Hunter Digital, we&apos;ve perfected the transition from legacy Inbound Marketing to <strong className="text-white">AI-Powered Journey Orchestration</strong>. We don&apos;t just get you seen; we get you mathematically verified.
-                        </p>
-                        <ul className="space-y-4">
-                            <li className="flex items-center gap-3 text-lg font-bold"><CheckCircle2 className="text-yellow-500" /> Dominate ChatGPT &amp; Gemini</li>
-                            <li className="flex items-center gap-3 text-lg font-bold"><CheckCircle2 className="text-yellow-500" /> Secure &quot;Share of Model&quot;</li>
-                            <li className="flex items-center gap-3 text-lg font-bold"><CheckCircle2 className="text-yellow-500" /> Eradicate the Ghost Effect</li>
-                        </ul>
-                    </div>
+    {/* SHARED FOOTER IMAGE BANNER */}
+    <section className="relative h-[60vh] min-h-[500px] border-t border-black overflow-hidden bg-[#050505] flex items-center justify-center text-center">
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893091/happyhunterdigital_smart_marketing_contacts_v3w73g.png" 
+          alt="Digital Dominance Footer" 
+          className="w-full h-full object-cover object-bottom opacity-50 mix-blend-screen transition-all duration-1000"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-[#050505]/30"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-transparent h-32"></div>
+      </div>
+      <div className="relative z-10 container mx-auto px-6 max-w-3xl">
+        <ShieldCheck className="mx-auto text-yellow-500 mb-6" size={56} />
+        <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter mb-6 leading-none drop-shadow-2xl">Initialize <br/><span className="text-yellow-500">The Protocol</span></h2>
+        <p className="text-gray-300 text-xl md:text-2xl font-medium mb-10 drop-shadow-lg">Stop losing revenue to invisible algorithms. Secure your digital passport today.</p>
+        <Link to="/audit" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-12 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:scale-105">
+          Commence Onboarding <ArrowRight size={20} />
+        </Link>
+      </div>
+    </section>
 
-                    <div className="bg-[#111827] border border-gray-800 p-10 rounded-[2.5rem] shadow-2xl text-white relative min-h-[450px] flex flex-col justify-center">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-yellow-500 rounded-t-[2.5rem]"></div>
-                        
-                        {submitted ? (
-                            <div className="text-center animate-fade-in">
-                                <ShieldCheck className="mx-auto text-yellow-500 mb-6" size={72} />
-                                <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Request Secured</h3>
-                                <p className="font-bold text-gray-400 mb-8 text-sm leading-relaxed max-w-sm mx-auto">
-                                    Your intelligence brief has been dispatched to <strong className="text-white">{form.email}</strong>. Thabo and the team are reviewing your entity data and will contact you shortly.
-                                </p>
-                                <Link to="/" className="inline-block w-full bg-yellow-500 text-black py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-white transition-colors shadow-xl">
-                                    Return to Command Center
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className="animate-fade-in">
-                                <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 mt-2">Deploy System Architecture</h3>
-                                <p className="font-bold text-gray-400 mb-8 text-sm">Select your required protocol below. We will capture your request and immediately initialize your AI Entity Scanner.</p>
-                                
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    <input 
-                                        type="text" placeholder="Full Name" required
-                                        className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all"
-                                        onChange={e => setForm({...form, name: e.target.value})}
-                                    />
-                                    
-                                    <div className="relative">
-                                        <select 
-                                            required
-                                            defaultValue=""
-                                            className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold transition-all appearance-none cursor-pointer"
-                                            onChange={e => setForm({...form, service: e.target.value})}
-                                        >
-                                            <option value="" disabled className="font-normal text-gray-500">Select Requested Architecture...</option>
-                                            
-                                            <optgroup label="Phase 1: Architecture">
-                                                <option value="The Digital Front Door (Starter Site)">The Digital Front Door (Starter Site)</option>
-                                                <option value="The Agentic Web Hub (AI-Ready)">The Agentic Web Hub (AI-Ready)</option>
-                                                <option value="The Premium Entity Blueprint">The Premium Entity Blueprint</option>
-                                            </optgroup>
-                                            
-                                            <optgroup label="Phase 2: Governance">
-                                                <option value="Local Authority & Verification (Tier 1)">Local Authority & Verification (Tier 1)</option>
-                                                <option value="National AI Growth & Triage (Tier 2)">National AI Growth & Triage (Tier 2)</option>
-                                                <option value="Enterprise Entity Governance (Tier 3)">Enterprise Entity Governance (Tier 3)</option>
-                                            </optgroup>
-                                            
-                                            <optgroup label="Phase 3: Agentic Social Media">
-                                                <option value="The Awareness Mesh (Ads)">The Awareness Mesh (Ads)</option>
-                                                <option value="The Acquisition Engine (Ads)">The Acquisition Engine (Ads)</option>
-                                                <option value="The Omnichannel Dominance (Ads)">The Omnichannel Dominance (Ads)</option>
-                                            </optgroup>
-                                            
-                                            <optgroup label="Phase 4: Standalone Services">
-                                                <option value="Google Search Console Setup">Google Search Console Setup</option>
-                                                <option value="GBP Ultimate Setup">GBP Ultimate Setup</option>
-                                                <option value="Semantic Intent Mapping">Semantic Intent Mapping</option>
-                                                <option value="Custom GA4 Tracking">Custom GA4 Tracking</option>
-                                                <option value="Forensic Technical Audit">Forensic Technical Audit</option>
-                                                <option value="Neural Link Chatbot">Neural Link Chatbot</option>
-                                                <option value="UX Behavioral Analysis">UX Behavioral Analysis</option>
-                                                <option value="Targeted AEO Content">Targeted AEO Content</option>
-                                                <option value="AEO Answer Blocks">AEO Answer Blocks</option>
-                                                <option value="Verified Visuals (Photo/Film)">Verified Visuals (Photo/Film)</option>
-                                                <option value="Strategic Consulting">Strategic Consulting</option>
-                                            </optgroup>
-                                        </select>
-                                        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-yellow-500">
-                                            <ChevronDown size={20} />
-                                        </div>
-                                    </div>
-
-                                    <input 
-                                        type="text" placeholder="Website URL (e.g. www.yourbrand.com)" required
-                                        className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all"
-                                        onChange={e => setForm({...form, website: e.target.value})}
-                                    />
-                                    
-                                    <input 
-                                        type="email" placeholder="Secure Email Address" required
-                                        className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all"
-                                        onChange={e => setForm({...form, email: e.target.value})}
-                                    />
-                                    
-                                    <button 
-                                        type="submit" disabled={loading}
-                                        className="w-full bg-yellow-500 text-black py-5 rounded-xl font-black uppercase tracking-widest text-sm hover:bg-white transition-colors mt-4 shadow-xl disabled:opacity-70 flex justify-center items-center gap-2"
-                                    >
-                                        {loading ? 'Transmitting Request...' : 'Request Service Protocol'} <Zap size={16} />
-                                    </button>
-                                </form>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </section>
-
-            {/* SHARED FOOTER IMAGE BANNER */}
-            <section className="relative h-[60vh] min-h-[500px] border-t border-black overflow-hidden bg-[#050505] flex items-center justify-center text-center">
-              <div className="absolute inset-0 z-0">
-                <img 
-                  src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893091/happyhunterdigital_smart_marketing_contacts_v3w73g.png" 
-                  alt="Digital Dominance Footer" 
-                  className="w-full h-full object-cover object-bottom opacity-50 mix-blend-screen transition-all duration-1000"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-[#050505]/30"></div>
-                <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-transparent h-32"></div>
-              </div>
-              <div className="relative z-10 container mx-auto px-6 max-w-3xl">
-                <ShieldCheck className="mx-auto text-yellow-500 mb-6" size={56} />
-                <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter mb-6 leading-none drop-shadow-2xl">Initialize <br/><span className="text-yellow-500">The Protocol</span></h2>
-                <p className="text-gray-300 text-xl md:text-2xl font-medium mb-10 drop-shadow-lg">Stop losing revenue to invisible algorithms. Secure your digital passport today.</p>
-                <Link to="/audit" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-12 py-6 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_40px_rgba(234,179,8,0.4)] hover:scale-105">
-                  Commence Onboarding <ArrowRight size={20} />
-                </Link>
-              </div>
-            </section>
-
-        </div>
-    );
-};
+  </div>
+);
