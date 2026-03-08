@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
@@ -225,7 +226,7 @@ export const submitServiceRequest = onCall({
             website: website || "Not provided", 
             service, 
             email, 
-            source: "AI Megaphone Landing Page - Service Request", 
+            source: "AI Megaphone Landing Page", 
             timestamp: admin.firestore.FieldValue.serverTimestamp() 
         });
 
@@ -343,15 +344,17 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 });
 
 // ============================================================================
-// 5. WHATSAPP "TRUTH TABLE" NEURAL LINK WEBHOOK (KNOWLEDGE-GROUNDED)
+// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (TRUTH TABLE + LEAD CAPTURE)
 // ============================================================================
-export const whatsappWebhook = onRequest(async (req, res) => {
-    const token = process.env.WHATSAPP_TOKEN || '';
-    const phoneId = process.env.PHONE_NUMBER_ID || '';
-    const vToken = process.env.VERIFY_TOKEN || '';
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || 'YOUR_META_ACCESS_TOKEN';
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || 'YOUR_PHONE_NUMBER_ID';
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
+const ADMIN_NUMBER = "27601016673"; // Your actual WhatsApp number
 
+export const whatsappWebhook = onRequest(async (req, res) => {
+    // 1. Meta Webhook Verification
     if (req.method === 'GET') {
-        if (req.query['hub.verify_token'] === vToken) {
+        if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
             res.status(200).send(req.query['hub.challenge']);
         } else {
             res.status(403).send('Verification failed');
@@ -359,51 +362,65 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         return;
     }
 
+    // 2. Process Incoming Message
     if (req.method === 'POST') {
         const body = req.body;
-        const entry = body.entry?.[0]?.changes?.[0]?.value;
-        const message = entry?.messages?.[0];
-
-        if (message && message.type === 'text') {
-            const userText = message.text.body.toLowerCase();
-            const from = message.from;
-
-            // 1. Query the "Truth Table" (Verified Claims)
-            const claimsRef = db.collection('verified_claims');
-            const snapshot = await claimsRef.get();
+        if (body.object === 'whatsapp_business_account') {
+            const entry = body.entry?.[0];
+            const change = entry?.changes?.[0];
+            const value = change?.value;
+            const message = value?.messages?.[0];
             
-            let botResponse = "I am Smart Marketing AI. I couldn't find a verified answer for that, but you can check our full audit here: https://www.happyhunterdigital.com/audit";
-            
-            let matchFound = false;
+            if (message && message.type === 'text') {
+                const userText = message.text.body.toLowerCase();
+                const from = message.from;
 
-            // 2. Iterate through claims to find a match
-            for (const doc of snapshot.docs) {
-                const data = doc.data();
-                const keywords = (data.keywords || []).map((k: string) => k.toLowerCase());
-                const serviceName = (data.serviceName || "").toLowerCase();
+                // 3. Query the "Truth Table" (Verified Claims)
+                const claimsRef = db.collection('verified_claims');
+                const snapshot = await claimsRef.where('keywords', 'array-contains', userText).limit(1).get();
+                
+                let botResponse = "I'm sorry, I don't have verified information on that. Visit happyhunterdigital.com for more!";
 
-                // Check for keyword matches
-                if (keywords.some((k: string) => userText.includes(k)) || userText.includes(serviceName)) {
+                if (!snapshot.empty) {
+                    const data = snapshot.docs[0].data();
+
+                    // --- LEAD CAPTURE & INSTANT ALERT LOGIC ---
+                    if (data.category === "price" || data.category === "service") {
+                        // 1. Capture Prospect
+                        await db.collection("prospects").doc(from).set({
+                            phone: from,
+                            interest: data.category,
+                            last_inquiry: userText,
+                            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                            status: "new_lead"
+                        }, { merge: true });
+
+                        // 2. Trigger Admin Alert
+                        const alertText = `🚀 *NEW HIGH-VALUE LEAD* 🚀\n\n*From:* ${from}\n*Interested in:* ${data.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
+                        try {
+                             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+                                messaging_product: "whatsapp",
+                                to: ADMIN_NUMBER,
+                                text: { body: alertText }
+                            }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+                        } catch (err) { console.error("Admin Alert Failed", err); }
+                    }
+                    // ---------------------------------------------
                     
-                    // 3. Specialized Onboarding Logic
+                    // 4. Apply Smart Routing Logic (Blog vs Direct)
                     if (data.category === "onboarding") {
-                        botResponse = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
-                    }
-                    // 4. Blog Logic
-                    else if (data.category === "blog") {
+                         botResponse = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
+                    } else if (data.category === 'blog') {
                         botResponse = `📄 *Insight Snippet:* ${data.snippet}\n\nRead the full article here: ${data.url}`;
+                    } else {
+                        // Direct answers for Services, Prices, FAQs
+                        botResponse = `✅ *Official Info:* ${data.content}`;
                     }
-                    // 5. Direct Services/Prices/FAQs Logic
-                    else {
-                        botResponse = `✅ *Official Info:* ${data.content || data.verified_answer}`;
-                    }
-                    
-                    matchFound = true;
-                    
-                    // 6. Handle Media Transmission (Image)
+
+                    // 5. Handle Media Transmission (Image)
                     if (data.media_url) {
                         try {
-                            await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+                            await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                                 messaging_product: "whatsapp",
                                 to: from,
                                 type: "image",
@@ -411,38 +428,67 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                                     link: data.media_url,
                                     caption: botResponse
                                 }
-                            }, { headers: { 'Authorization': `Bearer ${token}` } });
+                            }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
                             
-                            // Return early if image sent to avoid double sending
                             res.status(200).send('EVENT_RECEIVED');
                             return;
                         } catch (mediaError) {
                             console.error("Media Send Error:", mediaError);
-                            // Fallback to text if media fails
                         }
                     }
-                    
-                    break; // Stop after first match
+                }
+
+                // 6. Transmit Text Response (if no media sent)
+                try {
+                    await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+                        messaging_product: "whatsapp",
+                        to: from,
+                        text: { body: botResponse }
+                    }, {
+                        headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` }
+                    });
+                } catch (error: any) {
+                    console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
                 }
             }
-
-            // 7. Send Text Response (if no media was sent)
-            try {
-                await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
-                    messaging_product: "whatsapp",
-                    to: from,
-                    text: { body: botResponse }
-                }, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-            } catch (error: any) {
-                console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
-            }
+            res.status(200).send('EVENT_RECEIVED');
+            return;
         }
-        res.status(200).send('EVENT_RECEIVED');
-        return;
     }
     
     res.status(404).send();
     return;
+});
+
+// ============================================================================
+// 6. DAILY REVENUE REPORT (SCHEDULED ENGINE)
+// ============================================================================
+export const dailyRevenueReport = onSchedule("every day 08:00", async (event) => {
+    const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
+    const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
+    
+    let leadCount = 0;
+    let serviceInterest = 0;
+    let priceInterest = 0;
+
+    snapshot.forEach(doc => {
+        leadCount++;
+        const data = doc.data();
+        if (data.interest === 'service') serviceInterest++;
+        if (data.interest === 'price') priceInterest++;
+    });
+
+    if (leadCount > 0) {
+        const reportText = `📊 *DAILY REVENUE REPORT* 📊\n\n*Total New Leads:* ${leadCount}\n*Service Inquiries:* ${serviceInterest}\n*Pricing Inquiries:* ${priceInterest}\n\nLogin to Grid CMS to triage.`;
+        
+        try {
+             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+                messaging_product: "whatsapp",
+                to: ADMIN_NUMBER, // Sends to your WhatsApp
+                text: { body: reportText }
+            }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+        } catch (err) {
+            console.error("Daily Report Failed", err);
+        }
+    }
 });
