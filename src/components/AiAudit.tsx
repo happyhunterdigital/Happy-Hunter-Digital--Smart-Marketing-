@@ -65,12 +65,25 @@ export const AiAudit: React.FC = () => {
         }
     };
 
+    // OPTIMIZED: Light PDF generation with JPEG compression
     const downloadPDF = async () => {
         if (!reportRef.current) return;
-        const canvas = await html2canvas(reportRef.current, { backgroundColor: '#050505', scale: 2 });
-        const img = canvas.toDataURL('image/png');
+        
+        // Generate canvas with high resolution for quality
+        const canvas = await html2canvas(reportRef.current, { 
+            backgroundColor: '#050505', 
+            scale: 2 
+        });
+        
+        // Convert to JPEG with 80% quality (massive size reduction vs PNG)
+        const img = canvas.toDataURL('image/jpeg', 0.8);
+        
         const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.addImage(img, 'PNG', 0, 0, 210, (canvas.height * 210) / canvas.width);
+        const imgWidth = 210; // A4 width in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // Use JPEG format instead of PNG
+        pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
         pdf.save(`HH_Audit_${form.biz}.pdf`);
     };
 
