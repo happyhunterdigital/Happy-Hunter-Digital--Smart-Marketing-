@@ -33,17 +33,12 @@ jobs:
           cd functions
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
           echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
-          echo "WHATSAPP_TOKEN=${{ secrets.WHATSAPP_TOKEN }}" >> .env
-          echo "PHONE_NUMBER_ID=${{ secrets.PHONE_NUMBER_ID }}" >> .env
-          echo "VERIFY_TOKEN=${{ secrets.VERIFY_TOKEN }}" >> .env
           npm install
           npm run build
 
-      # DEPLOY: Use official CLI with Force flag
+      # DEPLOY: Deploy Frontend and Backend via Token Mapping
       - name: Deploy to Firebase
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
-          echo "$GCP_SA_KEY" > gcp-key.json
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
-          npx firebase-tools deploy --only hosting,functions --force --non-interactive
+          npx firebase-tools deploy --only hosting,functions --force --non-interactive --token "${{ secrets.FIREBASE_TOKEN }}"
