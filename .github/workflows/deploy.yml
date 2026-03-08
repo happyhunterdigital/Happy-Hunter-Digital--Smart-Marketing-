@@ -33,6 +33,9 @@ jobs:
           cd functions
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
           echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
+          echo "WHATSAPP_TOKEN=${{ secrets.WHATSAPP_TOKEN }}" >> .env
+          echo "PHONE_NUMBER_ID=${{ secrets.PHONE_NUMBER_ID }}" >> .env
+          echo "VERIFY_TOKEN=${{ secrets.VERIFY_TOKEN }}" >> .env
           npm install
           npm run build
 
