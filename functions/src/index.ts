@@ -225,7 +225,7 @@ export const submitServiceRequest = onCall({
             website: website || "Not provided", 
             service, 
             email, 
-            source: "AI Megaphone Landing Page", 
+            source: "AI Megaphone Landing Page - Service Request", 
             timestamp: admin.firestore.FieldValue.serverTimestamp() 
         });
 
@@ -343,14 +343,15 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 });
 
 // ============================================================================
-// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (TRUTH TABLE ENABLED)
+// 5. WHATSAPP "TRUTH TABLE" NEURAL LINK WEBHOOK (KNOWLEDGE-GROUNDED)
 // ============================================================================
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || 'YOUR_META_ACCESS_TOKEN';
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || 'YOUR_PHONE_NUMBER_ID';
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
-
 export const whatsappWebhook = onRequest(async (req, res) => {
-    // 1. Meta Webhook Verification
+    // Permanent Master Keys loaded from environment
+    const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN;
+    const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID;
+    const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
+
+    // 1. Handle Meta Verification (GET)
     if (req.method === 'GET') {
         if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
             res.status(200).send(req.query['hub.challenge']);
@@ -360,62 +361,54 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         return;
     }
 
-    // 2. Process Incoming Message
+    // 2. Process Incoming Message (POST)
     if (req.method === 'POST') {
         const body = req.body;
-        if (body.object === 'whatsapp_business_account') {
-            const entry = body.entry?.[0];
-            const change = entry?.changes?.[0];
-            const value = change?.value;
-            const message = value?.messages?.[0];
+        const entry = body.entry?.[0]?.changes?.[0]?.value;
+        const message = entry?.messages?.[0];
+
+        if (message && message.type === 'text') {
+            const userText = message.text.body.toLowerCase();
+            const from = message.from;
+
+            // 3. Query the "Truth Table" in Firestore
+            const claimsRef = db.collection('verified_claims');
             
-            if (message && message.type === 'text') {
-                const userQuery = message.text.body.toLowerCase();
-                const from = message.from;
+            // Note: 'array-contains' only matches exact keywords. 
+            // We use the PDF logic here: query based on keywords array.
+            const snapshot = await claimsRef.where('keywords', 'array-contains', userText).limit(1).get();
+            
+            let botResponse = "I'm sorry, I don't have verified information on that. Visit happyhunterdigital.com for more!";
 
-                // 3. Query the "Truth Table" (Verified Claims)
-                const claimsRef = db.collection('verified_claims');
-                const snapshot = await claimsRef.get();
+            if (!snapshot.empty) {
+                const data = snapshot.docs[0].data();
                 
-                let replyText = "I am Smart Marketing AI. I couldn't find a verified claim for that specific inquiry, but you can explore our full capabilities here: https://www.happyhunterdigital.com/services";
-
-                // Router Logic: Keyword Matching against Truth Table
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const keywords = (data.keywords || []).map((k: string) => k.toLowerCase());
-                    const serviceName = (data.serviceName || "").toLowerCase();
-                    
-                    // Check if user query matches any keyword or the service name
-                    const matchesKeyword = keywords.some((k: string) => userQuery.includes(k));
-                    
-                    if (matchesKeyword || userQuery.includes(serviceName)) {
-                        if (data.category === 'blog') {
-                            // Blog Logic: Snippet + URL
-                            replyText = `*Insight:* ${data.snippet}\n\n*Read Full Intelligence:* ${data.url}`;
-                        } else {
-                            // Direct Answer Logic (Services/Prices/FAQs)
-                            replyText = `*${data.serviceName}:* ${data.verified_answer || data.claim}\n\n${data.serviceDescription || ""}`;
-                        }
-                    }
-                });
-
-                // 4. Send Response back to WhatsApp
-                try {
-                    await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                        messaging_product: "whatsapp",
-                        to: from,
-                        text: { body: replyText }
-                    }, {
-                        headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` }
-                    });
-                } catch (error: any) {
-                    console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
+                // 4. Apply Smart Routing Logic (Blog vs Direct)
+                if (data.category === 'blog') {
+                    botResponse = `📄 *Blog Snippet:* ${data.snippet}\n\nRead the full article here: ${data.url}`;
+                } else {
+                    // Direct answers for Services, Prices, FAQs
+                    botResponse = `✅ *Official Info:* ${data.verified_answer || data.claim || data.content}`;
                 }
             }
-            res.status(200).send('EVENT_RECEIVED');
-            return;
+
+            // 5. Transmit via Smart Marketing AI identity
+            try {
+                await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+                    messaging_product: "whatsapp",
+                    to: from,
+                    text: { body: botResponse }
+                }, {
+                    headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` }
+                });
+            } catch (error: any) {
+                console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
+            }
         }
+        res.status(200).send('EVENT_RECEIVED');
+        return;
     }
+    
     res.status(404).send();
     return;
 });
