@@ -225,7 +225,7 @@ export const submitServiceRequest = onCall({
             website: website || "Not provided", 
             service, 
             email, 
-            source: "AI Megaphone Landing Page - Service Request", 
+            source: "AI Megaphone Landing Page", 
             timestamp: admin.firestore.FieldValue.serverTimestamp() 
         });
 
@@ -343,15 +343,16 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 });
 
 // ============================================================================
-// 5. WHATSAPP "TRUTH TABLE" NEURAL LINK WEBHOOK
+// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (TRUTH TABLE ENABLED)
 // ============================================================================
-export const whatsappWebhook = onRequest(async (req, res) => {
-    const token = process.env.WHATSAPP_TOKEN || '';
-    const phoneId = process.env.PHONE_NUMBER_ID || '';
-    const vToken = process.env.VERIFY_TOKEN || '';
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || 'YOUR_META_ACCESS_TOKEN';
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || 'YOUR_PHONE_NUMBER_ID';
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
 
+export const whatsappWebhook = onRequest(async (req, res) => {
+    // 1. Meta Webhook Verification
     if (req.method === 'GET') {
-        if (req.query['hub.verify_token'] === vToken) {
+        if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
             res.status(200).send(req.query['hub.challenge']);
         } else {
             res.status(403).send('Verification failed');
@@ -359,6 +360,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         return;
     }
 
+    // 2. Process Incoming Message
     if (req.method === 'POST') {
         const body = req.body;
         if (body.object === 'whatsapp_business_account') {
@@ -371,28 +373,40 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                 const userQuery = message.text.body.toLowerCase();
                 const from = message.from;
 
+                // 3. Query the "Truth Table" (Verified Claims)
                 const claimsRef = db.collection('verified_claims');
                 const snapshot = await claimsRef.get();
                 
-                let replyText = "I am Hunter AI. I couldn't find a specific protocol for that query in my active database, but you can initialize a full scan here: https://www.happyhunterdigital.com/audit";
+                let replyText = "I am Smart Marketing AI. I couldn't find a verified claim for that specific inquiry, but you can explore our full capabilities here: https://www.happyhunterdigital.com/services";
 
+                // Router Logic: Keyword Matching against Truth Table
                 snapshot.forEach(doc => {
                     const data = doc.data();
+                    const keywords = (data.keywords || []).map((k: string) => k.toLowerCase());
                     const serviceName = (data.serviceName || "").toLowerCase();
-                    const claim = (data.claim || "").toLowerCase();
                     
-                    if ((serviceName && userQuery.includes(serviceName)) || (claim && userQuery.includes(claim)) || userQuery.includes('service') || userQuery.includes('price')) {
-                        replyText = `*Verified Fact:* ${data.claim}\n\n${data.serviceDescription}\n\n*Review the Architecture:* ${data.evidenceUrl}`;
+                    // Check if user query matches any keyword or the service name
+                    const matchesKeyword = keywords.some((k: string) => userQuery.includes(k));
+                    
+                    if (matchesKeyword || userQuery.includes(serviceName)) {
+                        if (data.category === 'blog') {
+                            // Blog Logic: Snippet + URL
+                            replyText = `*Insight:* ${data.snippet}\n\n*Read Full Intelligence:* ${data.url}`;
+                        } else {
+                            // Direct Answer Logic (Services/Prices/FAQs)
+                            replyText = `*${data.serviceName}:* ${data.verified_answer || data.claim}\n\n${data.serviceDescription || ""}`;
+                        }
                     }
                 });
 
+                // 4. Send Response back to WhatsApp
                 try {
-                    await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+                    await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                         messaging_product: "whatsapp",
                         to: from,
                         text: { body: replyText }
                     }, {
-                        headers: { 'Authorization': `Bearer ${token}` }
+                        headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` }
                     });
                 } catch (error: any) {
                     console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
