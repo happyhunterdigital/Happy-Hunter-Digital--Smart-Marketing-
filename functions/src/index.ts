@@ -230,11 +230,11 @@ export const submitServiceRequest = onCall({
         });
 
         let dynamicProblem = "";
-        if (service.includes("RAG-Ready") || service.includes("Agentic Web Hub") || service.includes("Digital Front Door")) {
+        if (service.includes("RAG-Ready")) {
             dynamicProblem = "Your brand is present online, but AI models like Gemini and ChatGPT aren't citing you as the expert source yet.";
-        } else if (service.includes("Governance") || service.includes("Local Authority")) {
+        } else if (service.includes("Digital Passport")) {
             dynamicProblem = "Your digital footprint is fragmented, making it hard for both Google and potential customers to verify that you're the safest choice.";
-        } else if (service.includes("Chatbot") || service.includes("Automation")) {
+        } else if (service.includes("Agentic Revenue")) {
             dynamicProblem = "You have traffic, but your team is losing leads because you don't have a 24/7 intelligent system to capture and qualify them instantly.";
         } else {
             dynamicProblem = "You have digital assets, but they aren't working together as a cohesive ecosystem to attract, convert, and retain high-value clients.";
@@ -352,9 +352,11 @@ const VERIFY_TOKEN = 'HAPPY_HUNTER_SECURE_2026';
 export const whatsappWebhook = onRequest(async (req, res) => {
     if (req.method === 'GET') {
         if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
-            return res.status(200).send(req.query['hub.challenge']);
+            res.status(200).send(req.query['hub.challenge']);
+            return;
         }
-        return res.status(403).send('Verification failed');
+        res.status(403).send('Verification failed');
+        return;
     }
 
     if (req.method === 'POST') {
@@ -396,8 +398,10 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                     console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
                 }
             }
-            return res.status(200).send('EVENT_RECEIVED');
+            res.status(200).send('EVENT_RECEIVED');
+            return;
         }
     }
-    return res.status(404).send();
+    res.status(404).send();
+    return;
 });
