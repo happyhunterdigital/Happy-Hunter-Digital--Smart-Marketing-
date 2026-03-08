@@ -349,7 +349,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || 'YOUR_META_ACCESS_TOKEN';
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || 'YOUR_PHONE_NUMBER_ID';
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
-const ADMIN_NUMBER = "27601016673"; // Your actual WhatsApp number
+const ADMIN_NUMBER = "27601016673";
 
 export const whatsappWebhook = onRequest(async (req, res) => {
     // 1. Meta Webhook Verification
@@ -370,12 +370,38 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             const change = entry?.changes?.[0];
             const value = change?.value;
             const message = value?.messages?.[0];
+
+            // -----------------------------------------------------
+            // 2a. AUTO-ONBOARDING LOGIC (Group Join Event)
+            // -----------------------------------------------------
+            if (message?.type === "system" && message.system?.type === "group_membership_change") {
+                const newUser = message.from;
+                const onboardingDoc = await db.collection("verified_claims").where("category", "==", "onboarding").limit(1).get();
+                
+                if (!onboardingDoc.empty) {
+                    const data = onboardingDoc.docs[0].data();
+                    const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
+                    
+                    try {
+                        await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+                            messaging_product: "whatsapp",
+                            to: newUser,
+                            text: { body: welcomeMessage }
+                        }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+                    } catch (err) { console.error("Onboarding Error", err); }
+                }
+                res.status(200).send('EVENT_RECEIVED');
+                return;
+            }
             
+            // -----------------------------------------------------
+            // 2b. TEXT MESSAGE LOGIC (Router)
+            // -----------------------------------------------------
             if (message && message.type === 'text') {
                 const userText = message.text.body.toLowerCase();
                 const from = message.from;
 
-                // 3. Query the "Truth Table" (Verified Claims)
+                // Query Truth Table
                 const claimsRef = db.collection('verified_claims');
                 const snapshot = await claimsRef.where('keywords', 'array-contains', userText).limit(1).get();
                 
@@ -384,9 +410,8 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                 if (!snapshot.empty) {
                     const data = snapshot.docs[0].data();
 
-                    // --- LEAD CAPTURE & INSTANT ALERT LOGIC ---
+                    // Lead Capture & Instant Alert
                     if (data.category === "price" || data.category === "service") {
-                        // 1. Capture Prospect
                         await db.collection("prospects").doc(from).set({
                             phone: from,
                             interest: data.category,
@@ -395,7 +420,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                             status: "new_lead"
                         }, { merge: true });
 
-                        // 2. Trigger Admin Alert
                         const alertText = `🚀 *NEW HIGH-VALUE LEAD* 🚀\n\n*From:* ${from}\n*Interested in:* ${data.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
                         try {
                              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
@@ -405,19 +429,17 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                             }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
                         } catch (err) { console.error("Admin Alert Failed", err); }
                     }
-                    // ---------------------------------------------
-                    
-                    // 4. Apply Smart Routing Logic (Blog vs Direct)
+
+                    // Routing Logic
                     if (data.category === "onboarding") {
                          botResponse = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
                     } else if (data.category === 'blog') {
                         botResponse = `📄 *Insight Snippet:* ${data.snippet}\n\nRead the full article here: ${data.url}`;
                     } else {
-                        // Direct answers for Services, Prices, FAQs
-                        botResponse = `✅ *Official Info:* ${data.content}`;
+                        botResponse = `✅ *Official Info:* ${data.content || data.verified_answer}`;
                     }
 
-                    // 5. Handle Media Transmission (Image)
+                    // Media Handling
                     if (data.media_url) {
                         try {
                             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
@@ -438,7 +460,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                     }
                 }
 
-                // 6. Transmit Text Response (if no media sent)
+                // Default Text Send
                 try {
                     await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                         messaging_product: "whatsapp",
@@ -484,7 +506,7 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async (event) =>
         try {
              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                 messaging_product: "whatsapp",
-                to: ADMIN_NUMBER, // Sends to your WhatsApp
+                to: ADMIN_NUMBER,
                 text: { body: reportText }
             }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
         } catch (err) {
