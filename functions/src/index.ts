@@ -1,7 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
-import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
@@ -9,11 +8,6 @@ import * as cheerio from "cheerio";
 
 admin.initializeApp();
 const db = getFirestore();
-
-// Define the secrets we saved in GitHub for WhatsApp
-const WHATSAPP_TOKEN = defineSecret("WHATSAPP_TOKEN");
-const PHONE_NUMBER_ID = defineSecret("PHONE_NUMBER_ID");
-const VERIFY_TOKEN = defineSecret("VERIFY_TOKEN");
 
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
@@ -351,66 +345,63 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 // ============================================================================
 // 5. WHATSAPP "TRUTH TABLE" NEURAL LINK WEBHOOK
 // ============================================================================
-export const whatsappWebhook = onRequest(
-    { secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN"] }, 
-    async (req, res) => {
-        const token = WHATSAPP_TOKEN.value();
-        const phoneId = PHONE_NUMBER_ID.value();
-        const vToken = VERIFY_TOKEN.value();
+export const whatsappWebhook = onRequest(async (req, res) => {
+    const token = process.env.WHATSAPP_TOKEN || '';
+    const phoneId = process.env.PHONE_NUMBER_ID || '';
+    const vToken = process.env.VERIFY_TOKEN || '';
 
-        if (req.method === 'GET') {
-            if (req.query['hub.verify_token'] === vToken) {
-                res.status(200).send(req.query['hub.challenge']);
-            } else {
-                res.status(403).send('Verification failed');
-            }
-            return;
+    if (req.method === 'GET') {
+        if (req.query['hub.verify_token'] === vToken) {
+            res.status(200).send(req.query['hub.challenge']);
+        } else {
+            res.status(403).send('Verification failed');
         }
-
-        if (req.method === 'POST') {
-            const body = req.body;
-            if (body.object === 'whatsapp_business_account') {
-                const entry = body.entry?.[0];
-                const change = entry?.changes?.[0];
-                const value = change?.value;
-                const message = value?.messages?.[0];
-                
-                if (message && message.type === 'text') {
-                    const userQuery = message.text.body.toLowerCase();
-                    const from = message.from;
-
-                    const claimsRef = db.collection('verified_claims');
-                    const snapshot = await claimsRef.get();
-                    
-                    let replyText = "I am Hunter AI. I couldn't find a specific protocol for that query in my active database, but you can initialize a full scan here: https://www.happyhunterdigital.com/audit";
-
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const serviceName = (data.serviceName || "").toLowerCase();
-                        const claim = (data.claim || "").toLowerCase();
-                        
-                        if ((serviceName && userQuery.includes(serviceName)) || (claim && userQuery.includes(claim)) || userQuery.includes('service') || userQuery.includes('price')) {
-                            replyText = `*Verified Fact:* ${data.claim}\n\n${data.serviceDescription}\n\n*Review the Architecture:* ${data.evidenceUrl}`;
-                        }
-                    });
-
-                    try {
-                        await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
-                            messaging_product: "whatsapp",
-                            to: from,
-                            text: { body: replyText }
-                        }, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                    } catch (error: any) {
-                        console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
-                    }
-                }
-                res.status(200).send('EVENT_RECEIVED');
-                return;
-            }
-        }
-        res.status(404).send();
         return;
     }
-);
+
+    if (req.method === 'POST') {
+        const body = req.body;
+        if (body.object === 'whatsapp_business_account') {
+            const entry = body.entry?.[0];
+            const change = entry?.changes?.[0];
+            const value = change?.value;
+            const message = value?.messages?.[0];
+            
+            if (message && message.type === 'text') {
+                const userQuery = message.text.body.toLowerCase();
+                const from = message.from;
+
+                const claimsRef = db.collection('verified_claims');
+                const snapshot = await claimsRef.get();
+                
+                let replyText = "I am Hunter AI. I couldn't find a specific protocol for that query in my active database, but you can initialize a full scan here: https://www.happyhunterdigital.com/audit";
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const serviceName = (data.serviceName || "").toLowerCase();
+                    const claim = (data.claim || "").toLowerCase();
+                    
+                    if ((serviceName && userQuery.includes(serviceName)) || (claim && userQuery.includes(claim)) || userQuery.includes('service') || userQuery.includes('price')) {
+                        replyText = `*Verified Fact:* ${data.claim}\n\n${data.serviceDescription}\n\n*Review the Architecture:* ${data.evidenceUrl}`;
+                    }
+                });
+
+                try {
+                    await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+                        messaging_product: "whatsapp",
+                        to: from,
+                        text: { body: replyText }
+                    }, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                } catch (error: any) {
+                    console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
+                }
+            }
+            res.status(200).send('EVENT_RECEIVED');
+            return;
+        }
+    }
+    res.status(404).send();
+    return;
+});
