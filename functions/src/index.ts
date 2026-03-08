@@ -344,15 +344,14 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 });
 
 // ============================================================================
-// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (TRUTH TABLE + LEAD CAPTURE)
+// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (TRUTH TABLE + ONBOARDING)
 // ============================================================================
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || 'YOUR_META_ACCESS_TOKEN';
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || 'YOUR_PHONE_NUMBER_ID';
+const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || '';
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
 const ADMIN_NUMBER = "27601016673";
 
 export const whatsappWebhook = onRequest(async (req, res) => {
-    // 1. Meta Webhook Verification
     if (req.method === 'GET') {
         if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
             res.status(200).send(req.query['hub.challenge']);
@@ -362,7 +361,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         return;
     }
 
-    // 2. Process Incoming Message
     if (req.method === 'POST') {
         const body = req.body;
         if (body.object === 'whatsapp_business_account') {
@@ -372,7 +370,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             const message = value?.messages?.[0];
 
             // -----------------------------------------------------
-            // 2a. AUTO-ONBOARDING LOGIC (Group Join Event)
+            // 5a. AUTO-ONBOARDING LOGIC (Group Join Event)
             // -----------------------------------------------------
             if (message?.type === "system" && message.system?.type === "group_membership_change") {
                 const newUser = message.from;
@@ -380,7 +378,10 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                 
                 if (!onboardingDoc.empty) {
                     const data = onboardingDoc.docs[0].data();
-                    const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
+                    // Fallback string if data.content is empty to prevent crashes
+                    const safeContent = data.content || "We are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.";
+                    
+                    const welcomeMessage = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${safeContent}\n\nIntroduce yourself once you're in!`;
                     
                     try {
                         await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
@@ -395,13 +396,12 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             }
             
             // -----------------------------------------------------
-            // 2b. TEXT MESSAGE LOGIC (Router)
+            // 5b. TEXT MESSAGE LOGIC (Router)
             // -----------------------------------------------------
             if (message && message.type === 'text') {
                 const userText = message.text.body.toLowerCase();
                 const from = message.from;
 
-                // Query Truth Table
                 const claimsRef = db.collection('verified_claims');
                 const snapshot = await claimsRef.where('keywords', 'array-contains', userText).limit(1).get();
                 
@@ -420,7 +420,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                             status: "new_lead"
                         }, { merge: true });
 
-                        const alertText = `🚀 *NEW HIGH-VALUE LEAD* 🚀\n\n*From:* ${from}\n*Interested in:* ${data.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
+                        const alertText = `🚨 *NEW HIGH-VALUE LEAD* 🚨\n\n*From:* ${from}\n*Interested in:* ${data.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
                         try {
                              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                                 messaging_product: "whatsapp",
@@ -436,7 +436,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                     } else if (data.category === 'blog') {
                         botResponse = `📄 *Insight Snippet:* ${data.snippet}\n\nRead the full article here: ${data.url}`;
                     } else {
-                        botResponse = `✅ *Official Info:* ${data.content || data.verified_answer}`;
+                        botResponse = `✅ *Official Info:* ${data.content || data.verified_answer || data.claim}`;
                     }
 
                     // Media Handling
@@ -460,7 +460,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                     }
                 }
 
-                // Default Text Send
                 try {
                     await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                         messaging_product: "whatsapp",
@@ -477,13 +476,12 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             return;
         }
     }
-    
     res.status(404).send();
     return;
 });
 
 // ============================================================================
-// 6. DAILY REVENUE REPORT (SCHEDULED ENGINE)
+// 6. DAILY REVENUE REPORT
 // ============================================================================
 export const dailyRevenueReport = onSchedule("every day 08:00", async (event) => {
     const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
@@ -506,7 +504,7 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async (event) =>
         try {
              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                 messaging_product: "whatsapp",
-                to: ADMIN_NUMBER,
+                to: ADMIN_NUMBER, 
                 text: { body: reportText }
             }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
         } catch (err) {
