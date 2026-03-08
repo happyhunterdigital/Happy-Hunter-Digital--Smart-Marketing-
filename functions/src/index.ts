@@ -230,11 +230,11 @@ export const submitServiceRequest = onCall({
         });
 
         let dynamicProblem = "";
-        if (service.includes("RAG-Ready")) {
+        if (service.includes("RAG-Ready") || service.includes("Agentic Web Hub") || service.includes("Digital Front Door")) {
             dynamicProblem = "Your brand is present online, but AI models like Gemini and ChatGPT aren't citing you as the expert source yet.";
-        } else if (service.includes("Digital Passport")) {
+        } else if (service.includes("Governance") || service.includes("Local Authority")) {
             dynamicProblem = "Your digital footprint is fragmented, making it hard for both Google and potential customers to verify that you're the safest choice.";
-        } else if (service.includes("Agentic Revenue")) {
+        } else if (service.includes("Chatbot") || service.includes("Automation")) {
             dynamicProblem = "You have traffic, but your team is losing leads because you don't have a 24/7 intelligent system to capture and qualify them instantly.";
         } else {
             dynamicProblem = "You have digital assets, but they aren't working together as a cohesive ecosystem to attract, convert, and retain high-value clients.";
@@ -347,15 +347,15 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 // ============================================================================
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || 'YOUR_META_ACCESS_TOKEN';
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || 'YOUR_PHONE_NUMBER_ID';
-const VERIFY_TOKEN = 'HAPPY_HUNTER_SECURE_2026';
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
 
 export const whatsappWebhook = onRequest(async (req, res) => {
     if (req.method === 'GET') {
         if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
             res.status(200).send(req.query['hub.challenge']);
-            return;
+        } else {
+            res.status(403).send('Verification failed');
         }
-        res.status(403).send('Verification failed');
         return;
     }
 
