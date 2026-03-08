@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
-import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import { onRequest } from "firebase-functions/v2/https";
+import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
@@ -187,8 +187,7 @@ export const hunterChat = onCall({
     
     RULES:
     1. NEVER hallucinate or make up information. Use ONLY the Knowledge Base.
-    2. Be direct, professional, and slightly authoritative. 
-    3. Keep answers concise (2-4 sentences max). If they ask for prices, summarize relevant tiers.`;
+    2. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).`;
 
     try {
         const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${G_KEY}`, {
@@ -211,7 +210,7 @@ export const hunterChat = onCall({
 });
 
 // ==========================================
-// 3. LANDING PAGE SERVICE REQUEST (AUTO-EMAIL)
+// 3. LANDING PAGE SERVICE REQUEST (AUTO EMAIL)
 // ==========================================
 export const submitServiceRequest = onCall({
     region: "us-central1",
@@ -226,7 +225,7 @@ export const submitServiceRequest = onCall({
             website: website || "Not provided", 
             service, 
             email, 
-            source: "AI Megaphone Landing Page", 
+            source: "AI Megaphone Landing Page - Service Request", 
             timestamp: admin.firestore.FieldValue.serverTimestamp() 
         });
 
@@ -278,7 +277,7 @@ export const submitServiceRequest = onCall({
 });
 
 // ==========================================
-// 4. ENTITY ORCHESTRATION ENGINE
+// 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
 // ==========================================
 export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
     console.log("CMS Data change detected. Recompiling Entity Schema...");
@@ -346,136 +345,59 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 // ============================================================================
 // 5. WHATSAPP "TRUTH TABLE" NEURAL LINK WEBHOOK
 // ============================================================================
-
-// Configuration from your Meta Dashboard (Set these in your .env file or Firebase Secrets)
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || 'YOUR_META_ACCESS_TOKEN';
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || 'YOUR_PHONE_NUMBER_ID';
 const VERIFY_TOKEN = 'HAPPY_HUNTER_SECURE_2026';
 
 export const whatsappWebhook = onRequest(async (req, res) => {
-    // 1. Meta Webhook Verification (GET request from Meta)
     if (req.method === 'GET') {
-        const mode = req.query['hub.mode'];
-        const token = req.query['hub.verify_token'];
-        const challenge = req.query['hub.challenge'];
-
-        if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-            console.log('WhatsApp Webhook verified successfully');
-            return res.status(200).send(challenge);
+        if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
+            return res.status(200).send(req.query['hub.challenge']);
         }
         return res.status(403).send('Verification failed');
     }
 
-    // 2. Process Incoming Message (POST request from Meta)
     if (req.method === 'POST') {
         const body = req.body;
-        
-        // Verify this is from WhatsApp Business API
         if (body.object === 'whatsapp_business_account') {
-            try {
-                // Safely access nested properties from the Meta payload
-                const entry = body.entry?.[0];
-                const change = entry?.changes?.[0];
-                const value = change?.value;
-                const message = value?.messages?.[0];
+            const entry = body.entry?.[0];
+            const change = entry?.changes?.[0];
+            const value = change?.value;
+            const message = value?.messages?.[0];
+            
+            if (message && message.type === 'text') {
+                const userQuery = message.text.body.toLowerCase();
+                const from = message.from;
+
+                const claimsRef = db.collection('verified_claims');
+                const snapshot = await claimsRef.get();
                 
-                // Process text messages only
-                if (message && message.type === 'text') {
-                    const userQuery = message.text.body.toLowerCase();
-                    const from = message.from; // User's WhatsApp number
+                let replyText = "I am Hunter AI. I couldn't find a specific protocol for that query in my active database, but you can initialize a full scan here: https://www.happyhunterdigital.com/audit";
 
-                    console.log(`Received message from ${from}: ${userQuery}`);
-
-                    // 3. Query the "Truth Table" in Firestore for verified claims
-                    const claimsRef = db.collection('verified_claims');
-                    const snapshot = await claimsRef.get();
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const serviceName = (data.serviceName || "").toLowerCase();
+                    const claim = (data.claim || "").toLowerCase();
                     
-                    let replyText = "I am Hunter AI. I couldn't find a specific protocol for that query in my active database, but you can initialize a full scan here: https://www.happyhunterdigital.com/audit";
+                    if ((serviceName && userQuery.includes(serviceName)) || (claim && userQuery.includes(claim)) || userQuery.includes('service') || userQuery.includes('price')) {
+                        replyText = `*Verified Fact:* ${data.claim}\n\n${data.serviceDescription}\n\n*Review the Architecture:* ${data.evidenceUrl}`;
+                    }
+                });
 
-                    // Advanced keyword matching against your claims
-                    let bestMatch = null;
-                    let highestScore = 0;
-
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        const serviceName = (data.serviceName || "").toLowerCase();
-                        const serviceDesc = (data.serviceDescription || "").toLowerCase();
-                        const claim = (data.claim || "").toLowerCase();
-                        const keywords = (data.keywords || []).map((k: string) => k.toLowerCase());
-                        
-                        let matchScore = 0;
-                        
-                        // Check for direct service name match
-                        if (serviceName && userQuery.includes(serviceName)) matchScore += 10;
-                        
-                        // Check for claim match
-                        if (claim && userQuery.includes(claim)) matchScore += 8;
-                        
-                        // Check for keyword matches
-                        keywords.forEach((keyword: string) => {
-                            if (userQuery.includes(keyword)) matchScore += 5;
-                        });
-                        
-                        // Generic service inquiry
-                        if (userQuery.includes('service') || userQuery.includes('price') || userQuery.includes('cost')) {
-                            if (serviceName) matchScore += 3;
-                        }
-
-                        // Keep track of best match
-                        if (matchScore > highestScore) {
-                            highestScore = matchScore;
-                            bestMatch = data;
-                        }
+                try {
+                    await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+                        messaging_product: "whatsapp",
+                        to: from,
+                        text: { body: replyText }
+                    }, {
+                        headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` }
                     });
-
-                    // If we found a good match, use it
-                    if (bestMatch && highestScore >= 5) {
-                        replyText = `*${bestMatch.serviceName}*\n\n✓ ${bestMatch.claim}\n\n${bestMatch.serviceDescription}\n\n💰 Pricing: ${bestMatch.pricing || 'Contact for quote'}\n\n📋 Learn more: ${bestMatch.evidenceUrl || 'https://www.happyhunterdigital.com/audit'}`;
-                    } else if (userQuery.includes('hello') || userQuery.includes('hi') || userQuery.includes('hey')) {
-                        replyText = "👋 Welcome to Happy Hunter Digital. I'm Hunter AI, your 24/7 Smart Marketing assistant.\n\nI can answer questions about:\n• Our services & pricing\n• The Smart Marketing Scan\n• Booking a strategy call\n\nWhat would you like to know?";
-                    } else if (userQuery.includes('contact') || userQuery.includes('thabo') || userQuery.includes('call')) {
-                        replyText = "📞 Contact Thabo Leslie Motsumi:\n\nWhatsApp: +27 60 101 6673\nEmail: motsumitl@happyhunterdigital.com\n\nOr book a free 30-min strategy call:\nhttps://calendly.com/motsumitl/30min";
-                    } else if (userQuery.includes('audit') || userQuery.includes('scan') || userQuery.includes('score')) {
-                        replyText = "🔍 Get your free Digital Survival Score at:\nhttps://www.happyhunterdigital.com/audit\n\nI'll analyze your Google Maps presence, website signals, and AI schema markup to see if algorithms can actually find your business.";
-                    }
-
-                    // 4. Send Response back to WhatsApp via Meta API
-                    try {
-                        const response = await axios.post(
-                            `https://graph.facebook.com/v18.0/${PHONE_NUMBER_ID}/messages`,
-                            {
-                                messaging_product: "whatsapp",
-                                recipient_type: "individual",
-                                to: from,
-                                type: "text",
-                                text: { 
-                                    body: replyText,
-                                    preview_url: true
-                                }
-                            },
-                            {
-                                headers: { 
-                                    'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
-                                    'Content-Type': 'application/json'
-                                }
-                            }
-                        );
-                        
-                        console.log('WhatsApp message sent successfully:', response.data);
-                    } catch (error: any) {
-                        console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
-                    }
+                } catch (error: any) {
+                    console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
                 }
-                
-                // Acknowledge receipt to Meta (required)
-                return res.status(200).send('EVENT_RECEIVED');
-                
-            } catch (error) {
-                console.error('Error processing webhook:', error);
-                return res.status(200).send('EVENT_RECEIVED'); // Still acknowledge to prevent retries
             }
+            return res.status(200).send('EVENT_RECEIVED');
         }
     }
-    
-    return res.status(404).send('Not found');
+    return res.status(404).send();
 });
