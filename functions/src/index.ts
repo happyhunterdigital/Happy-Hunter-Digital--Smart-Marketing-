@@ -12,7 +12,6 @@ const db = getFirestore();
 
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
-// UPGRADED TO GEMINI 3.1 FLASH-LITE
 // ============================================================================
 export const performAudit = onCall({
     region: "us-central1",
@@ -122,15 +121,12 @@ export const performAudit = onCall({
         Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is completely missing.
         `;
 
-        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${G_KEY}`, {
+        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${G_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
-                generationConfig: { 
-                    responseMimeType: "application/json",
-                    thinkingConfig: { thinkingLevel: "medium" }
-                }
+                generationConfig: { responseMimeType: "application/json" }
             })
         });
 
@@ -165,13 +161,12 @@ export const performAudit = onCall({
 
 // ============================================================================
 // 2. STRATEGIC CHAT
-// UPGRADED TO GEMINI 3.1 FLASH-LITE WITH HISTORY SUPPORT
 // ============================================================================
 export const hunterChat = onCall({
     region: "us-central1",
     cors: true,
 }, async (request) => {
-    const { message, history = [] } = request.data;
+    const { message } = request.data;
     const G_KEY = process.env.GEMINI_API_KEY;
 
     if (!message || !G_KEY) {
@@ -180,7 +175,7 @@ export const hunterChat = onCall({
 
     const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital.
     YOUR KNOWLEDGE BASE:
-    - Founder & Head Strategist: Thabo Leslie Motsumi.
+    - Founder & Head Strategist: Thabo Motsumi.
     - Our Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses via Generative Engine Optimization (GEO).
     - Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score). Tell users to go to happyhunterdigital.com/audit.
     - Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
@@ -193,37 +188,16 @@ export const hunterChat = onCall({
     
     RULES:
     1. NEVER hallucinate or make up information. Use ONLY the Knowledge Base.
-    2. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).
-    3. Maintain conversation context from previous messages.`;
+    2. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).`;
 
     try {
-        const contents = [];
-        
-        if (history && history.length > 0) {
-            history.forEach((msg: any) => {
-                contents.push({
-                    role: msg.role === 'user' ? 'user' : 'model',
-                    parts: [{ text: msg.text }]
-                });
-            });
-        }
-        
-        contents.push({
-            role: "user",
-            parts: [{ text: message }]
-        });
-
-        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${G_KEY}`, {
+        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${G_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
-                contents: contents,
-                generationConfig: { 
-                    temperature: 0.1, 
-                    maxOutputTokens: 500,
-                    thinkingConfig: { thinkingLevel: "low" }
-                }
+                contents: [{ role: "user", parts: [{ text: message }] }],
+                generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
             })
         });
 
@@ -370,7 +344,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 });
 
 // ============================================================================
-// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (TRUTH TABLE + ONBOARDING)
+// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (LEAD CAPTURE + ONBOARDING)
 // ============================================================================
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || '';
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
@@ -388,68 +362,45 @@ export const whatsappWebhook = onRequest(async (req, res) => {
     }
 
     if (req.method === 'POST') {
-        const body = req.body;
-        if (body.object === 'whatsapp_business_account') {
-            const entry = body.entry?.[0];
+        if (req.body?.object === 'whatsapp_business_account') {
+            const entry = req.body.entry?.[0];
             const change = entry?.changes?.[0];
             const value = change?.value;
             const message = value?.messages?.[0];
 
-            // -----------------------------------------------------
-            // 5a. AUTO-ONBOARDING LOGIC (Group Join Event)
-            // -----------------------------------------------------
             if (message?.type === "system" && message.system?.type === "group_membership_change") {
                 const newUser = message.from;
                 const onboardingDoc = await db.collection("verified_claims").where("category", "==", "onboarding").limit(1).get();
-                
                 if (!onboardingDoc.empty) {
                     const data = onboardingDoc.docs[0].data();
-                    const safeContent = data.content || "We are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.";
-                    
-                    const welcomeMessage = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${safeContent}\n\nIntroduce yourself once you're in!`;
-                    
+                    const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
                     try {
                         await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                            messaging_product: "whatsapp",
-                            to: newUser,
-                            text: { body: welcomeMessage }
+                            messaging_product: "whatsapp", to: newUser, text: { body: welcomeMessage }
                         }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
                     } catch (err) { console.error("Onboarding Error", err); }
                 }
-                res.status(200).send('EVENT_RECEIVED');
-                return;
-            }
-            
-            // -----------------------------------------------------
-            // 5b. TEXT MESSAGE LOGIC (Router)
-            // -----------------------------------------------------
-            if (message && message.type === 'text') {
+            } else if (message && message.type === 'text') {
                 const userText = message.text.body.toLowerCase();
                 const from = message.from;
-
                 const claimsRef = db.collection('verified_claims');
                 const snapshot = await claimsRef.where('keywords', 'array-contains', userText).limit(1).get();
-                
                 let botResponse = "I'm sorry, I don't have verified information on that. Visit happyhunterdigital.com for more!";
+                let matchFound = false;
 
                 if (!snapshot.empty) {
+                    matchFound = true;
                     const data = snapshot.docs[0].data();
-
                     if (data.category === "price" || data.category === "service") {
                         await db.collection("prospects").doc(from).set({
-                            phone: from,
-                            interest: data.category,
-                            last_inquiry: userText,
-                            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-                            status: "new_lead"
+                            phone: from, interest: data.category, last_inquiry: userText,
+                            timestamp: admin.firestore.FieldValue.serverTimestamp(), status: "new_lead"
                         }, { merge: true });
 
                         const alertText = `🚨 *NEW HIGH-VALUE LEAD* 🚨\n\n*From:* ${from}\n*Interested in:* ${data.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
                         try {
-                             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                                messaging_product: "whatsapp",
-                                to: ADMIN_NUMBER,
-                                text: { body: alertText }
+                            await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+                                messaging_product: "whatsapp", to: ADMIN_NUMBER, text: { body: alertText }
                             }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
                         } catch (err) { console.error("Admin Alert Failed", err); }
                     }
@@ -459,40 +410,26 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                     } else if (data.category === 'blog') {
                         botResponse = `📄 *Insight Snippet:* ${data.snippet}\n\nRead the full article here: ${data.url}`;
                     } else {
-                        botResponse = `✅ *Official Info:* ${data.content || data.verified_answer || data.claim}`;
+                        botResponse = `✅ *Official Info:* ${data.content || data.verified_answer}`;
                     }
 
                     if (data.media_url) {
                         try {
                             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                                messaging_product: "whatsapp",
-                                to: from,
-                                type: "image",
-                                image: {
-                                    link: data.media_url,
-                                    caption: botResponse
-                                }
+                                messaging_product: "whatsapp", to: from, type: "image",
+                                image: { link: data.media_url, caption: botResponse }
                             }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
-                            
                             res.status(200).send('EVENT_RECEIVED');
                             return;
-                        } catch (mediaError) {
-                            console.error("Media Send Error:", mediaError);
-                        }
+                        } catch (mediaError) { console.error("Media Send Error:", mediaError); }
                     }
                 }
-
+                
                 try {
                     await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                        messaging_product: "whatsapp",
-                        to: from,
-                        text: { body: botResponse }
-                    }, {
-                        headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` }
-                    });
-                } catch (error: any) {
-                    console.error("WhatsApp API Transmission Error:", error.response?.data || error.message);
-                }
+                        messaging_product: "whatsapp", to: from, text: { body: botResponse }
+                    }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+                } catch (error: any) { console.error("WhatsApp API Transmission Error:", error.response?.data || error.message); }
             }
             res.status(200).send('EVENT_RECEIVED');
             return;
@@ -524,11 +461,15 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async (event) =>
         const reportText = `📊 *DAILY REVENUE REPORT* 📊\n\n*Total New Leads:* ${leadCount}\n*Service Inquiries:* ${serviceInterest}\n*Pricing Inquiries:* ${priceInterest}\n\nLogin to Grid CMS to triage.`;
         
         try {
-             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                messaging_product: "whatsapp",
-                to: ADMIN_NUMBER, 
-                text: { body: reportText }
-            }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+             const token = process.env.WHATSAPP_TOKEN;
+             const phoneId = process.env.PHONE_NUMBER_ID;
+             if(token && phoneId) {
+                await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+                    messaging_product: "whatsapp",
+                    to: ADMIN_NUMBER, 
+                    text: { body: reportText }
+                }, { headers: { 'Authorization': `Bearer ${token}` } });
+             }
         } catch (err) {
             console.error("Daily Report Failed", err);
         }
