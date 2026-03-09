@@ -19,9 +19,10 @@ export const Chatbot: React.FC = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
-  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // SURGICAL FIX: Changed NodeJS.Timeout to number for Vite browser compatibility
+  const recordingTimerRef = useRef<number | null>(null);
 
-  // Initialize Web Speech API
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -45,7 +46,6 @@ export const Chatbot: React.FC = () => {
 
         if (finalTranscript) {
           setInput(finalTranscript);
-          // Auto-send after voice input
           handleVoiceSubmit(finalTranscript);
         } else if (interimTranscript) {
           setInput(interimTranscript);
@@ -55,12 +55,12 @@ export const Chatbot: React.FC = () => {
       recognitionRef.current.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
-        if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+        if (recordingTimerRef.current) window.clearInterval(recordingTimerRef.current);
       };
 
       recognitionRef.current.onend = () => {
         setIsRecording(false);
-        if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+        if (recordingTimerRef.current) window.clearInterval(recordingTimerRef.current);
       };
     }
   }, []);
@@ -69,19 +69,19 @@ export const Chatbot: React.FC = () => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Recording timer
   useEffect(() => {
     if (isRecording) {
-      recordingTimerRef.current = setInterval(() => {
+      // SURGICAL FIX: Explicitly use window.setInterval
+      recordingTimerRef.current = window.setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
     } else {
       setRecordingTime(0);
-      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      if (recordingTimerRef.current) window.clearInterval(recordingTimerRef.current);
     }
 
     return () => {
-      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      if (recordingTimerRef.current) window.clearInterval(recordingTimerRef.current);
     };
   }, [isRecording]);
 
@@ -217,7 +217,6 @@ export const Chatbot: React.FC = () => {
           </div>
 
           <form onSubmit={sendMessage} className="p-3 bg-gray-900 border-t border-gray-800 flex gap-2 items-center">
-            {/* Voice Input Button */}
             <button
               type="button"
               onClick={toggleRecording}
@@ -230,14 +229,11 @@ export const Chatbot: React.FC = () => {
               title={isRecording ? 'Stop recording' : 'Start voice input'}
             >
               {isRecording ? <MicOff size={18} /> : <Mic size={18} />}
-              
-              {/* Recording indicator */}
               {isRecording && (
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
               )}
             </button>
 
-            {/* Audio Waveform Animation while recording */}
             {isRecording && (
               <div className="flex items-center gap-1 px-2">
                 <AudioWaveform size={16} className="text-red-400 animate-pulse" />
@@ -262,7 +258,6 @@ export const Chatbot: React.FC = () => {
             </button>
           </form>
 
-          {/* Recording Status Bar */}
           {isRecording && (
             <div className="bg-red-500/10 border-t border-red-500/20 px-3 py-2 text-center">
               <p className="text-xs text-red-400 animate-pulse">
