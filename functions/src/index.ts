@@ -122,7 +122,6 @@ export const performAudit = onCall({
         Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is completely missing.
         `;
 
-        // UPGRADED: Using gemini-3.1-flash-lite-preview with thinking support
         const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${G_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -130,7 +129,7 @@ export const performAudit = onCall({
                 contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
                 generationConfig: { 
                     responseMimeType: "application/json",
-                    thinkingConfig: { thinkingLevel: "medium" } // NEW: 3.1 Flash-Lite thinking levels (low/medium/high)
+                    thinkingConfig: { thinkingLevel: "medium" }
                 }
             })
         });
@@ -172,7 +171,7 @@ export const hunterChat = onCall({
     region: "us-central1",
     cors: true,
 }, async (request) => {
-    const { message, history = [] } = request.data; // NEW: Accept history array
+    const { message, history = [] } = request.data;
     const G_KEY = process.env.GEMINI_API_KEY;
 
     if (!message || !G_KEY) {
@@ -198,10 +197,8 @@ export const hunterChat = onCall({
     3. Maintain conversation context from previous messages.`;
 
     try {
-        // Build contents array with history
         const contents = [];
         
-        // Add history messages if provided
         if (history && history.length > 0) {
             history.forEach((msg: any) => {
                 contents.push({
@@ -211,23 +208,21 @@ export const hunterChat = onCall({
             });
         }
         
-        // Add current user message
         contents.push({
             role: "user",
             parts: [{ text: message }]
         });
 
-        // UPGRADED: Using gemini-3.1-flash-lite-preview with thinking support
         const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${G_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
-                contents: contents, // NEW: Full conversation history
+                contents: contents,
                 generationConfig: { 
                     temperature: 0.1, 
                     maxOutputTokens: 500,
-                    thinkingConfig: { thinkingLevel: "low" } // NEW: Fast thinking for chat
+                    thinkingConfig: { thinkingLevel: "low" }
                 }
             })
         });
