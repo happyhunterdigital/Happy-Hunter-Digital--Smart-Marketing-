@@ -6,10 +6,6 @@ import { httpsCallable } from 'firebase/functions';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
-// The new library that provides the flag dropdown and strict formatting
-import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
-import 'react-phone-number-input/style.css'; 
-
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
@@ -17,6 +13,9 @@ export const AiAudit: React.FC = () => {
   const [scanProgress, setScanProgress] = useState(0);
   const [verdict, setVerdict] = useState<any>(null);
   const reportRef = useRef<HTMLDivElement>(null);
+  
+  // Real-time phone validation state
+  const [phoneError, setPhoneError] = useState('');
 
   const scanSteps =[
     "Verifying Google Business Profile...",
@@ -34,15 +33,38 @@ export const AiAudit: React.FC = () => {
     return { amount: 'R3,200+', desc: 'Moderate gaps detected. Optimization required.' };
   };
 
-  const handlePhoneChange = (value?: string) => {
-    // react-phone-number-input handles formatting. Value is returned as E.164 (e.g. +27601016673)
-    setForm({ ...form, wa: value || '' });
+  // Strict E.164 Regex: Must start with +, followed by 1-14 digits. No spaces.
+  const validatePhone = (phone: string) => {
+    const phoneRegex = /^\+[1-9]\d{1,14}$/;
+    if (!phone) {
+      setPhoneError('WhatsApp number is required.');
+      return false;
+    }
+    if (!phone.startsWith('+')) {
+      setPhoneError('Must start with a + country code.');
+      return false;
+    }
+    if (phone.includes(' ')) {
+      setPhoneError('Remove all spaces.');
+      return false;
+    }
+    if (!phoneRegex.test(phone)) {
+      setPhoneError('Invalid international format.');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    setForm({ ...form, wa: input });
+    if (input.length > 0) validatePhone(input);
   };
 
   const runForensicScan = async () => {
-    // Strict Validation Check
-    if (!form.wa || !isValidPhoneNumber(form.wa)) {
-        alert("Please provide a valid WhatsApp number.");
+    if (!validatePhone(form.wa)) {
+        alert("Please fix the WhatsApp number format before proceeding.");
         return;
     }
 
@@ -60,7 +82,7 @@ export const AiAudit: React.FC = () => {
         businessName: form.biz,
         location: form.loc,
         clientEmail: form.mail,
-        whatsapp: form.wa 
+        whatsapp: form.wa
       });
       const data = response.data as any;
       if (!data.success) throw new Error("Server rejected audit.");
@@ -90,9 +112,6 @@ export const AiAudit: React.FC = () => {
     pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
     pdf.save(`HH_Audit_${form.biz}.pdf`);
   };
-
-  // UI Helper to show if phone is valid as they type
-  const isPhoneValid = form.wa ? isValidPhoneNumber(form.wa) : false;
 
   return (
     <div className="max-w-4xl mx-auto mt-10 px-4 pb-20">
@@ -124,34 +143,22 @@ export const AiAudit: React.FC = () => {
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} required />
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
             
-            {/* NEW: Robust Phone Input with Flag Selector */}
+            {/* STRICT NO-PACKAGE REGEX VALIDATION UI */}
             <div className="relative pt-2">
-              <PhoneInput
-                international
-                defaultCountry="ZA"
+              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 block">
+                Required Format: +CountryCode Number (NO SPACES)
+              </label>
+              <input 
+                className={`w-full bg-black p-4 rounded-xl border ${phoneError ? 'border-red-500/50' : form.wa ? 'border-green-500/50' : 'border-gray-800'} text-white outline-none focus:border-yellow-500 transition-colors font-mono`} 
+                placeholder="+27601016673" 
+                type="tel" 
                 value={form.wa}
-                onChange={handlePhoneChange}
-                className={`w-full bg-black p-4 rounded-xl border ${form.wa && isPhoneValid ? 'border-green-500/50' : 'border-gray-800'} text-white focus-within:border-yellow-500 transition-colors`}
-                style={{ '--PhoneInput-color--focus': 'transparent' } as React.CSSProperties} // removes default focus ring
+                onChange={handlePhoneChange} 
+                required 
               />
-              <style dangerouslySetInnerHTML={{__html: `
-                .PhoneInputInput {
-                  background: transparent;
-                  border: none;
-                  color: white;
-                  outline: none;
-                  width: 100%;
-                  font-family: inherit;
-                }
-                .PhoneInputCountryIcon {
-                  width: 1.5em;
-                  height: 1em;
-                  margin-right: 0.5em;
-                }
-              `}} />
-              {form.wa && !isPhoneValid && (
-                <p className="text-xs mt-2 font-medium text-red-500">
-                  Please enter a valid complete number.
+              {phoneError && (
+                <p className="text-xs mt-2 font-medium text-red-500 flex items-center gap-1">
+                  <XCircle size={12} /> {phoneError}
                 </p>
               )}
             </div>
@@ -159,7 +166,7 @@ export const AiAudit: React.FC = () => {
           </div>
           <button 
             type="submit" 
-            disabled={!isPhoneValid}
+            disabled={!!phoneError || !form.wa}
             className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Reveal Intelligence <Zap size={20}/>
