@@ -5,7 +5,10 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { PhoneValidator } from '../utils/phoneValidator'; 
+
+// The new library that provides the flag dropdown and strict formatting
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css'; 
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -14,8 +17,6 @@ export const AiAudit: React.FC = () => {
   const [scanProgress, setScanProgress] = useState(0);
   const [verdict, setVerdict] = useState<any>(null);
   const reportRef = useRef<HTMLDivElement>(null);
-  
-  const [phoneStatus, setPhoneStatus] = useState({ isValid: false, message: '' });
 
   const scanSteps =[
     "Verifying Google Business Profile...",
@@ -33,30 +34,15 @@ export const AiAudit: React.FC = () => {
     return { amount: 'R3,200+', desc: 'Moderate gaps detected. Optimization required.' };
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value;
-    setForm({ ...form, wa: input });
-
-    if (input.length > 3) {
-      const result = PhoneValidator.validate(input, 'ZA'); 
-      if (result.isValid) {
-        const isMobile = ['MOBILE', 'FIXED_LINE_OR_MOBILE'].includes(result.type as string);
-        if (isMobile) {
-          setPhoneStatus({ isValid: true, message: `✓ Valid WhatsApp Number (${result.country})` });
-        } else {
-          setPhoneStatus({ isValid: false, message: `✗ Valid number, but landlines cannot use WhatsApp.` });
-        }
-      } else {
-        setPhoneStatus({ isValid: false, message: `✗ Invalid format. Use +27 60 123 4567` });
-      }
-    } else {
-      setPhoneStatus({ isValid: false, message: '' });
-    }
+  const handlePhoneChange = (value?: string) => {
+    // react-phone-number-input handles formatting. Value is returned as E.164 (e.g. +27601016673)
+    setForm({ ...form, wa: value || '' });
   };
 
   const runForensicScan = async () => {
-    if (!phoneStatus.isValid) {
-        alert("Please provide a valid WhatsApp capable mobile number using the +CountryCode format.");
+    // Strict Validation Check
+    if (!form.wa || !isValidPhoneNumber(form.wa)) {
+        alert("Please provide a valid WhatsApp number.");
         return;
     }
 
@@ -74,7 +60,7 @@ export const AiAudit: React.FC = () => {
         businessName: form.biz,
         location: form.loc,
         clientEmail: form.mail,
-        whatsapp: form.wa
+        whatsapp: form.wa 
       });
       const data = response.data as any;
       if (!data.success) throw new Error("Server rejected audit.");
@@ -104,6 +90,9 @@ export const AiAudit: React.FC = () => {
     pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
     pdf.save(`HH_Audit_${form.biz}.pdf`);
   };
+
+  // UI Helper to show if phone is valid as they type
+  const isPhoneValid = form.wa ? isValidPhoneNumber(form.wa) : false;
 
   return (
     <div className="max-w-4xl mx-auto mt-10 px-4 pb-20">
@@ -135,22 +124,34 @@ export const AiAudit: React.FC = () => {
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} required />
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
             
-            {/* SURGICAL UI FIX: Explicit Instructions for Phone Format */}
+            {/* NEW: Robust Phone Input with Flag Selector */}
             <div className="relative pt-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 block">
-                Required Format: +CountryCode Number
-              </label>
-              <input 
-                className={`w-full bg-black p-4 rounded-xl border ${phoneStatus.message ? (phoneStatus.isValid ? 'border-green-500/50' : 'border-red-500/50') : 'border-gray-800'} text-white outline-none focus:border-yellow-500 transition-colors font-mono`} 
-                placeholder="+27 60 101 6673" 
-                type="tel" 
+              <PhoneInput
+                international
+                defaultCountry="ZA"
                 value={form.wa}
-                onChange={handlePhoneChange} 
-                required 
+                onChange={handlePhoneChange}
+                className={`w-full bg-black p-4 rounded-xl border ${form.wa && isPhoneValid ? 'border-green-500/50' : 'border-gray-800'} text-white focus-within:border-yellow-500 transition-colors`}
+                style={{ '--PhoneInput-color--focus': 'transparent' } as React.CSSProperties} // removes default focus ring
               />
-              {phoneStatus.message && (
-                <p className={`text-xs mt-2 font-medium ${phoneStatus.isValid ? 'text-green-500' : 'text-red-500'}`}>
-                  {phoneStatus.message}
+              <style dangerouslySetInnerHTML={{__html: `
+                .PhoneInputInput {
+                  background: transparent;
+                  border: none;
+                  color: white;
+                  outline: none;
+                  width: 100%;
+                  font-family: inherit;
+                }
+                .PhoneInputCountryIcon {
+                  width: 1.5em;
+                  height: 1em;
+                  margin-right: 0.5em;
+                }
+              `}} />
+              {form.wa && !isPhoneValid && (
+                <p className="text-xs mt-2 font-medium text-red-500">
+                  Please enter a valid complete number.
                 </p>
               )}
             </div>
@@ -158,7 +159,7 @@ export const AiAudit: React.FC = () => {
           </div>
           <button 
             type="submit" 
-            disabled={!phoneStatus.isValid}
+            disabled={!isPhoneValid}
             className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Reveal Intelligence <Zap size={20}/>
