@@ -5,7 +5,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { PhoneValidator } from '../utils/phoneValidator'; // <-- IMPORT VALIDATOR
+import { PhoneValidator } from '../utils/phoneValidator'; 
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -15,7 +15,6 @@ export const AiAudit: React.FC = () => {
   const [verdict, setVerdict] = useState<any>(null);
   const reportRef = useRef<HTMLDivElement>(null);
   
-  // NEW: State for phone validation
   const [phoneStatus, setPhoneStatus] = useState({ isValid: false, message: '' });
 
   const scanSteps =[
@@ -34,13 +33,12 @@ export const AiAudit: React.FC = () => {
     return { amount: 'R3,200+', desc: 'Moderate gaps detected. Optimization required.' };
   };
 
-  // NEW: Handle Phone Input and Validation
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     setForm({ ...form, wa: input });
 
     if (input.length > 3) {
-      const result = PhoneValidator.validate(input, 'ZA'); // Defaulting to ZA
+      const result = PhoneValidator.validate(input, 'ZA'); 
       if (result.isValid) {
         const isMobile = ['MOBILE', 'FIXED_LINE_OR_MOBILE'].includes(result.type as string);
         if (isMobile) {
@@ -49,7 +47,7 @@ export const AiAudit: React.FC = () => {
           setPhoneStatus({ isValid: false, message: `✗ Valid number, but landlines cannot use WhatsApp.` });
         }
       } else {
-        setPhoneStatus({ isValid: false, message: `✗ Invalid international format` });
+        setPhoneStatus({ isValid: false, message: `✗ Invalid format. Use +27 60 123 4567` });
       }
     } else {
       setPhoneStatus({ isValid: false, message: '' });
@@ -57,9 +55,8 @@ export const AiAudit: React.FC = () => {
   };
 
   const runForensicScan = async () => {
-    // PREVENT SUBMISSION IF PHONE IS INVALID
     if (!phoneStatus.isValid) {
-        alert("Please provide a valid WhatsApp capable mobile number.");
+        alert("Please provide a valid WhatsApp capable mobile number using the +CountryCode format.");
         return;
     }
 
@@ -77,7 +74,7 @@ export const AiAudit: React.FC = () => {
         businessName: form.biz,
         location: form.loc,
         clientEmail: form.mail,
-        whatsapp: form.wa // Passing the validated number to backend if needed later
+        whatsapp: form.wa
       });
       const data = response.data as any;
       if (!data.success) throw new Error("Server rejected audit.");
@@ -97,24 +94,13 @@ export const AiAudit: React.FC = () => {
     }
   };
 
-  // OPTIMIZED: Light PDF generation with JPEG compression
   const downloadPDF = async () => {
     if (!reportRef.current) return;
-    
-    // Generate canvas with high resolution for quality
-    const canvas = await html2canvas(reportRef.current, {
-      backgroundColor: '#050505',
-      scale: 2
-    });
-    
-    // Convert to JPEG with 80% quality (massive size reduction vs PNG)
+    const canvas = await html2canvas(reportRef.current, { backgroundColor: '#050505', scale: 2 });
     const img = canvas.toDataURL('image/jpeg', 0.8);
-    
     const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgWidth = 210; // A4 width in mm
+    const imgWidth = 210;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    
-    // Use JPEG format instead of PNG
     pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
     pdf.save(`HH_Audit_${form.biz}.pdf`);
   };
@@ -149,11 +135,14 @@ export const AiAudit: React.FC = () => {
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} required />
             <input className="w-full bg-black p-4 rounded-xl border border-gray-800 text-white outline-none focus:border-yellow-500" placeholder="Email Address" type="email" onChange={e => setForm({...form, mail: e.target.value})} required />
             
-            {/* UPDATED WHATSAPP INPUT */}
-            <div className="relative">
+            {/* SURGICAL UI FIX: Explicit Instructions for Phone Format */}
+            <div className="relative pt-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 block">
+                Required Format: +CountryCode Number
+              </label>
               <input 
-                className={`w-full bg-black p-4 rounded-xl border ${phoneStatus.message ? (phoneStatus.isValid ? 'border-green-500/50' : 'border-red-500/50') : 'border-gray-800'} text-white outline-none focus:border-yellow-500 transition-colors`} 
-                placeholder="WhatsApp Number (e.g. +27 60...)" 
+                className={`w-full bg-black p-4 rounded-xl border ${phoneStatus.message ? (phoneStatus.isValid ? 'border-green-500/50' : 'border-red-500/50') : 'border-gray-800'} text-white outline-none focus:border-yellow-500 transition-colors font-mono`} 
+                placeholder="+27 60 101 6673" 
                 type="tel" 
                 value={form.wa}
                 onChange={handlePhoneChange} 
@@ -244,7 +233,6 @@ export const AiAudit: React.FC = () => {
                 <p className="text-white text-lg font-medium leading-relaxed italic border-l-4 border-gray-800 pl-4">"{verdict.summary}"</p>
               </div>
 
-              {/* --- BRANDED SCHEMA DETECTION UI BLOCK --- */}
               <div className="mb-10 bg-[#0a0a0a] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl relative">
                 <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
                 <div className="bg-[#111827] p-4 border-b border-gray-800 flex justify-between items-center">
@@ -290,7 +278,6 @@ export const AiAudit: React.FC = () => {
                   )}
                 </div>
               </div>
-              {/* --- END BRANDED SCHEMA UI --- */}
 
               <div className="grid gap-4">
                 <h3 className="text-gray-500 font-black uppercase text-xs tracking-widest mb-2 flex items-center gap-2">
