@@ -10,6 +10,9 @@ import * as cheerio from "cheerio";
 admin.initializeApp();
 const db = getFirestore();
 
+// REVERTED TO STABLE MODEL TO RESTORE CHATBOT AND AUDIT
+const AI_MODEL = "gemini-1.5-flash";
+
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
 // ============================================================================
@@ -20,7 +23,7 @@ export const performAudit = onCall({
   timeoutSeconds: 300
 }, async (request) => {
   const { businessName, location, clientEmail } = request.data;
-
+  
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
 
@@ -41,17 +44,18 @@ export const performAudit = onCall({
       return res.json() as any;
     };
 
+    // SURGICAL FIX: Optional chaining ensures no crash if [0] doesn't exist
     let pData = await getPlaces(`${businessName} in ${location}`);
-    let biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
+    let biz = pData?.places?.[0] || null;
 
     if (!biz) {
       pData = await getPlaces(businessName);
-      biz = pData.places && pData.places.length > 0 ? pData.places[0] : null;
+      biz = pData?.places?.[0] || null;
     }
 
     const websiteUrl = biz?.websiteUri || null;
-
-    let detectedSchemas: string[] =[];
+    
+    let detectedSchemas: string[] = [];
     let hasSchema = false;
 
     if (websiteUrl) {
@@ -81,8 +85,8 @@ export const performAudit = onCall({
           } catch(e) { }
         });
 
-        detectedSchemas =[...new Set(detectedSchemas)];
-        if (detectedSchemas.length === 0 && hasSchema) detectedSchemas =["Valid Schema (Unknown Type)"];
+        detectedSchemas = [...new Set(detectedSchemas)];
+        if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
 
       } catch (err) {
         console.log("Web scrape failed or timed out for:", websiteUrl);
@@ -123,7 +127,7 @@ export const performAudit = onCall({
  Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is completely missing.
  `;
 
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${G_KEY}`, {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -161,6 +165,7 @@ export const performAudit = onCall({
   }
 });
 
+
 // ============================================================================
 // 2. STRATEGIC CHAT
 // ============================================================================
@@ -193,12 +198,12 @@ export const hunterChat = onCall({
  2. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).`;
 
   try {
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${G_KEY}`, {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
-        contents:[{ role: "user", parts: [{ text: message }] }],
+        contents: [{ role: "user", parts: [{ text: message }] }],
         generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
       })
     });
@@ -211,6 +216,7 @@ export const hunterChat = onCall({
     return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
   }
 });
+
 
 // ==========================================
 // 3. LANDING PAGE SERVICE REQUEST (AUTO EMAIL)
@@ -283,6 +289,7 @@ export const submitServiceRequest = onCall({
   }
 });
 
+
 // ==========================================
 // 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
 // ==========================================
@@ -333,7 +340,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
           "logo": brandData.logo || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "image": brandData.image || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "priceRange": brandData.priceRange || "ZAR",
-          "sameAs": brandData.sameAs ||["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
+          "sameAs": brandData.sameAs || ["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
         }
       ]
     };
@@ -349,6 +356,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
     return null;
   }
 });
+
 
 // ============================================================================
 // 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (LEAD CAPTURE + ONBOARDING)
@@ -380,6 +388,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         const onboardingDoc = await db.collection("verified_claims").where("category", "==", "onboarding").limit(1).get();
 
         if (!onboardingDoc.empty) {
+          const data = onboardingDoc.docs[0].data();
           const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
 
           try {
@@ -449,6 +458,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
   res.status(404).send();
   return;
 });
+
 
 // ============================================================================
 // 6. DAILY REVENUE REPORT
