@@ -401,7 +401,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         const onboardingDoc = await db.collection("verified_claims").where("category", "==", "onboarding").limit(1).get();
 
         if (!onboardingDoc.empty) {
-          const obData = onboardingDoc.docs[0].data();
           const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
 
           try {
@@ -451,13 +450,15 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         }
 
         if (matchedData) {
-          if (matchedData.category === "price" || matchedData.category === "service") {
+          const data = matchedData;
+
+          if (data.category === "price" || data.category === "service") {
             await db.collection("prospects").doc(from).set({
-              phone: from, interest: matchedData.category, last_inquiry: userText,
+              phone: from, interest: data.category, last_inquiry: userText,
               timestamp: admin.firestore.FieldValue.serverTimestamp(), status: "new_lead"
             }, { merge: true });
 
-            const alertText = `🚨 *NEW HIGH-VALUE LEAD* 🚨\n\n*From:* ${from}\n*Interested in:* ${matchedData.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
+            const alertText = `🚨 *NEW HIGH-VALUE LEAD* 🚨\n\n*From:* ${from}\n*Interested in:* ${data.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
 
             try {
               await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
@@ -466,19 +467,19 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             } catch (err) { console.error("Admin Alert Failed", err); }
           }
 
-          if (matchedData.category === "onboarding") {
-            botResponse = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${matchedData.content}\n\nIntroduce yourself once you're in!`;
-          } else if (matchedData.category === 'blog') {
-            botResponse = `📄 *Insight Snippet:* ${matchedData.snippet}\n\nRead the full article here: ${matchedData.url}`;
+          if (data.category === "onboarding") {
+            botResponse = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
+          } else if (data.category === 'blog') {
+            botResponse = `📄 *Insight Snippet:* ${data.snippet}\n\nRead the full article here: ${data.url}`;
           } else {
-            botResponse = `✅ *Official Info:* ${matchedData.content || matchedData.verified_answer}`;
+            botResponse = `✅ *Official Info:* ${data.content || data.verified_answer}`;
           }
 
-          if (matchedData.media_url) {
+          if (data.media_url) {
             try {
               await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                 messaging_product: "whatsapp", to: from, type: "image",
-                image: { link: matchedData.media_url, caption: botResponse }
+                image: { link: data.media_url, caption: botResponse }
               }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
               res.status(200).send('EVENT_RECEIVED');
               return;
