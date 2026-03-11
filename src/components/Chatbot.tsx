@@ -11,7 +11,7 @@ interface Message {
 export const Chatbot: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', text: 'Protocol initialized. I am Hunter AI. How can I help you dominate the AI search era?' }
+    { role: 'bot', text: 'Protocol initialized. I am the Smart Marketing AI. How can I help you dominate the AI search era?' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -19,8 +19,6 @@ export const Chatbot: React.FC = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
-  
-  // SURGICAL FIX: Changed NodeJS.Timeout to number for Vite browser compatibility
   const recordingTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -71,7 +69,6 @@ export const Chatbot: React.FC = () => {
 
   useEffect(() => {
     if (isRecording) {
-      // SURGICAL FIX: Explicitly use window.setInterval
       recordingTimerRef.current = window.setInterval(() => {
         setRecordingTime(prev => prev + 1);
       }, 1000);
@@ -79,7 +76,6 @@ export const Chatbot: React.FC = () => {
       setRecordingTime(0);
       if (recordingTimerRef.current) window.clearInterval(recordingTimerRef.current);
     }
-
     return () => {
       if (recordingTimerRef.current) window.clearInterval(recordingTimerRef.current);
     };
@@ -90,7 +86,6 @@ export const Chatbot: React.FC = () => {
     
     const userMsg = voiceText.trim();
     setInput('');
-    
     const currentHistory = [...messages];
     
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
@@ -98,15 +93,13 @@ export const Chatbot: React.FC = () => {
 
     try {
       const hunterChatCall = httpsCallable(functions, 'hunterChat');
-      
-      const response = await hunterChatCall({ 
+      const response = await hunterChatCall({
         message: userMsg,
         history: currentHistory
       }) as any;
 
       const replyText = response.data?.reply || "I received no response from the database.";
       setMessages(prev => [...prev, { role: 'bot', text: replyText }]);
-
     } catch (err: any) {
       console.error("Frontend Chat Error:", err);
       setMessages(prev => [...prev, { role: 'bot', text: "Signal interference. Please retry." }]);
@@ -141,7 +134,6 @@ export const Chatbot: React.FC = () => {
 
     const userMsg = input.trim();
     setInput('');
-
     const currentHistory = [...messages];
 
     setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
@@ -149,15 +141,13 @@ export const Chatbot: React.FC = () => {
 
     try {
       const hunterChatCall = httpsCallable(functions, 'hunterChat');
-      
-      const response = await hunterChatCall({ 
+      const response = await hunterChatCall({
         message: userMsg,
         history: currentHistory
       }) as any;
 
       const replyText = response.data?.reply || "I received no response from the database.";
       setMessages(prev => [...prev, { role: 'bot', text: replyText }]);
-
     } catch (err: any) {
       console.error("Frontend Chat Error:", err);
       setMessages(prev => [...prev, { role: 'bot', text: "Signal interference. Please retry." }]);
@@ -175,18 +165,18 @@ export const Chatbot: React.FC = () => {
   return (
     <>
       <button 
-        onClick={() => setOpen(!open)} 
+        onClick={() => setOpen(!open)}
         className="fixed bottom-6 right-6 z-[150] bg-yellow-500 text-black p-4 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:scale-110 transition-transform"
       >
         {open ? <X size={24} /> : <MessageSquare size={24} />}
       </button>
-      
+
       {open && (
         <div className="fixed bottom-24 right-6 z-[150] w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
           <div className="bg-black p-4 border-b border-gray-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="text-yellow-500" size={20} />
-              <span className="font-bold text-white text-sm uppercase tracking-wider">Hunter AI</span>
+              <span className="font-bold text-white text-sm uppercase tracking-wider">SMART MARKETING AI</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -217,7 +207,7 @@ export const Chatbot: React.FC = () => {
           </div>
 
           <form onSubmit={sendMessage} className="p-3 bg-gray-900 border-t border-gray-800 flex gap-2 items-center">
-            <button
+            <button 
               type="button"
               onClick={toggleRecording}
               disabled={loading}
@@ -241,17 +231,16 @@ export const Chatbot: React.FC = () => {
               </div>
             )}
 
-            <input
+            <input 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={isRecording ? "Listening..." : "Enter command..."}
               className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none disabled:opacity-50"
               disabled={loading || isRecording}
             />
-            
             <button 
               type="submit" 
-              disabled={loading || !input.trim() || isRecording} 
+              disabled={loading || !input.trim() || isRecording}
               className="text-yellow-500 hover:text-white p-3 disabled:opacity-50 transition-colors"
             >
               <Send size={18} />
