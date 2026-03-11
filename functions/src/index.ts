@@ -57,7 +57,7 @@ export const performAudit = onCall({
 
     const websiteUrl = biz?.websiteUri || null;
     
-    let detectedSchemas: string[] =[];
+    let detectedSchemas: string[] = [];
     let hasSchema = false;
 
     if (websiteUrl) {
@@ -133,7 +133,7 @@ export const performAudit = onCall({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths":["string", "string", "string"] }` }] }],
+        contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
         generationConfig: { responseMimeType: "application/json" }
       })
     });
@@ -353,7 +353,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
           "logo": brandData.logo || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "image": brandData.image || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "priceRange": brandData.priceRange || "ZAR",
-          "sameAs": brandData.sameAs ||["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
+          "sameAs": brandData.sameAs || ["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
         }
       ]
     };
@@ -401,7 +401,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         const onboardingDoc = await db.collection("verified_claims").where("category", "==", "onboarding").limit(1).get();
 
         if (!onboardingDoc.empty) {
-          const data = onboardingDoc.docs[0].data();
+          const obData = onboardingDoc.docs[0].data();
           const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
 
           try {
@@ -419,10 +419,8 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         let botResponse = "I'm sorry, I don't have verified information on that. Visit happyhunterdigital.com for more!";
         let matchedData: any = null;
 
-        // IMPLEMENTING MULTIMODAL VECTOR SEARCH
         if (G_KEY && userText) {
           try {
-            // 1. Generate Embedding Vector from user's WhatsApp message
             const embedRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -437,7 +435,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             if (embedData.embedding && embedData.embedding.values) {
                 const queryVector = embedData.embedding.values;
 
-                // 2. Cosine Similarity Search in Firestore
                 const claimsRef = db.collection('verified_claims');
                 const vectorQuery = await claimsRef.findNearest('embedding_vector', admin.firestore.FieldValue.vector(queryVector), {
                     limit: 1,
@@ -453,17 +450,14 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           }
         }
 
-        // Proceed with response logic using the Vector Match
         if (matchedData) {
-          const data = matchedData;
-
-          if (data.category === "price" || data.category === "service") {
+          if (matchedData.category === "price" || matchedData.category === "service") {
             await db.collection("prospects").doc(from).set({
-              phone: from, interest: data.category, last_inquiry: userText,
+              phone: from, interest: matchedData.category, last_inquiry: userText,
               timestamp: admin.firestore.FieldValue.serverTimestamp(), status: "new_lead"
             }, { merge: true });
 
-            const alertText = `🚨 *NEW HIGH-VALUE LEAD* 🚨\n\n*From:* ${from}\n*Interested in:* ${data.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
+            const alertText = `🚨 *NEW HIGH-VALUE LEAD* 🚨\n\n*From:* ${from}\n*Interested in:* ${matchedData.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
 
             try {
               await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
@@ -472,19 +466,19 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             } catch (err) { console.error("Admin Alert Failed", err); }
           }
 
-          if (data.category === "onboarding") {
-            botResponse = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
-          } else if (data.category === 'blog') {
-            botResponse = `📄 *Insight Snippet:* ${data.snippet}\n\nRead the full article here: ${data.url}`;
+          if (matchedData.category === "onboarding") {
+            botResponse = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${matchedData.content}\n\nIntroduce yourself once you're in!`;
+          } else if (matchedData.category === 'blog') {
+            botResponse = `📄 *Insight Snippet:* ${matchedData.snippet}\n\nRead the full article here: ${matchedData.url}`;
           } else {
-            botResponse = `✅ *Official Info:* ${data.content || data.verified_answer}`;
+            botResponse = `✅ *Official Info:* ${matchedData.content || matchedData.verified_answer}`;
           }
 
-          if (data.media_url) {
+          if (matchedData.media_url) {
             try {
               await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                 messaging_product: "whatsapp", to: from, type: "image",
-                image: { link: data.media_url, caption: botResponse }
+                image: { link: matchedData.media_url, caption: botResponse }
               }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
               res.status(200).send('EVENT_RECEIVED');
               return;
@@ -565,7 +559,7 @@ export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 model: `models/${EMBEDDING_MODEL}`,
-                content: { parts:[{ text: doc.content }] } 
+                content: { parts: [{ text: doc.content }] } 
             })
         });
 
