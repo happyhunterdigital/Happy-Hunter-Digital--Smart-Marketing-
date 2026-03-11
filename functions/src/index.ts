@@ -22,7 +22,7 @@ export const performAudit = onCall({
   maxInstances: 10,
   timeoutSeconds: 300
 }, async (request) => {
-  const { businessName, location, clientEmail } = request.data;
+  const { businessName, location, clientEmail, whatsapp } = request.data;
   
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
@@ -44,7 +44,6 @@ export const performAudit = onCall({
       return res.json() as any;
     };
 
-    // SURGICAL FIX: Optional chaining ensures no crash if [0] doesn't exist
     let pData = await getPlaces(`${businessName} in ${location}`);
     let biz = pData?.places?.[0] || null;
 
@@ -55,7 +54,7 @@ export const performAudit = onCall({
 
     const websiteUrl = biz?.websiteUri || null;
     
-    let detectedSchemas: string[] = [];
+    let detectedSchemas: string[] =[];
     let hasSchema = false;
 
     if (websiteUrl) {
@@ -131,7 +130,7 @@ export const performAudit = onCall({
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
+        contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths":["string", "string", "string"] }` }] }],
         generationConfig: { responseMimeType: "application/json" }
       })
     });
@@ -148,7 +147,7 @@ export const performAudit = onCall({
       schemasDetected: detectedSchemas
     };
 
-    await db.collection("leads").add({ businessName, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
+    await db.collection("leads").add({ businessName, email: clientEmail, whatsapp: whatsapp || null, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
 
     const isGoodScore = analysis.score >= 70;
     const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
@@ -164,7 +163,6 @@ export const performAudit = onCall({
     throw new HttpsError("internal", `Neural Handshake Interrupted. ${e.message}`);
   }
 });
-
 
 // ============================================================================
 // 2. STRATEGIC CHAT
@@ -216,7 +214,6 @@ export const hunterChat = onCall({
     return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
   }
 });
-
 
 // ==========================================
 // 3. LANDING PAGE SERVICE REQUEST (AUTO EMAIL)
@@ -279,7 +276,7 @@ export const submitServiceRequest = onCall({
  </div>`;
 
     await db.collection("mail").add({
-      to: [email],
+      to:[email],
       message: { subject: `Regarding your interest in ${service} – Let's solve the "Invisibility" problem.`, html: emailHtml }
     });
 
@@ -288,7 +285,6 @@ export const submitServiceRequest = onCall({
     throw new HttpsError("internal", `System Engine Failed. ${error.message}`);
   }
 });
-
 
 // ==========================================
 // 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
@@ -340,7 +336,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
           "logo": brandData.logo || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "image": brandData.image || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "priceRange": brandData.priceRange || "ZAR",
-          "sameAs": brandData.sameAs || ["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
+          "sameAs": brandData.sameAs ||["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
         }
       ]
     };
@@ -357,9 +353,8 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
   }
 });
 
-
 // ============================================================================
-// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (LEAD CAPTURE + ONBOARDING)
+// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK
 // ============================================================================
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || '';
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
@@ -388,7 +383,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         const onboardingDoc = await db.collection("verified_claims").where("category", "==", "onboarding").limit(1).get();
 
         if (!onboardingDoc.empty) {
-          const data = onboardingDoc.docs[0].data();
           const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
 
           try {
@@ -458,7 +452,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
   res.status(404).send();
   return;
 });
-
 
 // ============================================================================
 // 6. DAILY REVENUE REPORT
