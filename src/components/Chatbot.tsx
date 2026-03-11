@@ -11,7 +11,7 @@ interface Message {
 export const Chatbot: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', text: 'Protocol initialized. I am the Smart Marketing AI. How can I help you dominate the AI search era?' }
+    { role: 'bot', text: '<p>Protocol initialized. I am the <strong>Smart Marketing AI</strong>.</p><p>How can I help you dominate the AI search era?</p>' }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -98,11 +98,11 @@ export const Chatbot: React.FC = () => {
         history: currentHistory
       }) as any;
 
-      const replyText = response.data?.reply || "I received no response from the database.";
+      const replyText = response.data?.reply || "<p>I received no response from the database.</p>";
       setMessages(prev => [...prev, { role: 'bot', text: replyText }]);
     } catch (err: any) {
       console.error("Frontend Chat Error:", err);
-      setMessages(prev => [...prev, { role: 'bot', text: "Signal interference. Please retry." }]);
+      setMessages(prev => [...prev, { role: 'bot', text: "<p>Signal interference. Please retry.</p>" }]);
     } finally {
       setLoading(false);
     }
@@ -146,11 +146,11 @@ export const Chatbot: React.FC = () => {
         history: currentHistory
       }) as any;
 
-      const replyText = response.data?.reply || "I received no response from the database.";
+      const replyText = response.data?.reply || "<p>I received no response from the database.</p>";
       setMessages(prev => [...prev, { role: 'bot', text: replyText }]);
     } catch (err: any) {
       console.error("Frontend Chat Error:", err);
-      setMessages(prev => [...prev, { role: 'bot', text: "Signal interference. Please retry." }]);
+      setMessages(prev => [...prev, { role: 'bot', text: "<p>Signal interference. Please retry.</p>" }]);
     } finally {
       setLoading(false);
     }
@@ -187,13 +187,18 @@ export const Chatbot: React.FC = () => {
           <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-black/50 scrollbar-hide">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-3 rounded-xl text-sm leading-relaxed ${
-                  m.role === 'user' 
-                    ? 'bg-yellow-500 text-black font-medium' 
-                    : 'bg-gray-800 text-gray-200'
-                }`}>
-                  {m.text}
-                </div>
+                {/* 
+                   SURGICAL FIX: dangerouslySetInnerHTML allows the <p> and <strong> tags 
+                   from the backend prompt to render correctly.
+                */}
+                <div 
+                  className={`max-w-[80%] p-3 rounded-xl text-sm leading-relaxed space-y-2 ${
+                    m.role === 'user' 
+                      ? 'bg-yellow-500 text-black font-medium' 
+                      : 'bg-gray-800 text-gray-200'
+                  }`}
+                  dangerouslySetInnerHTML={{ __html: m.text }}
+                />
               </div>
             ))}
             {loading && (
