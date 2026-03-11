@@ -374,7 +374,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 // ============================================================================
 // 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (MULTIMODAL VECTOR SEARCH)
 // ============================================================================
-const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || '';
+const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || '';
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
 const ADMIN_NUMBER = "27601016673";
@@ -491,7 +491,9 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
             messaging_product: "whatsapp", to: from, text: { body: botResponse }
           }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
-        } catch (error: any) { console.error("WhatsApp API Transmission Error:", error.response?.data || error.message); }
+        } catch (error: any) { 
+          console.error("WhatsApp API Transmission Error:", error.response?.data || error.message); 
+        }
       }
 
       res.status(200).send('EVENT_RECEIVED');
@@ -525,7 +527,7 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async (event) =>
     const reportText = `📊 *DAILY REVENUE REPORT* 📊\n\n*Total New Leads:* ${leadCount}\n*Service Inquiries:* ${serviceInterest}\n*Pricing Inquiries:* ${priceInterest}\n\nLogin to Grid CMS to triage.`;
 
     try {
-      const token = process.env.WHATSAPP_TOKEN;
+      const token = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN;
       const phoneId = process.env.PHONE_NUMBER_ID;
 
       if(token && phoneId) {
