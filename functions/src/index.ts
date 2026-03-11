@@ -10,8 +10,11 @@ import * as cheerio from "cheerio";
 admin.initializeApp();
 const db = getFirestore();
 
-// REVERTED TO STABLE MODEL TO RESTORE CHATBOT AND AUDIT
-const AI_MODEL = "gemini-1.5-flash";
+// ============================================================================
+// SYSTEM CONSTANTS
+// ============================================================================
+const AI_MODEL = "gemini-3.1-flash-lite-preview";
+const EMBEDDING_MODEL = "gemini-embedding-2-preview";
 
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
@@ -135,6 +138,12 @@ export const performAudit = onCall({
       })
     });
 
+    if (!aiRes.ok) {
+      const errText = await aiRes.text();
+      console.error(`Gemini Audit API Error (${AI_MODEL}):`, errText);
+      throw new Error(`AI API Error: ${aiRes.status}`);
+    }
+
     const aiData = await aiRes.json() as any;
     const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
 
@@ -163,6 +172,7 @@ export const performAudit = onCall({
     throw new HttpsError("internal", `Neural Handshake Interrupted. ${e.message}`);
   }
 });
+
 
 // ============================================================================
 // 2. STRATEGIC CHAT
@@ -206,7 +216,12 @@ export const hunterChat = onCall({
       })
     });
 
-    if (!aiRes.ok) return { reply: "My neural link is currently overloaded. Please email HQ." };
+    if (!aiRes.ok) {
+      const errorText = await aiRes.text();
+      console.error(`Gemini Chat API Error (${AI_MODEL}):`, errorText);
+      return { reply: "My neural link is currently overloaded. Please email HQ." };
+    }
+
     const data = await aiRes.json() as any;
     if (data.candidates && data.candidates[0].content.parts[0].text) return { reply: data.candidates[0].content.parts[0].text.trim() };
     return { reply: "I received an unreadable signal from the core. Try again." };
@@ -214,6 +229,7 @@ export const hunterChat = onCall({
     return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
   }
 });
+
 
 // ==========================================
 // 3. LANDING PAGE SERVICE REQUEST (AUTO EMAIL)
@@ -276,7 +292,7 @@ export const submitServiceRequest = onCall({
  </div>`;
 
     await db.collection("mail").add({
-      to:[email],
+      to: [email],
       message: { subject: `Regarding your interest in ${service} – Let's solve the "Invisibility" problem.`, html: emailHtml }
     });
 
@@ -285,6 +301,7 @@ export const submitServiceRequest = onCall({
     throw new HttpsError("internal", `System Engine Failed. ${error.message}`);
   }
 });
+
 
 // ==========================================
 // 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
@@ -353,8 +370,9 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
   }
 });
 
+
 // ============================================================================
-// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK
+// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (MULTIMODAL VECTOR SEARCH)
 // ============================================================================
 const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || '';
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
@@ -383,6 +401,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         const onboardingDoc = await db.collection("verified_claims").where("category", "==", "onboarding").limit(1).get();
 
         if (!onboardingDoc.empty) {
+          const data = onboardingDoc.docs[0].data();
           const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
 
           try {
@@ -395,13 +414,48 @@ export const whatsappWebhook = onRequest(async (req, res) => {
       } else if (message && message.type === 'text') {
         const userText = message.text.body.toLowerCase();
         const from = message.from;
-        const claimsRef = db.collection('verified_claims');
-        const snapshot = await claimsRef.where('keywords', 'array-contains', userText).limit(1).get();
-
+        const G_KEY = process.env.GEMINI_API_KEY;
+        
         let botResponse = "I'm sorry, I don't have verified information on that. Visit happyhunterdigital.com for more!";
+        let matchedData: any = null;
 
-        if (!snapshot.empty) {
-          const data = snapshot.docs[0].data();
+        // IMPLEMENTING MULTIMODAL VECTOR SEARCH
+        if (G_KEY && userText) {
+          try {
+            // 1. Generate Embedding Vector from user's WhatsApp message
+            const embedRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    model: `models/${EMBEDDING_MODEL}`,
+                    content: { parts: [{ text: userText }] }
+                })
+            });
+            
+            const embedData = await embedRes.json() as any;
+            
+            if (embedData.embedding && embedData.embedding.values) {
+                const queryVector = embedData.embedding.values;
+
+                // 2. Cosine Similarity Search in Firestore
+                const claimsRef = db.collection('verified_claims');
+                const vectorQuery = await claimsRef.findNearest('embedding_vector', admin.firestore.FieldValue.vector(queryVector), {
+                    limit: 1,
+                    distanceMeasure: 'COSINE'
+                }).get();
+
+                if (!vectorQuery.empty) {
+                    matchedData = vectorQuery.docs[0].data();
+                }
+            }
+          } catch (embedError) {
+              console.error("Embedding Search Error:", embedError);
+          }
+        }
+
+        // Proceed with response logic using the Vector Match
+        if (matchedData) {
+          const data = matchedData;
 
           if (data.category === "price" || data.category === "service") {
             await db.collection("prospects").doc(from).set({
@@ -453,6 +507,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
   return;
 });
 
+
 // ============================================================================
 // 6. DAILY REVENUE REPORT
 // ============================================================================
@@ -489,4 +544,41 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async (event) =>
       console.error("Daily Report Failed", err);
     }
   }
+});
+
+// ============================================================================
+// 7. TRUTH TABLE VECTORIZER (GEMINI EMBEDDING 2 PREVIEW)
+// ============================================================================
+export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
+    const doc = event.data?.after.data();
+    if (!doc || !doc.content) return;
+
+    // Prevent infinite loops if we are just updating the vector
+    if (event.data?.before.data()?.content === doc.content && doc.embedding_vector) return;
+
+    const G_KEY = process.env.GEMINI_API_KEY;
+    if (!G_KEY) return;
+
+    try {
+        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: `models/${EMBEDDING_MODEL}`,
+                content: { parts:[{ text: doc.content }] } 
+            })
+        });
+
+        const data = await aiRes.json() as any;
+        const vectorValues = data.embedding?.values;
+
+        if (vectorValues) {
+            await event.data?.after.ref.update({
+                embedding_vector: admin.firestore.FieldValue.vector(vectorValues)
+            });
+            console.log(`Successfully vectorized claim: ${event.params.docId}`);
+        }
+    } catch (error) {
+        console.error("Vectorization Failed:", error);
+    }
 });
