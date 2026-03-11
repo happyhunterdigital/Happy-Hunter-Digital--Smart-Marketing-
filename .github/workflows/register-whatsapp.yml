@@ -1,14 +1,12 @@
-name: Force WhatsApp API Registration
+name: Force WABA Webhook Subscription
 on:
   workflow_dispatch:
 
 jobs:
-  register-number:
+  subscribe-waba:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Registration Request to Meta
+      - name: Subscribe App to WABA
         run: |
-          curl -X POST "https://graph.facebook.com/v19.0/964822430057075/register" \
-          -H "Authorization: Bearer ${{ secrets.META_SYSTEM_TOKEN }}" \
-          -d "messaging_product=whatsapp" \
-          -d "pin=${{ secrets.META_WA_PIN }}"
+          curl -X POST "https://graph.facebook.com/v19.0/1624191862338534/subscribed_apps" \
+          -H "Authorization: Bearer ${{ secrets.META_SYSTEM_TOKEN }}"
