@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Target, Globe, Server, Code, ShoppingCart, LayoutTemplate, BrainCircuit, Mail, MapPin, Search, ShieldCheck, Zap, BarChart, ArrowRight, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Target, Globe, Server, Code, ShoppingCart, LayoutTemplate, BrainCircuit, Mail, MapPin, Search, ShieldCheck, Zap, BarChart, ArrowRight, CheckCircle2, ChevronDown, MessageSquareCode } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { db, functions } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -306,11 +306,103 @@ export const CoreServices: React.FC = () => {
         </div>
       </section>
 
-      {/* PHASE 4: A LA CARTE SERVICES */}
-      <section className="py-24 px-6 relative bg-[#020202]">
+      {/* PHASE 4: INTELLIGENT WHATSAPP BOTS */}
+      <section className="py-24 px-6 relative border-b border-gray-900 bg-[#020202]">
         <div className="container mx-auto max-w-7xl">
           <div className="mb-16 text-center">
             <h2 className="text-sm font-black text-yellow-500 uppercase tracking-widest mb-2">Phase 4</h2>
+            <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight">Intelligent WhatsApp Bots</h3>
+            <p className="text-gray-400 mt-4 max-w-2xl mx-auto">Deploy a 24/7 automated workforce. Capture leads, answer FAQs, and route complex queries directly to your CRM.</p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 items-stretch">
+            {/* Basic Bot */}
+            <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-yellow-500/30 transition-all flex flex-col relative">
+              <div className="mb-8">
+                <MessageSquareCode className="text-yellow-500 mb-4" size={32} />
+                <h4 className="text-2xl font-black text-white mb-1">Basic FAQ Bot</h4>
+                <p className="text-yellow-500 text-xs font-bold uppercase tracking-widest">Automated Responder</p>
+              </div>
+              <p className="text-sm text-gray-400 mb-8 pb-8 border-b border-gray-800">Best for: Simple automated responses and basic customer queries.</p>
+              
+              <div className="flex-grow space-y-6 mb-10">
+                <div>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Setup & Integration</p>
+                  <p className="text-xl font-bold text-white">R3,000 – R12,000</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Conversation Build</p>
+                  <p className="text-xl font-bold text-white">R2,000 – R4,000</p>
+                </div>
+              </div>
+
+              <div className="mt-auto pt-6 border-t border-gray-800/50">
+                <p className="text-yellow-500 font-bold text-lg">from R399 <span className="text-xs text-gray-500 font-medium uppercase tracking-widest">/ month</span></p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Maintenance & Server Costs</p>
+              </div>
+            </div>
+
+            {/* Standard Bot */}
+            <div className="bg-gradient-to-b from-[#111827] to-[#0a0a0a] border-2 border-yellow-500/50 rounded-3xl p-8 hover:border-yellow-500 transition-all flex flex-col relative shadow-[0_0_40px_rgba(234,179,8,0.1)] transform lg:-translate-y-4 z-10">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-500 text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">High Intent</div>
+              <div className="mb-8">
+                <BrainCircuit className="text-yellow-500 mb-4" size={32} />
+                <h4 className="text-2xl font-black text-white mb-1">Advanced AI Bot</h4>
+                <p className="text-yellow-500 text-xs font-bold uppercase tracking-widest">Tailored NLP Solutions</p>
+              </div>
+              <p className="text-sm text-gray-400 mb-8 pb-8 border-b border-gray-800">Best for: Moderate integration with APIs and natural language interactions.</p>
+              
+              <div className="flex-grow space-y-6 mb-10">
+                <div>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Setup & Integration</p>
+                  <p className="text-xl font-bold text-yellow-500">R15,000 – R30,000</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Conversation Build</p>
+                  <p className="text-xl font-bold text-white">R10,000 – R45,000</p>
+                </div>
+              </div>
+
+              <div className="mt-auto pt-6 border-t border-gray-800/50">
+                <p className="text-yellow-500 font-bold text-lg">from R399 <span className="text-xs text-gray-500 font-medium uppercase tracking-widest">/ month</span></p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Maintenance & Server Costs</p>
+              </div>
+            </div>
+
+            {/* Enterprise Bot */}
+            <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-yellow-500/30 transition-all flex flex-col relative">
+              <div className="mb-8">
+                <Server className="text-yellow-500 mb-4" size={32} />
+                <h4 className="text-2xl font-black text-white mb-1">Enterprise Bot</h4>
+                <p className="text-yellow-500 text-xs font-bold uppercase tracking-widest">Deep System Integration</p>
+              </div>
+              <p className="text-sm text-gray-400 mb-8 pb-8 border-b border-gray-800">Best for: Complex machine learning, CRM routing, and custom workflows.</p>
+              
+              <div className="flex-grow space-y-6 mb-10">
+                <div>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Setup & Integration</p>
+                  <p className="text-xl font-bold text-white">R40,000+</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Conversation Build</p>
+                  <p className="text-xl font-bold text-white">R50,000+</p>
+                </div>
+              </div>
+
+              <div className="mt-auto pt-6 border-t border-gray-800/50">
+                <p className="text-yellow-500 font-bold text-lg">Custom Quoted</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Maintenance & Server Costs</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PHASE 5: A LA CARTE SERVICES */}
+      <section className="py-24 px-6 relative bg-[#050505]">
+        <div className="container mx-auto max-w-7xl">
+          <div className="mb-16 text-center">
+            <h2 className="text-sm font-black text-yellow-500 uppercase tracking-widest mb-2">Phase 5</h2>
             <h3 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight">Standalone &quot;Smart&quot; Services</h3>
             <p className="text-gray-400 mt-4 max-w-2xl mx-auto">These are highly technical foot-in-the-door diagnostics and specialized one-off integrations.</p>
           </div>
@@ -356,14 +448,6 @@ export const CoreServices: React.FC = () => {
               </div>
             </div>
             
-            <div className="p-8 bg-gradient-to-br from-[#111827] to-[#0a0a0a] border border-yellow-500/30 rounded-3xl flex flex-col hover:border-yellow-500 transition-all shadow-lg">
-              <h4 className="font-bold text-white text-lg mb-2">Neural Link Chatbot</h4>
-              <p className="text-sm text-gray-300 mb-6 flex-grow">Setup and deployment of an autonomous, NLP-driven sales/support chatbot (e.g., Hunter AI).</p>
-              <div className="pt-4 border-t border-gray-800/50">
-                <p className="text-yellow-500 font-black text-xl">R10,000 – R38,000 <span className="text-[10px] font-bold tracking-widest text-gray-500 uppercase ml-2">(Once-off)</span></p>
-              </div>
-            </div>
-
             <div className="p-8 bg-[#0a0a0a] border border-gray-800 rounded-3xl flex flex-col hover:border-white/20 transition-all">
               <h4 className="font-bold text-white text-lg mb-2">UX Behavioral Analysis</h4>
               <p className="text-sm text-gray-400 mb-6 flex-grow">Exhaustive, human-led qualitative research utilizing dynamic heatmaps and session recordings.</p>
@@ -397,11 +481,11 @@ export const CoreServices: React.FC = () => {
             </div>
 
             {/* STRATEGIC CONSULTING (UPDATED PRICE) */}
-            <div className="p-8 bg-yellow-500/10 border border-yellow-500/30 rounded-3xl flex flex-col lg:col-span-2">
-              <div className="flex flex-col md:flex-row justify-between gap-6">
+            <div className="p-8 bg-yellow-500/10 border border-yellow-500/30 rounded-3xl flex flex-col lg:col-span-3">
+              <div className="flex flex-col md:flex-row justify-between gap-6 items-center">
                 <div className="flex-1">
                   <h4 className="font-bold text-yellow-500 mb-2">Strategic Consulting</h4>
-                  <p className="text-sm text-gray-300 mb-6 flex-grow">Purely strategic, bi-weekly consultation based on real-time algorithmic weather and data tracking.</p>
+                  <p className="text-sm text-gray-300 flex-grow">Purely strategic, bi-weekly consultation based on real-time algorithmic weather and data tracking.</p>
                 </div>
                 <div className="text-left md:text-right shrink-0">
                   <p className="text-gray-500 line-through text-xs">R1,600</p>
@@ -481,13 +565,17 @@ export const CoreServices: React.FC = () => {
                                         <option value="The Acquisition Engine (Ads)">The Acquisition Engine (Ads)</option>
                                         <option value="The Omnichannel Dominance (Ads)">The Omnichannel Dominance (Ads)</option>
                                     </optgroup>
-                                    <optgroup label="Phase 4: Standalone Services">
+                                    <optgroup label="Phase 4: WhatsApp Bots">
+                                        <option value="Basic FAQ WhatsApp Bot">Basic FAQ WhatsApp Bot</option>
+                                        <option value="Advanced AI WhatsApp Bot">Advanced AI WhatsApp Bot</option>
+                                        <option value="Enterprise WhatsApp Bot">Enterprise WhatsApp Bot</option>
+                                    </optgroup>
+                                    <optgroup label="Phase 5: Standalone Services">
                                         <option value="Google Search Console Setup">Google Search Console Setup</option>
                                         <option value="GBP Ultimate Setup">GBP Ultimate Setup</option>
                                         <option value="Semantic Intent Mapping">Semantic Intent Mapping</option>
                                         <option value="Custom GA4 Tracking">Custom GA4 Tracking</option>
                                         <option value="Forensic Technical Audit">Forensic Technical Audit</option>
-                                        <option value="Neural Link Chatbot">Neural Link Chatbot</option>
                                         <option value="UX Behavioral Analysis">UX Behavioral Analysis</option>
                                         <option value="Targeted AEO Content">Targeted AEO Content</option>
                                         <option value="AEO Answer Blocks">AEO Answer Blocks</option>
