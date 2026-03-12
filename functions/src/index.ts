@@ -175,7 +175,7 @@ export const performAudit = onCall({
 
 
 // ============================================================================
-// 2. STRATEGIC CHAT
+// 2. STRATEGIC CHAT (Web Chatbot)
 // ============================================================================
 export const hunterChat = onCall({
   region: "us-central1",
@@ -196,14 +196,18 @@ export const hunterChat = onCall({
  - Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
 
  OUR SERVICES & PRICING:
- - Phase 1 (Entity Architecture / AI Websites): Starter Business Website (R4,500 - R12,500). Agentic Web Hub (R14,000 - R19,000). Premium Entity Blueprint (R25,000 - R55,000+).
- - Phase 2 (Entity Governance & AEO Retainers): Local Search Dominance (R5,500 - R9,500 for 3 months). National Growth (R21,000 - R34,000 for 3 months). Enterprise Governance (R55,000 - R109,000+ for 3 months).
- - Phase 3 (Agentic Social Media Ads): Brand Awareness (R3,500 for 3 months). Lead Generation (R6,500 for 3 months). Total Market Takeover (R10,500 for 3 months).
- - Phase 4 (Standalone Services): Google Search Console Setup (R990). GBP Ultimate Setup (R1,500 - R2,500). Semantic Intent Mapping (R1,760 - R15,000). Custom GA4 Tracking (R5,500 - R11,000). Forensic Technical Audit (R7,000 - R50,000+). Neural Link Chatbot (R10,000 - R38,000). UX Behavioral Analysis (R75,000 - R175,000). Targeted AEO Content (R1,000 - R1,500). AEO Answer Blocks (R1,440). Verified Visuals (R4,500 Photo / R8,500 Film). Strategic Consulting (R9,500 for 3 months).
+ - Phase 1 (Entity Architecture / AI Websites): Starting from R4,500.
+ - Phase 2 (Entity Governance & AEO Retainers): Starting from R5,500 for 3 months.
+ - Phase 3 (Agentic Social Media Ads): Starting from R3,500 for 3 months.
+ - Phase 4 (Intelligent WhatsApp Bots): Starting from R2,000 for conversation build and R3,000 for setup. Monthly maintenance starting from R399.
+ - Phase 5 (Standalone Services): Google Search Console Setup, GBP Ultimate Setup, Forensic Technical Audits, etc.
 
  RULES:
  1. NEVER hallucinate or make up information. Use ONLY the Knowledge Base.
- 2. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).`;
+ 2. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).
+ 3. ALWAYS state the lowest price using the exact phrase: "starting from".
+ 4. DO NOT use markdown asterisks. Use CAPITAL LETTERS for emphasis.
+ 5. Include links to https://happyhunterdigital.com/services when discussing services.`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -411,12 +415,11 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         }
 
       } else if (message && message.type === 'text') {
-        const userText = message.text.body; // Retain original casing for Generative AI context
+        const userText = message.text.body; 
         const from = message.from;
         const G_KEY = process.env.GEMINI_API_KEY;
         
-        // Base fallback in case of complete system failure
-        let botResponse = "My neural link is updating. To speak with our Head Strategist immediately, tap here: https://wa.me/27601016673";
+        let botResponse = "System updating. Please contact our strategist: https://wa.me/27601016673";
         let matchedData: any = null;
 
         if (G_KEY && userText) {
@@ -443,13 +446,14 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         if (matchedData) {
           const data = matchedData;
 
+          // Push to Prospects Database for Dashboard
           if (data.category === "price" || data.category === "service") {
             await db.collection("prospects").doc(from).set({
               phone: from, interest: data.category, last_inquiry: userText,
               timestamp: admin.firestore.FieldValue.serverTimestamp(), status: "new_lead"
             }, { merge: true });
 
-            const alertText = `🚨 *NEW HIGH-VALUE LEAD* 🚨\n\n*From:* ${from}\n*Interested in:* ${data.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
+            const alertText = `🚨 NEW HIGH-VALUE LEAD 🚨\n\nFROM: ${from}\nINTERESTED IN: ${data.category}\nMESSAGE: "${userText}"\n\nCheck Firestore now to follow up!`;
 
             try {
               await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
@@ -459,11 +463,11 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           }
 
           if (data.category === "onboarding") {
-            botResponse = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
+            botResponse = `🚀 WELCOME TO THE SMART MARKETING TRIBE! 🚀\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
           } else if (data.category === 'blog') {
-            botResponse = `📄 *Insight Snippet:* ${data.snippet}\n\nRead the full article here: ${data.url}`;
+            botResponse = `📄 INSIGHT SNIPPET:\n\n${data.snippet}\n\nRead the full article here: ${data.url}`;
           } else {
-            botResponse = `✅ *Official Info:* ${data.content || data.verified_answer}`;
+            botResponse = `✅ OFFICIAL INFO:\n\n${data.content || data.verified_answer}`;
           }
 
           if (data.media_url) {
@@ -477,19 +481,25 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             } catch (mediaError) { console.error("Media Send Error:", mediaError); }
           }
         } else if (G_KEY) {
+          
           // ==========================================================
-          // GENERATIVE AI FALLBACK (Triggered if no Vector Data exists)
+          // GENERATIVE AI FALLBACK (WhatsApp Navbar Router)
           // ==========================================================
-          const WA_SYSTEM_PROMPT = `You are Smart Marketing AI, the official WhatsApp assistant for Happy Hunter Digital.
-YOUR KNOWLEDGE BASE:
-- Founder & Head Strategist: Thabo Motsumi.
-- Mission: We stop South African SMEs from being "Ghosts" to AI algorithms via Generative Engine Optimization (GEO).
-- Services & Pricing: Phase 1 Agentic Websites (R4,500 - R55,000+), Phase 2 Local Search Dominance (R5,500/mo), Phase 3 Social Media Ads (R3,500/mo), Phase 4 Custom Chatbots (R10,000+).
-- Primary Tool: "Smart Marketing Scan" (Digital Survival Score) at happyhunterdigital.com/audit.
-RULES:
-1. Answer concisely, keeping it WhatsApp-friendly (short paragraphs, use emojis).
-2. Be conversational, professional, and slightly authoritative.
-3. If they ask a complex question, want to book a meeting, or if you don't have the answer, ALWAYS offer to connect them to Thabo using this EXACT link: https://wa.me/27601016673`;
+          const WA_SYSTEM_PROMPT = `You are Smart Marketing AI, the official WhatsApp assistant for Happy Hunter Digital. 
+
+YOUR CATALOG:
+1. Entity Architecture (Agentic Websites). Starting from R4,500.
+2. Entity Governance (AEO Retainers). Starting from R5,500 for 3 months.
+3. Agentic Social Media Ads. Starting from R3,500 for 3 months.
+4. Intelligent WhatsApp Bots. Starting from R2,000 build + R3,000 setup.
+5. Standalone Smart Services (Google Setup, Audits, etc.)
+
+YOUR CORE DIRECTIVES:
+1. ACT AS A NAVBAR. If the user says "Hi", "Hello", or asks what you do, you MUST reply with a clean, numbered list of the 5 catalog items and ask them to "Reply with a number to learn more."
+2. EXPLAIN AND PRICE. If a user replies with a number or asks about a specific service, give them a neat, 2-sentence summary. You MUST state the lowest price using the exact phrase: "starting from".
+3. ALWAYS LINK. End your explanation by telling them to read more here: https://happyhunterdigital.com/services
+4. HUMAN ESCAPE HATCH. If they ask a complex question or want to meet, provide this exact link: https://wa.me/27601016673
+5. FORMATTING RULES. Write neatly using paragraphs. YOU ARE STRICTLY FORBIDDEN FROM USING MARKDOWN ASTERISKS. DO NOT USE ** OR *. If you want to emphasize a word, use CAPITAL LETTERS. Ensure the text is clean and professional.`;
 
           try {
             const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -498,7 +508,7 @@ RULES:
               body: JSON.stringify({
                 systemInstruction: { parts:[{ text: WA_SYSTEM_PROMPT }] },
                 contents: [{ role: "user", parts: [{ text: userText }] }],
-                generationConfig: { temperature: 0.2, maxOutputTokens: 300 }
+                generationConfig: { temperature: 0.1, maxOutputTokens: 300 }
               })
             });
             const data = await aiRes.json() as any;
@@ -546,7 +556,7 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async (event) =>
   });
 
   if (leadCount > 0) {
-    const reportText = `📊 *DAILY REVENUE REPORT* 📊\n\n*Total New Leads:* ${leadCount}\n*Service Inquiries:* ${serviceInterest}\n*Pricing Inquiries:* ${priceInterest}\n\nLogin to Grid CMS to triage.`;
+    const reportText = `📊 DAILY REVENUE REPORT 📊\n\nTotal New Leads: ${leadCount}\nService Inquiries: ${serviceInterest}\nPricing Inquiries: ${priceInterest}\n\nLogin to HQ Command Center to triage.`;
 
     try {
       const token = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN;
