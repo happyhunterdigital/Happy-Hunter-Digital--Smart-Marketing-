@@ -376,7 +376,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 
 
 // ============================================================================
-// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (MULTIMODAL VECTOR SEARCH + GENERATIVE AI)
+// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (WITH CONVERSATION MEMORY)
 // ============================================================================
 const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || '';
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
@@ -422,6 +422,11 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         let botResponse = "System updating. Please contact our strategist: https://wa.me/27601016673";
         let matchedData: any = null;
 
+        // FETCH CONVERSATION MEMORY
+        const sessionRef = db.collection('whatsapp_sessions').doc(from);
+        const sessionDoc = await sessionRef.get();
+        let chatHistory = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
+
         if (G_KEY && userText) {
           try {
             const embedRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
@@ -446,6 +451,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         if (matchedData) {
           const data = matchedData;
 
+          // Push to Prospects Database for Dashboard
           if (data.category === "price" || data.category === "service") {
             await db.collection("prospects").doc(from).set({
               phone: from, interest: data.category, last_inquiry: userText,
@@ -475,13 +481,20 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                 messaging_product: "whatsapp", to: from, type: "image",
                 image: { link: data.media_url, caption: botResponse }
               }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+              
+              // Save memory even if media sent
+              chatHistory.push({ role: "user", text: userText });
+              chatHistory.push({ role: "model", text: botResponse });
+              if (chatHistory.length > 10) chatHistory = chatHistory.slice(chatHistory.length - 10);
+              await sessionRef.set({ history: chatHistory, last_updated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+              
               res.status(200).send('EVENT_RECEIVED');
               return;
             } catch (mediaError) { console.error("Media Send Error:", mediaError); }
           }
         } else if (G_KEY) {
           // ==========================================================
-          // GENERATIVE AI FALLBACK (Smart WhatsApp Agent + Navbar)
+          // GENERATIVE AI CONVERSATION (Memory Enabled)
           // ==========================================================
           const WA_SYSTEM_PROMPT = `You are Smart Marketing AI, the intelligent WhatsApp assistant for Happy Hunter Digital. 
 
@@ -504,13 +517,21 @@ YOUR CORE DIRECTIVES:
 4. HUMAN ESCAPE HATCH: If they want to book a meeting, speak to a human, or ask about Thabo, provide his direct link: https://wa.me/27601016673
 5. FORMATTING RULES: Write neatly using paragraphs. YOU ARE STRICTLY FORBIDDEN FROM USING MARKDOWN ASTERISKS. DO NOT USE ** OR *. If you want to emphasize a word, use CAPITAL LETTERS. Ensure the text is clean and professional.`;
 
+          // Format previous memory for Gemini API
+          const formattedHistory = chatHistory.map((msg: any) => ({
+            role: msg.role,
+            parts: [{ text: msg.text }]
+          }));
+          // Append new user message
+          formattedHistory.push({ role: "user", parts: [{ text: userText }] });
+
           try {
             const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 systemInstruction: { parts:[{ text: WA_SYSTEM_PROMPT }] },
-                contents: [{ role: "user", parts: [{ text: userText }] }],
+                contents: formattedHistory,
                 generationConfig: { temperature: 0.2, maxOutputTokens: 300 }
               })
             });
@@ -523,6 +544,17 @@ YOUR CORE DIRECTIVES:
           }
         }
 
+        // SAVE MEMORY TO FIRESTORE
+        chatHistory.push({ role: "user", text: userText });
+        chatHistory.push({ role: "model", text: botResponse });
+        
+        // Keep conversation context to the last 10 messages (5 turns) to save tokens & prevent payload errors
+        if (chatHistory.length > 10) {
+            chatHistory = chatHistory.slice(chatHistory.length - 10);
+        }
+        await sessionRef.set({ history: chatHistory, last_updated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+
+        // TRANSMIT TO WHATSAPP
         try {
           await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
             messaging_product: "whatsapp", to: from, text: { body: botResponse }
