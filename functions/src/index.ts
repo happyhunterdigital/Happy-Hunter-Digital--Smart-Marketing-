@@ -1,3 +1,4 @@
+functions/src/index.ts
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
@@ -57,7 +58,7 @@ export const performAudit = onCall({
 
     const websiteUrl = biz?.websiteUri || null;
     
-    let detectedSchemas: string[] = [];
+    let detectedSchemas: string[] =[];
     let hasSchema = false;
 
     if (websiteUrl) {
@@ -207,7 +208,8 @@ export const hunterChat = onCall({
  3. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).
  4. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
  5. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
- 6. Include links to https://happyhunterdigital.com/services when discussing services.`;
+ 6. Include links to https://happyhunterdigital.com/services when discussing services.
+ 7. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them the exact code: "HHD-SECURE-2026" and tell them to visit https://happyhunterdigital.com/view/guide and login with Google to view it.`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -215,7 +217,7 @@ export const hunterChat = onCall({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: message }] }],
+        contents: [{ role: "user", parts:[{ text: message }] }],
         generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
       })
     });
@@ -357,7 +359,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
           "logo": brandData.logo || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "image": brandData.image || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "priceRange": brandData.priceRange || "ZAR",
-          "sameAs": brandData.sameAs || ["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
+          "sameAs": brandData.sameAs ||["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
         }
       ]
     };
@@ -425,7 +427,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         // FETCH CONVERSATION MEMORY
         const sessionRef = db.collection('whatsapp_sessions').doc(from);
         const sessionDoc = await sessionRef.get();
-        let chatHistory = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
+        let chatHistory = sessionDoc.exists ? sessionDoc.data()?.history || [] :[];
 
         if (G_KEY && userText) {
           try {
@@ -515,7 +517,8 @@ YOUR CORE DIRECTIVES:
 2. SMART Q&A: If the user asks a general question (e.g., "What is AEO?" or "Who is the founder?"), DO NOT just show the menu. Answer their question intelligently and naturally using your Knowledge Base. After answering, seamlessly reference how our services can help and provide the link: https://happyhunterdigital.com/services
 3. EXPLAIN & PRICE: If they ask about a specific service or reply with a number, give a neat summary. You MUST state the lowest price using the exact phrase: "starting from". Then link to https://happyhunterdigital.com/services
 4. HUMAN ESCAPE HATCH: If they want to book a meeting, speak to a human, or ask about Thabo, provide his direct link: https://wa.me/27601016673
-5. FORMATTING RULES: Write neatly using paragraphs. YOU ARE STRICTLY FORBIDDEN FROM USING MARKDOWN ASTERISKS. DO NOT USE ** OR *. If you want to emphasize a word, use CAPITAL LETTERS. Ensure the text is clean and professional.`;
+5. FORMATTING RULES: Write neatly using paragraphs. YOU ARE STRICTLY FORBIDDEN FROM USING MARKDOWN ASTERISKS. DO NOT USE ** OR *. If you want to emphasize a word, use CAPITAL LETTERS. Ensure the text is clean and professional.
+6. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them the exact code: "HHD-SECURE-2026" and tell them to visit https://happyhunterdigital.com/view/guide and login with Google to view it.`;
 
           // Format previous memory for Gemini API
           const formattedHistory = chatHistory.map((msg: any) => ({
