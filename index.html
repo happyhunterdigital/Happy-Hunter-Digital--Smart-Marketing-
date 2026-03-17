@@ -1,112 +1,141 @@
-<!--
-  ══════════════════════════════════════════════════════════════════
-  FILE: public/index.html — CSP Meta Tag Fix
-  ISSUE: Google Auth (auth/internal-error) caused by missing
-         apis.google.com and accounts.google.com in CSP directives.
-  INSTRUCTIONS:
-  Locate your existing <meta http-equiv="Content-Security-Policy">
-  tag in public/index.html and REPLACE it with the block below.
-  If you don't have this meta tag, paste it inside your <head>.
-  ══════════════════════════════════════════════════════════════════
--->
-
-<!--
-  ─── BEFORE (what you likely have — BROKEN) ─────────────────────
-  <meta
-    http-equiv="Content-Security-Policy"
-    content="
-      script-src 'self' 'unsafe-inline' 'unsafe-eval'
-        https://*.firebaseapp.com
-        https://*.googleapis.com
-        https://*.gstatic.com;
-    "
-  />
-
-  WHY IT BREAKS:
-  - apis.google.com is NOT *.googleapis.com — it's a separate domain.
-  - accounts.google.com is also not covered, blocking the OAuth popup iframe.
-  - script-src-elem is unset so the browser falls back to script-src,
-    which rejects the Google Identity Services loader script.
-  - Result: Firebase Auth cannot initialise → auth/internal-error →
-    Firestore snapshot listener fires unauthenticated → permission-denied.
-
-  ─── AFTER (replace with this — FIXED) ──────────────────────────
--->
-
-<meta
-  http-equiv="Content-Security-Policy"
-  content="
-    default-src 'self';
-
-    script-src
-      'self'
-      'unsafe-inline'
-      'unsafe-eval'
-      https://apis.google.com
-      https://accounts.google.com
-      https://*.firebaseapp.com
-      https://*.googleapis.com
-      https://*.gstatic.com
-      https://cdnjs.cloudflare.com;
-
-    script-src-elem
-      'self'
-      'unsafe-inline'
-      https://apis.google.com
-      https://accounts.google.com
-      https://*.firebaseapp.com
-      https://*.googleapis.com
-      https://*.gstatic.com
-      https://cdnjs.cloudflare.com;
-
-    frame-src
-      'self'
-      https://accounts.google.com
-      https://*.firebaseapp.com
-      https://*.web.app;
-
-    connect-src
-      'self'
-      https://*.googleapis.com
-      https://*.firebaseio.com
-      wss://*.firebaseio.com
-      https://identitytoolkit.googleapis.com
-      https://securetoken.googleapis.com
-      https://firebase.googleapis.com;
-
-    img-src
-      'self'
-      data:
-      blob:
-      https://*.googleusercontent.com
-      https://*.gstatic.com;
-
-    style-src
-      'self'
-      'unsafe-inline'
-      https://fonts.googleapis.com;
-
-    font-src
-      'self'
-      https://fonts.gstatic.com;
-
-    object-src 'none';
-    base-uri 'self';
-  "
-/>
-
-<!--
-  ══════════════════════════════════════════════════════════════════
-  NOTE: If you're setting CSP via HTTP headers on your server or
-  CDN (Netlify, Vercel, Cloudflare Pages, etc.) instead of a meta
-  tag, apply the same directives in your _headers file or
-  server configuration. Meta tag CSP cannot set report-uri or
-  report-to, so HTTP headers are always the stronger option.
-
-  For Netlify (_headers file in /public):
-  
-  /*
-    Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://*.firebaseapp.com https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com; script-src-elem 'self' 'unsafe-inline' https://apis.google.com https://accounts.google.com https://*.firebaseapp.com https://*.googleapis.com https://*.gstatic.com https://cdnjs.cloudflare.com; frame-src 'self' https://accounts.google.com https://*.firebaseapp.com https://*.web.app; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; img-src 'self' data: blob: https://*.googleusercontent.com https://*.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; object-src 'none';
-
-  ══════════════════════════════════════════════════════════════════
--->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-Content-Type-Options" content="nosniff" />
+<meta http-equiv="X-Frame-Options" content="DENY" />
+<meta name="referrer" content="strict-origin-when-cross-origin" />
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self' https://*.firebaseapp.com https://*.firebase.com
+    https://*.googleapis.com;
+  connect-src 'self' https://*.firebaseapp.com https://*.firebase.com
+    https://*.googleapis.com https://apis.google.com
+    https://us-central1-happy-hunter-systems.cloudfunctions.net
+    https://identitytoolkit.googleapis.com https://securetoken.googleapis.com
+    https://stream.mux.com https://*.litix.io https://api.mux.com https://*.mux.com
+    https://*.fastly.mux.com wss://*.firebaseio.com;
+  img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com
+    https://*.googleusercontent.com https://image.mux.com https://*.mux.com;
+  media-src 'self' blob: https://stream.mux.com https://*.mux.com
+    https://*.fastly.mux.com;
+  script-src 'self' 'unsafe-inline' 'unsafe-eval'
+    https://apis.google.com
+    https://accounts.google.com
+    https://*.firebaseapp.com
+    https://*.googleapis.com
+    https://www.gstatic.com
+    https://cdnjs.cloudflare.com;
+  script-src-elem 'self' 'unsafe-inline'
+    https://apis.google.com
+    https://accounts.google.com
+    https://*.firebaseapp.com
+    https://*.googleapis.com
+    https://www.gstatic.com
+    https://cdnjs.cloudflare.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  frame-src 'self'
+    https://accounts.google.com
+    https://*.firebaseapp.com
+    https://*.firebase.com
+    https://*.mux.com;
+  worker-src 'self' blob:;
+" />
+<link rel="icon" type="image/jpeg"
+  href="https://res.cloudinary.com/dka0498ns/image/upload/v1765901353/favicon_kzkevq.jpg" />
+<title>happyhunterdigital | Smart Marketing for the AI Era</title>
+<meta name="description" content="South African digital marketing agency
+specializing in Digital Entity Management, AI-Powered Answer Engines (AEO), and
+Agentic Revenue Ecosystems." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="happyhunterdigital | Smart Marketing" />
+<meta property="og:description" content="Stop being a Ghost to algorithms. We build
+AI-ready digital powerhouses." />
+<meta property="og:image"
+  content="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" />
+<meta property="og:url" content="https://www.happyhunterdigital.com" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+  href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;500;700;900&display=swap"
+  rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "LocalBusiness",
+      "@id": "https://www.happyhunterdigital.com/#localbusiness",
+      "name": "Happy Hunter Digital",
+      "image": "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
+      "telephone": "+27601016673",
+      "email": "motsumitl@happyhunterdigital.com",
+      "url": "https://www.happyhunterdigital.com",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Johannesburg",
+        "addressRegion": "Gauteng",
+        "addressCountry": "ZA"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "-26.013",
+        "longitude": "28.106"
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        "opens": "09:00",
+        "closes": "17:00"
+      },
+      "founder": {
+        "@type": "Person",
+        "name": "Thabo Leslie Motsumi"
+      },
+      "sameAs": [
+        "https://www.facebook.com/Happyhunterdigital/",
+        "https://za.linkedin.com/in/thabomotsumi",
+        "https://www.instagram.com/happyhunterdigital/",
+        "https://www.tiktok.com/@happyhunterdigital",
+        "https://x.com/HappyHunter35"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Generative Engine Optimization (GEO)?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "GEO is the practice of structuring digital content so that generative AI models like ChatGPT and Gemini cite your brand as the definitive answer, rather than just ranking a link."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is my business invisible on Google Maps?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You likely have a 'Signal Mismatch' or fragmented NAP data. Our Trust Anchor protocol unifies your data across the Knowledge Graph to restore visibility."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does Agentic Revenue work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We deploy autonomous AI agents that act as 24/7 receptionists on your site and WhatsApp, capturing and qualifying leads instantly."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body class="bg-[#050505] text-white">
+<div id="root"></div>
+<script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
