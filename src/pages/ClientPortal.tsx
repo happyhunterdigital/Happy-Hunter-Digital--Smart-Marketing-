@@ -1,4 +1,3 @@
-src/pages/ClientPortal.tsx
 import React, { useEffect, useState } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
@@ -20,7 +19,7 @@ export const ClientPortal = () => {
   const [dataLoading, setDataLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
   
-  const[isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [clientAudits, setClientAudits] = useState<any[]>([]);
   const [adminStats, setAdminStats] = useState({ total: 0, average: 0, verified: 0, ghosts: 0 });
 
@@ -28,13 +27,13 @@ export const ClientPortal = () => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
       if (u) {
-        fetchDashboardData(u.email);
+        fetchDashboardData(u.email || "");
       } else {
         setLoading(false);
       }
     });
     return () => unsubscribe();
-  },[]);
+  }, []);
 
   const fetchDashboardData = async (email: string) => {
     setDataLoading(true);
@@ -46,11 +45,22 @@ export const ClientPortal = () => {
       if (isAdminAccount) {
         q = query(collection(db, 'leads'), orderBy('timestamp', 'desc'));
       } else {
-        q = query(collection(db, 'leads'), where('email', '==', email), orderBy('timestamp', 'desc'));
+        q = query(collection(db, 'leads'), where('email', '==', email));
       }
 
       const querySnapshot = await getDocs(q);
-      const audits = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      // Fix TS2698 by casting data to any
+      let audits = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
+
+      // Safe sorting without requiring a composite Firestore index
+      if (!isAdminAccount) {
+        audits.sort((a, b) => {
+          const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+          const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+          return timeB - timeA;
+        });
+      }
 
       setClientAudits(audits);
 
