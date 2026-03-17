@@ -6,6 +6,7 @@ import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import * as crypto from "crypto";
 
 admin.initializeApp();
 const db = getFirestore();
@@ -188,6 +189,10 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
+  const ts = Date.now().toString(36);
+  const rand = crypto.randomBytes(8).toString('hex');
+  const secureLink = `https://happyhunterdigital.com/view/guide?id=hhd_secure_${ts}_${rand}`;
+
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital.
  YOUR KNOWLEDGE BASE:
  - Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
@@ -208,7 +213,7 @@ export const hunterChat = onCall({
  4. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
  5. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
  6. Include links to https://happyhunterdigital.com/services when discussing services.
- 7. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them the exact code: "HHD-SECURE-2026" and tell them to visit https://happyhunterdigital.com/view/guide and login with Google to view it.`;
+ 7. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a> (Remind them they must login with Google to view it).`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -497,6 +502,10 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           // ==========================================================
           // GENERATIVE AI CONVERSATION (Memory Enabled)
           // ==========================================================
+          const ts = Date.now().toString(36);
+          const rand = crypto.randomBytes(8).toString('hex');
+          const secureLink = `https://happyhunterdigital.com/view/guide?id=hhd_secure_${ts}_${rand}`;
+
           const WA_SYSTEM_PROMPT = `You are Smart Marketing AI, the intelligent WhatsApp assistant for Happy Hunter Digital. 
 
 YOUR KNOWLEDGE BASE & IDENTITY:
@@ -517,7 +526,7 @@ YOUR CORE DIRECTIVES:
 3. EXPLAIN & PRICE: If they ask about a specific service or reply with a number, give a neat summary. You MUST state the lowest price using the exact phrase: "starting from". Then link to https://happyhunterdigital.com/services
 4. HUMAN ESCAPE HATCH: If they want to book a meeting, speak to a human, or ask about Thabo, provide his direct link: https://wa.me/27601016673
 5. FORMATTING RULES: Write neatly using paragraphs. YOU ARE STRICTLY FORBIDDEN FROM USING MARKDOWN ASTERISKS. DO NOT USE ** OR *. If you want to emphasize a word, use CAPITAL LETTERS. Ensure the text is clean and professional.
-6. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them the exact code: "HHD-SECURE-2026" and tell them to visit https://happyhunterdigital.com/view/guide and login with Google to view it.`;
+6. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them this exact unique, 24-hour secure link: ${secureLink} (Remind them they must login with Google to view it).`;
 
           // Format previous memory for Gemini API
           const formattedHistory = chatHistory.map((msg: any) => ({
