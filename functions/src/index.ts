@@ -1,4 +1,3 @@
-functions/src/index.ts
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
@@ -58,7 +57,7 @@ export const performAudit = onCall({
 
     const websiteUrl = biz?.websiteUri || null;
     
-    let detectedSchemas: string[] =[];
+    let detectedSchemas: string[] = [];
     let hasSchema = false;
 
     if (websiteUrl) {
@@ -217,7 +216,7 @@ export const hunterChat = onCall({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts:[{ text: message }] }],
+        contents: [{ role: "user", parts: [{ text: message }] }],
         generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
       })
     });
@@ -359,7 +358,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
           "logo": brandData.logo || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "image": brandData.image || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
           "priceRange": brandData.priceRange || "ZAR",
-          "sameAs": brandData.sameAs ||["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
+          "sameAs": brandData.sameAs || ["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
         }
       ]
     };
@@ -427,7 +426,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         // FETCH CONVERSATION MEMORY
         const sessionRef = db.collection('whatsapp_sessions').doc(from);
         const sessionDoc = await sessionRef.get();
-        let chatHistory = sessionDoc.exists ? sessionDoc.data()?.history || [] :[];
+        let chatHistory = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
 
         if (G_KEY && userText) {
           try {
@@ -614,38 +613,4 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async (event) =>
 });
 
 // ============================================================================
-// 7. TRUTH TABLE VECTORIZER (GEMINI EMBEDDING 2 PREVIEW)
-// ============================================================================
-export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
-    const doc = event.data?.after.data();
-    if (!doc || !doc.content) return;
-
-    // Prevent infinite loops if we are just updating the vector
-    if (event.data?.before.data()?.content === doc.content && doc.embedding_vector) return;
-
-    const G_KEY = process.env.GEMINI_API_KEY;
-    if (!G_KEY) return;
-
-    try {
-        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: `models/${EMBEDDING_MODEL}`,
-                content: { parts: [{ text: doc.content }] } 
-            })
-        });
-
-        const data = await aiRes.json() as any;
-        const vectorValues = data.embedding?.values;
-
-        if (vectorValues) {
-            await event.data?.after.ref.update({
-                embedding_vector: admin.firestore.FieldValue.vector(vectorValues)
-            });
-            console.log(`Successfully vectorized claim: ${event.params.docId}`);
-        }
-    } catch (error) {
-        console.error("Vectorization Failed:", error);
-    }
-});
+// 7. TRUTH TABLE VECTOR
