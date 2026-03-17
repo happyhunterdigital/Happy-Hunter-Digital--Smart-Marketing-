@@ -1,7 +1,9 @@
+src/pages/ClientPortal.tsx
 import React, { useEffect, useState } from 'react';
 import { db, auth } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { ShieldCheck, Clock, Lock, Loader2, LogOut } from 'lucide-react';
+import { ShieldCheck, Clock, Lock, Loader2, LogOut, Search, Activity, Target, BarChart3, Database } from 'lucide-react';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
@@ -15,27 +17,60 @@ const GoogleIcon = () => (
 export const ClientPortal = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
-
-  const entityData = {
-    name: "Profuse Beauty",
-    trustScore: 78,
-    status: "Handshake Active",
-    nodes: [
-      { date: "12 Feb", task: "GMB Video Verification", status: "VERIFIED", type: "Trust" },
-      { date: "08 Feb", task: "AEO Content Cluster: Sensitive Skin", status: "INDEXED", type: "AEO" },
-      { date: "01 Feb", task: "Schema.org Markup Integration", status: "STABLE", type: "Tech" },
-      { date: "28 Jan", task: "Entity Audit Protocol", status: "COMPLETED", type: "Audit" }
-    ]
-  };
+  
+  const[isAdmin, setIsAdmin] = useState(false);
+  const [clientAudits, setClientAudits] = useState<any[]>([]);
+  const [adminStats, setAdminStats] = useState({ total: 0, average: 0, verified: 0, ghosts: 0 });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
-      setLoading(false);
+      if (u) {
+        fetchDashboardData(u.email);
+      } else {
+        setLoading(false);
+      }
     });
     return () => unsubscribe();
-  }, []);
+  },[]);
+
+  const fetchDashboardData = async (email: string) => {
+    setDataLoading(true);
+    try {
+      const isAdminAccount = email === 'motsumitl@happyhunterdigital.com';
+      setIsAdmin(isAdminAccount);
+
+      let q;
+      if (isAdminAccount) {
+        q = query(collection(db, 'leads'), orderBy('timestamp', 'desc'));
+      } else {
+        q = query(collection(db, 'leads'), where('email', '==', email), orderBy('timestamp', 'desc'));
+      }
+
+      const querySnapshot = await getDocs(q);
+      const audits = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      setClientAudits(audits);
+
+      if (isAdminAccount && audits.length > 0) {
+        const total = audits.length;
+        const validAudits = audits.filter(a => a.score !== undefined);
+        const avg = validAudits.reduce((acc, curr) => acc + curr.score, 0) / validAudits.length || 0;
+        const verified = validAudits.filter(a => a.score >= 70).length;
+        const ghosts = validAudits.filter(a => a.score < 40).length;
+        
+        setAdminStats({ total, average: Math.round(avg), verified, ghosts });
+      }
+
+    } catch (err) {
+      console.error("Error fetching portal data:", err);
+    } finally {
+      setLoading(false);
+      setDataLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -43,14 +78,13 @@ export const ClientPortal = () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     
-    try { 
-      await signInWithPopup(auth, provider); 
-    } catch (e: any) { 
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e: any) {
       console.error("Login Error:", e);
-      setLoginError("Access Denied: " + (e.message.includes('api-key-not-valid') ? "Invalid API Key" : "Connection Interrupted")); 
-    } finally {
+      setLoginError("Access Denied: " + (e.message.includes('api-key-not-valid') ? "Invalid API Key" : "Connection Interrupted"));
       setLoading(false);
-    }
+    } 
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#050505]"><Loader2 className="animate-spin text-yellow-500" size={48} /></div>;
@@ -78,13 +112,18 @@ export const ClientPortal = () => {
     <div className="pt-40 pb-20 px-6 max-w-6xl mx-auto min-h-screen font-sans animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8 border-b border-gray-800 pb-8">
         <div>
-          <span className="text-yellow-500 font-black uppercase tracking-[0.4em] text-[10px] mb-2 block">Client Command Node</span>
-          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white leading-none">{entityData.name}</h2>
+          <span className="text-yellow-500 font-black uppercase tracking-[0.4em] text-[10px] mb-2 block">
+            {isAdmin ? "HQ Command Matrix" : "Client Command Node"}
+          </span>
+          <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white leading-none">
+            {isAdmin ? "Admin Overview" : "Your Entities"}
+          </h2>
           <p className="text-gray-500 text-sm mt-3">Node Identity: <strong className="text-white">{user.email}</strong></p>
         </div>
         <div className="flex flex-col md:items-end gap-4">
           <p className="text-green-500 font-black uppercase text-lg tracking-widest flex items-center gap-2 leading-none">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> {entityData.status}
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            Handshake Active
           </p>
           <button onClick={() => signOut(auth)} className="text-gray-500 hover:text-red-500 transition-colors text-[10px] font-bold uppercase tracking-widest bg-gray-900 px-4 py-2 rounded-lg leading-none">
             Secure Logout
@@ -92,46 +131,107 @@ export const ClientPortal = () => {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-1 p-10 border border-gray-800 rounded-[3rem] bg-[#0a0a0a] text-center shadow-xl">
-          <h3 className="text-white font-black uppercase text-xs tracking-widest mb-8">Entity Trust Factor</h3>
-          <div className="relative w-48 h-48 mx-auto flex items-center justify-center">
-            <svg className="w-full h-full rotate-[-90deg]">
-              <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-gray-900" />
-              <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="12" fill="transparent" strokeDasharray={552} strokeDashoffset={552 - (552 * entityData.trustScore) / 100} className="text-yellow-500 transition-all duration-1000" strokeLinecap="round" />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center rotate-0">
-               <span className="text-6xl font-black text-white">{entityData.trustScore}</span>
-               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">/ 100</span>
+      {dataLoading ? (
+        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-yellow-500" size={40} /></div>
+      ) : (
+        <>
+          {/* ADMIN MATRIX VIEW */}
+          {isAdmin && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+              <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-6">
+                <Database className="text-yellow-500 mb-4" size={24} />
+                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Total Scans</p>
+                <p className="text-3xl font-black text-white">{adminStats.total}</p>
+              </div>
+              <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-6">
+                <BarChart3 className="text-yellow-500 mb-4" size={24} />
+                <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">Network Avg Score</p>
+                <p className="text-3xl font-black text-white">{adminStats.average}</p>
+              </div>
+              <div className="bg-[#0a0a0a] border border-green-500/30 rounded-3xl p-6 shadow-[0_0_20px_rgba(34,197,94,0.1)]">
+                <ShieldCheck className="text-green-500 mb-4" size={24} />
+                <p className="text-green-500/70 text-[10px] font-bold uppercase tracking-widest">Verified Entities</p>
+                <p className="text-3xl font-black text-green-500">{adminStats.verified}</p>
+              </div>
+              <div className="bg-[#0a0a0a] border border-red-500/30 rounded-3xl p-6 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+                <Target className="text-red-500 mb-4" size={24} />
+                <p className="text-red-500/70 text-[10px] font-bold uppercase tracking-widest">Ghost Entities</p>
+                <p className="text-3xl font-black text-red-500">{adminStats.ghosts}</p>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
 
-        <div className="lg:col-span-2 p-10 border border-gray-800 rounded-[3rem] bg-[#0a0a0a] shadow-xl">
-           <h3 className="text-yellow-500 font-black uppercase text-xs tracking-widest mb-10 flex items-center gap-3 border-b border-gray-800 pb-4 leading-none">
-             <Clock size={16} /> Node Verification Timeline
-           </h3>
-           <div className="space-y-8 relative">
-              <div className="absolute left-[7px] top-2 bottom-2 w-px bg-gray-800" />
-              {entityData.nodes.map((node, i) => (
-                <div key={i} className="relative pl-10">
-                  <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-black border-2 border-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] z-10" />
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800/50 pb-6 group-last:border-0">
-                    <div>
-                      <h4 className="text-white font-black uppercase text-sm">{node.task}</h4>
-                      <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mt-2">
-                        <span className="text-yellow-500/50">{node.type} Protocol</span> • {node.date}
-                      </p>
-                    </div>
-                    <div className="bg-white/5 px-4 py-2 rounded-xl border border-white/10 text-white font-black text-[10px] uppercase tracking-widest">
-                      {node.status}
-                    </div>
-                  </div>
-                </div>
-              ))}
-           </div>
-        </div>
-      </div>
+          {/* SHARED TABLE/LIST VIEW */}
+          <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
+            <div className="p-6 border-b border-gray-800 flex items-center gap-3">
+              <Search className="text-yellow-500" size={20} />
+              <h3 className="font-black uppercase tracking-widest text-lg text-white">
+                {isAdmin ? "Global Intelligence Logs" : "Your Digital Architectures"}
+              </h3>
+            </div>
+            
+            {clientAudits.length === 0 ? (
+              <div className="p-16 text-center text-gray-500">
+                <Activity className="mx-auto mb-4 opacity-50" size={32} />
+                <p className="font-bold uppercase tracking-widest text-sm">No architectures scanned yet.</p>
+                <p className="text-xs mt-2">Initialize a smart audit to populate your dashboard.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-900 border-b border-gray-800 text-gray-500 text-[10px] font-black uppercase tracking-widest">
+                      <th className="p-5">Entity Name</th>
+                      {isAdmin && <th className="p-5">Contact</th>}
+                      <th className="p-5">Survival Score</th>
+                      <th className="p-5">Status</th>
+                      <th className="p-5 text-right">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800 text-sm">
+                    {clientAudits.map((audit) => {
+                      const score = audit.score || 0;
+                      let statusText = "Requires Optimization";
+                      let statusColor = "text-yellow-500";
+                      
+                      if (score >= 70) {
+                        statusText = "Verified";
+                        statusColor = "text-green-500";
+                      } else if (score < 40) {
+                        statusText = "Critical Ghost";
+                        statusColor = "text-red-500";
+                      }
+
+                      return (
+                        <tr key={audit.id} className="hover:bg-gray-900/50 transition-colors">
+                          <td className="p-5 font-bold text-white">{audit.businessName || audit.name || "Unknown"}</td>
+                          {isAdmin && <td className="p-5 text-gray-400 text-xs">{audit.email}</td>}
+                          <td className="p-5">
+                            {audit.score !== undefined ? (
+                              <span className={`font-black ${statusColor}`}>{score}/100</span>
+                            ) : (
+                              <span className="text-gray-500 italic">Service Req</span>
+                            )}
+                          </td>
+                          <td className="p-5">
+                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded bg-black border border-gray-800 ${statusColor}`}>
+                              {audit.service ? 'Pending Review' : statusText}
+                            </span>
+                          </td>
+                          <td className="p-5 text-right text-gray-500 text-xs font-mono">
+                            {audit.timestamp?.toDate ? audit.timestamp.toDate().toLocaleDateString() : 'Recent'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
