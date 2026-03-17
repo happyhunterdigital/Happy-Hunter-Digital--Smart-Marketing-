@@ -1,20 +1,13 @@
-src/pages/ViewGuide.jsx
-// src/pages/ViewGuide.jsx
-// Secure Viewer Pipeline — Happy Hunter Digital
-// Route: /view/guide
-
 import { useEffect, useRef, useState, useCallback } from "react";
 import { auth } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 
-// ─── CONFIGURATION ─────────────────────────────────────────────────────────────
 const SECURE_PDF_PATH = "/assets/hhd-service-guide.pdf";
-const REQUIRED_ACCESS_CODE = "HHD-SECURE-2026"; // Provided by WA Bot
+const REQUIRED_ACCESS_CODE = "HHD-SECURE-2026"; 
 
 const PDFJS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
 const PDFJS_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
-// ─── STYLES ────────────────────────────────────────────────────────────────────
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -210,7 +203,6 @@ const styles = `
   }
 `;
 
-// ─── LOAD PDF.JS DYNAMICALLY ──────────────────────────────────────────────────
 function loadPdfJs() {
   return new Promise((resolve, reject) => {
     if (window.pdfjsLib) {
@@ -228,14 +220,13 @@ function loadPdfJs() {
   });
 }
 
-// ─── MAIN COMPONENT ─────────────────────────────────────────────────────────────
 export default function ViewGuide() {
-  const [status, setStatus] = useState("auth"); // auth | code | loading | rendering | ready | error
+  const [status, setStatus] = useState("auth"); 
   const [user, setUser] = useState(null);
-  const[authLoading, setAuthLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
   const [inputCode, setInputCode] = useState("");
 
-  const[loadProgress, setLoadProgress] = useState(0);
+  const [loadProgress, setLoadProgress] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [renderedPages, setRenderedPages] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
@@ -265,7 +256,7 @@ export default function ViewGuide() {
       isMounted.current = false;
       unsubscribe();
     };
-  },[]);
+  }, []);
 
   useEffect(() => {
     const blockContextMenu = (e) => e.preventDefault();
@@ -289,7 +280,7 @@ export default function ViewGuide() {
       document.removeEventListener("dragstart", blockDrag);
       window.removeEventListener("beforeprint", (e) => e.preventDefault());
     };
-  },[]);
+  }, []);
 
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
@@ -350,7 +341,7 @@ export default function ViewGuide() {
     wrapper.appendChild(frame);
     wrapper.appendChild(pageTag);
     container.appendChild(wrapper);
-  },[]);
+  }, []);
 
   const runPipeline = useCallback(async () => {
     setStatus("loading");
@@ -401,7 +392,6 @@ export default function ViewGuide() {
       setStatus("error");
     }
   }, [renderPage]);
-
 
   const renderStatusScreen = () => {
     if (authLoading) return <div className="hhd-state-screen"><div className="hhd-state-title">Checking Handshake...</div></div>;
