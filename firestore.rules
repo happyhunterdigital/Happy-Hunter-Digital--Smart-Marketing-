@@ -1,3 +1,4 @@
+firestore.rules
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -8,9 +9,10 @@ service cloud.firestore {
     }
     
     // Allow anyone to create leads (for the audit form)
+    // Secure read: Users can only read their own audits based on email, Admin reads all
     match /leads/{leadId} {
       allow create: if true;
-      allow read: if request.auth != null;
+      allow read: if request.auth != null && (resource.data.email == request.auth.token.email || request.auth.token.email == 'motsumitl@happyhunterdigital.com');
       allow update, delete: if false;
     }
     
