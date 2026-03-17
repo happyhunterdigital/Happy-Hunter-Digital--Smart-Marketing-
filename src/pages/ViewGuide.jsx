@@ -562,9 +562,9 @@ export default function ViewGuide() {
       {/* Top navigation bar */}
       <div className="hhd-topbar">
         <div className="hhd-topbar-brand">
-          <span className="hhd-topbar-logo">
+          <a href="https://happyhunterdigital.com" className="hhd-topbar-logo" style={{ textDecoration: 'none' }}>
             happy<span>hunter</span>digital
-          </span>
+          </a>
           <span className="hhd-badge">Secure View</span>
         </div>
         {status === "ready" && (
