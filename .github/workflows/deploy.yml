@@ -1,4 +1,4 @@
-name:  Deploy Happy Hunter Systems
+name: Deploy Happy Hunter Systems
 
 on:
   push:
@@ -39,11 +39,16 @@ jobs:
           npm install
           npm run build
 
-      # DEPLOY: Use official CLI with Force flag
+      # DEPLOY: Sequential deployment to isolate API visibility issues
       - name: Deploy to Firebase
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
           echo "$GCP_SA_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
-          npx firebase-tools deploy --only hosting,functions --force --non-interactive
+          
+          # 1. Deploy Functions independently
+          npx firebase-tools deploy --only functions --force --non-interactive
+          
+          # 2. Deploy Hosting independently
+          npx firebase-tools deploy --only hosting --force --non-interactive
