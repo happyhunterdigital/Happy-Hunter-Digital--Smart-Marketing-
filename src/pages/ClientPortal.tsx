@@ -50,10 +50,8 @@ export const ClientPortal = () => {
 
       const querySnapshot = await getDocs(q);
       
-      // Fix TS2698 by casting data to any
       let audits = querySnapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }));
 
-      // Safe sorting without requiring a composite Firestore index
       if (!isAdminAccount) {
         audits.sort((a, b) => {
           const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
