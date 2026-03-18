@@ -196,7 +196,13 @@ export const hunterChat = onCall({
 
   const ts = Date.now().toString(36);
   const rand = crypto.randomBytes(8).toString('hex');
-  const secureLink = `https://happyhunterdigital.com/view/guide?id=hhd_secure_${ts}_${rand}`;
+  const tokenId = `hhd_secure_${ts}_${rand}`;
+  const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}`;
+  
+  await db.collection("secure_access_sessions").doc(tokenId).set({
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
+  });
 
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital.
  YOUR KNOWLEDGE BASE:
@@ -509,6 +515,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           // ==========================================================
           const ts = Date.now().toString(36);
           const rand = crypto.randomBytes(8).toString('hex');
+          const tokenId = `hhd_secure_${ts}_${rand}`;
           const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}`;
           
           await db.collection("secure_access_sessions").doc(tokenId).set({
