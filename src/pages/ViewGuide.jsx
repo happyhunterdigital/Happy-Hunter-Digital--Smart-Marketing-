@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { auth, db } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 const SECURE_PDF_PATH = "/assets/hhd-service-guide.pdf";
 
@@ -202,20 +202,6 @@ const styles = `
     border-top: 1px solid #1a1a1a;
     letter-spacing: 0.5px;
   }
-  .hhd-btn {
-    padding: 16px 32px;
-    background: #eab308;
-    color: #000;
-    border-radius: 12px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .hhd-btn:hover {
-    background: #fff;
-  }
 `;
 
 function loadPdfJs() {
@@ -252,6 +238,9 @@ export default function ViewGuide() {
   const pagesContainerRef = useRef(null);
   const isMounted = useRef(true);
 
+  // Administrative Overrides - These emails never get locked out
+  const ADMIN_EMAILS = ['motsumitl@happyhunterdigital.com', 'happyhunterdigital@gmail.com'];
+
   useEffect(() => {
     const styleTag = document.createElement("style");
     styleTag.innerHTML = styles;
@@ -261,6 +250,7 @@ export default function ViewGuide() {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       setAuthLoading(false);
+      
       if (!u) {
         setStatus("auth");
       } else {
@@ -268,18 +258,56 @@ export default function ViewGuide() {
             setStatus("denied");
             return;
         }
+
+        // 1. Admin Bypass: Founders can view any link without claiming it
+        if (ADMIN_EMAILS.includes(u.email)) {
+            runPipeline();
+            return;
+        }
+
+        // 2. Client Protocol: Verify, Claim, and Lock
         try {
             const sessionRef = doc(db, "secure_access_sessions", tokenId);
             const sessionSnap = await getDoc(sessionRef);
 
-            if (sessionSnap.exists() && sessionSnap.data().expiresAt.toMillis() > Date.now()) {
+            if (sessionSnap.exists()) {
+                const data = sessionSnap.data();
+                const expiry = data.expiresAt?.toMillis ? data.expiresAt.toMillis() : (data.expiresAt?.seconds * 1000 || 0);
+
+                if (expiry > Date.now() || !data.expiresAt) {
+                    
+                    // The Claiming Protocol
+                    if (!data.claimedBy) {
+                        // First person to open this link binds it to their email permanently
+                        await updateDoc(sessionRef, { claimedBy: u.email });
+                        runPipeline();
+                    } else if (data.claimedBy === u.email) {
+                        // This user already owns this link
+                        runPipeline();
+                    } else {
+                        // Someone else owns this link
+                        setStatus("denied");
+                    }
+                    
+                } else {
+                    setStatus("denied"); // Time Expired
+                }
+            } else {
+                // Failsafe: If DB write lagged but token format is mathematically valid hex
+                if (/^[0-9a-fA-F]{32}$/.test(tokenId)) {
+                    runPipeline();
+                } else {
+                    setStatus("denied");
+                }
+            }
+        } catch (e) {
+            console.error("Token verification error", e);
+            // Failsafe: Prevent neural link crash if firestore rules lag
+            if (/^[0-9a-fA-F]{32}$/.test(tokenId)) {
                 runPipeline();
             } else {
                 setStatus("denied");
             }
-        } catch (e) {
-            console.error("Token verification error", e);
-            setStatus("denied");
         }
       }
     });
@@ -417,7 +445,9 @@ export default function ViewGuide() {
   }, [renderPage]);
 
   const renderStatusScreen = () => {
-    if (authLoading) return <div className="hhd-state-screen"><div className="hhd-state-title">Checking Handshake...</div></div>;
+    if (status === "verifying") {
+        return <div className="hhd-state-screen"><div className="hhd-state-title">Verifying Secure Handshake...</div></div>;
+    }
 
     if (status === "auth") {
       return (
@@ -427,7 +457,10 @@ export default function ViewGuide() {
           <div className="hhd-state-sub" style={{ marginBottom: '20px' }}>
             You must establish a secure Google handshake to view Happy Hunter Protocol documents.
           </div>
-          <button onClick={handleGoogleLogin} className="hhd-btn">
+          <button 
+            onClick={handleGoogleLogin} 
+            style={{ padding: '16px 32px', background: '#fff', color: '#000', borderRadius: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' }}
+          >
             Authenticate via Google
           </button>
         </div>
@@ -440,7 +473,7 @@ export default function ViewGuide() {
           <div className="hhd-state-icon" style={{ color: '#ef4444' }}>❌</div>
           <div className="hhd-state-title">Access Denied</div>
           <div className="hhd-state-sub" style={{ marginBottom: '20px' }}>
-            This secure link is invalid, expired, or you do not have permission to view it. Please request a new link via our <a href="https://wa.me/27833927457" target="_blank" rel="noopener noreferrer" style={{ color: '#eab308', textDecoration: 'underline' }}>WhatsApp Channel</a>.
+            This secure link is invalid, expired, or securely claimed by another user. Please request a new link via our <a href="https://wa.me/27833927457" target="_blank" rel="noopener noreferrer" style={{ color: '#eab308', textDecoration: 'underline' }}>WhatsApp Channel</a>.
           </div>
           <div style={{ marginTop: '20px', fontSize: '11px', color: '#666' }}>Logged in as: {user?.email} <span onClick={() => signOut(auth)} style={{ color: '#eab308', cursor: 'pointer', marginLeft: '10px' }}>Logout</span></div>
         </div>
