@@ -217,7 +217,7 @@ export const hunterChat = onCall({
  4. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
  5. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
  6. Include links to https://happyhunterdigital.com/services when discussing services.
- 7. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them this exact unique, 24-hour secure link: ${secureLink} (Remind them they must login with Google to view it).`;
+ 7. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a> (Remind them they must login with Google to view it).`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
