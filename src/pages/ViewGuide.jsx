@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { auth } from '../firebaseConfig';
+import { auth, db } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 const SECURE_PDF_PATH = "/assets/hhd-service-guide.pdf";
 
@@ -193,16 +194,6 @@ const styles = `
     border-radius: 99px;
     transition: width 0.3s ease;
   }
-  .hhd-denied-code {
-    font-family: monospace;
-    font-size: 11px;
-    color: #333;
-    background: #1a1a1a;
-    padding: 4px 10px;
-    border-radius: 4px;
-    border: 1px solid #222;
-    margin-top: 8px;
-  }
   .hhd-footer {
     text-align: center;
     padding: 20px;
@@ -230,25 +221,12 @@ function loadPdfJs() {
   });
 }
 
-function isTokenValid(token) {
-  if (!token || !token.startsWith("hhd_secure_")) return false;
-  const body = token.replace("hhd_secure_", "");
-  const parts = body.split("_");
-  if (parts.length < 2) return false;
-  const ts = parseInt(parts[0], 36);
-  if (!ts || isNaN(ts)) return false;
-  
-  const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-  return Date.now() - ts <= TOKEN_TTL_MS;
-}
-
 export default function ViewGuide() {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get("id");
+  const tokenId = searchParams.get("id");
 
-  const [status, setStatus] = useState("auth"); 
+  const [status, setStatus] = useState("verifying"); 
   const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
 
   const [loadProgress, setLoadProgress] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -265,17 +243,28 @@ export default function ViewGuide() {
     document.head.appendChild(styleTag);
     document.title = "HHD Service Guide — Secure View";
 
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
-      setAuthLoading(false);
-      if (u) {
-        if (isTokenValid(token)) {
-            runPipeline();
-        } else {
+      if (!u) {
+        setStatus("auth");
+      } else {
+        if (!tokenId) {
+            setStatus("denied");
+            return;
+        }
+        try {
+            const sessionRef = doc(db, "secure_access_sessions", tokenId);
+            const sessionSnap = await getDoc(sessionRef);
+
+            if (sessionSnap.exists() && sessionSnap.data().expiresAt.toMillis() > Date.now()) {
+                runPipeline();
+            } else {
+                setStatus("denied");
+            }
+        } catch (e) {
+            console.error("Token verification error", e);
             setStatus("denied");
         }
-      } else {
-        setStatus("auth");
       }
     });
 
@@ -284,7 +273,7 @@ export default function ViewGuide() {
       isMounted.current = false;
       unsubscribe();
     };
-  }, [token]);
+  }, [tokenId]);
 
   useEffect(() => {
     const blockContextMenu = (e) => e.preventDefault();
@@ -412,7 +401,9 @@ export default function ViewGuide() {
   }, [renderPage]);
 
   const renderStatusScreen = () => {
-    if (authLoading) return <div className="hhd-state-screen"><div className="hhd-state-title">Checking Handshake...</div></div>;
+    if (status === "verifying") {
+        return <div className="hhd-state-screen"><div className="hhd-state-title">Verifying Secure Link...</div></div>;
+    }
 
     if (status === "auth") {
       return (
@@ -433,18 +424,17 @@ export default function ViewGuide() {
     }
 
     if (status === "denied") {
-        return (
-          <div className="hhd-state-screen">
-            <div className="hhd-state-icon">🔒</div>
-            <div className="hhd-state-title">Access Denied</div>
-            <div className="hhd-state-sub">
-              This secure link is invalid or has expired. Please request a new link via our WhatsApp channel.
-            </div>
-            <div className="hhd-denied-code">ERR_INVALID_SESSION_TOKEN</div>
-            <div style={{ marginTop: '20px', fontSize: '11px', color: '#666' }}>Logged in as: {user?.email} <span onClick={() => signOut(auth)} style={{ color: '#eab308', cursor: 'pointer', marginLeft: '10px' }}>Logout</span></div>
+      return (
+        <div className="hhd-state-screen" style={{ zIndex: 200, background: '#050505', position: 'fixed', inset: 0 }}>
+          <div className="hhd-state-icon">❌</div>
+          <div className="hhd-state-title">Access Denied</div>
+          <div className="hhd-state-sub" style={{ marginBottom: '20px' }}>
+            This secure link is invalid, expired, or you do not have permission to view it. Please request a new link via our WhatsApp channel.
           </div>
-        );
-      }
+          <div style={{ marginTop: '20px', fontSize: '11px', color: '#666' }}>Logged in as: {user?.email} <span onClick={() => signOut(auth)} style={{ color: '#eab308', cursor: 'pointer', marginLeft: '10px' }}>Logout</span></div>
+        </div>
+      );
+    }
 
     if (status === "error") {
       return (
@@ -491,7 +481,6 @@ export default function ViewGuide() {
 
   return (
     <div className="hhd-viewer-shell">
-      {/* Top navigation bar */}
       <div className="hhd-topbar">
         <div className="hhd-topbar-brand">
           <span className="hhd-topbar-logo">
@@ -511,26 +500,21 @@ export default function ViewGuide() {
         )}
       </div>
 
-      {/* Yellow confidentiality bar */}
       <div className="hhd-watermark-bar">
         🔒 Confidential — Authorised View Only — Do Not Share This Link
       </div>
 
-      {/* Status screens */}
       {!isRenderingOrReady && renderStatusScreen()}
 
-      {/* The scrollable canvas container */}
       <div
         className="hhd-canvas-scroll"
         ref={scrollRef}
         style={{ display: isRenderingOrReady ? "flex" : "none", position: "relative" }}
       >
         {status === "rendering" && renderStatusScreen()}
-        
         <div ref={pagesContainerRef} style={{ display: "contents" }} />
       </div>
 
-      {/* Footer */}
       {status === "ready" && (
         <div className="hhd-footer">
           © {new Date().getFullYear()} Happy Hunter Digital — All Rights Reserved. Authenticated as {user?.email}. <span onClick={() => signOut(auth)} style={{ color: '#eab308', cursor: 'pointer', marginLeft: '10px' }}>Logout</span>
