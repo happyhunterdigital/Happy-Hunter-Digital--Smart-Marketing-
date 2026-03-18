@@ -238,7 +238,6 @@ export default function ViewGuide() {
   const pagesContainerRef = useRef(null);
   const isMounted = useRef(true);
 
-  // Administrative Overrides - These emails never get locked out
   const ADMIN_EMAILS = ['motsumitl@happyhunterdigital.com', 'happyhunterdigital@gmail.com'];
 
   useEffect(() => {
@@ -259,13 +258,11 @@ export default function ViewGuide() {
             return;
         }
 
-        // 1. Admin Bypass: Founders can view any link without claiming it
         if (ADMIN_EMAILS.includes(u.email)) {
             runPipeline();
             return;
         }
 
-        // 2. Client Protocol: Verify, Claim, and Lock
         try {
             const sessionRef = doc(db, "secure_access_sessions", tokenId);
             const sessionSnap = await getDoc(sessionRef);
@@ -275,25 +272,18 @@ export default function ViewGuide() {
                 const expiry = data.expiresAt?.toMillis ? data.expiresAt.toMillis() : (data.expiresAt?.seconds * 1000 || 0);
 
                 if (expiry > Date.now() || !data.expiresAt) {
-                    
-                    // The Claiming Protocol
                     if (!data.claimedBy) {
-                        // First person to open this link binds it to their email permanently
                         await updateDoc(sessionRef, { claimedBy: u.email });
                         runPipeline();
                     } else if (data.claimedBy === u.email) {
-                        // This user already owns this link
                         runPipeline();
                     } else {
-                        // Someone else owns this link
                         setStatus("denied");
                     }
-                    
                 } else {
-                    setStatus("denied"); // Time Expired
+                    setStatus("denied");
                 }
             } else {
-                // Failsafe: If DB write lagged but token format is mathematically valid hex
                 if (/^[0-9a-fA-F]{32}$/.test(tokenId)) {
                     runPipeline();
                 } else {
@@ -302,7 +292,6 @@ export default function ViewGuide() {
             }
         } catch (e) {
             console.error("Token verification error", e);
-            // Failsafe: Prevent neural link crash if firestore rules lag
             if (/^[0-9a-fA-F]{32}$/.test(tokenId)) {
                 runPipeline();
             } else {
