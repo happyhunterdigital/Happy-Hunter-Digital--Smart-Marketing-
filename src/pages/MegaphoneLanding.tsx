@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, CheckCircle2, Volume2, ShieldCheck, ChevronDown, Star } from 'lucide-react';
+import { ArrowRight, Zap, CheckCircle2, Volume2, ShieldCheck, ChevronDown, Star, MessageSquareCode, BrainCircuit, Server } from 'lucide-react';
 import { db, functions } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -164,6 +164,7 @@ export const MegaphoneLanding: React.FC = () => {
   return (
     <div className="min-h-screen bg-yellow-500 font-sans animate-fade-in selection:bg-black selection:text-yellow-500">
       
+      {/* 1. THE HERO SECTION */}
       <section className="relative pt-24 pb-24 md:pt-32 md:pb-32 px-6 overflow-hidden border-b-[16px] border-black">
         <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
           <svg className="w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
@@ -194,6 +195,7 @@ export const MegaphoneLanding: React.FC = () => {
             </Link>
           </div>
 
+          {/* IMMEDIATE TRUST SIGNALS */}
           <div className="mt-8 flex flex-col items-center justify-center gap-2">
             <div className="flex gap-1 text-black">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -201,12 +203,13 @@ export const MegaphoneLanding: React.FC = () => {
               ))}
             </div>
             <p className="text-sm text-black font-bold drop-shadow-md">
-              Trusted by <strong className="text-white">Profuse Beauty Cosmetics</strong>, <strong className="text-white">Gamazine Factory Online</strong>, and 50+ local brands.
+              Trusted by <strong>Profuse Beauty Cosmetics</strong>, <strong>Gamazine Factory Online</strong>, and 50+ local brands.
             </p>
           </div>
         </div>
       </section>
 
+      {/* 2. COMPREHENSIVE PRICING ARCHITECTURE */}
       <section className="py-24 px-6 relative border-t-8 border-black border-b border-gray-900 bg-[#050505]">
         <div className="container mx-auto max-w-7xl">
           <div className="mb-16 text-center">
@@ -215,6 +218,7 @@ export const MegaphoneLanding: React.FC = () => {
             <p className="text-gray-400 mt-4 max-w-2xl mx-auto">This tier replaces traditional &quot;web design&quot; by providing high-performance, Server-Side Rendered (SSR) infrastructure engineered specifically for Large Language Model (LLM) ingestion and speed.</p>
           </div>
           <div className="grid lg:grid-cols-3 gap-8 items-stretch">
+            {/* Tier 1 */}
             <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-yellow-500/30 transition-all flex flex-col relative">
               <div className="mb-8">
                 <h4 className="text-2xl font-black text-white mb-1">The &quot;Digital Front Door&quot;</h4>
@@ -237,6 +241,7 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </div>
 
+            {/* Tier 2 (Highlighted) */}
             <div className="bg-gradient-to-b from-[#111827] to-[#0a0a0a] border-2 border-yellow-500/50 rounded-3xl p-8 hover:border-yellow-500 transition-all flex flex-col relative shadow-[0_0_40px_rgba(234,179,8,0.1)] transform lg:-translate-y-4 z-10">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-500 text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">Most Popular</div>
               <div className="mb-8">
@@ -260,6 +265,7 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </div>
 
+            {/* Tier 3 */}
             <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-yellow-500/30 transition-all flex flex-col relative">
               <div className="mb-8">
                 <h4 className="text-2xl font-black text-white mb-1">The Premium Blueprint</h4>
@@ -285,6 +291,7 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
+      {/* PHASE 2: GOVERNANCE & AEO RETAINERS */}
       <section className="py-24 px-6 relative border-b border-gray-900 bg-[#020202]">
         <div className="container mx-auto max-w-7xl">
           <div className="mb-16 text-center">
@@ -293,6 +300,7 @@ export const MegaphoneLanding: React.FC = () => {
             <p className="text-gray-400 mt-4 max-w-2xl mx-auto">This tier replaces standard SEO. These packages are recurring governance retainers focused on maintaining a 100% perfect Rich Results score, driving AI visibility, and triaging leads.</p>
           </div>
           <div className="grid lg:grid-cols-3 gap-8">
+            {/* Monthly Tier 1 */}
             <div className="bg-black border border-gray-800 p-8 rounded-3xl hover:border-white/20 transition-all flex flex-col">
               <div className="mb-6">
                 <h4 className="text-xl font-black text-white mb-1">Local Authority &amp; Verification</h4>
@@ -314,6 +322,7 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </div>
 
+            {/* Monthly Tier 2 */}
             <div className="bg-black border border-yellow-500/30 p-8 rounded-3xl hover:border-yellow-500 transition-all flex flex-col shadow-xl relative">
               <div className="mb-6">
                 <h4 className="text-xl font-black text-white mb-1">National AI Growth &amp; Lead Triage</h4>
@@ -335,6 +344,7 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </div>
 
+            {/* Monthly Tier 3 */}
             <div className="bg-black border border-gray-800 p-8 rounded-3xl hover:border-white/20 transition-all flex flex-col">
               <div className="mb-6">
                 <h4 className="text-xl font-black text-white mb-1">Enterprise Entity Governance</h4>
@@ -359,6 +369,7 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
+      {/* PHASE 3: AGENTIC SOCIAL MEDIA */}
       <section className="py-24 px-6 relative border-b border-gray-900 bg-[#050505]">
         <div className="container mx-auto max-w-6xl">
           <div className="mb-16 text-center">
@@ -385,7 +396,7 @@ export const MegaphoneLanding: React.FC = () => {
                   <td className="p-6 text-gray-300 align-top text-sm">2 Promoted Adverts<br/>across 2 channels.</td>
                   <td className="p-6 text-gray-400 text-sm align-top leading-relaxed">
                     Entry-level social media ads designed to get people in your area to recognize your business name.<br/><br/>
-                    <span className="text-white font-medium">Copywriting, design, plus <strong className="text-white">R1,000</strong> allocated media spend.</span>
+                    <span className="text-white font-medium">Copywriting, design, plus <strong>R1,000</strong> allocated media spend.</span>
                   </td>
                   <td className="p-6 align-top text-right">
                     <p className="text-gray-500 line-through text-xs">R4,900</p>
@@ -401,7 +412,7 @@ export const MegaphoneLanding: React.FC = () => {
                   <td className="p-6 text-gray-300 align-top text-sm">4 Promoted Posts<br/>across 2 channels.</td>
                   <td className="p-6 text-gray-400 text-sm align-top leading-relaxed">
                     Aggressive, targeted social media campaigns designed to make people click, call, and buy.<br/><br/>
-                    <span className="text-white font-medium">Elevated copywriting, advanced design, plus <strong className="text-white">R2,000</strong> allocated media spend.</span>
+                    <span className="text-white font-medium">Elevated copywriting, advanced design, plus <strong>R2,000</strong> allocated media spend.</span>
                   </td>
                   <td className="p-6 align-top text-right">
                     <p className="text-gray-500 line-through text-xs">R8,500</p>
@@ -417,7 +428,7 @@ export const MegaphoneLanding: React.FC = () => {
                   <td className="p-6 text-gray-300 align-top text-sm">6 Promoted Posts<br/>across 3 channels.</td>
                   <td className="p-6 text-gray-400 text-sm align-top leading-relaxed">
                     High-budget advertising across multiple platforms (Facebook, LinkedIn, X) so your brand is everywhere your customers look.<br/><br/>
-                    <span className="text-white font-medium">Priority copywriting, premium design execution, plus <strong className="text-white">R4,000</strong> allocated media spend.</span>
+                    <span className="text-white font-medium">Priority copywriting, premium design execution, plus <strong>R4,000</strong> allocated media spend.</span>
                   </td>
                   <td className="p-6 align-top text-right">
                     <p className="text-gray-500 line-through text-xs">R14,500</p>
@@ -431,6 +442,7 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
+      {/* PHASE 4: INTELLIGENT WHATSAPP BOTS */}
       <section className="py-24 px-6 relative border-b border-gray-900 bg-[#020202]">
         <div className="container mx-auto max-w-7xl">
           <div className="mb-16 text-center">
@@ -439,6 +451,7 @@ export const MegaphoneLanding: React.FC = () => {
             <p className="text-gray-400 mt-4 max-w-2xl mx-auto">Deploy a 24/7 automated workforce. Capture leads, answer FAQs, and route complex queries directly to your CRM.</p>
           </div>
           <div className="grid lg:grid-cols-3 gap-8 items-stretch">
+            {/* Basic Bot */}
             <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-yellow-500/30 transition-all flex flex-col relative">
               <div className="mb-8">
                 <MessageSquareCode className="text-yellow-500 mb-4" size={32} />
@@ -462,6 +475,7 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </div>
 
+            {/* Standard Bot */}
             <div className="bg-gradient-to-b from-[#111827] to-[#0a0a0a] border-2 border-yellow-500/50 rounded-3xl p-8 hover:border-yellow-500 transition-all flex flex-col relative shadow-[0_0_40px_rgba(234,179,8,0.1)] transform lg:-translate-y-4 z-10">
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-500 text-black px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">High Intent</div>
               <div className="mb-8">
@@ -486,7 +500,8 @@ export const MegaphoneLanding: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-white/20 transition-all flex flex-col">
+            {/* Enterprise Bot */}
+            <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-white/20 transition-all flex flex-col relative">
               <div className="mb-8">
                 <Server className="text-yellow-500 mb-4" size={32} />
                 <h4 className="text-2xl font-black text-white mb-1">Enterprise Bot</h4>
@@ -512,6 +527,7 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
+      {/* PHASE 5: A LA CARTE SERVICES */}
       <section className="py-24 px-6 relative bg-[#050505]">
         <div className="container mx-auto max-w-7xl">
           <div className="mb-16 text-center">
@@ -583,6 +599,7 @@ export const MegaphoneLanding: React.FC = () => {
                 <p className="text-yellow-500 font-black text-xl">R4,500 <span className="text-[10px] font-bold tracking-widest text-gray-500 uppercase mx-1">(Photo)</span> / R8,500 <span className="text-[10px] font-bold tracking-widest text-gray-500 uppercase ml-1">(Film)</span></p>
               </div>
             </div>
+            {/* STRATEGIC CONSULTING (UPDATED PRICE) */}
             <div className="p-8 bg-yellow-500/10 border border-yellow-500/30 rounded-3xl flex flex-col lg:col-span-3">
               <div className="flex flex-col md:flex-row justify-between gap-6 items-center">
                 <div className="flex-1">
