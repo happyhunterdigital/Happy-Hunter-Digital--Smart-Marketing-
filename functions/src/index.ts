@@ -161,8 +161,13 @@ export const performAudit = onCall({
 
     const isGoodScore = analysis.score >= 70;
     const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
- <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'};">Digital Survival Score: ${analysis.score}/100</h1>
- <p>${analysis.summary}</p>
+ <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'}; margin-bottom: 20px;">Digital Survival Score: ${analysis.score}/100</h1>
+ <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: left;">${analysis.summary}</p>
+ <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
+ <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
+ <p style="color: #d1d5db; margin-bottom: 25px;">Stop losing revenue to invisible algorithms. Let's map out your custom Recovery Protocol.</p>
+ <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
+ </div>
  </div>`;
 
     await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml } });
@@ -189,13 +194,9 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  const tokenId = crypto.randomBytes(16).toString('hex');
-  const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}`;
-  
-  await db.collection("secure_access_sessions").doc(tokenId).set({
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
-  });
+  const ts = Date.now().toString(36);
+  const rand = crypto.randomBytes(8).toString('hex');
+  const secureLink = `https://happyhunterdigital.com/view/guide?id=hhd_secure_${ts}_${rand}`;
 
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital.
  YOUR KNOWLEDGE BASE:
@@ -299,7 +300,7 @@ export const submitServiceRequest = onCall({
  <div style="background-color: #050505; color: #fff; padding: 30px; text-align: center; border-radius: 12px; margin-top: 40px;">
  <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
  <p style="color: #d1d5db; margin-bottom: 25px;">Our system has already started a preliminary scan of your digital entity. I'd love to walk you through the results.</p>
- <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book Entity Strategy Session</a>
+ <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
  </div>
 
  <p style="margin-top: 40px; font-size: 16px;">Stay Smart,<br/><br/><strong>Thabo Leslie Motsumi</strong><br/><span style="color: #666; font-size: 14px;">Happy Hunter -Smart Marketing-</span></p>
@@ -506,7 +507,8 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           // ==========================================================
           // GENERATIVE AI CONVERSATION (Memory Enabled)
           // ==========================================================
-          const tokenId = crypto.randomBytes(16).toString('hex');
+          const ts = Date.now().toString(36);
+          const rand = crypto.randomBytes(8).toString('hex');
           const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}`;
           
           await db.collection("secure_access_sessions").doc(tokenId).set({
