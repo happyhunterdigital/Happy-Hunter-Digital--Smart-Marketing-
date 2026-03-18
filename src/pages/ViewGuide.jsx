@@ -202,6 +202,20 @@ const styles = `
     border-top: 1px solid #1a1a1a;
     letter-spacing: 0.5px;
   }
+  .hhd-btn {
+    padding: 16px 32px;
+    background: #eab308;
+    color: #000;
+    border-radius: 12px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .hhd-btn:hover {
+    background: #fff;
+  }
 `;
 
 function loadPdfJs() {
@@ -227,6 +241,7 @@ export default function ViewGuide() {
 
   const [status, setStatus] = useState("verifying"); 
   const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   const [loadProgress, setLoadProgress] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -245,6 +260,7 @@ export default function ViewGuide() {
 
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
+      setAuthLoading(false);
       if (!u) {
         setStatus("auth");
       } else {
@@ -401,9 +417,7 @@ export default function ViewGuide() {
   }, [renderPage]);
 
   const renderStatusScreen = () => {
-    if (status === "verifying") {
-        return <div className="hhd-state-screen"><div className="hhd-state-title">Verifying Secure Link...</div></div>;
-    }
+    if (authLoading) return <div className="hhd-state-screen"><div className="hhd-state-title">Checking Handshake...</div></div>;
 
     if (status === "auth") {
       return (
@@ -413,10 +427,7 @@ export default function ViewGuide() {
           <div className="hhd-state-sub" style={{ marginBottom: '20px' }}>
             You must establish a secure Google handshake to view Happy Hunter Protocol documents.
           </div>
-          <button 
-            onClick={handleGoogleLogin} 
-            style={{ padding: '16px 32px', background: '#fff', color: '#000', borderRadius: '12px', fontWeight: 'bold', border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' }}
-          >
+          <button onClick={handleGoogleLogin} className="hhd-btn">
             Authenticate via Google
           </button>
         </div>
@@ -426,10 +437,10 @@ export default function ViewGuide() {
     if (status === "denied") {
       return (
         <div className="hhd-state-screen" style={{ zIndex: 200, background: '#050505', position: 'fixed', inset: 0 }}>
-          <div className="hhd-state-icon">❌</div>
+          <div className="hhd-state-icon" style={{ color: '#ef4444' }}>❌</div>
           <div className="hhd-state-title">Access Denied</div>
           <div className="hhd-state-sub" style={{ marginBottom: '20px' }}>
-            This secure link is invalid, expired, or you do not have permission to view it. Please request a new link via our WhatsApp channel.
+            This secure link is invalid, expired, or you do not have permission to view it. Please request a new link via our <a href="https://wa.me/27833927457" target="_blank" rel="noopener noreferrer" style={{ color: '#eab308', textDecoration: 'underline' }}>WhatsApp Channel</a>.
           </div>
           <div style={{ marginTop: '20px', fontSize: '11px', color: '#666' }}>Logged in as: {user?.email} <span onClick={() => signOut(auth)} style={{ color: '#eab308', cursor: 'pointer', marginLeft: '10px' }}>Logout</span></div>
         </div>
@@ -483,9 +494,11 @@ export default function ViewGuide() {
     <div className="hhd-viewer-shell">
       <div className="hhd-topbar">
         <div className="hhd-topbar-brand">
-          <span className="hhd-topbar-logo">
-            happy<span>hunter</span>digital
-          </span>
+          <a href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span className="hhd-topbar-logo">
+              happy<span>hunter</span>digital
+            </span>
+          </a>
           <span className="hhd-badge">Secure View</span>
         </div>
         {status === "ready" && (
