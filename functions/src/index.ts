@@ -1,3 +1,4 @@
+functions/src/index.ts
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
@@ -197,18 +198,22 @@ export const hunterChat = onCall({
   const ts = Date.now().toString(36);
   const rand = crypto.randomBytes(8).toString('hex');
   const tokenId = `hhd_secure_${ts}_${rand}`;
-  const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}`;
   
   await db.collection("secure_access_sessions").doc(tokenId).set({
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
   });
 
+  const isAskingForGBP = /gbp|google business|zero click/i.test(message);
+  const docParam = isAskingForGBP ? "&doc=gbp" : "";
+  const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}${docParam}`;
+
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital.
  YOUR KNOWLEDGE BASE:
  - Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
  - Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses via Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO).
  - Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score). Tell users to go to happyhunterdigital.com/audit.
+ - NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revolutions". This guide explains how businesses are losing visibility to Google's AI Overviews and how to fix it.
  
  OUR SERVICES & PRICING:
  - Phase 1 (Entity Architecture / AI Websites): Starting from R4,500.
@@ -516,7 +521,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           const ts = Date.now().toString(36);
           const rand = crypto.randomBytes(8).toString('hex');
           const tokenId = `hhd_secure_${ts}_${rand}`;
-          const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}`;
           
           await db.collection("secure_access_sessions").doc(tokenId).set({
             phone: from,
@@ -524,12 +528,17 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
           });
 
+          const isAskingForGBP = /gbp|google business|zero click/i.test(userText);
+          const docParam = isAskingForGBP ? "&doc=gbp" : "";
+          const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}${docParam}`;
+
           const WA_SYSTEM_PROMPT = `You are Smart Marketing AI, the intelligent WhatsApp assistant for Happy Hunter Digital. 
 
 YOUR KNOWLEDGE BASE & IDENTITY:
 - Founder & Head Strategist: Thabo Motsumi. Direct Link: https://wa.me/27601016673
 - Mission: We stop businesses from being "Ghosts" to AI. We turn them into digital powerhouses using Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO).
 - AEO Concept: Customers now ask AI (ChatGPT, Gemini) for answers. AEO formats a business footprint so AI models cite them as the definitive answer.
+- NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revolutions". This guide explains how businesses are losing visibility to Google's AI Overviews and how to fix it.
 
 YOUR CATALOG (THE MENU):
 1. Entity Architecture (Agentic Websites). Starting from R4,500.
@@ -544,7 +553,7 @@ YOUR CORE DIRECTIVES:
 3. EXPLAIN & PRICE: If they ask about a specific service or reply with a number, give a neat summary. You MUST state the lowest price using the exact phrase: "starting from". Then link to https://happyhunterdigital.com/services
 4. HUMAN ESCAPE HATCH: If they want to book a meeting, speak to a human, or ask about Thabo, provide his direct link: https://wa.me/27601016673
 5. FORMATTING RULES: Write neatly using paragraphs. YOU ARE STRICTLY FORBIDDEN FROM USING MARKDOWN ASTERISKS. DO NOT USE ** OR *. If you want to emphasize a word, use CAPITAL LETTERS. Ensure the text is clean and professional.
-6. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them this exact unique, 24-hour secure link: ${secureLink} (Remind them they must login with Google to view it).`;
+6. DOCUMENT ACCESS: If the user asks for a PDF, guide, document, or access code, give them this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a> (Remind them they must login with Google to view it).`;
 
           // Format previous memory for Gemini API
           const formattedHistory = chatHistory.map((msg: any) => ({
