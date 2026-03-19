@@ -204,29 +204,26 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  const secureToken = generateViewerToken();
-  const isAskingForGBP = /gbp|google business|zero click/i.test(message);
-  const docParam = isAskingForGBP ? "&doc=gbp" : "";
-  const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
-  
-  await db.collection("secure_access_sessions").doc(secureToken).set({
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
-  });
-
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital.
  YOUR KNOWLEDGE BASE:
  - Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
- - Mission: We stop South African SMEs from being "Ghosts" to AI algorithms.
- - Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score). 
+ - Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses via Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO).
+ - Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score). Tell users to go to happyhunterdigital.com/audit.
  
- NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revolutions". This guide explains how businesses are losing visibility to Google's AI Overviews and how to fix it.
+ OUR SERVICES (DO NOT SHOW PRICES UNLESS ASKED):
+ - Phase 1: Entity Architecture (Agentic Websites). (Prices start from R4,500).
+ - Phase 2: Entity Governance (AEO Retainers). (Prices start from R5,500).
+ - Phase 3: Agentic Social Media Ads. (Prices start from R3,500).
+ - Phase 4: Intelligent WhatsApp Bots. (Prices start from R2,000).
+ - Phase 5: Standalone Smart Services (Google Search Console Setup, GBP Ultimate Setup, Audits).
 
  RULES:
- 1. SMART Q&A: Answer questions intelligently.
- 2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
- 3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
- 4. DOCUMENT ACCESS: If the user asks for a guide, document, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a>. If they ask for the Google Business Profile guide specifically, ensure the link ends with doc=gbp.`;
+ 1. GREETINGS: If the user says "Hi" or asks what we do, reply with a welcoming message and a clean, numbered list of the 5 catalog items WITHOUT PRICES. Ask them to "Reply with a number to learn more."
+ 2. SMART Q&A: Answer questions intelligently based on the Knowledge Base.
+ 3. PRICING: ONLY reveal prices if specifically asked. When revealing a price, ALWAYS use the exact phrase "starting from" [price].
+ 4. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
+ 5. Include links to https://happyhunterdigital.com/services when discussing services.
+ 6. DOCUMENT ACCESS: If the user asks for a guide, document, or PDF, tell them to message us directly on WhatsApp to receive their secure authentication link.`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -238,6 +235,12 @@ export const hunterChat = onCall({
         generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
       })
     });
+
+    if (!aiRes.ok) {
+      const errorText = await aiRes.text();
+      console.error(`Gemini Chat API Error (${AI_MODEL}):`, errorText);
+      return { reply: "My neural link is currently overloaded. Please email HQ." };
+    }
 
     const data = await aiRes.json() as any;
     if (data.candidates && data.candidates[0].content.parts[0].text) return { reply: data.candidates[0].content.parts[0].text.trim() };
@@ -324,17 +327,67 @@ export const submitServiceRequest = onCall({
 // 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
 // ==========================================
 export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
+  console.log("CMS Data change detected. Recompiling Entity Schema...");
   try {
     const brandSnapshot = await db.collection("brand_identity").limit(1).get();
     if (brandSnapshot.empty) return null;
+
     const brandData = brandSnapshot.docs[0].data();
-    const masterSchema = {
+    const aeoSnapshot = await db.collection("aeo_knowledge").where("speakable", "==", true).get();
+
+    const faqItems = aeoSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return { "@type": "Question", "name": data.question, "acceptedAnswer": { "@type": "Answer", "text": data.answer } };
+    });
+
+    const claimsSnapshot = await db.collection("verified_claims").get();
+    const offerItems = claimsSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Service",
+          "name": data.serviceName || "Digital Protocol",
+          "description": data.serviceDescription || "Verified AI Marketing Solutions",
+          "subjectOf": {
+            "@type": "ClaimReview",
+            "claimReviewed": data.claim || "AI-Ready Digital Infrastructure",
+            "reviewRating": { "@type": "Rating", "ratingValue": data.rating || "5", "bestRating": "5" },
+            "author": { "@type": "Organization", "name": data.authorName || "Happy Hunter Systems Verification" },
+            "itemReviewed": { "@type": "CreativeWork", "name": data.evidenceName || "System Audit", "url": data.evidenceUrl || "https://www.happyhunterdigital.com/audit" }
+          }
+        }
+      };
+    });
+
+    const masterSchema: any = {
       "@context": "https://schema.org",
-      "@graph":[{ "@type": brandData.orgType || "LocalBusiness", "name": brandData.legalName || "Happy Hunter Digital" }]
+      "@graph":[
+        {
+          "@type": brandData.orgType || "LocalBusiness",
+          "@id": `${brandData.websiteUrl || "https://www.happyhunterdigital.com"}#organization`,
+          "name": brandData.legalName || "Happy Hunter Digital",
+          "description": brandData.description || "",
+          "url": brandData.websiteUrl || "https://www.happyhunterdigital.com",
+          "telephone": brandData.telephone || "+27 60 101 6673",
+          "logo": brandData.logo || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
+          "image": brandData.image || "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
+          "priceRange": brandData.priceRange || "ZAR",
+          "sameAs": brandData.sameAs || ["https://www.facebook.com/Happyhunterdigital/", "https://za.linkedin.com/in/thabomotsumi", "https://www.instagram.com/happyhunterdigital/", "https://x.com/HappyHunter35"]
+        }
+      ]
     };
+
+    if (offerItems.length > 0) { masterSchema["@graph"][0]["hasOfferCatalog"] = { "@type": "OfferCatalog", "name": "Verified AI Marketing Solutions", "itemListElement": offerItems }; }
+    if (faqItems.length > 0) { masterSchema["@graph"].push({ "@type": "FAQPage", "mainEntity": faqItems }); }
+
     await db.collection("public_seo").doc("master_schema").set({ compiled_json_ld: JSON.stringify(masterSchema), last_updated: admin.firestore.FieldValue.serverTimestamp() });
+
     return null;
-  } catch (error) { return null; }
+  } catch (error) {
+    console.error("Critical Error compiling Entity Schema:", error);
+    return null;
+  }
 });
 
 
@@ -382,16 +435,26 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         const from = message.from;
         const G_KEY = process.env.GEMINI_API_KEY;
         
-        // INTERCEPTOR LOGIC FOR DOCUMENT REQUESTS
+        // --------------------------------------------------------------------
+        // DOCUMENT ROUTING INTERCEPTOR
+        // --------------------------------------------------------------------
         const lowerCaseMsg = userText.toLowerCase();
-        const requestingGuide = lowerCaseMsg.includes("guide") || lowerCaseMsg.includes("pdf") || lowerCaseMsg.includes("brochure") || lowerCaseMsg.includes("pricing");
+        let docType = "";
+        let docName = "";
 
-        if (requestingGuide) {
-            console.log(`[SECURE VAULT] Generating token for ${from}`);
+        if (lowerCaseMsg.includes("gbp") || lowerCaseMsg.includes("zero click") || lowerCaseMsg.includes("ai overview")) {
+            docType = "gbp";
+            docName = "AI & GBP Zero Clicks Revolutions Guide";
+        } else if (lowerCaseMsg.includes("pricing") || lowerCaseMsg.includes("service guide") || lowerCaseMsg.includes("brochure") || lowerCaseMsg.includes("pdf") || lowerCaseMsg.includes("guide")) {
+            docType = "services";
+            docName = "Smart Marketing Service & Pricing Guide";
+        }
+
+        if (docType !== "") {
+            console.log(`[SECURE VAULT] Generating token for ${from} - Doc: ${docType}`);
             
             const secureToken = generateViewerToken();
-            const isAskingForGBP = /gbp|google business|zero click/i.test(lowerCaseMsg);
-            const docParam = isAskingForGBP ? "&doc=gbp" : "";
+            const docParam = docType === "gbp" ? "&doc=gbp" : "";
             const viewerUrl = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
             
             const expiresAt = new Date();
@@ -399,9 +462,10 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             
             await db.collection("secure_access_sessions").doc(secureToken).set({
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                expiresAt: expiresAt,
+                expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
                 claimedBy: null,
-                phoneNode: from
+                phoneNode: from,
+                document: docType
             });
 
             const interactivePayload = {
@@ -411,8 +475,8 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                 type: "interactive",
                 interactive: {
                     type: "cta_url",
-                    header: { type: "text", text: "HHD Smart Marketing Guide" },
-                    body: { text: "Your secure access to our Service & Pricing Guide is ready. Tap below to authenticate and view. This link self-destructs in 24 hours." },
+                    header: { type: "text", text: docName },
+                    body: { text: "Your secure access is ready. Tap below to authenticate and view. This link self-destructs in 24 hours." },
                     footer: { text: "happyhunterdigital.com — Zero-Trust Vault" },
                     action: {
                         name: "cta_url",
@@ -437,6 +501,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         let botResponse = "System updating. Please contact our strategist: https://wa.me/27601016673";
         let matchedData: any = null;
 
+        // FETCH CONVERSATION MEMORY
         const sessionRef = db.collection('whatsapp_sessions').doc(from);
         const sessionDoc = await sessionRef.get();
         let chatHistory = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
@@ -465,6 +530,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         if (matchedData) {
           const data = matchedData;
 
+          // Push to Prospects Database for Dashboard
           if (data.category === "price" || data.category === "service") {
             await db.collection("prospects").doc(from).set({
               phone: from, interest: data.category, last_inquiry: userText,
@@ -495,6 +561,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                 image: { link: data.media_url, caption: botResponse }
               }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
               
+              // Save memory even if media sent
               chatHistory.push({ role: "user", text: userText });
               chatHistory.push({ role: "model", text: botResponse });
               if (chatHistory.length > 10) chatHistory = chatHistory.slice(chatHistory.length - 10);
@@ -505,29 +572,34 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             } catch (mediaError) { console.error("Media Send Error:", mediaError); }
           }
         } else if (G_KEY) {
-
+          // ==========================================================
+          // GENERATIVE AI CONVERSATION (Memory Enabled)
+          // ==========================================================
           const WA_SYSTEM_PROMPT = `You are Smart Marketing AI, the intelligent WhatsApp assistant for Happy Hunter Digital. 
 
 YOUR KNOWLEDGE BASE & IDENTITY:
 - Founder & Head Strategist: Thabo Motsumi. Direct Link: https://wa.me/27601016673
 - Mission: We stop businesses from being "Ghosts" to AI. We turn them into digital powerhouses using Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO).
 
-YOUR CATALOG (THE MENU):
-1. Entity Architecture (Agentic Websites). Starting from R4,500.
-2. Entity Governance (AEO Retainers). Starting from R5,500 for 3 months.
-3. Agentic Social Media Ads. Starting from R3,500 for 3 months.
-4. Intelligent WhatsApp Bots. Starting from R2,000 build + R3,000 setup.
+YOUR CATALOG (THE MENU - DO NOT SHOW PRICES UNLESS ASKED):
+1. Entity Architecture (Agentic Websites).
+2. Entity Governance (AEO Retainers).
+3. Agentic Social Media Ads.
+4. Intelligent WhatsApp Bots.
 5. Standalone Smart Services (Google Setup, Audits, etc.)
 
 RULES:
-1. SMART Q&A: Answer questions intelligently.
-2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
-3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting.`;
+1. GREETINGS: If the user says "Hi" or asks what we do, reply with a welcoming message and a clean, numbered list of the 5 catalog items WITHOUT PRICES. Ask them to "Reply with a number to learn more."
+2. SMART Q&A: Answer questions intelligently based on the Knowledge Base.
+3. PRICING: ONLY reveal prices if specifically asked. When revealing a price, ALWAYS use the exact phrase "starting from" followed by the amount.
+4. FORMATTING: Do NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting.`;
 
+          // Format previous memory for Gemini API
           const formattedHistory = chatHistory.map((msg: any) => ({
             role: msg.role,
             parts: [{ text: msg.text }]
           }));
+          // Append new user message
           formattedHistory.push({ role: "user", parts: [{ text: userText }] });
 
           try {
@@ -549,14 +621,17 @@ RULES:
           }
         }
 
+        // SAVE MEMORY TO FIRESTORE
         chatHistory.push({ role: "user", text: userText });
         chatHistory.push({ role: "model", text: botResponse });
         
+        // Keep conversation context to the last 10 messages (5 turns) to save tokens & prevent payload errors
         if (chatHistory.length > 10) {
             chatHistory = chatHistory.slice(chatHistory.length - 10);
         }
         await sessionRef.set({ history: chatHistory, last_updated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 
+        // TRANSMIT TO WHATSAPP
         try {
           await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
             messaging_product: "whatsapp", to: from, text: { body: botResponse }
@@ -573,36 +648,78 @@ RULES:
   return;
 });
 
+
+// ============================================================================
+// 6. DAILY REVENUE REPORT
+// ============================================================================
 export const dailyRevenueReport = onSchedule("every day 08:00", async (event) => {
   const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
-  if (snapshot.size > 0) {
-    const reportText = `📊 DAILY REVENUE REPORT 📊\n\nTotal New Leads: ${snapshot.size}`;
+
+  let leadCount = 0;
+  let serviceInterest = 0;
+  let priceInterest = 0;
+
+  snapshot.forEach(doc => {
+    leadCount++;
+    const data = doc.data();
+    if (data.interest === 'service') serviceInterest++;
+    if (data.interest === 'price') priceInterest++;
+  });
+
+  if (leadCount > 0) {
+    const reportText = `📊 DAILY REVENUE REPORT 📊\n\nTotal New Leads: ${leadCount}\nService Inquiries: ${serviceInterest}\nPricing Inquiries: ${priceInterest}\n\nLogin to Grid CMS to triage.`;
+
     try {
       const token = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN;
-      if(token) {
-        await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
-          messaging_product: "whatsapp", to: "27601016673", text: { body: reportText }
+      const phoneId = process.env.PHONE_NUMBER_ID;
+
+      if(token && phoneId) {
+        await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
+          messaging_product: "whatsapp",
+          to: ADMIN_NUMBER,
+          text: { body: reportText }
         }, { headers: { 'Authorization': `Bearer ${token}` } });
       }
-    } catch (err) { console.error("Report Failed", err); }
+    } catch (err) {
+      console.error("Daily Report Failed", err);
+    }
   }
 });
 
+// ============================================================================
+// 7. TRUTH TABLE VECTORIZER (GEMINI EMBEDDING 2 PREVIEW)
+// ============================================================================
 export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
     const doc = event.data?.after.data();
     if (!doc || !doc.content) return;
+
+    // Prevent infinite loops if we are just updating the vector
+    if (event.data?.before.data()?.content === doc.content && doc.embedding_vector) return;
+
     const G_KEY = process.env.GEMINI_API_KEY;
     if (!G_KEY) return;
+
     try {
         const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: `models/${EMBEDDING_MODEL}`, content: { parts: [{ text: doc.content }] } })
+            body: JSON.stringify({
+                model: `models/${EMBEDDING_MODEL}`,
+                content: { parts: [{ text: doc.content }] } 
+            })
         });
+
         const data = await aiRes.json() as any;
-        if (data.embedding?.values) {
-            await event.data?.after.ref.update({ embedding_vector: admin.firestore.FieldValue.vector(data.embedding.values) });
+        const vectorValues = data.embedding?.values;
+
+        if (vectorValues) {
+            await event.data?.after.ref.update({
+                embedding_vector: admin.firestore.FieldValue.vector(vectorValues)
+            });
+            console.log(`Successfully vectorized claim: ${event.params.docId}`);
         }
-    } catch (error) { console.error("Vectorization Failed:", error); }
+    } catch (error) {
+        console.error("Vectorization Failed:", error);
+    }
 });
