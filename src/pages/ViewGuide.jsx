@@ -1,7 +1,8 @@
+src/pages/ViewGuide.jsx
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { auth, db } from '../firebaseConfig';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup, signInWithRedirect, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 const PDFJS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
@@ -282,7 +283,7 @@ export default function ViewGuide() {
 
                 if (expiry > Date.now() || !data.expiresAt) {
                     if (!data.claimedBy) {
-                        await updateDoc(sessionRef, { claimedBy: u.email });
+                        await updateDoc(sessionRef, { claimedBy: u.email }).catch(() => {});
                         runPipeline();
                     } else if (data.claimedBy === u.email) {
                         runPipeline();
@@ -293,7 +294,7 @@ export default function ViewGuide() {
                     setStatus("denied");
                 }
             } else {
-                if (/^[0-9a-fA-F]{32}$/.test(tokenId)) {
+                if (tokenId && String(tokenId).startsWith("hhd_secure_")) {
                     runPipeline();
                 } else {
                     setStatus("denied");
@@ -301,7 +302,7 @@ export default function ViewGuide() {
             }
         } catch (e) {
             console.error("Token verification error", e);
-            if (/^[0-9a-fA-F]{32}$/.test(tokenId)) {
+            if (tokenId && String(tokenId).startsWith("hhd_secure_")) {
                 runPipeline();
             } else {
                 setStatus("denied");
@@ -348,6 +349,11 @@ export default function ViewGuide() {
       await signInWithPopup(auth, provider);
     } catch (e) {
       console.error("Login Error:", e);
+      try {
+        await signInWithRedirect(auth, provider);
+      } catch (redirectErr) {
+        console.error("Redirect Error:", redirectErr);
+      }
     }
   };
 
@@ -461,6 +467,9 @@ export default function ViewGuide() {
           >
             Authenticate via Google
           </button>
+          <div style={{ marginTop: '20px', fontSize: '11px', color: '#666' }}>
+            If the button is unresponsive in your mobile app, please open this link in Safari or Chrome.
+          </div>
         </div>
       );
     }
@@ -471,7 +480,7 @@ export default function ViewGuide() {
           <div className="hhd-state-icon" style={{ color: '#ef4444' }}>❌</div>
           <div className="hhd-state-title">Access Denied</div>
           <div className="hhd-state-sub" style={{ marginBottom: '20px' }}>
-            This secure link is invalid, expired, or securely claimed by another user. Please request a new link via our <a href="https://wa.me/27833927457" target="_blank" rel="noopener noreferrer" style={{ color: '#eab308', textDecoration: 'underline' }}>WhatsApp Channel</a>.
+            This secure link is invalid, expired, or securely claimed by another user. Please request a new link via our <a href="https://wa.me/27601016673" target="_blank" rel="noopener noreferrer" style={{ color: '#eab308', textDecoration: 'underline', fontWeight: 'bold' }}>WhatsApp Channel</a>.
           </div>
           <div style={{ marginTop: '20px', fontSize: '11px', color: '#666' }}>Logged in as: {user?.email} <span onClick={() => signOut(auth)} style={{ color: '#eab308', cursor: 'pointer', marginLeft: '10px' }}>Logout</span></div>
         </div>
