@@ -1,3 +1,4 @@
+functions/src/index.ts
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
@@ -204,16 +205,16 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  const tokenId = crypto.randomBytes(16).toString('hex');
+  const secureToken = generateViewerToken();
+  const lowerCaseMsg = message.toLowerCase();
+  const isAskingForGBP = lowerCaseMsg.includes("gbp") || lowerCaseMsg.includes("google business profile presentation") || lowerCaseMsg.includes("iws presentation") || lowerCaseMsg.includes("iws slides") || lowerCaseMsg.includes("zero click") || lowerCaseMsg.includes("ai overview");
+  const docParam = isAskingForGBP ? "&doc=gbp" : "";
+  const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
   
-  await db.collection("secure_access_sessions").doc(tokenId).set({
+  await db.collection("secure_access_sessions").doc(secureToken).set({
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
   });
-
-  const isAskingForGBP = /(gbp|gmp|google business|zero click|ai overview|presentation)/i.test(message);
-  const docParam = isAskingForGBP ? "&doc=gbp" : "";
-  const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${tokenId}${docParam}`;
 
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital.
  YOUR KNOWLEDGE BASE:
@@ -239,12 +240,6 @@ export const hunterChat = onCall({
         generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
       })
     });
-
-    if (!aiRes.ok) {
-      const errorText = await aiRes.text();
-      console.error(`Gemini Chat API Error (${AI_MODEL}):`, errorText);
-      return { reply: "My neural link is currently overloaded. Please email HQ." };
-    }
 
     const data = await aiRes.json() as any;
     if (data.candidates && data.candidates[0].content.parts[0].text) return { reply: data.candidates[0].content.parts[0].text.trim() };
@@ -390,19 +385,17 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         const G_KEY = process.env.GEMINI_API_KEY;
         
         // --------------------------------------------------------------------
-        // DOCUMENT ROUTING INTERCEPTOR
+        // DOCUMENT ROUTING INTERCEPTOR 
         // --------------------------------------------------------------------
         const lowerCaseMsg = userText.toLowerCase();
         let docType = "";
         let docName = "";
 
-        // Evaluate specific document requests first (GBP / Educational)
-        if (/(gbp|gmp|google business|zero click|ai overview|presentation)/i.test(lowerCaseMsg)) {
+        if (lowerCaseMsg.includes("gbp") || lowerCaseMsg.includes("google business profile presentation") || lowerCaseMsg.includes("iws presentation") || lowerCaseMsg.includes("iws slides") || lowerCaseMsg.includes("zero click") || lowerCaseMsg.includes("ai overview")) {
             docType = "gbp";
             docName = "AI & GBP Zero Clicks Revolutions Guide";
         } 
-        // Then evaluate general client document requests (Services / Pricing)
-        else if (/(pricing|service|brochure|pdf|guide|document)/i.test(lowerCaseMsg)) {
+        else if (lowerCaseMsg.includes("pricing") || lowerCaseMsg.includes("service guide") || lowerCaseMsg.includes("brochure") || lowerCaseMsg.includes("pdf") || lowerCaseMsg.includes("guide") || lowerCaseMsg.includes("document")) {
             docType = "services";
             docName = "Smart Marketing Service & Pricing Guide";
         }
@@ -458,7 +451,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         let botResponse = "System updating. Please contact our strategist: https://wa.me/27601016673";
         let matchedData: any = null;
 
-        // FETCH CONVERSATION MEMORY
         const sessionRef = db.collection('whatsapp_sessions').doc(from);
         const sessionDoc = await sessionRef.get();
         let chatHistory = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
@@ -487,7 +479,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         if (matchedData) {
           const data = matchedData;
 
-          // Push to Prospects Database for Dashboard
           if (data.category === "price" || data.category === "service") {
             await db.collection("prospects").doc(from).set({
               phone: from, interest: data.category, last_inquiry: userText,
@@ -518,7 +509,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
                 image: { link: data.media_url, caption: botResponse }
               }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
               
-              // Save memory even if media sent
               chatHistory.push({ role: "user", text: userText });
               chatHistory.push({ role: "model", text: botResponse });
               if (chatHistory.length > 10) chatHistory = chatHistory.slice(chatHistory.length - 10);
@@ -529,48 +519,43 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             } catch (mediaError) { console.error("Media Send Error:", mediaError); }
           }
         } else if (G_KEY) {
-          // ==========================================================
-          // GENERATIVE AI CONVERSATION (Memory Enabled)
-          // ==========================================================
-          const tokenId = crypto.randomBytes(16).toString('hex');
+
+          const secureToken = generateViewerToken();
           
-          await db.collection("secure_access_sessions").doc(tokenId).set({
+          await db.collection("secure_access_sessions").doc(secureToken).set({
             phone: from,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
           });
 
-          const isAskingForGBP = /(gbp|gmp|google business|zero click|ai overview|presentation)/i.test(userText);
+          const isAskingForGBP = /(gbp|google business|zero click|ai overview|presentation)/i.test(lowerCaseMsg);
           const docParam = isAskingForGBP ? "&doc=gbp" : "";
-          const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${tokenId}${docParam}`;
+          const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
 
           const WA_SYSTEM_PROMPT = `You are Smart Marketing AI, the intelligent WhatsApp assistant for Happy Hunter Digital. 
 
 YOUR KNOWLEDGE BASE & IDENTITY:
 - Founder & Head Strategist: Thabo Motsumi. Direct Link: https://wa.me/27601016673
 - Mission: We stop businesses from being "Ghosts" to AI. We turn them into digital powerhouses using Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO).
-- AEO Concept: Customers now ask AI (ChatGPT, Gemini) for answers. AEO formats a business footprint so AI models cite them as the definitive answer.
-- NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revolutions". This guide explains how businesses are losing visibility to Google's AI Overviews and how to fix it.
 
-YOUR CATALOG (THE MENU):
-1. Entity Architecture (Agentic Websites). Starting from R4,500.
-2. Entity Governance (AEO Retainers). Starting from R5,500 for 3 months.
-3. Agentic Social Media Ads. Starting from R3,500 for 3 months.
-4. Intelligent WhatsApp Bots. Starting from R2,000 build + R3,000 setup.
+YOUR CATALOG (THE MENU - DO NOT SHOW PRICES UNLESS ASKED):
+1. Entity Architecture (Agentic Websites).
+2. Entity Governance (AEO Retainers).
+3. Agentic Social Media Ads.
+4. Intelligent WhatsApp Bots.
 5. Standalone Smart Services (Google Setup, Audits, etc.)
 
 RULES:
-1. SMART Q&A: Answer questions intelligently.
-2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
-3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
-4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: ${secureLink}. If they ask for the Google Business Profile guide specifically, ensure the link ends with doc=gbp.`;
+1. GREETINGS: If the user says "Hi" or asks what we do, reply with a welcoming message and a clean, numbered list of the 5 catalog items WITHOUT PRICES. Ask them to "Reply with a number to learn more."
+2. SMART Q&A: Answer questions intelligently.
+3. PRICING: ONLY reveal prices if specifically asked. When revealing a price, ALWAYS use the exact phrase "starting from" followed by the amount.
+4. FORMATTING: Do NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
+5. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a>. If they ask for the Google Business Profile guide specifically, ensure the link ends with doc=gbp.`;
 
-          // Format previous memory for Gemini API
           const formattedHistory = chatHistory.map((msg: any) => ({
             role: msg.role,
             parts: [{ text: msg.text }]
           }));
-          // Append new user message
           formattedHistory.push({ role: "user", parts: [{ text: userText }] });
 
           try {
@@ -592,17 +577,14 @@ RULES:
           }
         }
 
-        // SAVE MEMORY TO FIRESTORE
         chatHistory.push({ role: "user", text: userText });
         chatHistory.push({ role: "model", text: botResponse });
         
-        // Keep conversation context to the last 10 messages (5 turns) to save tokens & prevent payload errors
         if (chatHistory.length > 10) {
             chatHistory = chatHistory.slice(chatHistory.length - 10);
         }
         await sessionRef.set({ history: chatHistory, last_updated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 
-        // TRANSMIT TO WHATSAPP
         try {
           await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
             messaging_product: "whatsapp", to: from, text: { body: botResponse }
@@ -619,78 +601,36 @@ RULES:
   return;
 });
 
-
-// ============================================================================
-// 6. DAILY REVENUE REPORT
-// ============================================================================
 export const dailyRevenueReport = onSchedule("every day 08:00", async (event) => {
   const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
-
-  let leadCount = 0;
-  let serviceInterest = 0;
-  let priceInterest = 0;
-
-  snapshot.forEach(doc => {
-    leadCount++;
-    const data = doc.data();
-    if (data.interest === 'service') serviceInterest++;
-    if (data.interest === 'price') priceInterest++;
-  });
-
-  if (leadCount > 0) {
-    const reportText = `📊 DAILY REVENUE REPORT 📊\n\nTotal New Leads: ${leadCount}\nService Inquiries: ${serviceInterest}\nPricing Inquiries: ${priceInterest}\n\nLogin to Grid CMS to triage.`;
-
+  if (snapshot.size > 0) {
+    const reportText = `📊 DAILY REVENUE REPORT 📊\n\nTotal New Leads: ${snapshot.size}`;
     try {
       const token = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN;
-      const phoneId = process.env.PHONE_NUMBER_ID;
-
-      if(token && phoneId) {
-        await axios.post(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
-          messaging_product: "whatsapp",
-          to: ADMIN_NUMBER,
-          text: { body: reportText }
+      if(token) {
+        await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
+          messaging_product: "whatsapp", to: "27601016673", text: { body: reportText }
         }, { headers: { 'Authorization': `Bearer ${token}` } });
       }
-    } catch (err) {
-      console.error("Daily Report Failed", err);
-    }
+    } catch (err) { console.error("Report Failed", err); }
   }
 });
 
-// ============================================================================
-// 7. TRUTH TABLE VECTORIZER (GEMINI EMBEDDING 2 PREVIEW)
-// ============================================================================
 export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
     const doc = event.data?.after.data();
     if (!doc || !doc.content) return;
-
-    // Prevent infinite loops if we are just updating the vector
-    if (event.data?.before.data()?.content === doc.content && doc.embedding_vector) return;
-
     const G_KEY = process.env.GEMINI_API_KEY;
     if (!G_KEY) return;
-
     try {
         const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model: `models/${EMBEDDING_MODEL}`,
-                content: { parts: [{ text: doc.content }] } 
-            })
+            body: JSON.stringify({ model: `models/${EMBEDDING_MODEL}`, content: { parts: [{ text: doc.content }] } })
         });
-
         const data = await aiRes.json() as any;
-        const vectorValues = data.embedding?.values;
-
-        if (vectorValues) {
-            await event.data?.after.ref.update({
-                embedding_vector: admin.firestore.FieldValue.vector(vectorValues)
-            });
-            console.log(`Successfully vectorized claim: ${event.params.docId}`);
+        if (data.embedding?.values) {
+            await event.data?.after.ref.update({ embedding_vector: admin.firestore.FieldValue.vector(data.embedding.values) });
         }
-    } catch (error) {
-        console.error("Vectorization Failed:", error);
-    }
+    } catch (error) { console.error("Vectorization Failed:", error); }
 });
