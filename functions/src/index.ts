@@ -11,9 +11,25 @@ import * as crypto from "crypto";
 admin.initializeApp();
 const db = getFirestore();
 
+// ============================================================================
+// SYSTEM CONSTANTS & UTILITIES
+// ============================================================================
 const AI_MODEL = "gemini-3.1-flash-lite-preview";
 const EMBEDDING_MODEL = "gemini-embedding-2-preview";
 
+const TOKEN_PREFIX = "hhd_secure_";
+const BASE_URL = "https://happyhunterdigital.com";
+const VIEWER_PATH = "/view/guide";
+
+function generateViewerToken(): string {
+  const timestamp = Date.now().toString(36);
+  const randomPart = crypto.randomBytes(16).toString('hex');
+  return `${TOKEN_PREFIX}${timestamp}_${randomPart}`;
+}
+
+// ============================================================================
+// 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
+// ============================================================================
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
@@ -173,6 +189,10 @@ export const performAudit = onCall({
   }
 });
 
+
+// ============================================================================
+// 2. STRATEGIC CHAT (Web Chatbot)
+// ============================================================================
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
@@ -184,18 +204,15 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  const ts = Date.now().toString(36);
-  const rand = crypto.randomBytes(8).toString('hex');
-  const tokenId = `hhd_secure_${ts}_${rand}`;
+  const secureToken = generateViewerToken();
+  const isAskingForGBP = /gbp|google business|zero click/i.test(message);
+  const docParam = isAskingForGBP ? "&doc=gbp" : "";
+  const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
   
-  await db.collection("secure_access_sessions").doc(tokenId).set({
+  await db.collection("secure_access_sessions").doc(secureToken).set({
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
   });
-
-  const isAskingForGBP = /gbp|google business|zero click/i.test(message);
-  const docParam = isAskingForGBP ? "&doc=gbp" : "";
-  const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}${docParam}`;
 
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital.
  YOUR KNOWLEDGE BASE:
@@ -230,6 +247,10 @@ export const hunterChat = onCall({
   }
 });
 
+
+// ==========================================
+// 3. LANDING PAGE SERVICE REQUEST (AUTO EMAIL)
+// ==========================================
 export const submitServiceRequest = onCall({
   region: "us-central1",
   cors: true,
@@ -298,6 +319,10 @@ export const submitServiceRequest = onCall({
   }
 });
 
+
+// ==========================================
+// 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
+// ==========================================
 export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
   try {
     const brandSnapshot = await db.collection("brand_identity").limit(1).get();
@@ -312,11 +337,22 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
   } catch (error) { return null; }
 });
 
+
+// ============================================================================
+// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (WITH CONVERSATION MEMORY)
+// ============================================================================
+const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || '';
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
+const ADMIN_NUMBER = "27601016673";
+
 export const whatsappWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET') {
-    if (req.query['hub.verify_token'] === (process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026')) {
+    if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
       res.status(200).send(req.query['hub.challenge']);
-    } else { res.status(403).send('Verification failed'); }
+    } else {
+      res.status(403).send('Verification failed');
+    }
     return;
   }
 
@@ -335,9 +371,9 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
 
           try {
-            await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
+            await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
               messaging_product: "whatsapp", to: newUser, text: { body: welcomeMessage }
-            }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
+            }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
           } catch (err) { console.error("Onboarding Error", err); }
         }
 
@@ -345,6 +381,58 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         const userText = message.text.body; 
         const from = message.from;
         const G_KEY = process.env.GEMINI_API_KEY;
+        
+        // INTERCEPTOR LOGIC FOR DOCUMENT REQUESTS
+        const lowerCaseMsg = userText.toLowerCase();
+        const requestingGuide = lowerCaseMsg.includes("guide") || lowerCaseMsg.includes("pdf") || lowerCaseMsg.includes("brochure") || lowerCaseMsg.includes("pricing");
+
+        if (requestingGuide) {
+            console.log(`[SECURE VAULT] Generating token for ${from}`);
+            
+            const secureToken = generateViewerToken();
+            const isAskingForGBP = /gbp|google business|zero click/i.test(lowerCaseMsg);
+            const docParam = isAskingForGBP ? "&doc=gbp" : "";
+            const viewerUrl = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
+            
+            const expiresAt = new Date();
+            expiresAt.setHours(expiresAt.getHours() + 24);
+            
+            await db.collection("secure_access_sessions").doc(secureToken).set({
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                expiresAt: expiresAt,
+                claimedBy: null,
+                phoneNode: from
+            });
+
+            const interactivePayload = {
+                messaging_product: "whatsapp",
+                recipient_type: "individual",
+                to: from,
+                type: "interactive",
+                interactive: {
+                    type: "cta_url",
+                    header: { type: "text", text: "HHD Smart Marketing Guide" },
+                    body: { text: "Your secure access to our Service & Pricing Guide is ready. Tap below to authenticate and view. This link self-destructs in 24 hours." },
+                    footer: { text: "happyhunterdigital.com — Zero-Trust Vault" },
+                    action: {
+                        name: "cta_url",
+                        parameters: { display_text: "View Secure Document", url: viewerUrl }
+                    }
+                }
+            };
+
+            try {
+                await axios.post(
+                    `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
+                    interactivePayload,
+                    { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
+                );
+            } catch (e) {
+                console.error("CTA Send Error", e);
+            }
+            res.status(200).send('EVENT_RECEIVED');
+            return;
+        }
         
         let botResponse = "System updating. Please contact our strategist: https://wa.me/27601016673";
         let matchedData: any = null;
@@ -386,9 +474,9 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             const alertText = `🚨 NEW HIGH-VALUE LEAD 🚨\n\nFROM: ${from}\nINTERESTED IN: ${data.category}\nMESSAGE: "${userText}"\n\nCheck Firestore now to follow up!`;
 
             try {
-              await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
-                messaging_product: "whatsapp", to: "27601016673", text: { body: alertText }
-              }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
+              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+                messaging_product: "whatsapp", to: ADMIN_NUMBER, text: { body: alertText }
+              }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
             } catch (err) { console.error("Admin Alert Failed", err); }
           }
 
@@ -402,10 +490,10 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 
           if (data.media_url) {
             try {
-              await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
+              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                 messaging_product: "whatsapp", to: from, type: "image",
                 image: { link: data.media_url, caption: botResponse }
-              }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
+              }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
               
               chatHistory.push({ role: "user", text: userText });
               chatHistory.push({ role: "model", text: botResponse });
@@ -418,27 +506,11 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           }
         } else if (G_KEY) {
 
-          const ts = Date.now().toString(36);
-          const rand = crypto.randomBytes(8).toString('hex');
-          const tokenId = `hhd_secure_${ts}_${rand}`;
-          
-          await db.collection("secure_access_sessions").doc(tokenId).set({
-            phone: from,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
-          });
-
-          const isAskingForGBP = /gbp|google business|zero click/i.test(userText);
-          const docParam = isAskingForGBP ? "&doc=gbp" : "";
-          const secureLink = `https://happyhunterdigital.com/view/guide?id=${tokenId}${docParam}`;
-
           const WA_SYSTEM_PROMPT = `You are Smart Marketing AI, the intelligent WhatsApp assistant for Happy Hunter Digital. 
 
 YOUR KNOWLEDGE BASE & IDENTITY:
 - Founder & Head Strategist: Thabo Motsumi. Direct Link: https://wa.me/27601016673
 - Mission: We stop businesses from being "Ghosts" to AI. We turn them into digital powerhouses using Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO).
-- AEO Concept: Customers now ask AI (ChatGPT, Gemini) for answers. AEO formats a business footprint so AI models cite them as the definitive answer.
-- NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revolutions". This guide explains how businesses are losing visibility to Google's AI Overviews and how to fix it.
 
 YOUR CATALOG (THE MENU):
 1. Entity Architecture (Agentic Websites). Starting from R4,500.
@@ -450,8 +522,7 @@ YOUR CATALOG (THE MENU):
 RULES:
 1. SMART Q&A: Answer questions intelligently.
 2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
-3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
-4. DOCUMENT ACCESS: If the user asks for a guide, document, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a>. If they ask for the Google Business Profile guide specifically, ensure the link ends with doc=gbp.`;
+3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting.`;
 
           const formattedHistory = chatHistory.map((msg: any) => ({
             role: msg.role,
@@ -487,9 +558,9 @@ RULES:
         await sessionRef.set({ history: chatHistory, last_updated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 
         try {
-          await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
+          await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
             messaging_product: "whatsapp", to: from, text: { body: botResponse }
-          }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
+          }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
         } catch (sendError: any) {
           console.error("WhatsApp Transmission Error:", sendError.response?.data || sendError.message);
         }
