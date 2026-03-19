@@ -232,7 +232,7 @@ export const hunterChat = onCall({
  1. SMART Q&A: Answer questions intelligently.
  2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
  3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
- 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a>.`;
+ 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}" target="_blank"><strong>[Tap Here to View Document]</strong></a>.`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -532,7 +532,7 @@ RULES:
 2. SMART Q&A: Answer questions intelligently.
 3. PRICING: ONLY reveal prices if specifically asked. When revealing a price, ALWAYS use the exact phrase "starting from" followed by the amount.
 4. FORMATTING: Do NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
-5. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a>.`;
+5. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}"><strong>[Tap Here to View Document]</strong></a>.`;
 
           const formattedHistory = chatHistory.map((msg: any) => ({
             role: msg.role,
