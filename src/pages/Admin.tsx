@@ -1,39 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, getDocs, limit } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
-import { Terminal, Search, X, Crosshair, Calendar, Mail, Globe, Activity, Database, ShieldAlert, Lock, ArrowRight, MessageCircle, BarChart3, Smartphone } from 'lucide-react';
+import { db, auth } from '../firebaseConfig';
+import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
+import { Terminal, Search, X, Crosshair, Calendar, Mail, Globe, Activity, Database, ShieldAlert, Lock, ArrowRight, MessageCircle, BarChart3, Smartphone, ShieldCheck, LogOut } from 'lucide-react';
 
 export const Admin: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [passcode, setPasscode] = useState('');
+  const [user, setUser] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // View Toggle State
   const [activeView, setActiveView] = useState<'whatsapp' | 'web'>('whatsapp');
-
-  // Data States
   const [leads, setLeads] = useState<any[]>([]);
   const [prospects, setProspects] = useState<any[]>([]);
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [metrics, setMetrics] = useState({ total: 0, service: 0, price: 0 });
 
-  // The Frontend Security Gate (Passcode: HUNTER2026)
-  const handleLogin = (e: React.FormEvent) => {
+  const ADMIN_EMAILS = [
+    'motsumitl@happyhunterdigital.com',
+    'happyhunterdigital@gmail.com',
+    'motsumitl@gmail.com',
+    'Motsumitl@gmail.com'
+  ];
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+      if (currentUser && ADMIN_EMAILS.includes(currentUser.email || '')) {
+        fetchAllData();
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcode === 'HUNTER2026') {
-      setIsAuthenticated(true);
-      fetchAllData();
-    } else {
-      alert("ACCESS DENIED: Invalid Command Override.");
-      setPasscode('');
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Authentication Failed:", error);
     }
   };
 
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch Web Leads (Audits & Forms)
       const qLeads = query(collection(db, 'leads'), orderBy('timestamp', 'desc'));
       const leadsSnapshot = await getDocs(qLeads);
       const leadsData = leadsSnapshot.docs.map(doc => ({
@@ -43,7 +57,6 @@ export const Admin: React.FC = () => {
       }));
       setLeads(leadsData);
 
-      // 2. Fetch WhatsApp Prospects
       const qProspects = query(collection(db, 'prospects'), orderBy('timestamp', 'desc'), limit(100));
       const prospectsSnapshot = await getDocs(qProspects);
       
@@ -66,7 +79,6 @@ export const Admin: React.FC = () => {
       
       setProspects(prospectsData);
       setMetrics({ total: prospectsData.length, service: sCount, price: pCount });
-
     } catch (error) {
       console.error("Error fetching intelligence data:", error);
     } finally {
@@ -74,7 +86,6 @@ export const Admin: React.FC = () => {
     }
   };
 
-  // Search Filters
   const filteredLeads = leads.filter(lead => 
     (lead.businessName || lead.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
     (lead.email || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -85,62 +96,64 @@ export const Admin: React.FC = () => {
     (prospect.last_inquiry || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!isAuthenticated) {
+  if (authLoading) {
+    return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-yellow-500 font-black uppercase tracking-widest text-sm animate-pulse">Securing Connection...</div>;
+  }
+
+  if (!user) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center px-4 selection:bg-yellow-500 selection:text-black">
-        <form onSubmit={handleLogin} className="max-w-md w-full bg-black border border-gray-800 p-10 rounded-3xl shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
-          <ShieldAlert className="text-yellow-500 mb-6 mx-auto" size={48} />
-          <h2 className="text-2xl font-black text-white text-center uppercase tracking-widest mb-2">HQ Command Center</h2>
-          <p className="text-gray-500 text-xs text-center uppercase tracking-widest mb-8">Restricted Intelligence Hub</p>
-          
-          <div className="relative mb-6">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-            <input 
-              type="password" 
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
-              placeholder="Enter Master Passcode" 
-              className="w-full bg-[#0a0a0a] border border-gray-800 text-white px-12 py-4 rounded-xl focus:border-yellow-500 outline-none tracking-widest font-mono"
-            />
-          </div>
-          <button type="submit" className="w-full bg-yellow-500 text-black font-black uppercase tracking-widest py-4 rounded-xl hover:bg-white transition-colors flex justify-center items-center gap-2">
-            Initiate Override <ArrowRight size={18} />
-          </button>
-        </form>
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+        <ShieldCheck size={64} className="text-yellow-500 mb-6" />
+        <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">HQ Command Center</h1>
+        <p className="text-gray-400 mb-10 font-medium">Restricted Access. Entity Managers Only.</p>
+        <button onClick={handleLogin} className="bg-yellow-500 text-black px-10 py-4 rounded-xl font-black uppercase tracking-widest text-sm hover:bg-white transition-all shadow-[0_0_40px_rgba(234,179,8,0.2)]">
+          Authenticate via Google
+        </button>
+      </div>
+    );
+  }
+
+  if (!ADMIN_EMAILS.includes(user.email || '')) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-4xl font-black text-red-500 uppercase tracking-tighter mb-4">Access Denied</h1>
+        <p className="text-gray-400 mb-8 font-medium">The digital passport associated with <strong className="text-white">{user.email}</strong> is not authorized for HQ access.</p>
+        <button onClick={() => signOut(auth)} className="text-yellow-500 text-xs font-bold uppercase tracking-widest border border-yellow-500/50 px-6 py-3 rounded-lg hover:bg-yellow-500/10 transition-colors">
+          Disconnect Session
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white p-6 md:p-10 font-sans selection:bg-yellow-500 selection:text-black">
+    <div className="min-h-screen bg-[#050505] text-white p-6 md:p-10 font-sans selection:bg-yellow-500 selection:text-black animate-fade-in">
       
-      {/* HEADER & CONTROLS */}
       <div className="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter flex items-center gap-3">
             <Terminal className="text-yellow-500" size={32} /> HQ Command
           </h1>
-          <p className="text-gray-500 text-sm mt-1 uppercase tracking-widest font-bold">Live Intelligence & Lead Telemetry</p>
+          <p className="text-gray-500 text-sm mt-1 uppercase tracking-widest font-bold flex items-center gap-2">
+            Live Telemetry <span className="text-yellow-500 hidden md:inline">•</span> <span className="text-gray-400">{user.email}</span>
+          </p>
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          {/* View Toggles */}
           <div className="flex bg-gray-900 border border-gray-800 rounded-xl overflow-hidden p-1">
-            <button 
+            <button
               onClick={() => setActiveView('whatsapp')}
               className={`flex items-center gap-2 px-6 py-2 text-sm font-bold uppercase tracking-widest rounded-lg transition-colors ${activeView === 'whatsapp' ? 'bg-yellow-500 text-black' : 'text-gray-500 hover:text-white'}`}
             >
               <MessageCircle size={16} /> WhatsApp AI
             </button>
-            <button 
+            <button
               onClick={() => setActiveView('web')}
               className={`flex items-center gap-2 px-6 py-2 text-sm font-bold uppercase tracking-widest rounded-lg transition-colors ${activeView === 'web' ? 'bg-yellow-500 text-black' : 'text-gray-500 hover:text-white'}`}
             >
               <Globe size={16} /> Web Leads
             </button>
           </div>
-
+          
           <div className="relative w-full sm:w-64">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
             <input 
@@ -151,14 +164,15 @@ export const Admin: React.FC = () => {
               className="w-full bg-black border border-gray-800 text-white pl-12 pr-4 py-3 rounded-xl focus:border-yellow-500 outline-none text-sm"
             />
           </div>
+
+          <button onClick={() => signOut(auth)} className="flex items-center justify-center gap-2 bg-[#0a0a0a] border border-gray-800 text-gray-400 hover:text-red-500 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-colors">
+            <LogOut size={16} /> Logout
+          </button>
         </div>
       </div>
 
-      {/* WHATSAPP PROSPECTS VIEW */}
       {activeView === 'whatsapp' && (
         <div className="max-w-7xl mx-auto animate-fade-in">
-          
-          {/* KPI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-black border border-gray-800 p-6 rounded-3xl relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500"></div>
@@ -177,7 +191,6 @@ export const Admin: React.FC = () => {
             </div>
           </div>
 
-          {/* WhatsApp Table */}
           <div className="bg-black border border-gray-800 rounded-3xl overflow-hidden shadow-2xl relative">
             <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
             <div className="overflow-x-auto">
@@ -233,11 +246,9 @@ export const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* WEB LEADS VIEW */}
       {activeView === 'web' && (
         <div className="max-w-7xl mx-auto bg-black border border-gray-800 rounded-3xl overflow-hidden shadow-2xl relative animate-fade-in">
           <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
-          
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -299,13 +310,11 @@ export const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* DETAIL MODAL FOR WEB LEADS */}
       {selectedLead && activeView === 'web' && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm animate-fade-in">
           <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] relative">
             <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
             
-            {/* Modal Header */}
             <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-black">
               <div className="flex items-center gap-3">
                 <Database className="text-yellow-500" size={20} />
@@ -315,8 +324,7 @@ export const Admin: React.FC = () => {
                 <X size={24} />
               </button>
             </div>
-
-            {/* Modal Body */}
+            
             <div className="p-8 space-y-6">
               <div className="grid grid-cols-2 gap-6">
                 <div>
@@ -328,7 +336,7 @@ export const Admin: React.FC = () => {
                   <p className="font-bold text-lg text-yellow-500">{selectedLead.email}</p>
                 </div>
               </div>
-
+              
               <div className="grid grid-cols-2 gap-6 bg-black border border-gray-800 p-5 rounded-xl">
                 <div>
                   <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 flex items-center gap-2"><Calendar size={12}/> Timestamp</p>
@@ -354,14 +362,14 @@ export const Admin: React.FC = () => {
                 <div className="bg-yellow-500/10 border border-yellow-500/30 p-6 rounded-xl">
                   <p className="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-2">Requested Architecture</p>
                   <p className="font-bold text-lg text-white">{selectedLead.service}</p>
+                  
                   {selectedLead.website && (
                     <p className="mt-2 text-sm text-gray-400">Target URL: <a href={selectedLead.website.startsWith('http') ? selectedLead.website : `https://${selectedLead.website}`} target="_blank" rel="noreferrer" className="text-yellow-500 underline">{selectedLead.website}</a></p>
                   )}
                 </div>
               )}
             </div>
-
-            {/* Modal Footer */}
+            
             <div className="p-6 bg-black border-t border-gray-800 flex gap-4">
               <a href={`mailto:${selectedLead.email}`} className="flex-1 bg-yellow-500 text-black text-center font-black uppercase tracking-widest py-3 rounded-xl hover:bg-white transition-colors text-xs">
                 Draft Email Protocol
@@ -373,7 +381,6 @@ export const Admin: React.FC = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
