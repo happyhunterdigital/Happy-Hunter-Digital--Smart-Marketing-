@@ -172,7 +172,7 @@ export const Chatbot: React.FC = () => {
       </button>
 
       {open && (
-        <div className="fixed bottom-24 right-6 z-[150] w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
+        <div className="fixed bottom-24 right-6 z-[150] w-[calc(100vw-3rem)] sm:w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
           <div className="bg-black p-4 border-b border-gray-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Bot className="text-yellow-500" size={20} />
@@ -186,18 +186,19 @@ export const Chatbot: React.FC = () => {
 
           <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-black/50 scrollbar-hide">
             {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={i} className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {/* SURGICAL FIX: 
-                   1. 'break-words' on the container.
-                   2. '[&_a]:break-all' forces any generated hyperlink to slice aggressively 
-                      across lines instead of pushing the mobile div wider.
+                   1. 'w-full' on the flex parent ensures boundary alignment.
+                   2. 'min-w-0' is the flexbox override that forces long strings to obey max-w-[85%].
+                   3. overflowWrap: 'anywhere' is injected via inline style to brutally slice unbreakable URLs.
                 */}
                 <div 
-                  className={`max-w-[85%] p-3 rounded-xl text-sm leading-relaxed space-y-2 break-words overflow-hidden [&_a]:underline [&_a]:font-bold [&_a]:break-all transition-all ${
+                  className={`max-w-[85%] min-w-0 p-3 rounded-xl text-sm leading-relaxed space-y-2 [&_a]:underline [&_a]:font-bold transition-all ${
                     m.role === 'user' 
                       ? 'bg-yellow-500 text-black font-medium [&_a]:text-black' 
                       : 'bg-gray-800 text-gray-200 [&_a]:text-yellow-500 hover:[&_a]:text-white'
                   }`}
+                  style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
                   dangerouslySetInnerHTML={{ __html: m.text }}
                 />
               </div>
@@ -241,13 +242,13 @@ export const Chatbot: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={isRecording ? "Listening..." : "Enter command..."}
-              className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none disabled:opacity-50"
+              className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none disabled:opacity-50 min-w-0"
               disabled={loading || isRecording}
             />
             <button 
               type="submit" 
               disabled={loading || !input.trim() || isRecording}
-              className="text-yellow-500 hover:text-white p-3 disabled:opacity-50 transition-colors"
+              className="text-yellow-500 hover:text-white p-3 disabled:opacity-50 transition-colors shrink-0"
             >
               <Send size={18} />
             </button>
