@@ -4,8 +4,6 @@ import { auth, db } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
-const SECURE_PDF_PATH = "/assets/hhd-service-guide.pdf";
-
 const PDFJS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
 const PDFJS_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
@@ -224,6 +222,7 @@ function loadPdfJs() {
 export default function ViewGuide() {
   const [searchParams] = useSearchParams();
   const tokenId = searchParams.get("id");
+  const docType = searchParams.get("doc");
 
   const [status, setStatus] = useState("verifying"); 
   const [user, setUser] = useState(null);
@@ -240,11 +239,21 @@ export default function ViewGuide() {
 
   const ADMIN_EMAILS = ['motsumitl@happyhunterdigital.com', 'happyhunterdigital@gmail.com'];
 
+  const getSecurePath = () => {
+    if (docType === "gbp") return "/assets/hhd-gbp-zero-clicks.pdf";
+    return "/assets/hhd-service-guide.pdf";
+  };
+
+  const getDocTitle = () => {
+    if (docType === "gbp") return "AI & GBP Zero Clicks Revolutions";
+    return "Smart Marketing Service Guide";
+  };
+
   useEffect(() => {
     const styleTag = document.createElement("style");
     styleTag.innerHTML = styles;
     document.head.appendChild(styleTag);
-    document.title = "HHD Service Guide — Secure View";
+    document.title = `HHD Secure - ${getDocTitle()}`;
 
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
@@ -306,7 +315,7 @@ export default function ViewGuide() {
       isMounted.current = false;
       unsubscribe();
     };
-  }, [tokenId]);
+  }, [tokenId, docType]);
 
   useEffect(() => {
     const blockContextMenu = (e) => e.preventDefault();
@@ -387,7 +396,7 @@ export default function ViewGuide() {
     setStatus("loading");
     try {
       const pdfjsLib = await loadPdfJs();
-      const response = await fetch(SECURE_PDF_PATH, {
+      const response = await fetch(getSecurePath(), {
         headers: { "X-HHD-Viewer": "1" },
         cache: "no-store",
       });
@@ -431,7 +440,7 @@ export default function ViewGuide() {
       setErrorMessage(err.message || "An unexpected error occurred.");
       setStatus("error");
     }
-  }, [renderPage]);
+  }, [renderPage, docType]);
 
   const renderStatusScreen = () => {
     if (status === "verifying") {
