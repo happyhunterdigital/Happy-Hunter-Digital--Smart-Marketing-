@@ -220,8 +220,6 @@ export const hunterChat = onCall({
     expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
   });
 
-  // SURGICAL FIX: We remove the AI's capability to mess up the HTML format.
-  // We force it to output a placeholder word, which we replace cleanly below.
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite.
  YOUR KNOWLEDGE BASE:
  - Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
@@ -234,7 +232,7 @@ export const hunterChat = onCall({
  1. SMART Q&A: Answer questions intelligently.
  2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
  3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <br>) for ALL formatting. 
- 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, YOU MUST include this exact placeholder word in your response: [SECURE_DOC_LINK]`;
+ 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, DO NOT generate a real URL. You MUST include this EXACT placeholder word in your response instead: [SECURE_DOC_LINK]`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -251,10 +249,9 @@ export const hunterChat = onCall({
     if (data.candidates && data.candidates[0].content.parts[0].text) {
         let finalReply = data.candidates[0].content.parts[0].text.trim();
         
-        // We do the replacement here, guaranteeing valid HTML and applying inline CSS to absolutely prevent breaks
         finalReply = finalReply.replace(
             /\[SECURE_DOC_LINK\]/g, 
-            `<br/><br/><a href="${secureLink}" target="_blank" style="color: #eab308; text-decoration: underline; word-break: break-all;"><strong>[Tap Here to View Document]</strong></a>`
+            `<br/><br/><a href="${secureLink}" target="_blank" style="color: #eab308; text-decoration: underline;"><strong>[Tap Here to View Document]</strong></a>`
         );
         
         return { reply: finalReply };
@@ -526,9 +523,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           const docParam = isAskingForGBP ? "&doc=gbp" : "";
           const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
 
-          // SURGICAL FIX: WhatsApp DOES NOT support HTML!
-          // Providing raw HTML like <a> causes WA clients to render literal code characters. 
-          // We must feed WhatsApp the raw string URL so it natively turns it into a link.
           const WA_SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite. 
 
 YOUR KNOWLEDGE BASE & IDENTITY:
