@@ -14,12 +14,17 @@ const db = getFirestore();
 // ============================================================================
 // SYSTEM CONSTANTS & UTILITIES
 // ============================================================================
-const AI_MODEL = "gemini-3.1-flash-lite-preview";
+const AI_MODEL = "gemini-3.1-flash-lite";
 const EMBEDDING_MODEL = "gemini-embedding-2-preview";
 
 const TOKEN_PREFIX = "hhd_secure_";
 const BASE_URL = "https://happyhunterdigital.com";
 const VIEWER_PATH = "/view/guide";
+
+const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || '';
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
+const ADMIN_NUMBER = "27601016673";
 
 function generateViewerToken(): string {
   const timestamp = Date.now().toString(36);
@@ -336,7 +341,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 
 export const whatsappWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET') {
-    if (req.query['hub.verify_token'] === (process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026')) {
+    if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
       res.status(200).send(req.query['hub.challenge']);
     } else { res.status(403).send('Verification failed'); }
     return;
@@ -359,7 +364,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           try {
             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
               messaging_product: "whatsapp", to: newUser, text: { body: welcomeMessage }
-            }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
+            }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
           } catch (err) { console.error("Onboarding Error", err); }
         }
 
@@ -416,9 +421,9 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 
             try {
                 await axios.post(
-                    `https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`,
+                    `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
                     interactivePayload,
-                    { headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` } }
+                    { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
                 );
             } catch (e) { console.error("CTA Send Error", e); }
             res.status(200).send('EVENT_RECEIVED');
@@ -465,9 +470,9 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             const alertText = `🚨 NEW HIGH-VALUE LEAD 🚨\n\nFROM: ${from}\nINTERESTED IN: ${data.category}\nMESSAGE: "${userText}"\n\nCheck Firestore now to follow up!`;
 
             try {
-              await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
-                messaging_product: "whatsapp", to: "27601016673", text: { body: alertText }
-              }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
+              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+                messaging_product: "whatsapp", to: ADMIN_NUMBER, text: { body: alertText }
+              }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
             } catch (err) { console.error("Admin Alert Failed", err); }
           }
 
@@ -481,10 +486,10 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 
           if (data.media_url) {
             try {
-              await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
+              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                 messaging_product: "whatsapp", to: from, type: "image",
                 image: { link: data.media_url, caption: botResponse }
-              }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
+              }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
               
               chatHistory.push({ role: "user", text: userText });
               chatHistory.push({ role: "model", text: botResponse });
@@ -580,11 +585,10 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async (event) =>
   if (snapshot.size > 0) {
     const reportText = `📊 DAILY REVENUE REPORT 📊\n\nTotal New Leads: ${snapshot.size}`;
     try {
-      const token = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN;
-      if(token) {
-        await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
-          messaging_product: "whatsapp", to: "27601016673", text: { body: reportText }
-        }, { headers: { 'Authorization': `Bearer ${token}` } });
+      if(WHATSAPP_TOKEN && PHONE_NUMBER_ID) {
+        await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+          messaging_product: "whatsapp", to: ADMIN_NUMBER, text: { body: reportText }
+        }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
       }
     } catch (err) { console.error("Report Failed", err); }
   }
