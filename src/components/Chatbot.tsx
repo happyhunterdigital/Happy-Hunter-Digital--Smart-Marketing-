@@ -187,11 +187,13 @@ export const Chatbot: React.FC = () => {
           <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-black/50 scrollbar-hide">
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                {/* SURGICAL FIX: Added break-words to prevent raw URLs from blowing out the mobile layout.
-                   Added dynamic link styling [&_a] to make the links look perfect and clickable natively.
+                {/* SURGICAL FIX: 
+                   1. 'break-words' on the container.
+                   2. '[&_a]:break-all' forces any generated hyperlink to slice aggressively 
+                      across lines instead of pushing the mobile div wider.
                 */}
                 <div 
-                  className={`max-w-[80%] p-3 rounded-xl text-sm leading-relaxed space-y-2 break-words overflow-hidden [&_a]:underline [&_a]:font-bold transition-all ${
+                  className={`max-w-[85%] p-3 rounded-xl text-sm leading-relaxed space-y-2 break-words overflow-hidden [&_a]:underline [&_a]:font-bold [&_a]:break-all transition-all ${
                     m.role === 'user' 
                       ? 'bg-yellow-500 text-black font-medium [&_a]:text-black' 
                       : 'bg-gray-800 text-gray-200 [&_a]:text-yellow-500 hover:[&_a]:text-white'
