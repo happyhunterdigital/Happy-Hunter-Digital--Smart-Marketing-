@@ -1,4 +1,3 @@
-functions/src/index.ts
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
 import { onDocumentWritten } from "firebase-functions/v2/firestore";
@@ -177,7 +176,7 @@ export const performAudit = onCall({
  <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
  <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
  <p style="color: #d1d5db; margin-bottom: 25px;">Stop losing revenue to invisible algorithms. Let's map out your custom Recovery Protocol.</p>
- <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
+ <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 12px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
  </div>
  </div>`;
 
@@ -216,7 +215,7 @@ export const hunterChat = onCall({
     expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
   });
 
-  const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital.
+  const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite.
  YOUR KNOWLEDGE BASE:
  - Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
  - Mission: We stop South African SMEs from being "Ghosts" to AI algorithms.
@@ -304,7 +303,7 @@ export const submitServiceRequest = onCall({
  <div style="background-color: #050505; color: #fff; padding: 30px; text-align: center; border-radius: 12px; margin-top: 40px;">
  <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
  <p style="color: #d1d5db; margin-bottom: 25px;">Our system has already started a preliminary scan of your digital entity. I'd love to walk you through the results.</p>
- <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
+ <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 12px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
  </div>
 
  <p style="margin-top: 40px; font-size: 16px;">Stay Smart,<br/><br/><strong>Thabo Leslie Motsumi</strong><br/><span style="color: #666; font-size: 14px;">Happy Hunter -Smart Marketing-</span></p>
@@ -321,10 +320,6 @@ export const submitServiceRequest = onCall({
   }
 });
 
-
-// ==========================================
-// 4. ENTITY ORCHESTRATION ENGINE (JSON-LD)
-// ==========================================
 export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
   try {
     const brandSnapshot = await db.collection("brand_identity").limit(1).get();
@@ -339,22 +334,11 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
   } catch (error) { return null; }
 });
 
-
-// ============================================================================
-// 5. WHATSAPP "SMART MARKETING AI" WEBHOOK (WITH CONVERSATION MEMORY)
-// ============================================================================
-const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || '';
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
-const ADMIN_NUMBER = "27601016673";
-
 export const whatsappWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET') {
-    if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
+    if (req.query['hub.verify_token'] === (process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026')) {
       res.status(200).send(req.query['hub.challenge']);
-    } else {
-      res.status(403).send('Verification failed');
-    }
+    } else { res.status(403).send('Verification failed'); }
     return;
   }
 
@@ -375,7 +359,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           try {
             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
               messaging_product: "whatsapp", to: newUser, text: { body: welcomeMessage }
-            }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+            }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
           } catch (err) { console.error("Onboarding Error", err); }
         }
 
@@ -384,9 +368,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         const from = message.from;
         const G_KEY = process.env.GEMINI_API_KEY;
         
-        // --------------------------------------------------------------------
-        // DOCUMENT ROUTING INTERCEPTOR 
-        // --------------------------------------------------------------------
         const lowerCaseMsg = userText.toLowerCase();
         let docType = "";
         let docName = "";
@@ -401,8 +382,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         }
 
         if (docType !== "") {
-            console.log(`[SECURE VAULT] Generating token for ${from} - Doc: ${docType}`);
-            
             const secureToken = generateViewerToken();
             const docParam = docType === "gbp" ? "&doc=gbp" : "";
             const viewerUrl = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
@@ -437,13 +416,11 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 
             try {
                 await axios.post(
-                    `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
+                    `https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`,
                     interactivePayload,
-                    { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
+                    { headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` } }
                 );
-            } catch (e) {
-                console.error("CTA Send Error", e);
-            }
+            } catch (e) { console.error("CTA Send Error", e); }
             res.status(200).send('EVENT_RECEIVED');
             return;
         }
@@ -488,9 +465,9 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             const alertText = `🚨 NEW HIGH-VALUE LEAD 🚨\n\nFROM: ${from}\nINTERESTED IN: ${data.category}\nMESSAGE: "${userText}"\n\nCheck Firestore now to follow up!`;
 
             try {
-              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                messaging_product: "whatsapp", to: ADMIN_NUMBER, text: { body: alertText }
-              }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+              await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
+                messaging_product: "whatsapp", to: "27601016673", text: { body: alertText }
+              }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
             } catch (err) { console.error("Admin Alert Failed", err); }
           }
 
@@ -504,10 +481,10 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 
           if (data.media_url) {
             try {
-              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+              await axios.post(`https://graph.facebook.com/v21.0/${process.env.PHONE_NUMBER_ID}/messages`, {
                 messaging_product: "whatsapp", to: from, type: "image",
                 image: { link: data.media_url, caption: botResponse }
-              }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+              }, { headers: { 'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}` } });
               
               chatHistory.push({ role: "user", text: userText });
               chatHistory.push({ role: "model", text: botResponse });
@@ -528,15 +505,15 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
           });
 
-          const isAskingForGBP = /(gbp|google business|zero click|ai overview|presentation)/i.test(lowerCaseMsg);
+          const isAskingForGBP = lowerCaseMsg.includes("gbp") || lowerCaseMsg.includes("google business profile presentation") || lowerCaseMsg.includes("iws presentation") || lowerCaseMsg.includes("iws slides") || lowerCaseMsg.includes("zero click") || lowerCaseMsg.includes("ai overview");
           const docParam = isAskingForGBP ? "&doc=gbp" : "";
           const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
 
-          const WA_SYSTEM_PROMPT = `You are Smart Marketing AI, the intelligent WhatsApp assistant for Happy Hunter Digital. 
+          const WA_SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite. 
 
 YOUR KNOWLEDGE BASE & IDENTITY:
 - Founder & Head Strategist: Thabo Motsumi. Direct Link: https://wa.me/27601016673
-- Mission: We stop businesses from being "Ghosts" to AI. We turn them into digital powerhouses using Generative Engine Optimization (GEO) and Answer Engine Optimization (AEO).
+- Mission: We stop South African SMEs from being "Ghosts" to AI algorithms.
 
 YOUR CATALOG (THE MENU - DO NOT SHOW PRICES UNLESS ASKED):
 1. Entity Architecture (Agentic Websites).
@@ -546,11 +523,11 @@ YOUR CATALOG (THE MENU - DO NOT SHOW PRICES UNLESS ASKED):
 5. Standalone Smart Services (Google Setup, Audits, etc.)
 
 RULES:
-1. GREETINGS: If the user says "Hi" or asks what we do, reply with a welcoming message and a clean, numbered list of the 5 catalog items WITHOUT PRICES. Ask them to "Reply with a number to learn more."
+1. GREETINGS: If the user says "Hi" or asks what you do, reply with a welcoming message and a clean, numbered list of the 5 catalog items WITHOUT PRICES. Ask them to "Reply with a number to learn more."
 2. SMART Q&A: Answer questions intelligently.
 3. PRICING: ONLY reveal prices if specifically asked. When revealing a price, ALWAYS use the exact phrase "starting from" followed by the amount.
 4. FORMATTING: Do NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
-5. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a>. If they ask for the Google Business Profile guide specifically, ensure the link ends with doc=gbp.`;
+5. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a>.`;
 
           const formattedHistory = chatHistory.map((msg: any) => ({
             role: msg.role,
@@ -572,9 +549,7 @@ RULES:
             if (data.candidates && data.candidates[0].content.parts[0].text) {
               botResponse = data.candidates[0].content.parts[0].text.trim();
             }
-          } catch (fallbackErr) {
-            console.error("Generative Fallback Error:", fallbackErr);
-          }
+          } catch (fallbackErr) { console.error("Generative Fallback Error:", fallbackErr); }
         }
 
         chatHistory.push({ role: "user", text: userText });
@@ -589,9 +564,7 @@ RULES:
           await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
             messaging_product: "whatsapp", to: from, text: { body: botResponse }
           }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
-        } catch (sendError: any) {
-          console.error("WhatsApp Transmission Error:", sendError.response?.data || sendError.message);
-        }
+        } catch (sendError: any) { console.error("WhatsApp Transmission Error:", sendError.response?.data || sendError.message); }
       }
       res.status(200).send('EVENT_RECEIVED');
       return;
