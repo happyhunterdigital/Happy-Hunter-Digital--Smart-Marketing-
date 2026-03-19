@@ -1,4 +1,3 @@
-src/pages/ViewGuide.jsx
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { auth, db } from '../firebaseConfig';
@@ -444,7 +443,9 @@ export default function ViewGuide() {
   }, [renderPage, docType]);
 
   const renderStatusScreen = () => {
-    if (authLoading) return <div className="hhd-state-screen"><div className="hhd-state-title">Checking Handshake...</div></div>;
+    if (status === "verifying") {
+        return <div className="hhd-state-screen"><div className="hhd-state-title">Verifying Secure Handshake...</div></div>;
+    }
 
     if (status === "auth") {
       return (
