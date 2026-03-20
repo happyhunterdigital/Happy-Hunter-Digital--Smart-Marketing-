@@ -25,12 +25,4 @@ module.exports = {
     "react-hooks/exhaustive-deps": "off",
     "no-undef": "off",
   },
-  ignorePatterns: [
-    "dist/**",
-    "functions/**",
-    "node_modules/**",
-    "postcss.config.js",
-    "tailwind.config.js",
-    "vite.config.ts",
-  ],
 };
