@@ -10,7 +10,6 @@ import { EarnedMedia } from './pages/EarnedMedia';
 import { FAQ } from './pages/FAQ';
 import { Admin } from './pages/Admin';
 import { Blog } from './pages/Blog';
-import { BlogAnchor } from './pages/BlogAnchor';
 import { ArticleMegaphone } from './pages/ArticleMegaphone';
 import { ArticleRevenue } from './pages/ArticleRevenue';
 import { ArticleSynthesis } from './pages/ArticleSynthesis';
@@ -23,8 +22,8 @@ import { SummitPoster } from './pages/SummitPoster';
 import { MegaphoneLanding } from './pages/MegaphoneLanding';
 import { LiveSummit } from './pages/LiveSummit';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
-import ViewGuide from './pages/ViewGuide'; // SECURE VIEWER IMPORT
-import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Globe, Lock } from 'lucide-react';
+import ViewGuide from './pages/ViewGuide';
+import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Lock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebaseConfig';
@@ -44,7 +43,6 @@ const AIEntityEngine = () => {
   return jsonLd ? <script type="application/ld+json">{jsonLd}</script> : null;
 };
 
-// SURGICAL EXTRACTION: Layout Wrappers
 const StandardLayout = ({ menuOpen, setMenuOpen }: { menuOpen: boolean, setMenuOpen: (val: boolean) => void }) => {
   return (
     <>
@@ -185,13 +183,11 @@ function App() {
       <CookieConsent />
 
       <Routes>
-        {/* SECURE/ISOLATED VIEWS (No Global Nav/Footer/Chatbot) */}
         <Route element={<IsolatedLayout />}>
           <Route path="/the-ai-megaphone" element={<MegaphoneLanding />} />
           <Route path="/view/guide" element={<ViewGuide />} />
         </Route>
 
-        {/* STANDARD VIEWS (Uses StandardLayout) */}
         <Route element={<StandardLayout menuOpen={menuOpen} setMenuOpen={setMenuOpen} />}>
           <Route path="/" element={<Home />} />
           <Route path="/audit" element={<AiAudit />} />
