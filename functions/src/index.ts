@@ -6,7 +6,7 @@ import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import * as crypto from "crypto";
+
 
 admin.initializeApp();
 const db = getFirestore();
@@ -16,10 +16,7 @@ const db = getFirestore();
 // ============================================================================
 const AI_MODEL = "gemini-3.1-flash-lite-preview";
 const EMBEDDING_MODEL = "gemini-embedding-preview-0409";
-
-const TOKEN_PREFIX = "hhd_secure_";
 const BASE_URL = "https://happyhunterdigital.com";
-const VIEWER_PATH = "/view/guide";
 
 const SAFETY_SETTINGS = [
   { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
@@ -33,13 +30,6 @@ const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOK
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
 const ADMIN_NUMBER = "27601016673";
-
-function generateViewerToken(): string {
-  const timestamp = Date.now().toString(36);
-  const randomPart = crypto.randomBytes(16).toString('hex');
-  return `${TOKEN_PREFIX}${timestamp}_${randomPart}`;
-}
-
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
 // ============================================================================
@@ -226,7 +216,6 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  const secureToken = generateViewerToken();
   const lowerCaseMsg = message.toLowerCase();
   const isAskingForGBP = lowerCaseMsg.includes("gbp")
     || lowerCaseMsg.includes("google business profile presentation")
@@ -234,13 +223,8 @@ export const hunterChat = onCall({
     || lowerCaseMsg.includes("iws slides")
     || lowerCaseMsg.includes("zero click")
     || lowerCaseMsg.includes("ai overview");
-  const docParam = isAskingForGBP ? "&doc=gbp" : "";
-  const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
-
-  await db.collection("secure_access_sessions").doc(secureToken).set({
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
-  });
+  const fileName = isAskingForGBP ? "hhd-gbp-zero-clicks.pdf" : "hhd-service-guide.pdf";
+  const secureLink = `${BASE_URL}/assets/${fileName}`;
 
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite.
 
@@ -577,21 +561,11 @@ RULES:
           } catch (sendError: any) { console.error("WhatsApp Text Error:", sendError.message); }
         }
 
-        // Step 2: Send native WhatsApp CTA button with secure document link
+        // Step 2: Send native WhatsApp CTA button with absolute document link
         if (sendGbpDoc || sendServicesDoc) {
-          const docType = sendGbpDoc ? "gbp" : "services";
           const docName = sendGbpDoc ? "AI & GBP Zero Clicks Revolutions Guide" : "Smart Marketing Service Guide";
-          const secureToken = generateViewerToken();
-          const docParam = sendGbpDoc ? "&doc=gbp" : "";
-          const viewerUrl = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
-
-          await db.collection("secure_access_sessions").doc(secureToken).set({
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000),
-            claimedBy: null,
-            phoneNode: from,
-            document: docType
-          });
+          const fileName = sendGbpDoc ? "hhd-gbp-zero-clicks.pdf" : "hhd-service-guide.pdf";
+          const viewerUrl = `${BASE_URL}/assets/${fileName}`;
 
           const interactivePayload = {
             messaging_product: "whatsapp",
@@ -601,11 +575,11 @@ RULES:
             interactive: {
               type: "cta_url",
               header: { type: "text", text: docName },
-              body: { text: "Your secure access is ready. Tap below to authenticate and view. This link self-destructs in 24 hours." },
-              footer: { text: "happyhunterdigital.com — Zero-Trust Vault" },
+              body: { text: "Your PDF is ready. Tap below to view or download it directly." },
+              footer: { text: "happyhunterdigital.com" },
               action: {
                 name: "cta_url",
-                parameters: { display_text: "View Secure Document", url: viewerUrl }
+                parameters: { display_text: "View Document", url: viewerUrl }
               }
             }
           };
