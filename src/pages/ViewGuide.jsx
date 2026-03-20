@@ -1,4 +1,3 @@
-src/pages/ViewGuide.jsx
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { auth, db } from '../firebaseConfig';
