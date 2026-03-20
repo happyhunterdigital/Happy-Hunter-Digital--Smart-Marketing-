@@ -15,11 +15,18 @@ const db = getFirestore();
 // SYSTEM CONSTANTS & UTILITIES
 // ============================================================================
 const AI_MODEL = "gemini-3.1-flash-lite";
-const EMBEDDING_MODEL = "gemini-embedding-2-preview";
+const EMBEDDING_MODEL = "gemini-embedding-preview-0409";
 
 const TOKEN_PREFIX = "hhd_secure_";
 const BASE_URL = "https://happyhunterdigital.com";
 const VIEWER_PATH = "/view/guide";
+
+const SAFETY_SETTINGS = [
+  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+  { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+  { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+  { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+];
 
 // EXPLICIT GLOBAL DECLARATIONS - DO NOT REMOVE
 const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || '';
@@ -150,6 +157,7 @@ export const performAudit = onCall({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
+        safetySettings: SAFETY_SETTINGS,
         generationConfig: { responseMimeType: "application/json" }
       })
     });
@@ -256,6 +264,7 @@ RULES:
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [{ role: "user", parts: [{ text: message }] }],
+        safetySettings: SAFETY_SETTINGS,
         generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
       })
     });
@@ -526,6 +535,7 @@ RULES:
               body: JSON.stringify({
                 systemInstruction: { parts: [{ text: WA_SYSTEM_PROMPT }] },
                 contents: formattedHistory,
+                safetySettings: SAFETY_SETTINGS,
                 generationConfig: { temperature: 0.2, maxOutputTokens: 300 }
               })
             });
