@@ -84,6 +84,12 @@ service cloud.firestore {
       allow write: if false;
     }
     
+    // WHATSAPP SESSION MEMORY (Chat history for the WhatsApp AI bot)
+    // Written server-side by Cloud Functions (admin bypass). Block direct client access.
+    match /whatsapp_sessions/{document} {
+      allow read, write: if false;
+    }
+
     // GLOBAL LOCKDOWN: 
     match /{document=**} {
       allow read, write: if false;
