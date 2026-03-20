@@ -43,7 +43,7 @@ export const performAudit = onCall({
   timeoutSeconds: 300
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
-  
+
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
 
@@ -61,7 +61,7 @@ export const performAudit = onCall({
         },
         body: JSON.stringify({ textQuery: query })
       });
-      return res.json() as any;
+      return res.json() as Promise<any>;
     };
 
     let pData = await getPlaces(`${businessName} in ${location}`);
@@ -72,8 +72,8 @@ export const performAudit = onCall({
       biz = pData?.places?.[0] || null;
     }
 
-    const websiteUrl = biz?.websiteUri || null;
-    
+    const websiteUrl: string | null = biz?.websiteUri || null;
+
     let detectedSchemas: string[] = [];
     let hasSchema = false;
 
@@ -89,7 +89,6 @@ export const performAudit = onCall({
           hasSchema = true;
           try {
             const jsonData = JSON.parse($(element).html() || "{}");
-
             const extractType = (obj: any) => {
               if (!obj) return;
               if (Array.isArray(obj)) {
@@ -99,20 +98,20 @@ export const performAudit = onCall({
                 if (obj['@graph']) extractType(obj['@graph']);
               }
             };
-
             extractType(jsonData);
-          } catch(e) { }
+          } catch (e) { /* silent */ }
         });
 
         detectedSchemas = [...new Set(detectedSchemas)];
         if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
-
       } catch (err) {
         console.log("Web scrape failed or timed out for:", websiteUrl);
       }
     }
 
-    const schemaString = detectedSchemas.length > 0 ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
+    const schemaString = detectedSchemas.length > 0
+      ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}`
+      : "No Schema Markup detected.";
     const bizNameStr = biz?.displayName?.text || "NONE FOUND";
 
     let context = "";
@@ -125,7 +124,7 @@ export const performAudit = onCall({
  - Maps Rating: ${biz.rating || 0} (${biz.userRatingCount || 0} reviews)
  - Website Linked in Maps: ${websiteUrl || 'NONE LINKED'}
  - ${schemaString}
- `;
+      `;
     }
 
     const RUBRIC = `
@@ -137,20 +136,20 @@ export const performAudit = onCall({
  - Ghost Entity OR No Schema: Deduct 30 points.
 
  CRITICAL TRAFFIC HIJACK INSTRUCTION:
- If the "User Searched For" name and the "Google Maps Returned" name are fundamentally different businesses (e.g. "IntegratedWellth" vs "Integrated Health"), you MUST treat this as a TRAFFIC HIJACK.
- If hijacked, set their total score to 0. Do NOT praise the competitor's rating. In your summary, explicitly state that because their digital footprint is weak, Google algorithms are routing their high-intent customers directly to a competitor named "[Google Maps Returned name]". Agitate this pain point.
+ If the "User Searched For" name and the "Google Maps Returned" name are fundamentally different businesses, you MUST treat this as a TRAFFIC HIJACK.
+ If hijacked, set their total score to 0. In your summary, explicitly state that because their digital footprint is weak, Google algorithms are routing their high-intent customers directly to a competitor named "[Google Maps Returned name]". Agitate this pain point.
 
  INSTRUCTIONS FOR 'truths' ARRAY (Must be exactly 3 items):
  Truth 1: State if they are Verified, a Ghost, or if a Traffic Hijack occurred (name the competitor).
  Truth 2: Mention their Website status (If NO website is linked, state it is a critical algorithmic failure).
  Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is completely missing.
- `;
+    `;
 
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
+        contents: [{ parts: [{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
         generationConfig: { responseMimeType: "application/json" }
       })
     });
@@ -163,7 +162,6 @@ export const performAudit = onCall({
 
     const aiData = await aiRes.json() as any;
     const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
-
     const isHijacked = (biz && analysis.score === 0);
 
     const telemetry = {
@@ -173,20 +171,30 @@ export const performAudit = onCall({
       schemasDetected: detectedSchemas
     };
 
-    await db.collection("leads").add({ businessName, email: clientEmail, whatsapp: whatsapp || null, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
+    await db.collection("leads").add({
+      businessName,
+      email: clientEmail,
+      whatsapp: whatsapp || null,
+      score: analysis.score,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
 
     const isGoodScore = analysis.score >= 70;
-    const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
- <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'}; margin-bottom: 20px;">Digital Survival Score: ${analysis.score}/100</h1>
- <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: left;">${analysis.summary}</p>
- <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
- <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
- <p style="color: #d1d5db; margin-bottom: 25px;">Stop losing revenue to invisible algorithms. Let's map out your custom Recovery Protocol.</p>
- <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 12px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
- </div>
- </div>`;
+    const emailHtml = `
+<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
+  <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'}; margin-bottom: 20px;">Digital Survival Score: ${analysis.score}/100</h1>
+  <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: left;">${analysis.summary}</p>
+  <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
+    <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
+    <p style="color: #d1d5db; margin-bottom: 25px;">Stop losing revenue to invisible algorithms. Let's map out your custom Recovery Protocol.</p>
+    <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 12px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
+  </div>
+</div>`;
 
-    await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml } });
+    await db.collection("mail").add({
+      to: [clientEmail],
+      message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml }
+    });
 
     return { success: true, ...analysis, telemetry };
 
@@ -212,35 +220,41 @@ export const hunterChat = onCall({
 
   const secureToken = generateViewerToken();
   const lowerCaseMsg = message.toLowerCase();
-  const isAskingForGBP = lowerCaseMsg.includes("gbp") || lowerCaseMsg.includes("google business profile presentation") || lowerCaseMsg.includes("iws presentation") || lowerCaseMsg.includes("iws slides") || lowerCaseMsg.includes("zero click") || lowerCaseMsg.includes("ai overview");
+  const isAskingForGBP = lowerCaseMsg.includes("gbp")
+    || lowerCaseMsg.includes("google business profile presentation")
+    || lowerCaseMsg.includes("iws presentation")
+    || lowerCaseMsg.includes("iws slides")
+    || lowerCaseMsg.includes("zero click")
+    || lowerCaseMsg.includes("ai overview");
   const docParam = isAskingForGBP ? "&doc=gbp" : "";
   const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
-  
+
   await db.collection("secure_access_sessions").doc(secureToken).set({
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
     expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
   });
 
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite.
- YOUR KNOWLEDGE BASE:
- - Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
- - Mission: We stop South African SMEs from being "Ghosts" to AI algorithms.
- - Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score). 
- 
- NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revolutions". This guide explains how businesses are losing visibility to Google's AI Overviews and how to fix it.
 
- RULES:
- 1. SMART Q&A: Answer questions intelligently.
- 2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
- 3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <br>) for ALL formatting. 
- 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, DO NOT generate a real URL. You MUST include this EXACT placeholder word in your response instead: [SECURE_DOC_LINK]`;
+YOUR KNOWLEDGE BASE:
+- Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
+- Mission: We stop South African SMEs from being "Ghosts" to AI algorithms.
+- Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score).
+
+NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revolutions". This guide explains how businesses are losing visibility to Google's AI Overviews and how to fix it.
+
+RULES:
+1. SMART Q&A: Answer questions intelligently.
+2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
+3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <br>) for ALL formatting.
+4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, DO NOT generate a real URL. You MUST include this EXACT placeholder word in your response instead: [SECURE_DOC_LINK]`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
+        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
         contents: [{ role: "user", parts: [{ text: message }] }],
         generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
       })
@@ -248,14 +262,12 @@ export const hunterChat = onCall({
 
     const data = await aiRes.json() as any;
     if (data.candidates && data.candidates[0].content.parts[0].text) {
-        let finalReply = data.candidates[0].content.parts[0].text.trim();
-        
-        finalReply = finalReply.replace(
-            /\[SECURE_DOC_LINK\]/g, 
-            `<br/><br/><a href="${secureLink}" target="_blank" style="color: #eab308; text-decoration: underline;"><strong>[Tap Here to View Document]</strong></a>`
-        );
-        
-        return { reply: finalReply };
+      let finalReply = data.candidates[0].content.parts[0].text.trim();
+      finalReply = finalReply.replace(
+        /\[SECURE_DOC_LINK\]/g,
+        `<br/><br/><a href="${secureLink}" target="_blank" style="color: #eab308; text-decoration: underline;"><strong>[Tap Here to View Document]</strong></a>`
+      );
+      return { reply: finalReply };
     }
     return { reply: "I received an unreadable signal from the core. Try again." };
   } catch (e) {
@@ -264,9 +276,9 @@ export const hunterChat = onCall({
 });
 
 
-// ==========================================
+// ============================================================================
 // 3. LANDING PAGE SERVICE REQUEST (AUTO EMAIL)
-// ==========================================
+// ============================================================================
 export const submitServiceRequest = onCall({
   region: "us-central1",
   cors: true,
@@ -297,36 +309,39 @@ export const submitServiceRequest = onCall({
 
     const firstName = name.split(' ')[0] || 'there';
     const emailHtml = `
- <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; line-height: 1.6; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
- <p style="font-size: 16px;">Hi ${firstName},</p>
- <p style="font-size: 16px;">Welcome to the hunt for smarter growth.</p>
- <p style="font-size: 16px;">I noticed you were looking into <strong>${service}</strong>. Most businesses come to us because they realize that simply "ranking" on page one isn't enough anymore. In 2026, if you aren't being synthesized into the answers provided by AI assistants, you're effectively invisible.</p>
+<div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; line-height: 1.6; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
+  <p style="font-size: 16px;">Hi ${firstName},</p>
+  <p style="font-size: 16px;">Welcome to the hunt for smarter growth.</p>
+  <p style="font-size: 16px;">I noticed you were looking into <strong>${service}</strong>. Most businesses come to us because they realize that simply "ranking" on page one isn't enough anymore. In 2026, if you aren't being synthesized into the answers provided by AI assistants, you're effectively invisible.</p>
 
- <h3 style="color: #000; margin-top: 30px;">The Problem We Identified:</h3>
- <p style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #eab308; margin-bottom: 20px; font-size: 16px; border-radius: 0 8px 8px 0;">
- Based on your interest, it sounds like you're facing a common challenge:<br/><br/><strong>${dynamicProblem}</strong>
- </p>
+  <h3 style="color: #000; margin-top: 30px;">The Problem We Identified:</h3>
+  <p style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #eab308; margin-bottom: 20px; font-size: 16px; border-radius: 0 8px 8px 0;">
+    Based on your interest, it sounds like you're facing a common challenge:<br/><br/><strong>${dynamicProblem}</strong>
+  </p>
 
- <h3 style="color: #000; margin-top: 30px;">How Happy Hunter Solves This:</h3>
- <p style="font-size: 16px;">We don't just "do marketing." We build a Smart Authority Ecosystem for you. By applying our Digital Entity Management & Optimization (DEMO) framework, we ensure that:</p>
- <ul style="font-size: 16px; margin-bottom: 30px;">
- <li style="margin-bottom: 10px;"><strong>You are Verified:</strong> Your digital passport is flawless.</li>
- <li style="margin-bottom: 10px;"><strong>You are Recommended:</strong> AI engines cite you as the authority.</li>
- <li><strong>You are Automated:</strong> Leads are converted while you sleep.</li>
- </ul>
+  <h3 style="color: #000; margin-top: 30px;">How Happy Hunter Solves This:</h3>
+  <p style="font-size: 16px;">We don't just "do marketing." We build a Smart Authority Ecosystem for you. By applying our Digital Entity Management & Optimization (DEMO) framework, we ensure that:</p>
+  <ul style="font-size: 16px; margin-bottom: 30px;">
+    <li style="margin-bottom: 10px;"><strong>You are Verified:</strong> Your digital passport is flawless.</li>
+    <li style="margin-bottom: 10px;"><strong>You are Recommended:</strong> AI engines cite you as the authority.</li>
+    <li><strong>You are Automated:</strong> Leads are converted while you sleep.</li>
+  </ul>
 
- <div style="background-color: #050505; color: #fff; padding: 30px; text-align: center; border-radius: 12px; margin-top: 40px;">
- <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
- <p style="color: #d1d5db; margin-bottom: 25px;">Our system has already started a preliminary scan of your digital entity. I'd love to walk you through the results.</p>
- <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 12px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
- </div>
+  <div style="background-color: #050505; color: #fff; padding: 30px; text-align: center; border-radius: 12px; margin-top: 40px;">
+    <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
+    <p style="color: #d1d5db; margin-bottom: 25px;">Our system has already started a preliminary scan of your digital entity. I'd love to walk you through the results.</p>
+    <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 12px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
+  </div>
 
- <p style="margin-top: 40px; font-size: 16px;">Stay Smart,<br/><br/><strong>Thabo Leslie Motsumi</strong><br/><span style="color: #666; font-size: 14px;">Happy Hunter -Smart Marketing-</span></p>
- </div>`;
+  <p style="margin-top: 40px; font-size: 16px;">Stay Smart,<br/><br/><strong>Thabo Leslie Motsumi</strong><br/><span style="color: #666; font-size: 14px;">Happy Hunter -Smart Marketing-</span></p>
+</div>`;
 
     await db.collection("mail").add({
       to: [email],
-      message: { subject: `Regarding your interest in ${service} – Let's solve the "Invisibility" problem.`, html: emailHtml }
+      message: {
+        subject: `Regarding your interest in ${service} – Let's solve the "Invisibility" problem.`,
+        html: emailHtml
+      }
     });
 
     return { success: true };
@@ -335,28 +350,41 @@ export const submitServiceRequest = onCall({
   }
 });
 
-export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
+
+// ============================================================================
+// BRAND SCHEMA COMPILER (Firestore Trigger)
+// ============================================================================
+export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async () => {
   try {
     const brandSnapshot = await db.collection("brand_identity").limit(1).get();
     if (brandSnapshot.empty) return null;
     const brandData = brandSnapshot.docs[0].data();
     const masterSchema = {
       "@context": "https://schema.org",
-      "@graph":[{ "@type": brandData.orgType || "LocalBusiness", "name": brandData.legalName || "Happy Hunter Digital" }]
+      "@graph": [{
+        "@type": brandData.orgType || "LocalBusiness",
+        "name": brandData.legalName || "Happy Hunter Digital"
+      }]
     };
-    await db.collection("public_seo").doc("master_schema").set({ compiled_json_ld: JSON.stringify(masterSchema), last_updated: admin.firestore.FieldValue.serverTimestamp() });
+    await db.collection("public_seo").doc("master_schema").set({
+      compiled_json_ld: JSON.stringify(masterSchema),
+      last_updated: admin.firestore.FieldValue.serverTimestamp()
+    });
     return null;
   } catch (error) { return null; }
 });
 
+
 // ============================================================================
-// 4. WHATSAPP WEBHOOK (FIXED FOR NATIVE BUTTONS)
+// 4. WHATSAPP WEBHOOK
 // ============================================================================
 export const whatsappWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET') {
     if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
       res.status(200).send(req.query['hub.challenge']);
-    } else { res.status(403).send('Verification failed'); }
+    } else {
+      res.status(403).send('Verification failed');
+    }
     return;
   }
 
@@ -373,43 +401,45 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 
         if (!onboardingDoc.empty) {
           const welcomeMessage = `Welcome to Happy Hunter Digital.\n\nWe are pleased to have you join our Smart Marketing community. This space is designed to provide you with the latest insights into AEO, SEO, and Agentic Revenue Automation.\n\nTo get started, feel free to ask me about our services or browse our latest case studies. How can we assist your business today?`;
-
           try {
             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-              messaging_product: "whatsapp", to: newUser, text: { body: welcomeMessage }
+              messaging_product: "whatsapp",
+              to: newUser,
+              text: { body: welcomeMessage }
             }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
           } catch (err) { console.error("Onboarding Error", err); }
         }
 
       } else if (message && message.type === 'text') {
-        const userText = message.text.body; 
-        const from = message.from;
+        const userText: string = message.text.body;
+        const from: string = message.from;
         const G_KEY = process.env.GEMINI_API_KEY;
-        
+
         let botResponse = "System updating. Please contact our strategist: https://wa.me/27601016673";
         let matchedData: any = null;
 
         const sessionRef = db.collection('whatsapp_sessions').doc(from);
         const sessionDoc = await sessionRef.get();
-        let chatHistory = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
+        let chatHistory: any[] = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
 
         if (G_KEY && userText) {
           try {
             const embedRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: `models/${EMBEDDING_MODEL}`,
-                    content: { parts: [{ text: userText.toLowerCase() }] }
-                })
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                model: `models/${EMBEDDING_MODEL}`,
+                content: { parts: [{ text: userText.toLowerCase() }] }
+              })
             });
             const embedData = await embedRes.json() as any;
             if (embedData.embedding?.values) {
-                const vectorQuery = await db.collection('verified_claims').findNearest('embedding_vector', admin.firestore.FieldValue.vector(embedData.embedding.values), {
-                    limit: 1,
-                    distanceMeasure: 'COSINE'
-                }).get();
-                if (!vectorQuery.empty) matchedData = vectorQuery.docs[0].data();
+              const vectorQuery = await db.collection('verified_claims').findNearest(
+                'embedding_vector',
+                admin.firestore.FieldValue.vector(embedData.embedding.values),
+                { limit: 1, distanceMeasure: 'COSINE' }
+              ).get();
+              if (!vectorQuery.empty) matchedData = vectorQuery.docs[0].data();
             }
           } catch (e) { console.error("Embedding Error", e); }
         }
@@ -419,46 +449,52 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 
           if (data.category === "price" || data.category === "service") {
             await db.collection("prospects").doc(from).set({
-              phone: from, interest: data.category, last_inquiry: userText,
-              timestamp: admin.firestore.FieldValue.serverTimestamp(), status: "new_lead"
+              phone: from,
+              interest: data.category,
+              last_inquiry: userText,
+              timestamp: admin.firestore.FieldValue.serverTimestamp(),
+              status: "new_lead"
             }, { merge: true });
 
-            const alertText = `🚨 NEW HIGH-VALUE LEAD 🚨\n\nFROM: ${from}\nINTERESTED IN: ${data.category}\nMESSAGE: "${userText}"\n\nCheck Firestore now to follow up!`;
-
+            const alertText = `NEW HIGH-VALUE LEAD\n\nFROM: ${from}\nINTERESTED IN: ${data.category}\nMESSAGE: "${userText}"\n\nCheck Firestore now to follow up!`;
             try {
               await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                messaging_product: "whatsapp", to: ADMIN_NUMBER, text: { body: alertText }
+                messaging_product: "whatsapp",
+                to: ADMIN_NUMBER,
+                text: { body: alertText }
               }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
             } catch (err) { console.error("Admin Alert Failed", err); }
           }
 
           if (data.category === "onboarding") {
-            botResponse = `🚀 WELCOME TO THE SMART MARKETING TRIBE! 🚀\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
+            botResponse = `WELCOME TO THE SMART MARKETING TRIBE!\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
           } else if (data.category === 'blog') {
-            botResponse = `📄 INSIGHT SNIPPET:\n\n${data.snippet}\n\nRead the full article here: ${data.url}`;
+            botResponse = `INSIGHT SNIPPET:\n\n${data.snippet}\n\nRead the full article here: ${data.url}`;
           } else {
-            botResponse = `✅ OFFICIAL INFO:\n\n${data.content || data.verified_answer}`;
+            botResponse = `OFFICIAL INFO:\n\n${data.content || data.verified_answer}`;
           }
 
           if (data.media_url) {
             try {
               await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                messaging_product: "whatsapp", to: from, type: "image",
+                messaging_product: "whatsapp",
+                to: from,
+                type: "image",
                 image: { link: data.media_url, caption: botResponse }
               }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
-              
+
               chatHistory.push({ role: "user", text: userText });
               chatHistory.push({ role: "model", text: botResponse });
               if (chatHistory.length > 10) chatHistory = chatHistory.slice(chatHistory.length - 10);
               await sessionRef.set({ history: chatHistory, last_updated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-              
+
               res.status(200).send('EVENT_RECEIVED');
               return;
             } catch (mediaError) { console.error("Media Send Error:", mediaError); }
           }
-        } else if (G_KEY) {
 
-          const WA_SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite. 
+        } else if (G_KEY) {
+          const WA_SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite.
 
 YOUR KNOWLEDGE BASE & IDENTITY:
 - Founder & Head Strategist: Thabo Motsumi. Direct Link: https://wa.me/27601016673
@@ -474,7 +510,7 @@ YOUR CATALOG:
 RULES:
 1. GREETINGS: If the user says "Hi" or asks what you do, reply with a welcoming message and a clean, numbered list of the 5 catalog items WITHOUT PRICES. Ask them to "Reply with a number to learn more."
 2. PRICING: ONLY reveal prices if specifically asked. ALWAYS use the exact phrase "starting from".
-3. FORMATTING: Do NOT use markdown asterisks. Use basic text formatting only. 
+3. FORMATTING: Do NOT use markdown asterisks. Use basic text formatting only.
 4. DOCUMENT ACCESS: If the user asks for a guide, document, or presentation, DO NOT output a URL. Instead, you MUST include the exact tag [SEND_DOC_GBP] if they want the Google Business Profile guide, or [SEND_DOC_SERVICES] if they want the Service & Pricing guide.`;
 
           const formattedHistory = chatHistory.map((msg: any) => ({
@@ -488,7 +524,7 @@ RULES:
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                systemInstruction: { parts:[{ text: WA_SYSTEM_PROMPT }] },
+                systemInstruction: { parts: [{ text: WA_SYSTEM_PROMPT }] },
                 contents: formattedHistory,
                 generationConfig: { temperature: 0.2, maxOutputTokens: 300 }
               })
@@ -500,117 +536,133 @@ RULES:
           } catch (fallbackErr) { console.error("Generative Fallback Error:", fallbackErr); }
         }
 
-        // =========================================================
-        // WHATSAPP DOCUMENT INTERCEPTOR (THE FIX)
-        // =========================================================
+        // ============================================================
+        // WHATSAPP DOCUMENT INTERCEPTOR
+        // ============================================================
         let sendGbpDoc = false;
         let sendServicesDoc = false;
 
         if (botResponse.includes("[SEND_DOC_GBP]")) {
-            sendGbpDoc = true;
-            botResponse = botResponse.replace("[SEND_DOC_GBP]", "").trim();
+          sendGbpDoc = true;
+          botResponse = botResponse.replace("[SEND_DOC_GBP]", "").trim();
         }
         if (botResponse.includes("[SEND_DOC_SERVICES]")) {
-            sendServicesDoc = true;
-            botResponse = botResponse.replace("[SEND_DOC_SERVICES]", "").trim();
+          sendServicesDoc = true;
+          botResponse = botResponse.replace("[SEND_DOC_SERVICES]", "").trim();
         }
 
         chatHistory.push({ role: "user", text: userText });
         chatHistory.push({ role: "model", text: botResponse || "Document prepared." });
-        
-        if (chatHistory.length > 10) {
-            chatHistory = chatHistory.slice(chatHistory.length - 10);
-        }
+        if (chatHistory.length > 10) chatHistory = chatHistory.slice(chatHistory.length - 10);
         await sessionRef.set({ history: chatHistory, last_updated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 
-        // Step 1: Send the conversational text generated by the AI
+        // Step 1: Send the AI conversational text response
         if (botResponse) {
-            try {
-              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                messaging_product: "whatsapp", to: from, text: { body: botResponse }
-              }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
-            } catch (sendError: any) { console.error("WhatsApp Text Error:", sendError.message); }
+          try {
+            await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+              messaging_product: "whatsapp",
+              to: from,
+              text: { body: botResponse }
+            }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+          } catch (sendError: any) { console.error("WhatsApp Text Error:", sendError.message); }
         }
 
-        // Step 2: Send the beautifully formatted native WhatsApp CTA button
+        // Step 2: Send native WhatsApp CTA button with secure document link
         if (sendGbpDoc || sendServicesDoc) {
-             const docType = sendGbpDoc ? "gbp" : "services";
-             const docName = sendGbpDoc ? "AI & GBP Zero Clicks Revolutions Guide" : "Smart Marketing Service Guide";
-             const secureToken = generateViewerToken();
-             const docParam = sendGbpDoc ? "&doc=gbp" : "";
-             const viewerUrl = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
-             
-             await db.collection("secure_access_sessions").doc(secureToken).set({
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000),
-                claimedBy: null,
-                phoneNode: from,
-                document: docType
-             });
+          const docType = sendGbpDoc ? "gbp" : "services";
+          const docName = sendGbpDoc ? "AI & GBP Zero Clicks Revolutions Guide" : "Smart Marketing Service Guide";
+          const secureToken = generateViewerToken();
+          const docParam = sendGbpDoc ? "&doc=gbp" : "";
+          const viewerUrl = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
 
-             const interactivePayload = {
-                messaging_product: "whatsapp",
-                recipient_type: "individual",
-                to: from,
-                type: "interactive",
-                interactive: {
-                    type: "cta_url",
-                    header: { type: "text", text: docName },
-                    body: { text: "Your secure access is ready. Tap below to authenticate and view. This link self-destructs in 24 hours." },
-                    footer: { text: "happyhunterdigital.com — Zero-Trust Vault" },
-                    action: {
-                        name: "cta_url",
-                        parameters: { display_text: "View Secure Document", url: viewerUrl }
-                    }
-                }
-            };
+          await db.collection("secure_access_sessions").doc(secureToken).set({
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000),
+            claimedBy: null,
+            phoneNode: from,
+            document: docType
+          });
 
-            try {
-                await axios.post(
-                    `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
-                    interactivePayload,
-                    { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
-                );
-            } catch (e: any) { console.error("CTA Send Error", e.message); }
+          const interactivePayload = {
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: from,
+            type: "interactive",
+            interactive: {
+              type: "cta_url",
+              header: { type: "text", text: docName },
+              body: { text: "Your secure access is ready. Tap below to authenticate and view. This link self-destructs in 24 hours." },
+              footer: { text: "happyhunterdigital.com — Zero-Trust Vault" },
+              action: {
+                name: "cta_url",
+                parameters: { display_text: "View Secure Document", url: viewerUrl }
+              }
+            }
+          };
+
+          try {
+            await axios.post(
+              `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
+              interactivePayload,
+              { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
+            );
+          } catch (e: any) { console.error("CTA Send Error", e.message); }
         }
       }
+
       res.status(200).send('EVENT_RECEIVED');
       return;
     }
   }
+
   res.status(404).send();
   return;
 });
 
-export const dailyRevenueReport = onSchedule("every day 08:00", async (event) => {
+
+// ============================================================================
+// 5. DAILY REVENUE REPORT (Scheduled)
+// ============================================================================
+export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
   const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
   if (snapshot.size > 0) {
-    const reportText = `📊 DAILY REVENUE REPORT 📊\n\nTotal New Leads: ${snapshot.size}`;
+    const reportText = `DAILY REVENUE REPORT\n\nTotal New Leads: ${snapshot.size}`;
     try {
-      if(WHATSAPP_TOKEN && PHONE_NUMBER_ID) {
+      if (WHATSAPP_TOKEN && PHONE_NUMBER_ID) {
         await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-          messaging_product: "whatsapp", to: ADMIN_NUMBER, text: { body: reportText }
+          messaging_product: "whatsapp",
+          to: ADMIN_NUMBER,
+          text: { body: reportText }
         }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
       }
     } catch (err) { console.error("Report Failed", err); }
   }
 });
 
+
+// ============================================================================
+// 6. VECTOR EMBEDDER (Firestore Trigger)
+// ============================================================================
 export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
-    const doc = event.data?.after.data();
-    if (!doc || !doc.content) return;
-    const G_KEY = process.env.GEMINI_API_KEY;
-    if (!G_KEY) return;
-    try {
-        const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ model: `models/${EMBEDDING_MODEL}`, content: { parts: [{ text: doc.content }] } })
-        });
-        const data = await aiRes.json() as any;
-        if (data.embedding?.values) {
-            await event.data?.after.ref.update({ embedding_vector: admin.firestore.FieldValue.vector(data.embedding.values) });
-        }
-    } catch (error) { console.error("Vectorization Failed:", error); }
+  const doc = event.data?.after.data();
+  if (!doc || !doc.content) return;
+  const G_KEY = process.env.GEMINI_API_KEY;
+  if (!G_KEY) return;
+  try {
+    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${EMBEDDING_MODEL}:embedContent?key=${G_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: `models/${EMBEDDING_MODEL}`,
+        content: { parts: [{ text: doc.content }] }
+      })
+    });
+    const data = await aiRes.json() as any;
+    if (data.embedding?.values) {
+      await event.data?.after.ref.update({
+        embedding_vector: admin.firestore.FieldValue.vector(data.embedding.values)
+      });
+    }
+  } catch (error) { console.error("Vectorization Failed:", error); }
 });
