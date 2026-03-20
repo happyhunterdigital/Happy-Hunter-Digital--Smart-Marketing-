@@ -14,7 +14,7 @@ const db = getFirestore();
 // ============================================================================
 // SYSTEM CONSTANTS & UTILITIES
 // ============================================================================
-const AI_MODEL = "gemini-2.5-flash";
+const AI_MODEL = "gemini-3.1-flash-lite-preview";
 const EMBEDDING_MODEL = "gemini-embedding-preview-0409";
 
 const TOKEN_PREFIX = "hhd_secure_";
