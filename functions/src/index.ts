@@ -54,9 +54,9 @@ export const performAudit = onCall({
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": P_KEY,
-          "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri"
+          "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress,places.nationalPhoneNumber,places.regularOpeningHours,places.photos,places.reviews,places.primaryTypeDisplayName,places.types"
         },
-        body: JSON.stringify({ textQuery: query })
+        body: JSON.stringify({ textQuery: query, pageSize: 3 })
       });
       return res.json() as Promise<any>;
     };
@@ -69,28 +69,31 @@ export const performAudit = onCall({
       biz = pData?.places?.[0] || null;
     }
 
-    const websiteUrl: string | null = biz?.websiteUri || null;
+    let competitor: any = null;
+    if (biz?.primaryTypeDisplayName?.text) {
+      const category = biz.primaryTypeDisplayName.text;
+      const compData = await getPlaces(`best ${category} in ${location}`);
+      if (compData.places && compData.places.length > 0) {
+        competitor = compData.places.find((p: any) => p.displayName?.text?.toLowerCase() !== biz.displayName?.text?.toLowerCase());
+      }
+    }
 
+    const websiteUrl: string | null = biz?.websiteUri || null;
     let detectedSchemas: string[] = [];
     let hasSchema = false;
 
     if (websiteUrl) {
       try {
-        const webRes = await axios.get(websiteUrl, {
-          timeout: 6000,
-          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
-        });
+        const webRes = await axios.get(websiteUrl, { timeout: 6000, headers: { "User-Agent": "Mozilla/5.0" } });
         const $ = cheerio.load(webRes.data);
-
         $('script[type="application/ld+json"]').each((_, element) => {
           hasSchema = true;
           try {
             const jsonData = JSON.parse($(element).html() || "{}");
             const extractType = (obj: any) => {
               if (!obj) return;
-              if (Array.isArray(obj)) {
-                obj.forEach(extractType);
-              } else if (typeof obj === 'object') {
+              if (Array.isArray(obj)) obj.forEach(extractType);
+              else if (typeof obj === 'object') {
                 if (obj['@type']) detectedSchemas.push(obj['@type']);
                 if (obj['@graph']) extractType(obj['@graph']);
               }
@@ -98,76 +101,83 @@ export const performAudit = onCall({
             extractType(jsonData);
           } catch (e) { /* silent */ }
         });
-
         detectedSchemas = [...new Set(detectedSchemas)];
         if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
-      } catch (err) {
-        console.log("Web scrape failed or timed out for:", websiteUrl);
-      }
+      } catch (err) { console.log("Web scrape failed or timed out for:", websiteUrl); }
     }
 
-    const schemaString = detectedSchemas.length > 0
-      ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}`
-      : "No Schema Markup detected.";
+    const schemaString = detectedSchemas.length > 0 ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
     const bizNameStr = biz?.displayName?.text || "NONE FOUND";
+    const bizTypes = biz?.types?.join(", ") || "None";
+    const bizCategory = biz?.primaryTypeDisplayName?.text || "Generic";
+    const photoCount = biz?.photos?.length || 0;
+    const reviewCount = biz?.userRatingCount || 0;
+    const rating = biz?.rating || 0;
+    const address = biz?.formattedAddress || "None";
+    const phone = biz?.nationalPhoneNumber || "None";
+    const lastReview = biz?.reviews && biz.reviews.length > 0 ? biz.reviews[0].publishTime : "Never";
 
-    let context = "";
-    if (!biz) {
-      context = `GHOST ENTITY: No Google Maps data found for "${businessName}". No Website verified. ${schemaString}`;
-    } else {
-      context = `
- - User Searched For: "${businessName}"
- - Google Maps Returned: "${bizNameStr}"
- - Maps Rating: ${biz.rating || 0} (${biz.userRatingCount || 0} reviews)
- - Website Linked in Maps: ${websiteUrl || 'NONE LINKED'}
- - ${schemaString}
-      `;
-    }
+    const compName = competitor?.displayName?.text || "Unknown Competitor";
+    const compRating = competitor?.rating || 0;
+    const compReviews = competitor?.userRatingCount || 0;
 
-    const RUBRIC = `
- SCORING RUBRIC (0-100):
- - Baseline 30.
- - Verified Maps Entity (Names Match Exactly): +20 points.
- - Rating >= 4.0: +15 points.
- - Schema Markup Detected (true): +25 points (Crucial for AEO).
- - Ghost Entity OR No Schema: Deduct 30 points.
+    const context = `
+--- TARGET ENTITY ---
+Search Query: "${businessName} in ${location}"
+Google Maps Name: "${bizNameStr}"
+Category: ${bizCategory}
+Other Types: ${bizTypes}
+Rating: ${rating} (${reviewCount} reviews)
+Last Review Date: ${lastReview}
+Photos Count: ${photoCount}
+Address: ${address}
+Phone: ${phone}
+Website Scraped: ${websiteUrl || 'NONE'}
+Schemas: ${schemaString}
 
- CRITICAL TRAFFIC HIJACK INSTRUCTION:
- If the "User Searched For" name and the "Google Maps Returned" name are fundamentally different businesses, you MUST treat this as a TRAFFIC HIJACK.
- If hijacked, set their total score to 0. In your summary, explicitly state that because their digital footprint is weak, Google algorithms are routing their high-intent customers directly to a competitor named "[Google Maps Returned name]". Agitate this pain point.
-
- INSTRUCTIONS FOR 'truths' ARRAY (Must be exactly 3 items):
- Truth 1: State if they are Verified, a Ghost, or if a Traffic Hijack occurred (name the competitor).
- Truth 2: Mention their Website status (If NO website is linked, state it is a critical algorithmic failure).
- Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is completely missing.
+--- COMPETITOR ---
+Competitor Name: "${compName}"
+Competitor Rating: ${compRating} (${compReviews} reviews)
     `;
+
+    const RUBRIC = `You are a strict Diagnostic Logic Engine. Pass the Data Context through these 5 If/Then Gates. Do NOT output markdown. Output ONLY a valid JSON object matching the required schema exactly.
+
+Gate 1: Foundation. If Google Maps Name is "NONE FOUND", Status = "NON-EXISTENT" (Urgency: "Your business is digitally invisible."). Otherwise, assume "VERIFIED".
+Gate 2: Ghost Effect. If Website Schemas lack alignment with Category, Status = "Mismatch". Problem: "Your DNA is mutated. Google thinks you are [Category], but your site says [Schemas]."
+Gate 3: Pulse. If "Last Review Date" is "Never" or old, Review Velocity = "STALE". Urgency: "To a 2026 AI, a silent profile is a dead business." If Photos Count < 20, Media Depth = "VISUAL VOID". Urgency: "Profiles with 100+ photos get 5x clicks. You are a ghost in a visual world."
+Gate 4: Micro-Fractures. If Address or Phone is "None", NAP Integrity = "FAILED". Urgency: "Broken connection detected. Algorithm cannot verify you."
+Gate 5: Competitor Threat. If Competitor Rating/Reviews > Target, Threat = "Live Threat". Reality: "[Competitor Name] has infiltrated your territory and is capturing your local lead share."
+
+Score (0-100%): Start at 100. Deduct heavily for failures (e.g. -40 NON-EXISTENT, -20 STALE, -15 VISUAL VOID, -15 NAP FAILED).
+
+JSON SCHEMA:
+{
+  "score": number,
+  "diagnosis": "string (the blunt, overarching medical-style summary)",
+  "identityCrisis": { "status": "Aligned"|"Mismatch", "problem": "string", "whyItMatters": "string" },
+  "gapAnalysis": [
+    { "title": "Claim Status", "status": "VERIFIED"|"UNSECURED"|"NON-EXISTENT", "urgency": "string" },
+    { "title": "Review Velocity", "status": "HEALTHY"|"STALE"|"REPUTATION RISK", "urgency": "string" },
+    { "title": "Media Depth", "status": "HEALTHY"|"LOW"|"VISUAL VOID", "urgency": "string" },
+    { "title": "NAP Integrity", "status": "VERIFIED"|"FAILED", "urgency": "string" }
+  ],
+  "competitorThreat": { "competitorName": "string", "threatLevel": "string", "reality": "string" },
+  "recoveryRoadmap": { "recommendedAction": "string" }
+}`;
 
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
+        contents: [{ parts: [{ text: `Data Context: ${context}. \n\n ${RUBRIC}` }] }],
         safetySettings: SAFETY_SETTINGS,
         generationConfig: { responseMimeType: "application/json" }
       })
     });
 
-    if (!aiRes.ok) {
-      const errText = await aiRes.text();
-      console.error(`Gemini Audit API Error (${AI_MODEL}):`, errText);
-      throw new Error(`AI API Error: ${aiRes.status}`);
-    }
-
+    if (!aiRes.ok) throw new Error(`AI API Error: ${aiRes.status}`);
     const aiData = await aiRes.json() as any;
     const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
-    const isHijacked = (biz && analysis.score === 0);
-
-    const telemetry = {
-      mapsStatus: !biz ? "GHOST (NOT FOUND)" : isHijacked ? "HIJACKED (COMPETITOR FOUND)" : "VERIFIED",
-      website: websiteUrl || "None Linked",
-      schema: hasSchema,
-      schemasDetected: detectedSchemas
-    };
 
     await db.collection("leads").add({
       businessName,
@@ -177,24 +187,41 @@ export const performAudit = onCall({
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    const isGoodScore = analysis.score >= 70;
+    const isGoodScore = analysis.score >= 80;
     const emailHtml = `
-<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
-  <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'}; margin-bottom: 20px;">Digital Survival Score: ${analysis.score}/100</h1>
-  <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: left;">${analysis.summary}</p>
-  <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
-    <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
-    <p style="color: #d1d5db; margin-bottom: 25px;">Stop losing revenue to invisible algorithms. Let's map out your custom Recovery Protocol.</p>
-    <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 12px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
+<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; border: 1px solid #333;">
+  <div style="margin-bottom: 20px;">
+    <span style="background-color: #ef4444; color: #fff; padding: 4px 8px; font-size: 10px; font-weight: bold; text-transform: uppercase;">SIGNAL MISMATCH DETECTED</span>
+  </div>
+  <h1 style="color: ${isGoodScore ? '#22c55e' : '#ef4444'}; margin-bottom: 5px;">Digital Survival Score: ${analysis.score}%</h1>
+  <p style="font-size: 14px; color: #a1a1aa; margin-bottom: 30px;"><strong>Diagnosis:</strong> ${analysis.diagnosis}</p>
+  
+  <div style="background-color: #111827; border-left: 4px solid #f59e0b; padding: 20px; margin-bottom: 30px;">
+    <h3 style="color: #f59e0b; margin-top: 0;">The Identity Crisis [${analysis.identityCrisis.status}]</h3>
+    <p style="font-size: 14px; margin-bottom: 10px;"><strong>The Problem:</strong> ${analysis.identityCrisis.problem}</p>
+    <p style="font-size: 14px;"><strong>Why it matters:</strong> ${analysis.identityCrisis.whyItMatters}</p>
+  </div>
+
+  <div style="background-color: #111827; border-left: 4px solid #ef4444; padding: 20px; margin-bottom: 30px;">
+    <h3 style="color: #ef4444; margin-top: 0;">The Competitor Cannibalization Report</h3>
+    <p style="font-size: 14px; margin-bottom: 10px;"><strong>Live Threat:</strong> ${analysis.competitorThreat.threatLevel}</p>
+    <p style="font-size: 14px;"><strong>The Reality:</strong> ${analysis.competitorThreat.reality}</p>
+    <p style="font-size: 14px; color: #ef4444; font-weight: bold; margin-top: 15px;">Every hour this remains unfixed, you are paying for their marketing.</p>
+  </div>
+
+  <div style="border-top: 1px solid #333; padding-top: 30px;">
+    <h3 style="color: #eab308; margin-top: 0;">Stop The Revenue Leakage</h3>
+    <p style="color: #d1d5db; margin-bottom: 25px; font-size: 14px;">${analysis.recoveryRoadmap.recommendedAction}</p>
+    <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; font-size: 14px;">BOOK 15-MINUTE ALIGNMENT CALL</a>
   </div>
 </div>`;
 
     await db.collection("mail").add({
       to: [clientEmail],
-      message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml }
+      message: { subject: `[Diagnostic Report] CRITICAL VULNERABILITY: ${businessName}`, html: emailHtml }
     });
 
-    return { success: true, ...analysis, telemetry };
+    return { success: true, ...analysis };
 
   } catch (e: any) {
     throw new HttpsError("internal", `Neural Handshake Interrupted. ${e.message}`);

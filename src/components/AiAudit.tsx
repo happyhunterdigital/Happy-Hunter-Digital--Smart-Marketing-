@@ -195,120 +195,99 @@ export const AiAudit: React.FC = () => {
             
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-10 border-b border-gray-800 pb-10">
               <div className="text-center md:text-left">
-                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 mb-2">Digital Survival Score</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 mb-2">Your Digital Survival Score</p>
                 <div className="flex items-center gap-4 justify-center md:justify-start">
-                  <span className={`text-7xl md:text-8xl font-black leading-none ${verdict.score >= 70 ? 'text-green-500' : verdict.score >= 40 ? 'text-yellow-500' : 'text-red-500'}`}>{verdict.score}</span>
-                  <span className="text-gray-700 text-2xl font-bold">/ 100</span>
+                  <span className={`text-7xl md:text-8xl font-black leading-none ${verdict.score >= 80 ? 'text-green-500' : verdict.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>{verdict.score}</span>
+                  <span className="text-gray-700 text-2xl font-bold">%</span>
                 </div>
               </div>
               
-              {verdict.score < 80 && (
-                <div className="bg-red-500/5 border border-red-500/20 p-6 rounded-3xl flex items-center gap-4 w-full md:w-auto">
-                  <TrendingDown className="text-red-500" size={32} />
-                  <div>
-                    <p className="text-red-500 font-black text-2xl leading-none">{verdict.revenueLoss?.amount || 'R9,800+'}</p>
-                    <p className="text-red-500/70 text-[9px] uppercase font-bold mt-1 tracking-widest">Est. Monthly Revenue Loss</p>
-                  </div>
+              <div className="bg-red-500/5 border border-red-500/20 p-6 rounded-3xl flex items-center gap-4 w-full md:w-auto">
+                <TrendingDown className="text-red-500" size={32} />
+                <div>
+                  <p className="text-red-500 font-black text-2xl leading-none">{verdict.revenueLoss?.amount || 'R18,500+'}</p>
+                  <p className="text-red-500/70 text-[9px] uppercase font-bold mt-1 tracking-widest">Est. Monthly Revenue Recovery</p>
                 </div>
-              )}
+              </div>
             </div>
 
-            {verdict.score >= 70 ? (
-               <div className="mb-10 p-6 bg-green-500/10 border border-green-500/20 rounded-2xl">
-                 <h3 className="text-green-500 font-black uppercase tracking-tight flex items-center gap-2 mb-2">
-                   <CheckCircle size={18} /> Entity Verified: Strong Baseline
-                 </h3>
-                 <p className="text-gray-300 text-sm leading-relaxed">
-                   Congratulations. Your traditional SEO and Google Maps foundation is solid. However, standard search is evolving rapidly. To prevent competitors from overtaking you in AI-driven search (ChatGPT, Gemini, SGE), you must upgrade from basic SEO to <strong>Generative Engine Optimization (GEO)</strong>.
-                 </p>
-               </div>
-            ) : (
-               <div className="mb-10 p-6 bg-orange-500/10 border border-orange-500/20 rounded-2xl">
-                 <h3 className="text-orange-500 font-black uppercase tracking-tight flex items-center gap-2 mb-2">
-                   <AlertTriangle size={18} /> Critical Vulnerability Detected
-                 </h3>
-                 <p className="text-gray-300 text-sm leading-relaxed">
-                   Your digital architecture is actively repelling algorithms. You are experiencing the "Ghost Effect"—meaning high-intent customers searching for your services are being routed directly to your competitors. Immediate intervention is required.
-                 </p>
-               </div>
-            )}
+            {/* HEADER: DIAGNOSIS */}
+            <div className="mb-10 p-6 bg-red-500/10 border border-red-500/20 rounded-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
+              <h3 className="text-red-500 font-black uppercase tracking-tight flex items-center gap-2 mb-2">
+                <AlertTriangle size={18} /> CRITICAL VULNERABILITY
+              </h3>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                <strong>Diagnosis:</strong> {verdict.diagnosis}
+              </p>
+            </div>
 
             <div className="space-y-10">
+              
+              {/* SECTION 1: IDENTITY CRISIS */}
               <div>
-                <h3 className="text-yellow-500 font-black uppercase text-xs tracking-widest mb-4 flex items-center gap-2">
-                  <ShieldCheck size={16}/> Forensic AI Summary
+                <h3 className="text-white font-black uppercase text-xl md:text-2xl tracking-tight mb-4 flex items-center gap-3 border-b border-gray-800 pb-4">
+                  <ShieldCheck size={24} className={verdict.identityCrisis?.status === 'Aligned' ? 'text-green-500' : 'text-yellow-500'}/> 
+                  Section 1: The Identity Crisis <span className="text-sm font-medium text-gray-500 ml-auto tracking-widest bg-gray-900 px-3 py-1 rounded-full">{verdict.identityCrisis?.status}</span>
                 </h3>
-                <p className="text-white text-lg font-medium leading-relaxed italic border-l-4 border-gray-800 pl-4">"{verdict.summary}"</p>
+                <div className="space-y-4">
+                  <p className="text-gray-300 text-sm"><strong>The Problem:</strong> {verdict.identityCrisis?.problem}</p>
+                  <p className="text-gray-300 text-sm"><strong>Why it matters:</strong> {verdict.identityCrisis?.whyItMatters}</p>
+                </div>
               </div>
 
-              <div className="mb-10 bg-[#0a0a0a] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
-                <div className="bg-[#111827] p-4 border-b border-gray-800 flex justify-between items-center">
-                  <h3 className="text-white font-bold text-sm flex items-center gap-2 uppercase tracking-wide">
-                    <Database size={16} className="text-yellow-500" /> Entity Schema Parsing
-                  </h3>
-                  <span className="text-[10px] text-yellow-500 font-mono uppercase tracking-widest bg-yellow-500/10 px-2 py-1 rounded">happyhunterdigital // AEO Core</span>
-                </div>
-                <div className="p-6">
-                  <div className={`flex items-center gap-4 mb-6 p-4 rounded-xl border ${verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
-                    {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 ? (
-                      <React.Fragment>
-                        <CheckCircle2 size={32} className="text-green-500 shrink-0" />
-                        <div>
-                          <h4 className="text-lg font-black text-green-500">{verdict.telemetry.schemasDetected.length} Valid Protocols Detected</h4>
-                          <p className="text-xs text-gray-400 mt-1">These items are explicitly structured for AI Overviews and Generative Engine extraction.</p>
-                        </div>
-                      </React.Fragment>
-                    ) : (
-                      <React.Fragment>
-                        <XCircle size={32} className="text-red-500 shrink-0" />
-                        <div>
-                          <h4 className="text-lg font-black text-red-500">0 Valid Protocols Detected</h4>
-                          <p className="text-xs text-gray-400 mt-1">This entity is missing machine-readable code. You are invisible to AI agents.</p>
-                        </div>
-                      </React.Fragment>
-                    )}
-                  </div>
-
-                  {verdict.telemetry?.schema && verdict.telemetry?.schemasDetected?.length > 0 && (
-                    <div className="border border-gray-800 rounded-xl divide-y divide-gray-800 overflow-hidden">
-                      <div className="p-3 bg-[#111827] text-[10px] font-black text-gray-500 uppercase tracking-widest">Extracted Structured Data</div>
-                      {verdict.telemetry.schemasDetected.map((schemaType: string, idx: number) => (
-                        <div key={idx} className="p-4 flex items-center justify-between hover:bg-gray-900/50 cursor-pointer transition-colors bg-black">
-                           <div className="flex items-center gap-4">
-                             <CheckCircle size={18} className="text-green-500" />
-                             <span className="text-white font-bold">{schemaType}</span>
+              {/* SECTION 2: THE GAP ANALYSIS */}
+              <div>
+                <h3 className="text-white font-black uppercase text-xl md:text-2xl tracking-tight mb-4 flex items-center gap-3 border-b border-gray-800 pb-4">
+                  <Database size={24} className="text-red-500"/> 
+                  Section 2: The Gap Analysis
+                </h3>
+                <p className="text-gray-500 text-xs uppercase tracking-widest mb-6 border-l-2 border-red-500 pl-3">These are the "silent killers" of your local ranking.</p>
+                
+                <div className="grid gap-4">
+                  {verdict.gapAnalysis?.map((gap: any, i: number) => (
+                    <div key={i} className="bg-[#111827] border border-gray-800 rounded-xl overflow-hidden relative">
+                       <div className={`absolute top-0 left-0 w-1 h-full ${gap.status === 'HEALTHY' || gap.status === 'VERIFIED' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                       <div className="p-5 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                         <div className="w-full">
+                           <div className="flex items-center justify-between mb-2">
+                             <h4 className="text-white font-bold text-sm tracking-wide">• {gap.title}</h4>
+                             <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${gap.status === 'HEALTHY' || gap.status === 'VERIFIED' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>[{gap.status}]</span>
                            </div>
-                           <span className="text-gray-500 text-xs font-medium bg-gray-900 px-3 py-1 rounded-full border border-gray-800">1 Item Active</span>
-                        </div>
-                      ))}
+                           <p className="text-gray-400 text-xs leading-relaxed"><strong>Urgency:</strong> {gap.urgency}</p>
+                         </div>
+                       </div>
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
 
-              <div className="grid gap-4">
-                <h3 className="text-gray-500 font-black uppercase text-xs tracking-widest mb-2 flex items-center gap-2">
-                  <XCircle size={16}/> Specific Technical Weak Spots
+              {/* SECTION 3: COMPETITOR CANNIBALIZATION */}
+              <div>
+                <h3 className="text-white font-black uppercase text-xl md:text-2xl tracking-tight mb-4 flex items-center gap-3 border-b border-gray-800 pb-4">
+                  <TrendingDown size={24} className="text-orange-500"/> 
+                  Section 3: The Competitor Cannibalization Report
                 </h3>
-                {verdict.truths.map((t: string, i: number) => (
-                  <div key={i} className="p-5 bg-gray-900/30 border border-gray-800 rounded-xl text-gray-300 text-sm flex gap-4 items-start">
-                    <span className="text-yellow-500 font-black bg-yellow-500/10 px-2 py-1 rounded">0{i+1}</span>
-                    <p className="mt-1">{t}</p>
-                  </div>
-                ))}
+                <div className="bg-orange-500/5 border border-orange-500/20 p-6 rounded-2xl">
+                  <p className="text-orange-500 text-sm mb-3"><strong>Live Threat:</strong> {verdict.competitorThreat?.threatLevel}</p>
+                  <p className="text-gray-300 text-sm"><strong>The Reality:</strong> {verdict.competitorThreat?.reality}</p>
+                </div>
               </div>
+
             </div>
 
+            {/* SECTION 4: RECOVERY ROADMAP & PITCH */}
             <div className="mt-12 p-8 md:p-10 bg-gradient-to-br from-[#0a0a0a] to-black border border-yellow-500/30 rounded-[2rem] text-center relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
-              <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-4">Stop The Revenue Leakage</h3>
-              <p className="text-gray-400 mb-8 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-                Book a Free 30-Minute Discovery Call with <strong>Thabo</strong>, Head of happyhunterdigital. We will review this exact report together and map out your custom Recovery Protocol.
+              <p className="text-yellow-500 font-black uppercase tracking-widest text-xs mb-2">Section 4: The Recovery Roadmap</p>
+              <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-4">Immediate Entity Alignment</h3>
+              <p className="text-gray-400 mb-8 text-sm md:text-base max-w-xl mx-auto leading-relaxed border-t border-gray-800 pt-6 mt-6">
+                <strong>Recommendation:</strong> {verdict.recoveryRoadmap?.recommendedAction}
               </p>
               <a href="https://calendly.com/motsumitl/30min" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-8 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(234,179,8,0.2)] w-full md:w-auto">
-                <Calendar size={18} /> Schedule Strategy Call
+                <Calendar size={18} /> Book Your 15-Minute Alignment Call
               </a>
+              <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest mt-4 italic">Secure your territory before your competitors lock you out of the 2026 Knowledge Graph.</p>
             </div>
 
           </div>
