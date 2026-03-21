@@ -140,7 +140,7 @@ Competitor Name: "${compName}"
 Competitor Rating: ${compRating} (${compReviews} reviews)
     `;
 
-    const RUBRIC = `You are a strict Diagnostic Logic Engine. Pass the Data Context through these 5 If/Then Gates. Do NOT output markdown. Output ONLY a valid JSON object matching the required schema exactly.
+    const RUBRIC = `You are a strict Diagnostic Logic Engine analyzing a business's digital footprint. Use words like 'Diagnosis' and 'DNA Mutation' as *metaphors* for data inconsistencies. Do NOT sound like a literal medical doctor; refer to 'the business' or 'the entity', never 'the patient'. Pass the Data Context through these 5 If/Then Gates. Do NOT output markdown. Output ONLY a valid JSON object matching the required schema exactly.
 
 Gate 1: Foundation. If Google Maps Name is "NONE FOUND", Status = "NON-EXISTENT" (Urgency: "Your business is digitally invisible."). Otherwise, assume "VERIFIED".
 Gate 2: Ghost Effect. If Website Schemas lack alignment with Category, Status = "Mismatch". Problem: "Your DNA is mutated. Google thinks you are [Category], but your site says [Schemas]."
@@ -153,7 +153,7 @@ Score (0-100%): Start at 100. Deduct heavily for failures (e.g. -40 NON-EXISTENT
 JSON SCHEMA:
 {
   "score": number,
-  "diagnosis": "string (the blunt, overarching medical-style summary)",
+  "diagnosis": "string (the blunt, overarching forensic business summary)",
   "identityCrisis": { "status": "Aligned"|"Mismatch", "problem": "string", "whyItMatters": "string" },
   "gapAnalysis": [
     { "title": "Claim Status", "status": "VERIFIED"|"UNSECURED"|"NON-EXISTENT", "urgency": "string" },
