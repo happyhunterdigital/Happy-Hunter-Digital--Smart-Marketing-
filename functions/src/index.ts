@@ -81,11 +81,16 @@ export const performAudit = onCall({
     const websiteUrl: string | null = biz?.websiteUri || null;
     let detectedSchemas: string[] = [];
     let hasSchema = false;
+    let websiteText = "None extracted";
 
     if (websiteUrl) {
       try {
         const webRes = await axios.get(websiteUrl, { timeout: 6000, headers: { "User-Agent": "Mozilla/5.0" } });
         const $ = cheerio.load(webRes.data);
+        
+        // Extract raw website body text for Semantic/Intent alignment checking
+        $('script, style, nav, footer').remove();
+        websiteText = $('body').text().replace(/\s+/g, ' ').substring(0, 3000);
         $('script[type="application/ld+json"]').each((_, element) => {
           hasSchema = true;
           try {
@@ -134,6 +139,7 @@ Address: ${address}
 Phone: ${phone}
 Website Scraped: ${websiteUrl || 'NONE'}
 Schemas: ${schemaString}
+Website Content Snip: ${websiteText}
 
 --- COMPETITOR ---
 Competitor Name: "${compName}"
@@ -142,11 +148,11 @@ Competitor Rating: ${compRating} (${compReviews} reviews)
 
     const RUBRIC = `You are a strict Diagnostic Logic Engine analyzing a business's digital footprint. Use words like 'Diagnosis' and 'DNA Mutation' as *metaphors* for data inconsistencies. Do NOT sound like a literal medical doctor; refer to 'the business' or 'the entity', never 'the patient'. Pass the Data Context through these 5 If/Then Gates. Do NOT output markdown. Output ONLY a valid JSON object matching the required schema exactly.
 
-Gate 1: Foundation. If Google Maps Name is "NONE FOUND", Status = "NON-EXISTENT" (Urgency: "Your business is digitally invisible."). Otherwise, assume "VERIFIED".
-Gate 2: Ghost Effect. If Website Schemas lack alignment with Category, Status = "Mismatch". Problem: "Your DNA is mutated. Google thinks you are [Category], but your site says [Schemas]."
-Gate 3: Pulse. If "Last Review Date" is "Never" or old, Review Velocity = "STALE". Urgency: "To a 2026 AI, a silent profile is a dead business." If Photos Count < 20, Media Depth = "VISUAL VOID". Urgency: "Profiles with 100+ photos get 5x clicks. You are a ghost in a visual world."
-Gate 4: Micro-Fractures. If Address or Phone is "None", NAP Integrity = "FAILED". Urgency: "Broken connection detected. Algorithm cannot verify you."
-Gate 5: Competitor Threat. If Competitor Rating/Reviews > Target, Threat = "Live Threat". Reality: "[Competitor Name] has infiltrated your territory and is capturing your local lead share."
+Gate 1: Foundation (Ownership). If Google Maps Name is "NONE FOUND", Status = "NON-EXISTENT" (Urgency: "Your business is digitally invisible. You do not exist in the local economy."). If the profile appears unclaimed/unverified based on metadata, Status = "UNSECURED" (Urgency: "Your storefront is an open public park. You have no legal control over your entity."). Otherwise, assume "VERIFIED".
+Gate 2: Ghost Effect (Categorization Gap). Perform a semantic intent Cross-Check: Compare the Maps [Category] and hidden [Other Types] against the [Website Content Snip] and [Schemas]. If there is a disconnect (e.g., GBP says 'Attorney' but site says 'LocalBusiness' or lacks legal semantics), Identity Crisis = "Mismatch". Problem: "Your DNA is mutated. Google categorizes you as [Category], but your site signals [Intent]."
+Gate 3: Pulse (Social Proof). If "Last Review Date" is "Never" or >90 days, Review Velocity = "STALE". Urgency: "To a 2026 AI, a silent profile is a dead business." If Photos Count < 20, Media Depth = "VISUAL VOID". Urgency: "Profiles with 100+ photos get 5x clicks. You are a ghost in a visual world."
+Gate 4: Micro-Fractures (NAP Integrity). Act as a String Similarity Algorithm (Levenshtein Distance). Cross-check the Maps [Address] & [Phone] against the [Website Content Snip]. If they do not appear exactly or similarity is < 95%, NAP Integrity = "FAILED". Urgency: "Micro-mismatches in your address/phone are fragmenting your authority. The algorithm cannot verify your 'Golden Thread'."
+Gate 5: Authority Ownership (The Threat). If Competitor Rating/Reviews > Target, Threat = "Live Threat". Reality: "Authority Displacement: [Competitor Name] has infiltrated your territory and is capturing your local lead share."
 
 Score (0-100%): Start at 100. Deduct heavily for failures (e.g. -40 NON-EXISTENT, -20 STALE, -15 VISUAL VOID, -15 NAP FAILED).
 
