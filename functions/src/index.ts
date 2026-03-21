@@ -49,24 +49,42 @@ export const performAudit = onCall({
 
   try {
     const getPlaces = async (query: string) => {
-      const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": P_KEY,
-          "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress,places.nationalPhoneNumber,places.regularOpeningHours,places.photos,places.reviews,places.primaryTypeDisplayName,places.types"
-        },
-        body: JSON.stringify({ textQuery: query, pageSize: 3 })
-      });
-      return res.json() as Promise<any>;
+      try {
+        const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": P_KEY,
+            "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress,places.nationalPhoneNumber,places.regularOpeningHours,places.photos,places.reviews,places.primaryTypeDisplayName,places.types"
+          },
+          body: JSON.stringify({ textQuery: query, pageSize: 5 })
+        });
+        return await res.json() as any;
+      } catch (e) { return { places: [] }; }
     };
 
-    let pData = await getPlaces(`${businessName} in ${location}`);
-    let biz = pData?.places?.[0] || null;
+    // Stage 1: Search Variants
+    const searchVariants = [
+      `${businessName} ${location}`,
+      businessName,
+      businessName.replace(/\s+/g, '') // Fallback for "happyhunterdigital" style
+    ];
 
-    if (!biz) {
-      pData = await getPlaces(businessName);
-      biz = pData?.places?.[0] || null;
+    let biz: any = null;
+    for (const variant of searchVariants) {
+      const pData = await getPlaces(variant);
+      if (pData?.places?.length > 0) {
+        // Precise Name Matching (Ignoring case and spaces)
+        biz = pData.places.find((p: any) => {
+          const mapName = p.displayName?.text?.toLowerCase().replace(/\s+/g, '') || "";
+          const targetName = businessName.toLowerCase().replace(/\s+/g, '');
+          return mapName.includes(targetName) || targetName.includes(mapName);
+        });
+        if (biz) break;
+        // Fallback to top result if no fuzzy match but we have results
+        if (!biz) biz = pData.places[0];
+        break;
+      }
     }
 
     let competitor: any = null;
