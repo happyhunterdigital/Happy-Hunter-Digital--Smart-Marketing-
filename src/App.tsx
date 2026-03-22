@@ -23,7 +23,8 @@ import { MegaphoneLanding } from './pages/MegaphoneLanding';
 import { LiveSummit } from './pages/LiveSummit';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import ViewGuide from './pages/ViewGuide';
-import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Lock } from 'lucide-react';
+import { Workspace } from './pages/Workspace';
+import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Lock, PlusSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from './firebaseConfig';
@@ -84,6 +85,7 @@ function App() {
               </Link>
               <Link to="/intelligence" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Intelligence</Link>
               <Link to="/founders" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Founders</Link>
+              <Link to="/workspace" className="text-[9px] font-black uppercase tracking-[0.15em] text-yellow-500 hover:text-white transition-all whitespace-nowrap flex items-center gap-1"><PlusSquare size={10}/> Workspace</Link>
               <Link to="/portal" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-500 hover:text-yellow-500 transition-all whitespace-nowrap flex items-center gap-1"><Lock size={10}/> Portal</Link>
             </div>
             <Link to="/audit" className="hidden lg:block bg-yellow-500 text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl whitespace-nowrap shrink-0">
@@ -107,6 +109,7 @@ function App() {
             <Link to="/earned-media" className="hover:text-yellow-500 text-white">Earned Media</Link>
             <Link to="/intelligence" className="hover:text-yellow-500 text-white">Intelligence Hub</Link>
             <Link to="/founders" className="hover:text-yellow-500 text-white">Founders</Link>
+            <Link to="/workspace" className="text-yellow-500 flex items-center justify-center gap-2 hover:text-white"><PlusSquare size={14}/> HQ Workspace</Link>
             <Link to="/faq" className="hover:text-yellow-500 text-white">FAQ</Link>
             <Link to="/portal" className="text-gray-500 flex items-center justify-center gap-2 hover:text-yellow-500"><Lock size={14}/> Client Portal</Link>
             <div className="pt-4 border-t border-white/10">
@@ -137,6 +140,7 @@ function App() {
           <Route path="/portal" element={<ClientPortal />} />
           <Route path="/promo" element={<SummitPoster />} />
           <Route path="/hq-command" element={<Admin />} />
+          <Route path="/workspace" element={<Workspace />} />
           <Route path="/live" element={<LiveSummit />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>
