@@ -21,19 +21,22 @@ export const Workspace: React.FC = () => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
-        // Step 0: Auto-Accept Invites
-        // Find workspaces where user's email is in 'invites' but UID is not in 'members'
-        const qInvites = query(collection(db, 'workspaces'), where('invites', 'array-contains', u.email));
-        const inviteSnapshot = await getDocs(qInvites);
-        for (const wsDoc of inviteSnapshot.docs) {
-          const wsData = wsDoc.data();
-          if (!wsData.members.includes(u.uid)) {
-            await updateDoc(doc(db, 'workspaces', wsDoc.id), {
-              members: [...wsData.members, u.uid],
-              invites: wsData.invites.filter((email: string) => email !== u.email),
-              [`roles.${u.uid}`]: 'member' // Default role
-            });
+        // Step 0: Auto-Accept Invites (Resilient)
+        try {
+          const qInvites = query(collection(db, 'workspaces'), where('invites', 'array-contains', u.email));
+          const inviteSnapshot = await getDocs(qInvites);
+          for (const wsDoc of inviteSnapshot.docs) {
+            const wsData = wsDoc.data();
+            if (!wsData.members.includes(u.uid)) {
+              await updateDoc(doc(db, 'workspaces', wsDoc.id), {
+                members: [...wsData.members, u.uid],
+                invites: (wsData.invites || []).filter((email: string) => email !== u.email),
+                [`roles.${u.uid}`]: 'member'
+              });
+            }
           }
+        } catch (err) {
+          console.warn("Auto-Accept Skip: Permission or Index pending.", err);
         }
 
         // Step 1: Discover Workspaces where user is a member
@@ -145,14 +148,35 @@ export const Workspace: React.FC = () => {
 
   const inviteMember = async () => {
     if (!inviteEmail || !activeWorkspace) return;
-    // Note: In a real system, you'd lookup the UID by email via a Cloud Function
-    // For now, we'll simulate the invite by adding the email to an 'invited' list
-    // and assume the user will be added to 'members' when they next log in.
-    const wsRef = doc(db, 'workspaces', activeWorkspace.id);
-    const updatedInvites = [...(activeWorkspace.invites || []), inviteEmail];
-    await updateDoc(wsRef, { invites: updatedInvites });
-    setInviteEmail('');
-    alert(`Invitation sent to ${inviteEmail}. Access will be granted upon their next login.`);
+    try {
+      const wsRef = doc(db, 'workspaces', activeWorkspace.id);
+      const updatedInvites = [...(activeWorkspace.invites || []), inviteEmail];
+      
+      // 1. Update Workspace Record
+      await updateDoc(wsRef, { invites: updatedInvites });
+
+      // 2. Trigger Email via Firestore Extension
+      await addDoc(collection(db, 'mail'), {
+        to: inviteEmail,
+        message: {
+          subject: `You've been invited to ${activeWorkspace.name} on Happy Hunter SPACE`,
+          html: `
+            <div style="font-family: sans-serif; background: #050505; color: white; padding: 40px; border-radius: 20px;">
+              <h1 style="color: #eab308; text-transform: uppercase;">Mission Invitation</h1>
+              <p>You have been authorized to join the <b>${activeWorkspace.name}</b> environment.</p>
+              <p>Log in to access your task matrix and project telemetry.</p>
+              <a href="https://happyhunterdigital.com/workspace" style="background: #eab308; color: black; padding: 15px 30px; border-radius: 10px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 20px;">ACCESS WORKSPACE</a>
+            </div>
+          `
+        }
+      });
+
+      setInviteEmail('');
+      alert(`Invitation and Trigger Email sent to ${inviteEmail}.`);
+    } catch (error) {
+      console.error("Invite Fail:", error);
+      alert("Encryption/Permission Error. Check Firestore Rules.");
+    }
   };
 
   const updateMemberRole = async (userId: string, newRole: 'admin' | 'member') => {
