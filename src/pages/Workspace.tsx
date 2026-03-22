@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 import { GoogleAuthProvider, signInWithRedirect, onAuthStateChanged } from 'firebase/auth';
-import { CheckCircle2, Clock, Users, FileText, MessageSquare, Lock, Trash2, Zap, Layout, Activity, Database, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, Users, FileText, MessageSquare, Lock, Trash2, Zap, Layout, Activity, Database, AlertCircle, AlertTriangle } from 'lucide-react';
 
 export const Workspace: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -11,18 +11,17 @@ export const Workspace: React.FC = () => {
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Default to the new Tracking Matrix view
-  const [activeTab, setActiveTab] = useState('Entity Matrix');
+  const [activeTab, setActiveTab] = useState('Task Board');
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [mobileColumn, setMobileColumn] = useState('Not Started');
 
   const PRIORITY_COLORS: any = {
-    'Critical': 'bg-red-500 text-white',
-    'High': 'bg-orange-500 text-white',
-    'Medium': 'bg-yellow-500 text-black',
-    'Low': 'bg-green-500 text-white'
+    'Critical': 'bg-red-500 text-white border-red-500',
+    'High': 'bg-orange-500 text-white border-orange-500',
+    'Medium': 'bg-yellow-500 text-black border-yellow-500',
+    'Low': 'bg-green-500 text-white border-green-500'
   };
 
   const columns = ['Not Started', 'In Progress', 'Complete'];
@@ -75,9 +74,8 @@ export const Workspace: React.FC = () => {
     }
   }, [user, activeWorkspace]);
 
-  // Mathematical calculations for the Donut Chart and Progress Bars
   const stats = useMemo(() => {
-    const total = tasks.length || 1; // Prevent division by zero
+    const total = tasks.length || 1; 
     const completed = tasks.filter(t => t.status === 'Complete').length;
     const inProgress = tasks.filter(t => t.status === 'In Progress').length;
     const notStarted = tasks.filter(t => t.status === 'Not Started').length;
@@ -89,11 +87,29 @@ export const Workspace: React.FC = () => {
     };
   }, [tasks]);
 
+  const progressPercentage = stats.completedPct;
+
+  const getScheduleStatus = (deadline: string, status: string) => {
+    if (status === 'Complete') return { label: 'Completed', color: 'text-green-500 bg-green-500/10 border-green-500/20' };
+    if (!deadline || deadline === 'N/A') return { label: 'On Schedule', color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' };
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const taskDate = new Date(deadline);
+    
+    if (taskDate < today) {
+      return { label: 'Behind Schedule', color: 'text-red-500 bg-red-500/10 border-red-500/20' };
+    }
+    return { label: 'On Schedule', color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' };
+  };
+
   const addTask = async () => {
     if (!activeWorkspace) return;
     const title = prompt("Strategic Objective Title:");
     if (!title) return;
-    const deadline = prompt("Deadline (e.g., 2026-04-15):", "2026-04-15");
+    
+    const assigneeName = prompt("Assignee Name:", user?.displayName || 'Agent') || user?.displayName || 'Agent';
+    const deadline = prompt("Deadline (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
     const priority = prompt("Priority (Critical, High, Medium, Low):", "Medium") || "Medium";
     const type = prompt("Type (Planning, Dev, Design, Audit):", "Dev") || "Dev";
 
@@ -103,8 +119,8 @@ export const Workspace: React.FC = () => {
       status: 'Not Started',
       priority,
       type,
-      assignee: user?.displayName || 'Agent',
-      avatar: (user?.displayName || 'A').charAt(0).toUpperCase(),
+      assignee: assigneeName,
+      avatar: assigneeName.charAt(0).toUpperCase(),
       deadline: deadline || 'N/A',
       createdAt: serverTimestamp(),
       comments: []
@@ -163,7 +179,9 @@ export const Workspace: React.FC = () => {
   };
 
   const handleLogin = async () => {
-    await signInWithRedirect(auth, new GoogleAuthProvider());
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    await signInWithRedirect(auth, provider);
   };
 
   if (loading) return <div className="min-h-screen bg-[#050505] flex items-center justify-center text-yellow-500 font-black uppercase tracking-widest">Initialising HQ...</div>;
@@ -182,10 +200,10 @@ export const Workspace: React.FC = () => {
       {isCreatingWorkspace ? (
         <div className="flex flex-col gap-4 w-full max-w-sm mx-auto">
           <input type="text" placeholder="Workspace Name" value={newWorkspaceName} onChange={(e) => setNewWorkspaceName(e.target.value)} className="bg-black border border-gray-800 text-white p-5 rounded-2xl outline-none text-center font-bold" />
-          <button onClick={createWorkspace} className="bg-yellow-500 text-black p-5 rounded-2xl font-black uppercase tracking-widest text-xs">Authorize Creation</button>
+          <button onClick={createWorkspace} className="bg-yellow-500 text-black p-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-white transition-colors">Authorize Creation</button>
         </div>
       ) : (
-        <button onClick={() => setIsCreatingWorkspace(true)} className="bg-yellow-500 text-black px-12 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs">Create New Workspace</button>
+        <button onClick={() => setIsCreatingWorkspace(true)} className="bg-yellow-500 text-black px-12 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-colors">Create New Workspace</button>
       )}
     </div>
   );
@@ -193,14 +211,13 @@ export const Workspace: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[100] flex bg-[#050505] text-white font-sans overflow-hidden">
       
-      {/* SIDEBAR */}
       <aside className="hidden lg:flex w-72 bg-black border-r border-gray-900 flex-col pt-32 pb-8 px-4">
         <div className="mb-8 px-4">
           <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mb-1">Active Tenant</p>
           <select 
             value={activeWorkspace?.id} 
             onChange={(e) => setActiveWorkspace(workspaces.find((w: any) => w.id === e.target.value))}
-            className="w-full bg-gray-900 border border-gray-800 text-yellow-500 text-[10px] font-black uppercase tracking-widest p-3 rounded-xl outline-none"
+            className="w-full bg-gray-900 border border-gray-800 text-yellow-500 text-[10px] font-black uppercase tracking-widest p-3 rounded-xl outline-none cursor-pointer"
           >
             {workspaces.map(ws => (
               <option key={ws.id} value={ws.id}>{ws.name}</option>
@@ -210,8 +227,8 @@ export const Workspace: React.FC = () => {
 
         <nav className="flex-1 space-y-2">
           {[
-            { name: 'Entity Matrix', icon: FileText },
             { name: 'Task Board', icon: Layout },
+            { name: 'Entity Matrix', icon: FileText },
             { name: 'Team', icon: Users },
             { name: 'Team Chat', icon: MessageSquare }
           ].map((item) => (
@@ -231,11 +248,10 @@ export const Workspace: React.FC = () => {
         </nav>
       </aside>
 
-      {/* MOBILE NAV */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-2xl border-t border-gray-900 z-[200] px-6 py-3 flex justify-around items-center pb-safe">
         {[
-          { name: 'Entity Matrix', icon: FileText },
           { name: 'Task Board', icon: Layout },
+          { name: 'Entity Matrix', icon: FileText },
           { name: 'Team', icon: Users },
           { name: 'Team Chat', icon: MessageSquare }
         ].map((item) => (
@@ -246,24 +262,90 @@ export const Workspace: React.FC = () => {
         ))}
       </nav>
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 h-screen flex flex-col pt-24 lg:pt-32 p-4 md:p-12 overflow-hidden bg-[#070707] pb-20 lg:pb-0">
+      <main className="flex-1 h-screen flex flex-col pt-24 lg:pt-32 p-4 md:p-12 overflow-hidden bg-[#070707] pb-20 lg:pb-0 relative">
         
-        <header className="mb-8 lg:mb-12 flex flex-col gap-2 shrink-0">
+        <header className="mb-8 lg:mb-12 flex flex-col gap-6 shrink-0">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter leading-none">Tracking Progress of Project Management Tasks</h2>
-              <p className="text-sm text-gray-500 mt-2 font-medium">The following matrix illustrates the task management tool for tracking project status. It provides information about requirements, coding, development, knowledge, and execution.</p>
+              <h2 className="text-2xl md:text-5xl font-black uppercase tracking-tighter leading-none">{activeWorkspace?.name || 'Loading...'}</h2>
+              <p className="text-[8px] lg:text-[10px] text-gray-500 mt-2 font-bold tracking-widest uppercase">System Initialization: {activeWorkspace?.createdAt?.toDate().toLocaleDateString() || '...'}</p>
             </div>
-            {isWSAdmin && <button onClick={addTask} className="bg-yellow-500 text-black px-6 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black uppercase tracking-[0.2em] text-[8px] lg:text-[10px] hover:bg-white transition-all">+ Deploy</button>}
+            {isWSAdmin && <button onClick={addTask} className="bg-yellow-500 text-black px-6 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black uppercase tracking-[0.2em] text-[8px] lg:text-[10px] hover:bg-white transition-all">+ Deploy Task</button>}
+          </div>
+
+          <div className="bg-black/40 border border-gray-900 rounded-3xl p-6 relative overflow-hidden backdrop-blur-xl">
+            <div className="flex justify-between items-end mb-3">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Overall Project Trajectory</span>
+              <span className="text-2xl font-black text-yellow-500">{progressPercentage}%</span>
+            </div>
+            <div className="w-full bg-gray-900 rounded-full h-3 overflow-hidden border border-white/5 flex">
+              <div className="bg-green-500 h-full transition-all duration-1000" style={{ width: `${stats.completedPct}%` }}></div>
+              <div className="bg-yellow-500 h-full transition-all duration-1000" style={{ width: `${stats.inProgressPct}%` }}></div>
+            </div>
           </div>
         </header>
 
-        {/* IMAGE-REPLICATED MATRIX VIEW */}
+        {activeTab === 'Task Board' && (
+          <>
+            <div className="lg:hidden flex gap-2 mb-6 p-1 bg-black border border-gray-900 rounded-xl">
+              {columns.map(col => (
+                <button key={col} onClick={() => setMobileColumn(col)} className={`flex-1 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${mobileColumn === col ? 'bg-yellow-500 text-black' : 'text-gray-500'}`}>{col}</button>
+              ))}
+            </div>
+            <div className="flex gap-4 lg:gap-8 flex-1 overflow-x-auto lg:overflow-x-visible pb-4 custom-scrollbar items-start">
+              {columns.map(col => (
+                <div key={col} className={`${mobileColumn === col ? 'flex' : 'hidden lg:flex'} w-full lg:w-96 flex-shrink-0 bg-black/40 border border-gray-900 rounded-3xl p-6 flex flex-col max-h-full transition-all`}>
+                  <div className="flex justify-between items-center mb-8 border-b border-gray-900 pb-6 shrink-0">
+                    <h3 className="font-black text-gray-400 uppercase tracking-widest text-[11px]">{col}</h3>
+                    <span className="text-[9px] font-black text-yellow-500 bg-yellow-500/10 px-4 py-1.5 rounded-full">{tasks.filter(t => t.status === col).length}</span>
+                  </div>
+                  <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar pb-6">
+                    {tasks.filter(t => t.status === col).map(task => {
+                      const schedule = getScheduleStatus(task.deadline, task.status);
+                      
+                      return (
+                        <div key={task.id} className="p-6 bg-black/60 border border-gray-900 rounded-2xl group hover:border-yellow-500/30 transition-all backdrop-blur-sm">
+                          <div className="flex justify-between items-start mb-4">
+                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border ${PRIORITY_COLORS[task.priority || 'Medium']}`}>{task.priority || 'Medium'}</span>
+                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border ${schedule.color}`}>{schedule.label}</span>
+                          </div>
+                          
+                          <h4 className="text-[14px] font-bold text-white uppercase group-hover:text-yellow-500 transition-colors mb-4">{task.title}</h4>
+
+                          {task.comments && task.comments.length > 0 && (
+                            <div className="mb-4 space-y-1 max-h-20 overflow-y-auto custom-scrollbar">
+                              {task.comments.map((c: any, i: number) => (
+                                <div key={i} className="text-[9px] bg-white/5 p-2 rounded-lg border border-white/5"><span className="text-yellow-500 font-black uppercase mr-2">{c.user}:</span><span className="text-gray-300">{c.text}</span></div>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="flex justify-between items-center pt-4 border-t border-gray-900">
+                            <button onClick={() => addComment(task.id)} className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white transition-colors"><MessageSquare size={12} /></button>
+                            {task.status !== 'Complete' && <button onClick={() => advanceTask(task.id, task.status)} className="px-4 py-2 bg-yellow-500 text-black rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2"><Zap size={10} />Advance</button>}
+                            {isWSAdmin && <button onClick={() => deleteTask(task.id)} className="text-gray-700 hover:text-red-500 transition-colors"><Trash2 size={12} /></button>}
+                          </div>
+
+                          <div className="flex justify-between items-center mt-4 bg-black/50 p-3 rounded-xl border border-gray-800/50">
+                            <div className="flex items-center gap-2">
+                               <div className="w-6 h-6 rounded-lg bg-gray-900 flex items-center justify-center text-[10px] font-black text-yellow-500 border border-gray-800">{task.avatar}</div>
+                               <span className="text-[9px] uppercase font-black text-gray-400 max-w-[80px] truncate">{task.assignee}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500"><Clock size={10} className="text-yellow-500"/>{task.deadline}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
         {activeTab === 'Entity Matrix' && (
           <div className="flex-1 flex flex-col lg:flex-row gap-8 animate-fade-in pb-12 overflow-hidden">
             
-            {/* LEFT: THE DATA TABLE */}
             <div className="flex-[3] bg-[#0a0a0a] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
               <div className="overflow-x-auto flex-1 custom-scrollbar">
                 <table className="w-full text-left border-collapse whitespace-nowrap">
@@ -274,7 +356,7 @@ export const Workspace: React.FC = () => {
                           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-gray-800">
                             <FileText size={20} className="text-black" />
                           </div>
-                          <span className="text-white font-bold text-sm">Name</span>
+                          <span className="text-white font-bold text-sm">Objective Name</span>
                         </div>
                       </th>
                       <th className="p-4 text-center border-r border-gray-800 w-[20%]">
@@ -298,7 +380,7 @@ export const Workspace: React.FC = () => {
                           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-cyan-400">
                             <CheckCircle2 size={20} className="text-cyan-500" />
                           </div>
-                          <span className="text-cyan-400 font-bold text-sm">Status</span>
+                          <span className="text-cyan-400 font-bold text-sm">Schedule</span>
                         </div>
                       </th>
                       <th className="p-4 text-center border-r border-gray-800 w-[10%]">
@@ -326,12 +408,12 @@ export const Workspace: React.FC = () => {
                       </tr>
                     ) : tasks.map((task) => {
                       
-                      // Progress Bar Logic
                       let progressWidth = 'w-[10%]';
                       let progressColor = 'bg-gray-600';
                       if (task.status === 'Complete') { progressWidth = 'w-full'; progressColor = 'bg-green-500'; }
-                      else if (task.status === 'In Progress') { progressWidth = 'w-[50%]'; progressColor = 'bg-red-500'; }
-                      else { progressWidth = 'w-[20%]'; progressColor = 'bg-yellow-500'; }
+                      else if (task.status === 'In Progress') { progressWidth = 'w-[50%]'; progressColor = 'bg-yellow-500'; }
+
+                      const schedule = getScheduleStatus(task.deadline, task.status);
 
                       return (
                         <tr key={task.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => advanceTask(task.id, task.status)}>
@@ -347,13 +429,13 @@ export const Workspace: React.FC = () => {
                             <span className="text-sm text-gray-400">{task.type || 'Development'}</span>
                           </td>
                           <td className="p-4 text-center border-r border-gray-800">
-                            <span className="text-sm text-gray-300">{task.status === 'Complete' ? 'Completed' : task.status}</span>
+                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${schedule.color}`}>{schedule.label}</span>
                           </td>
-                          <td className={`p-4 text-center border-r border-gray-800 font-bold text-xs uppercase tracking-wider ${PRIORITY_COLORS[task.priority] || 'bg-yellow-500 text-black'}`}>
-                            {task.priority === 'Critical' ? '1 - Critical' : task.priority === 'High' ? '2 - High' : task.priority === 'Medium' ? '3 - Medium' : '5 - Lowest'}
+                          <td className={`p-4 text-center border-r border-gray-800 font-bold text-[10px] uppercase tracking-widest ${PRIORITY_COLORS[task.priority] || 'bg-gray-800 text-gray-400'}`}>
+                            {task.priority === 'Critical' ? '1 - Critical' : task.priority === 'High' ? '2 - High' : task.priority === 'Medium' ? '3 - Medium' : '4 - Low'}
                           </td>
                           <td className="p-4 text-center">
-                            <span className="text-sm text-gray-400">{task.assignee}</span>
+                            <span className="text-sm font-bold text-gray-300">{task.assignee}</span>
                           </td>
                         </tr>
                       );
@@ -363,29 +445,23 @@ export const Workspace: React.FC = () => {
               </div>
             </div>
 
-            {/* RIGHT: THE DONUT CHART */}
             <div className="flex-[1] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col p-8 items-center justify-center relative">
               <div className="relative w-64 h-64 mb-10">
-                {/* SVG Donut Chart overlapping mathematical calculation */}
                 <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
-                  {/* Background Circle */}
                   <circle cx="18" cy="18" r="15.915" fill="none" stroke="#f3f4f6" strokeWidth="6" />
                   
-                  {/* Completed (Dark Blue in reference image, mapping to our stats) */}
                   <circle cx="18" cy="18" r="15.915" fill="none" stroke="#1e1b4b" strokeWidth="6" 
                     strokeDasharray={`${stats.completedPct} ${100 - stats.completedPct}`} 
                     strokeDashoffset="25" 
                     className="transition-all duration-1000" 
                   />
                   
-                  {/* In Progress (Light Blue in reference image) */}
                   <circle cx="18" cy="18" r="15.915" fill="none" stroke="#06b6d4" strokeWidth="6" 
                     strokeDasharray={`${stats.inProgressPct} ${100 - stats.inProgressPct}`} 
                     strokeDashoffset={25 - stats.completedPct} 
                     className="transition-all duration-1000" 
                   />
 
-                  {/* Not Started (Gray/Light Blue) */}
                   <circle cx="18" cy="18" r="15.915" fill="none" stroke="#9ca3af" strokeWidth="6" 
                     strokeDasharray={`${stats.notStartedPct} ${100 - stats.notStartedPct}`} 
                     strokeDashoffset={25 - stats.completedPct - stats.inProgressPct} 
@@ -393,12 +469,10 @@ export const Workspace: React.FC = () => {
                   />
                 </svg>
                 
-                {/* Center Cutout for Donut Look */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-40 h-40 bg-white rounded-full"></div>
                 </div>
 
-                {/* Floating Percentage Tags */}
                 {stats.completedPct > 0 && (
                   <div className="absolute bottom-8 right-6 text-white font-black text-xl z-10">{stats.completedPct}%</div>
                 )}
@@ -407,76 +481,29 @@ export const Workspace: React.FC = () => {
                 )}
               </div>
 
-              {/* Legend */}
-              <div className="w-full flex flex-wrap justify-center gap-4 text-xs font-bold text-gray-700">
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#1e1b4b]"></div> Completed / On Schedule</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#06b6d4]"></div> In Progress / Starting Late</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#9ca3af]"></div> Not Started</div>
+              <div className="w-full flex flex-col gap-3 text-xs font-bold text-gray-700">
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#1e1b4b] rounded-sm"></div> Completed</div> <span>{stats.completedPct}%</span></div>
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#06b6d4] rounded-sm"></div> In Progress</div> <span>{stats.inProgressPct}%</span></div>
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#9ca3af] rounded-sm"></div> Not Started</div> <span>{stats.notStartedPct}%</span></div>
               </div>
               <div className="w-full h-1 bg-[#1e1b4b] mt-8 rounded-full"></div>
             </div>
           </div>
         )}
 
-        {/* TASK BOARD (KANBAN) */}
-        {activeTab === 'Task Board' && (
-          <>
-            <div className="lg:hidden flex gap-2 mb-6 p-1 bg-black border border-gray-900 rounded-xl">
-              {columns.map(col => (
-                <button key={col} onClick={() => setMobileColumn(col)} className={`flex-1 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${mobileColumn === col ? 'bg-yellow-500 text-black' : 'text-gray-500'}`}>{col}</button>
-              ))}
-            </div>
-            <div className="flex gap-4 lg:gap-8 flex-1 overflow-x-auto lg:overflow-x-visible pb-4 custom-scrollbar items-start">
-              {columns.map(col => (
-                <div key={col} className={`${mobileColumn === col ? 'flex' : 'hidden lg:flex'} w-full lg:w-96 flex-shrink-0 bg-black/40 border border-gray-900 rounded-3xl p-6 flex flex-col max-h-full transition-all`}>
-                  <div className="flex justify-between items-center mb-8 border-b border-gray-900 pb-6 shrink-0">
-                    <h3 className="font-black text-gray-400 uppercase tracking-widest text-[11px]">{col}</h3>
-                    <span className="text-[9px] font-black text-yellow-500 bg-yellow-500/10 px-4 py-1.5 rounded-full">{tasks.filter(t => t.status === col).length}</span>
-                  </div>
-                  <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar pb-6">
-                    {tasks.filter(t => t.status === col).map(task => (
-                      <div key={task.id} className="p-6 bg-black/60 border border-gray-900 rounded-2xl group hover:border-yellow-500/30 transition-all backdrop-blur-sm">
-                        <div className="flex flex-col gap-1 mb-4">
-                          <span className={`px-2 py-0.5 rounded text-[7px] font-black uppercase border w-fit ${task.priority === 'Critical' ? 'text-red-500 border-red-500/20 bg-red-500/10' : task.priority === 'High' ? 'text-orange-500 border-orange-500/20 bg-orange-500/10' : 'text-yellow-500 border-yellow-500/20 bg-yellow-500/10'}`}>{task.priority || 'Medium'}</span>
-                          <h4 className="text-[14px] font-bold text-white uppercase group-hover:text-yellow-500 transition-colors">{task.title}</h4>
-                        </div>
-
-                        {task.comments && task.comments.length > 0 && (
-                          <div className="mb-4 space-y-1 max-h-20 overflow-y-auto custom-scrollbar">
-                            {task.comments.map((c: any, i: number) => (
-                              <div key={i} className="text-[9px] bg-white/5 p-2 rounded-lg border border-white/5"><span className="text-yellow-500 font-black uppercase mr-2">{c.user}:</span><span className="text-gray-300">{c.text}</span></div>
-                            ))}
-                          </div>
-                        )}
-
-                        <div className="flex justify-between items-center pt-4 border-t border-gray-900">
-                          <button onClick={() => addComment(task.id)} className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white"><MessageSquare size={12} /></button>
-                          {task.status !== 'Complete' && <button onClick={() => advanceTask(task.id, task.status)} className="px-3 py-1.5 bg-yellow-500 text-black rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"><Zap size={10} />Advance</button>}
-                          {isWSAdmin && <button onClick={() => deleteTask(task.id)} className="text-gray-700 hover:text-red-500"><Trash2 size={12} /></button>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* TEAM */}
         {activeTab === 'Team' && (
-          <div className="absolute inset-0 bg-[#070707] flex flex-col p-12 overflow-y-auto z-[110]">
-            <header className="mb-12"><h3 className="text-4xl font-black uppercase tracking-tighter">Team Sovereignty</h3></header>
+          <div className="flex-1 flex flex-col pb-12 overflow-y-auto pr-2 custom-scrollbar animate-fade-in relative z-10">
+            <header className="mb-12"><h3 className="text-3xl font-black uppercase tracking-tighter">Team Sovereignty</h3></header>
             <section className="bg-black/40 border border-gray-900 rounded-3xl p-8 mb-12 backdrop-blur-xl">
                <h4 className="text-yellow-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6">Invite Member Node</h4>
                <div className="flex gap-4">
                  <input type="email" placeholder="Entity email..." value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="flex-1 bg-gray-900 border border-gray-800 text-white p-4 rounded-2xl outline-none text-xs font-bold" />
-                 <button onClick={inviteMember} className="bg-yellow-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px]">Invite</button>
+                 <button onClick={inviteMember} className="bg-yellow-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white transition-colors">Invite</button>
                </div>
             </section>
             <section className="space-y-6">
               {activeWorkspace?.members?.map((memberId: string) => (
-                <div key={memberId} className="bg-black/20 border border-gray-900 rounded-2xl p-6 flex justify-between items-center">
+                <div key={memberId} className="bg-black/20 border border-gray-900 rounded-2xl p-6 flex justify-between items-center hover:border-yellow-500/30 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500 font-black">ID</div>
                     <p className="text-sm font-bold text-white uppercase">{memberId}</p>
@@ -487,17 +514,15 @@ export const Workspace: React.FC = () => {
           </div>
         )}
 
-        {/* UNDER CONSTRUCTION */}
         {activeTab === 'Team Chat' && (
-          <div className="absolute inset-0 bg-[#050505] flex flex-col items-center justify-center p-12 text-center z-[110]">
-            <FileText size={64} className="text-yellow-500/20 mb-8" />
+          <div className="flex-1 flex flex-col items-center justify-center text-center animate-fade-in relative z-10">
+            <MessageSquare size={64} className="text-yellow-500/20 mb-8" />
             <h3 className="text-3xl font-black uppercase tracking-tighter text-yellow-500">Module Under Construction</h3>
-            <button onClick={() => setActiveTab('Entity Matrix')} className="mt-10 px-8 py-4 border border-yellow-500/20 text-yellow-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-yellow-500 hover:text-black transition-colors">Go Back</button>
+            <p className="text-gray-500 mt-4 max-w-md">The neural chat link for internal team communications is currently being engineered.</p>
+            <button onClick={() => setActiveTab('Task Board')} className="mt-10 px-8 py-4 border border-yellow-500/20 text-yellow-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-yellow-500 hover:text-black transition-colors">Return to Dashboard</button>
           </div>
         )}
       </main>
     </div>
   );
 };
-
-export default Workspace;
