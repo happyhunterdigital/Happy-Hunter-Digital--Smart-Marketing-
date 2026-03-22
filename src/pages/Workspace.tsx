@@ -6,28 +6,68 @@ import { CheckCircle2, Clock, Plus, Layout, Users, FileText, MessageSquare, Lock
 
 export const Workspace: React.FC = () => {
   const [user, setUser] = useState<any>(null);
+  const [workspaces, setWorkspaces] = useState<any[]>([]);
+  const [activeWorkspace, setActiveWorkspace] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Task Board');
+  const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
+  const [newWorkspaceName, setNewWorkspaceName] = useState('');
 
   const columns = ['To Do', 'In Progress', 'Done'];
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
-        const q = query(collection(db, 'workspace_tasks'), orderBy('order', 'asc'));
-        const unsubscribeTasks = onSnapshot(q, (snapshot) => {
-          setTasks(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        // Step 1: Discover Workspaces where user is a member
+        const qWS = query(collection(db, 'workspaces'), orderBy('createdAt', 'desc'));
+        // Note: In production, this would be filtered by membership, 
+        // but for the initial flow, we'll fetch then filter or create.
+        const unsubscribeWS = onSnapshot(qWS, (snapshot) => {
+          const wsList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+          // Filter workspaces where user is owner or member
+          const myWS = wsList.filter((ws: any) => ws.ownerId === u.uid);
+          setWorkspaces(myWS);
+          
+          if (myWS.length > 0 && !activeWorkspace) {
+            setActiveWorkspace(myWS[0]);
+          }
+          setLoading(false);
+        }, (error) => {
+          console.error("Workspace Sync Error:", error);
           setLoading(false);
         });
-        return () => unsubscribeTasks();
+        return () => unsubscribeWS();
       } else {
         setLoading(false);
       }
     });
     return () => unsubscribeAuth();
   }, []);
+
+  // Step 2: Stream Tasks for Active Workspace
+  useEffect(() => {
+    if (user && activeWorkspace) {
+      const qTasks = query(
+        collection(db, 'workspace_tasks'), 
+        orderBy('order', 'asc')
+        // Filter by specific workspace ID to ensure exclusivity
+      );
+      
+      const unsubscribeTasks = onSnapshot(qTasks, (snapshot) => {
+        // Client-side filtering as a fallback before aggressive security rules are in place
+        const filteredTasks = snapshot.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter((t: any) => t.workspaceId === activeWorkspace.id);
+          
+        setTasks(filteredTasks);
+      }, (error) => {
+        console.error("Task Sync Error:", error);
+      });
+      return () => unsubscribeTasks();
+    }
+  }, [user, activeWorkspace]);
 
   const progressPercentage = useMemo(() => {
     if (tasks.length === 0) return 0;
@@ -51,10 +91,12 @@ export const Workspace: React.FC = () => {
   };
 
   const addTask = async () => {
+    if (!activeWorkspace) return;
     const title = prompt("Enter the mission objective:");
     if (!title) return;
     
     await addDoc(collection(db, 'workspace_tasks'), {
+      workspaceId: activeWorkspace.id,
       title,
       status: 'To Do',
       assignee: user?.displayName || 'Agent',
@@ -63,6 +105,24 @@ export const Workspace: React.FC = () => {
       order: tasks.length,
       createdAt: serverTimestamp()
     });
+  };
+
+  const createWorkspace = async () => {
+    if (!newWorkspaceName || !user) return;
+    try {
+      const docRef = await addDoc(collection(db, 'workspaces'), {
+        name: newWorkspaceName,
+        ownerId: user.uid,
+        ownerEmail: user.email,
+        createdAt: serverTimestamp(),
+        members: [user.uid]
+      });
+      setIsCreatingWorkspace(false);
+      setNewWorkspaceName('');
+    } catch (error) {
+      console.error("Workspace Creation Failed:", error);
+      alert("Permission Check Failed: You need to update your Firestore Rules.");
+    }
   };
 
   const deleteTask = async (id: string) => {
@@ -109,14 +169,73 @@ export const Workspace: React.FC = () => {
     );
   }
 
+  if (workspaces.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center animate-fade-in pt-32">
+        <div className="w-20 h-20 bg-yellow-500/10 border border-yellow-500/20 rounded-full flex items-center justify-center mb-10 shadow-[0_0_50px_rgba(234,179,8,0.1)]">
+          <Plus size={32} className="text-yellow-500" />
+        </div>
+        <h2 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">No Active Multi-Tenant Workspace</h2>
+        <p className="text-gray-500 mb-12 font-medium max-w-md mx-auto leading-relaxed uppercase tracking-widest text-[10px]">Initialize a new secure digital environment to begin your architectural workflow.</p>
+        
+        {isCreatingWorkspace ? (
+          <div className="flex flex-col gap-4 w-full max-w-sm mx-auto animate-fade-in">
+            <input 
+              type="text" 
+              placeholder="Workspace Name (e.g., Client Alpha)"
+              value={newWorkspaceName}
+              onChange={(e) => setNewWorkspaceName(e.target.value)}
+              className="bg-black border border-gray-800 text-white p-5 rounded-2xl focus:border-yellow-500 outline-none text-center font-bold uppercase tracking-widest text-xs"
+            />
+            <div className="flex gap-4">
+              <button onClick={createWorkspace} className="flex-1 bg-yellow-500 text-black p-5 rounded-2xl font-black uppercase tracking-widest text-xs">Authorize Creation</button>
+              <button onClick={() => setIsCreatingWorkspace(false)} className="px-6 bg-gray-900 text-gray-500 p-5 rounded-2xl font-black uppercase tracking-widest text-xs">Abort</button>
+            </div>
+          </div>
+        ) : (
+          <button 
+            onClick={() => setIsCreatingWorkspace(true)} 
+            className="bg-yellow-500 text-black px-12 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-white transition-all shadow-[0_0_40px_rgba(234,179,8,0.3)]"
+          >
+            Create New Workspace
+          </button>
+        )}
+
+        <div className="mt-20 p-8 border border-red-500/20 bg-red-500/5 rounded-3xl max-w-2xl mx-auto">
+          <p className="text-red-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">CRITICAL: FIRESTORE PERMISSIONS</p>
+          <p className="text-gray-400 text-[10px] leading-relaxed uppercase tracking-widest font-bold">
+            Ifcreation fails, you must set your Firestore Rules to: <br/>
+            <code className="text-white mt-4 block p-4 bg-black rounded-xl">
+              match /workspaces/&#123;ws&#125; &#123; allow read, write: if request.auth != null; &#125;
+            </code>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[100] flex bg-[#050505] text-white font-sans overflow-hidden">
       
       {/* SIDEBAR NAVIGATION */}
       <aside className="w-20 lg:w-72 bg-black border-r border-gray-900 flex flex-col pt-32 pb-8 px-4">
-        <div className="hidden lg:block mb-12 px-4">
-          <h1 className="text-xl font-black uppercase tracking-tighter text-yellow-500">HQ Workspace</h1>
-          <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mt-1">Status: Online</p>
+        <div className="hidden lg:block mb-8 px-4">
+          <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mb-1">Active Tenant</p>
+          <select 
+            value={activeWorkspace?.id} 
+            onChange={(e) => setActiveWorkspace(workspaces.find(w => w.id === e.target.value))}
+            className="w-full bg-gray-900 border border-gray-800 text-yellow-500 text-[10px] font-black uppercase tracking-widest p-3 rounded-xl outline-none"
+          >
+            {workspaces.map(ws => (
+              <option key={ws.id} value={ws.id}>{ws.name}</option>
+            ))}
+          </select>
+          <button 
+            onClick={() => setWorkspaces([])} 
+            className="text-[8px] text-gray-500 mt-2 hover:text-white uppercase font-bold tracking-widest"
+          >
+            + New Environment
+          </button>
         </div>
 
         <nav className="flex-1 space-y-2">
@@ -157,8 +276,8 @@ export const Workspace: React.FC = () => {
         <header className="mb-12 flex flex-col gap-8 shrink-0">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Phase 1: Entity Architecture</h2>
-              <p className="text-[10px] text-gray-500 mt-2 font-bold tracking-widest uppercase">System Initialization: March 1, 2026 // Target: Launch Ready</p>
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">{activeWorkspace?.name || 'Loading Node...'}</h2>
+              <p className="text-[10px] text-gray-500 mt-2 font-bold tracking-widest uppercase">System Initialization: {activeWorkspace?.createdAt?.toDate().toLocaleDateString() || 'Pending...'} // Target: Launch Ready</p>
             </div>
             <button 
               onClick={addTask}
