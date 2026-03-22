@@ -25,6 +25,11 @@ export const Admin: React.FC = () => {
   ];
 
   useEffect(() => {
+    // 1. Capture Redirect Result
+    getRedirectResult(auth).then((result) => {
+      if (result) setUser(result.user);
+    }).catch(err => console.error("Admin Redirect Error:", err));
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);

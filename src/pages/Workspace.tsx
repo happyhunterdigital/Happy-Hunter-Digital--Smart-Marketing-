@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, orderBy, deleteDoc, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged, signOut, getRedirectResult } from 'firebase/auth';
 import { CheckCircle2, Clock, Plus, Layout, Users, FileText, MessageSquare, Lock, Trash2, Calendar, Zap } from 'lucide-react';
 
 export const Workspace: React.FC = () => {
@@ -18,9 +18,23 @@ export const Workspace: React.FC = () => {
   const columns = ['Not Started', 'In Progress', 'Complete'];
 
   useEffect(() => {
+    // 1. Capture Redirect Result (Crucial for Mobile Handshake)
+    getRedirectResult(auth).then((result) => {
+      if (result) {
+        console.log("Redirect Handshake Complete:", result.user.email);
+        setUser(result.user);
+      }
+    }).catch((error) => {
+      console.error("Redirect Error:", error);
+      if (error.code === 'auth/internal-error') {
+        alert("Mobile Auth Error: Check if your browser blocks third-party cookies.");
+      }
+    });
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
+        // ... (remaining logic same)
         // Step 0: Auto-Accept Invites (Resilient)
         try {
           const qInvites = query(collection(db, 'workspaces'), where('invites', 'array-contains', u.email));
