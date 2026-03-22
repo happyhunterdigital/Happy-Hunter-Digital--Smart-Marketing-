@@ -563,22 +563,10 @@ RULES:
         // Step 2: Send native WhatsApp CTA button with absolute document link
         if (sendGbpDoc || sendServicesDoc) {
           const docName = sendGbpDoc ? "AI & GBP Zero Clicks Revolutions Guide" : "Smart Marketing Service Guide";
-          const fileName = sendGbpDoc ? "hhd-gbp-zero-clicks.pdf" : "hhd-service-guide.pdf";
           
           const secureToken = generateViewerToken();
           const docParam = sendGbpDoc ? "&doc=gbp" : "";
           const viewerUrl = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
-            
-          const expiresAt = new Date();
-          expiresAt.setHours(expiresAt.getHours() + 24);
-            
-          await db.collection("secure_access_sessions").doc(secureToken).set({
-             createdAt: admin.firestore.FieldValue.serverTimestamp(),
-             expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
-             claimedBy: null,
-             phoneNode: from,
-             document: sendGbpDoc ? "gbp" : "services"
-          });
 
           const interactivePayload = {
             messaging_product: "whatsapp",
@@ -592,12 +580,19 @@ RULES:
               footer: { text: "happyhunterdigital.com" },
               action: {
                 name: "cta_url",
-                parameters: { display_text: "View Secure Document", url: viewerUrl }
+                parameters: { display_text: "View Document", url: viewerUrl }
               }
             }
           };
 
           try {
+            await db.collection("secure_access_sessions").doc(secureToken).set({
+              phoneNode: from,
+              document: sendGbpDoc ? "gbp" : "services",
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+              expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
+            });
+
             await axios.post(
               `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
               interactivePayload,
