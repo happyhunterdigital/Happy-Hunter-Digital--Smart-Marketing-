@@ -11,6 +11,9 @@ import * as crypto from "crypto";
 admin.initializeApp();
 const db = getFirestore();
 
+// ============================================================================
+// SYSTEM CONSTANTS & UTILITIES
+// ============================================================================
 const AI_MODEL = "gemini-3.1-flash-lite"; 
 const EMBEDDING_MODEL = "gemini-embedding-preview-0409";
 
@@ -36,6 +39,9 @@ function generateViewerToken(): string {
   return `${TOKEN_PREFIX}${timestamp}_${randomPart}`;
 }
 
+// ============================================================================
+// 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
+// ============================================================================
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
@@ -199,6 +205,9 @@ export const performAudit = onCall({
   }
 });
 
+// ============================================================================
+// 2. STRATEGIC CHAT (Web Chatbot)
+// ============================================================================
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
@@ -233,41 +242,37 @@ export const hunterChat = onCall({
  1. SMART Q&A: Answer questions intelligently.
  2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
  3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
- 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, DO NOT output a URL. Instead, you MUST include the exact tag [SEND_DOC_GBP] if they want the Google Business Profile guide, or [SEND_DOC_SERVICES] if they want the Service & Pricing guide.`;
+ 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a>.`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+        systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
         contents: [{ role: "user", parts: [{ text: message }] }],
         safetySettings: SAFETY_SETTINGS,
         generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
       })
     });
 
-    const data = await aiRes.json() as any;
-    if (data.candidates && data.candidates[0].content.parts[0].text) {
-      let finalReply = data.candidates[0].content.parts[0].text.trim();
-      
-      finalReply = finalReply.replace(
-        /\[SEND_DOC_SERVICES\]/g,
-        `<br/><br/><a href="${BASE_URL}/assets/hhd-service-guide.pdf" target="_blank" style="color: #eab308; text-decoration: underline;"><strong>[Tap Here to View Service Guide]</strong></a>`
-      );
-      finalReply = finalReply.replace(
-        /\[SEND_DOC_GBP\]/g,
-        `<br/><br/><a href="${BASE_URL}/assets/hhd-gbp-zero-clicks.pdf" target="_blank" style="color: #eab308; text-decoration: underline;"><strong>[Tap Here to View GBP Guide]</strong></a>`
-      );
-      
-      return { reply: finalReply };
+    if (!aiRes.ok) {
+      const errorText = await aiRes.text();
+      console.error(`Gemini Chat API Error:`, errorText);
+      return { reply: "My neural link is currently overloaded. Please email HQ." };
     }
+
+    const data = await aiRes.json() as any;
+    if (data.candidates && data.candidates[0].content.parts[0].text) return { reply: data.candidates[0].content.parts[0].text.trim() };
     return { reply: "I received an unreadable signal from the core. Try again." };
   } catch (e) {
     return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
   }
 });
 
+// ==========================================
+// 3. LANDING PAGE SERVICE REQUEST (AUTO EMAIL)
+// ==========================================
 export const submitServiceRequest = onCall({
   region: "us-central1",
   cors: true,
@@ -339,6 +344,9 @@ export const submitServiceRequest = onCall({
   }
 });
 
+// ============================================================================
+// BRAND SCHEMA COMPILER (Firestore Trigger)
+// ============================================================================
 export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async () => {
   try {
     const brandSnapshot = await db.collection("brand_identity").limit(1).get();
@@ -359,6 +367,9 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
   } catch (error) { return null; }
 });
 
+// ============================================================================
+// 4. WHATSAPP WEBHOOK
+// ============================================================================
 export const whatsappWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET') {
     if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
@@ -518,6 +529,9 @@ RULES:
           } catch (fallbackErr) { console.error("Generative Fallback Error:", fallbackErr); }
         }
 
+        // ============================================================
+        // WHATSAPP DOCUMENT INTERCEPTOR
+        // ============================================================
         let sendGbpDoc = false;
         let sendServicesDoc = false;
 
@@ -535,6 +549,7 @@ RULES:
         if (chatHistory.length > 10) chatHistory = chatHistory.slice(chatHistory.length - 10);
         await sessionRef.set({ history: chatHistory, last_updated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 
+        // Step 1: Send the AI conversational text response
         if (botResponse) {
           try {
             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
@@ -545,10 +560,25 @@ RULES:
           } catch (sendError: any) { console.error("WhatsApp Text Error:", sendError.message); }
         }
 
+        // Step 2: Send native WhatsApp CTA button with absolute document link
         if (sendGbpDoc || sendServicesDoc) {
           const docName = sendGbpDoc ? "AI & GBP Zero Clicks Revolutions Guide" : "Smart Marketing Service Guide";
           const fileName = sendGbpDoc ? "hhd-gbp-zero-clicks.pdf" : "hhd-service-guide.pdf";
-          const viewerUrl = `${BASE_URL}/assets/${fileName}`;
+          
+          const secureToken = generateViewerToken();
+          const docParam = sendGbpDoc ? "&doc=gbp" : "";
+          const viewerUrl = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
+            
+          const expiresAt = new Date();
+          expiresAt.setHours(expiresAt.getHours() + 24);
+            
+          await db.collection("secure_access_sessions").doc(secureToken).set({
+             createdAt: admin.firestore.FieldValue.serverTimestamp(),
+             expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+             claimedBy: null,
+             phoneNode: from,
+             document: sendGbpDoc ? "gbp" : "services"
+          });
 
           const interactivePayload = {
             messaging_product: "whatsapp",
@@ -558,11 +588,11 @@ RULES:
             interactive: {
               type: "cta_url",
               header: { type: "text", text: docName },
-              body: { text: "Your PDF is ready. Tap below to view or download it directly." },
+              body: { text: "Your secure access is ready. Tap below to authenticate and view. This link self-destructs in 24 hours." },
               footer: { text: "happyhunterdigital.com" },
               action: {
                 name: "cta_url",
-                parameters: { display_text: "View Document", url: viewerUrl }
+                parameters: { display_text: "View Secure Document", url: viewerUrl }
               }
             }
           };
@@ -586,6 +616,10 @@ RULES:
   return;
 });
 
+
+// ============================================================================
+// 5. DAILY REVENUE REPORT (Scheduled)
+// ============================================================================
 export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
   const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
@@ -603,6 +637,10 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
   }
 });
 
+
+// ============================================================================
+// 6. VECTOR EMBEDDER (Firestore Trigger)
+// ============================================================================
 export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
   const doc = event.data?.after.data();
   if (!doc || !doc.content) return;
