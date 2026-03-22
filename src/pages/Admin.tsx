@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, getDocs, limit } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
+import { signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, getRedirectResult } from 'firebase/auth';
 import { Terminal, Search, X, Crosshair, Calendar, Mail, Globe, Activity, Database, ShieldAlert, Lock, ArrowRight, MessageCircle, BarChart3, Smartphone, ShieldCheck, LogOut, Layers } from 'lucide-react';
 
 export const Admin: React.FC = () => {
@@ -40,7 +40,8 @@ export const Admin: React.FC = () => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
-      await signInWithPopup(auth, provider);
+      // Switched from Popup to Redirect to bypass mobile browser restrictions
+      await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Authentication Failed:", error);
     }
