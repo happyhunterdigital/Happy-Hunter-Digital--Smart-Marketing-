@@ -15,7 +15,7 @@ export const Workspace: React.FC = () => {
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
 
-  const columns = ['To Do', 'In Progress', 'Done'];
+  const columns = ['Not Started', 'In Progress', 'Complete'];
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
@@ -39,8 +39,8 @@ export const Workspace: React.FC = () => {
         // Step 1: Discover Workspaces where user is a member
         const qWS = query(
           collection(db, 'workspaces'), 
-          where('members', 'array-contains', u.uid),
-          orderBy('createdAt', 'desc')
+          where('members', 'array-contains', u.uid)
+          // orderBy removed to avoid composite index requirement
         );
         
         const unsubscribeWS = onSnapshot(qWS, (snapshot) => {
@@ -68,8 +68,8 @@ export const Workspace: React.FC = () => {
     if (user && activeWorkspace) {
       const qTasks = query(
         collection(db, 'workspace_tasks'), 
-        where('workspaceId', '==', activeWorkspace.id),
-        orderBy('order', 'asc')
+        where('workspaceId', '==', activeWorkspace.id)
+        // orderBy removed to avoid composite index requirement
       );
       
       const unsubscribeTasks = onSnapshot(qTasks, (snapshot) => {
@@ -84,7 +84,7 @@ export const Workspace: React.FC = () => {
 
   const progressPercentage = useMemo(() => {
     if (tasks.length === 0) return 0;
-    const completedTasks = tasks.filter(t => t.status === 'Done').length;
+    const completedTasks = tasks.filter(t => t.status === 'Complete').length;
     return Math.round((completedTasks / tasks.length) * 100);
   }, [tasks]);
 
@@ -105,15 +105,19 @@ export const Workspace: React.FC = () => {
 
   const addTask = async () => {
     if (!activeWorkspace) return;
-    const title = prompt("Enter the mission objective:");
+    const title = prompt("Enter mission objective:");
     if (!title) return;
     
+    const deadline = prompt("Expected Completion Date (e.g., Oct 24):", "Soon");
+    const assigneeName = prompt("Assign to (Name):", user?.displayName || 'Agent');
+
     await addDoc(collection(db, 'workspace_tasks'), {
       workspaceId: activeWorkspace.id,
       title,
-      status: 'To Do',
-      assignee: user?.displayName || 'Agent',
-      avatar: user?.displayName?.charAt(0) || 'A',
+      status: 'Not Started',
+      assignee: assigneeName,
+      avatar: assigneeName.charAt(0).toUpperCase(),
+      deadline: deadline || 'N/A',
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       order: tasks.length,
       createdAt: serverTimestamp()
@@ -356,7 +360,7 @@ export const Workspace: React.FC = () => {
               {/* COLUMN HEADER */}
               <div className="flex justify-between items-center mb-8 border-b border-gray-900 pb-6 shrink-0">
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${col === 'Done' ? 'bg-green-500' : col === 'In Progress' ? 'bg-yellow-500' : 'bg-gray-700'}`}></div>
+                  <div className={`w-2 h-2 rounded-full ${col === 'Complete' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : col === 'In Progress' ? 'bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]' : 'bg-gray-700'}`}></div>
                   <h3 className="font-black text-gray-400 uppercase tracking-widest text-[11px]">{col}</h3>
                 </div>
                 <span className="text-[9px] font-black text-yellow-500 bg-yellow-500/10 border border-yellow-500/20 px-4 py-1.5 rounded-full uppercase tracking-widest">
@@ -390,14 +394,20 @@ export const Workspace: React.FC = () => {
                         <div className="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-[10px] font-black text-yellow-500">
                           {task.avatar}
                         </div>
-                        <span className="text-[10px] uppercase font-black text-gray-500 tracking-wider">
-                          {task.assignee}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] uppercase font-black text-white/90 tracking-wider">
+                            {task.assignee}
+                          </span>
+                          <span className="text-[8px] uppercase font-bold text-gray-600 tracking-tighter">Assignee</span>
+                        </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 text-[9px] font-black text-gray-700 uppercase tracking-widest">
-                        <Calendar size={10} />
-                        {task.date}
+                      <div className="flex flex-col items-end">
+                        <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${new Date(task.deadline) < new Date() ? 'text-red-500' : 'text-yellow-500/80'}`}>
+                          <Clock size={10} />
+                          {task.deadline}
+                        </div>
+                        <span className="text-[8px] uppercase font-bold text-gray-600 tracking-tighter mt-1 text-right">Deadline</span>
                       </div>
                     </div>
                   </div>
