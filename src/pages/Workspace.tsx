@@ -14,6 +14,7 @@ export const Workspace: React.FC = () => {
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
+  const [mobileColumn, setMobileColumn] = useState('Not Started');
 
   const columns = ['Not Started', 'In Progress', 'Complete'];
 
@@ -313,9 +314,9 @@ export const Workspace: React.FC = () => {
   return (
     <div className="fixed inset-0 z-[100] flex bg-[#050505] text-white font-sans overflow-hidden">
       
-      {/* SIDEBAR NAVIGATION */}
-      <aside className="w-20 lg:w-72 bg-black border-r border-gray-900 flex flex-col pt-32 pb-8 px-4">
-        <div className="hidden lg:block mb-8 px-4">
+      {/* SIDEBAR NAVIGATION (Desktop) */}
+      <aside className="hidden lg:flex w-72 bg-black border-r border-gray-900 flex-col pt-32 pb-8 px-4">
+        <div className="mb-8 px-4">
           <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mb-1">Active Tenant</p>
           <select 
             value={activeWorkspace?.id} 
@@ -352,66 +353,101 @@ export const Workspace: React.FC = () => {
               }`}
             >
               <item.icon size={20} />
-              <span className="hidden lg:block font-black uppercase tracking-widest text-[10px]">{item.name}</span>
+              <span className="font-black uppercase tracking-widest text-[10px]">{item.name}</span>
             </button>
           ))}
         </nav>
 
         <div className="mt-auto border-t border-gray-900 pt-8 px-4 flex items-center gap-4">
           <img src={user.photoURL || ''} alt={user.displayName || ''} className="w-8 h-8 rounded-full border border-yellow-500/30" />
-          <div className="hidden lg:block overflow-hidden">
+          <div className="overflow-hidden">
             <p className="text-[10px] font-black uppercase truncate">{user.displayName}</p>
             <p className="text-[8px] text-gray-600 uppercase tracking-widest truncate">{user.email}</p>
           </div>
         </div>
       </aside>
 
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-2xl border-t border-gray-900 z-[200] px-6 py-3 flex justify-around items-center pb-safe">
+        {[
+          { name: 'Task Board', icon: Layout },
+          { name: 'Team', icon: Users },
+          { name: 'Team Chat', icon: MessageSquare }
+        ].map((item) => (
+          <button
+            key={item.name}
+            onClick={() => setActiveTab(item.name)}
+            className={`flex flex-col items-center gap-1 p-2 transition-all ${
+              activeTab === item.name ? 'text-yellow-500' : 'text-gray-600'
+            }`}
+          >
+            <item.icon size={18} />
+            <span className="text-[8px] font-black uppercase tracking-widest">{item.name.replace('Task Board', 'Tasks')}</span>
+          </button>
+        ))}
+      </nav>
+
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 h-screen flex flex-col pt-32 p-6 md:p-12 overflow-hidden bg-[#070707]">
+      <main className="flex-1 h-screen flex flex-col pt-24 lg:pt-32 p-4 md:p-12 overflow-hidden bg-[#070707] pb-20 lg:pb-0">
         
         {/* HEADER & PROJECT TELEMETRY */}
-        <header className="mb-12 flex flex-col gap-8 shrink-0">
+        <header className="mb-8 lg:mb-12 flex flex-col gap-6 lg:gap-8 shrink-0">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">{activeWorkspace?.name || 'Loading Node...'}</h2>
-              <p className="text-[10px] text-gray-500 mt-2 font-bold tracking-widest uppercase">System Initialization: {activeWorkspace?.createdAt?.toDate().toLocaleDateString() || 'Pending...'} // Target: Launch Ready</p>
+              <h2 className="text-2xl md:text-5xl font-black uppercase tracking-tighter leading-none">{activeWorkspace?.name || 'Loading Node...'}</h2>
+              <p className="text-[8px] lg:text-[10px] text-gray-500 mt-2 font-bold tracking-widest uppercase">System Initialization: {activeWorkspace?.createdAt?.toDate().toLocaleDateString() || 'Pending...'}</p>
             </div>
             {isWSAdmin && (
               <button 
                 onClick={addTask}
-                className="bg-yellow-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all shadow-xl hover:scale-105 active:scale-95"
+                className="bg-yellow-500 text-black px-4 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black uppercase tracking-[0.2em] text-[8px] lg:text-[10px] hover:bg-white transition-all shadow-xl"
               >
-                + Deploy Task
+                + Deploy
               </button>
             )}
           </div>
 
           {/* PROGRESS BAR ENGINE */}
-          <div className="bg-black/40 border border-gray-900 rounded-3xl p-8 relative overflow-hidden backdrop-blur-xl">
+          <div className="bg-black/40 border border-gray-900 rounded-2xl lg:rounded-3xl p-4 lg:p-8 relative overflow-hidden backdrop-blur-xl">
             <div className="flex justify-between items-end mb-4">
               <div className="flex items-center gap-2">
-                <Zap size={14} className="text-yellow-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Project Telemetry Sync</span>
+                <Zap size={10} className="text-yellow-500 animate-pulse" />
+                <span className="text-[8px] lg:text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Telemetry Sync</span>
               </div>
-              <span className="text-3xl font-black text-yellow-500">{progressPercentage}%</span>
+              <span className="text-xl lg:text-3xl font-black text-yellow-500">{progressPercentage}%</span>
             </div>
-            <div className="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-white/5">
+            <div className="w-full bg-gray-900 rounded-full h-1.5 lg:h-2 overflow-hidden border border-white/5">
               <div 
-                className="bg-yellow-500 h-2 rounded-full transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(234,179,8,0.5)]" 
+                className="bg-yellow-500 h-full rounded-full transition-all duration-1000 ease-out" 
                 style={{ width: `${progressPercentage}%` }}
               ></div>
             </div>
           </div>
         </header>
 
+        {/* MOBILE COLUMN SWITCHER */}
+        <div className="lg:hidden flex gap-2 mb-6 p-1 bg-black border border-gray-900 rounded-xl">
+          {columns.map(col => (
+            <button
+              key={col}
+              onClick={() => setMobileColumn(col)}
+              className={`flex-1 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${
+                mobileColumn === col ? 'bg-yellow-500 text-black' : 'text-gray-500'
+              }`}
+            >
+              {col}
+            </button>
+          ))}
+        </div>
+
         {/* KANBAN BOARD MATRIX */}
-        <div className="flex gap-8 flex-1 overflow-x-auto pb-4 custom-scrollbar items-start">
+        <div className="flex gap-4 lg:gap-8 flex-1 overflow-x-auto lg:overflow-x-visible pb-4 custom-scrollbar items-start">
           {columns.map(col => (
             <div 
               key={col} 
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, col)}
-              className="w-96 flex-shrink-0 bg-black/40 border border-gray-900 rounded-3xl p-6 flex flex-col max-h-full transition-all hover:border-gray-800"
+              className={`${mobileColumn === col ? 'flex' : 'hidden lg:flex'} w-full lg:w-96 flex-shrink-0 bg-black/40 border border-gray-900 rounded-3xl p-6 flex flex-col max-h-full transition-all hover:border-gray-800`}
             >
               
               {/* COLUMN HEADER */}
