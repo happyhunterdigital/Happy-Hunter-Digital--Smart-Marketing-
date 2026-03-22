@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, orderBy, deleteDoc, where, getDocs } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
-import { getAuth, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged, signOut, getRedirectResult } from 'firebase/auth';
-import { CheckCircle2, Clock, Plus, Layout, Users, FileText, MessageSquare, Lock, Trash2, Calendar, Zap } from 'lucide-react';
+import { GoogleAuthProvider, signInWithRedirect, onAuthStateChanged } from 'firebase/auth';
+import { CheckCircle2, Clock, Users, FileText, MessageSquare, Lock, Trash2, Zap, Layout, Activity, Database, AlertCircle } from 'lucide-react';
 
 export const Workspace: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -10,30 +10,24 @@ export const Workspace: React.FC = () => {
   const [activeWorkspace, setActiveWorkspace] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('Task Board');
+  
+  // Default to the new Tracking Matrix view
+  const [activeTab, setActiveTab] = useState('Entity Matrix');
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [mobileColumn, setMobileColumn] = useState('Not Started');
 
   const PRIORITY_COLORS: any = {
-    'Critical': 'text-red-500 bg-red-500/10 border-red-500/20',
-    'High': 'text-orange-500 bg-orange-500/10 border-orange-500/20',
-    'Medium': 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20',
-    'Low': 'text-green-500 bg-green-500/10 border-green-500/20'
+    'Critical': 'bg-red-500 text-white',
+    'High': 'bg-orange-500 text-white',
+    'Medium': 'bg-yellow-500 text-black',
+    'Low': 'bg-green-500 text-white'
   };
 
   const columns = ['Not Started', 'In Progress', 'Complete'];
 
   useEffect(() => {
-    getRedirectResult(auth).then((result) => {
-      if (result) {
-        setUser(result.user);
-      }
-    }).catch((error) => {
-      console.error("Redirect Error:", error);
-    });
-
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
@@ -81,10 +75,18 @@ export const Workspace: React.FC = () => {
     }
   }, [user, activeWorkspace]);
 
-  const progressPercentage = useMemo(() => {
-    if (tasks.length === 0) return 0;
-    const completedTasks = tasks.filter(t => t.status === 'Complete').length;
-    return Math.round((completedTasks / tasks.length) * 100);
+  // Mathematical calculations for the Donut Chart and Progress Bars
+  const stats = useMemo(() => {
+    const total = tasks.length || 1; // Prevent division by zero
+    const completed = tasks.filter(t => t.status === 'Complete').length;
+    const inProgress = tasks.filter(t => t.status === 'In Progress').length;
+    const notStarted = tasks.filter(t => t.status === 'Not Started').length;
+    
+    return {
+      completedPct: Math.round((completed / total) * 100),
+      inProgressPct: Math.round((inProgress / total) * 100),
+      notStartedPct: Math.round((notStarted / total) * 100),
+    };
   }, [tasks]);
 
   const addTask = async () => {
@@ -197,7 +199,7 @@ export const Workspace: React.FC = () => {
           <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mb-1">Active Tenant</p>
           <select 
             value={activeWorkspace?.id} 
-            onChange={(e) => setActiveWorkspace(workspaces.find(w => w.id === e.target.value))}
+            onChange={(e) => setActiveWorkspace(workspaces.find((w: any) => w.id === e.target.value))}
             className="w-full bg-gray-900 border border-gray-800 text-yellow-500 text-[10px] font-black uppercase tracking-widest p-3 rounded-xl outline-none"
           >
             {workspaces.map(ws => (
@@ -208,8 +210,8 @@ export const Workspace: React.FC = () => {
 
         <nav className="flex-1 space-y-2">
           {[
-            { name: 'Task Board', icon: Layout },
             { name: 'Entity Matrix', icon: FileText },
+            { name: 'Task Board', icon: Layout },
             { name: 'Team', icon: Users },
             { name: 'Team Chat', icon: MessageSquare }
           ].map((item) => (
@@ -232,8 +234,8 @@ export const Workspace: React.FC = () => {
       {/* MOBILE NAV */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-2xl border-t border-gray-900 z-[200] px-6 py-3 flex justify-around items-center pb-safe">
         {[
-          { name: 'Task Board', icon: Layout },
           { name: 'Entity Matrix', icon: FileText },
+          { name: 'Task Board', icon: Layout },
           { name: 'Team', icon: Users },
           { name: 'Team Chat', icon: MessageSquare }
         ].map((item) => (
@@ -247,25 +249,174 @@ export const Workspace: React.FC = () => {
       {/* MAIN CONTENT */}
       <main className="flex-1 h-screen flex flex-col pt-24 lg:pt-32 p-4 md:p-12 overflow-hidden bg-[#070707] pb-20 lg:pb-0">
         
-        <header className="mb-8 lg:mb-12 flex flex-col gap-6 shrink-0">
+        <header className="mb-8 lg:mb-12 flex flex-col gap-2 shrink-0">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl md:text-5xl font-black uppercase tracking-tighter leading-none">{activeWorkspace?.name || 'Loading...'}</h2>
-              <p className="text-[8px] lg:text-[10px] text-gray-500 mt-2 font-bold tracking-widest uppercase">System Initialization: {activeWorkspace?.createdAt?.toDate().toLocaleDateString() || '...'}</p>
+              <h2 className="text-3xl md:text-4xl font-black text-white tracking-tighter leading-none">Tracking Progress of Project Management Tasks</h2>
+              <p className="text-sm text-gray-500 mt-2 font-medium">The following matrix illustrates the task management tool for tracking project status. It provides information about requirements, coding, development, knowledge, and execution.</p>
             </div>
             {isWSAdmin && <button onClick={addTask} className="bg-yellow-500 text-black px-6 lg:px-8 py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black uppercase tracking-[0.2em] text-[8px] lg:text-[10px] hover:bg-white transition-all">+ Deploy</button>}
           </div>
+        </header>
 
-          <div className="bg-black/40 border border-gray-900 rounded-3xl p-6 lg:p-8 relative overflow-hidden backdrop-blur-xl">
-            <div className="flex justify-between items-end mb-4">
-              <span className="text-[8px] lg:text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Telemetry Sync</span>
-              <span className="text-xl lg:text-3xl font-black text-yellow-500">{progressPercentage}%</span>
+        {/* IMAGE-REPLICATED MATRIX VIEW */}
+        {activeTab === 'Entity Matrix' && (
+          <div className="flex-1 flex flex-col lg:flex-row gap-8 animate-fade-in pb-12 overflow-hidden">
+            
+            {/* LEFT: THE DATA TABLE */}
+            <div className="flex-[3] bg-[#0a0a0a] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+              <div className="overflow-x-auto flex-1 custom-scrollbar">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead>
+                    <tr className="bg-gray-900 border-b border-gray-800">
+                      <th className="p-4 text-center border-r border-gray-800 w-[25%]">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-gray-800">
+                            <FileText size={20} className="text-black" />
+                          </div>
+                          <span className="text-white font-bold text-sm">Name</span>
+                        </div>
+                      </th>
+                      <th className="p-4 text-center border-r border-gray-800 w-[20%]">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-cyan-400">
+                            <Activity size={20} className="text-cyan-500" />
+                          </div>
+                          <span className="text-cyan-400 font-bold text-sm">Progress</span>
+                        </div>
+                      </th>
+                      <th className="p-4 text-center border-r border-gray-800 w-[15%]">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-indigo-900">
+                            <Database size={20} className="text-indigo-900" />
+                          </div>
+                          <span className="text-white font-bold text-sm">Type</span>
+                        </div>
+                      </th>
+                      <th className="p-4 text-center border-r border-gray-800 w-[15%]">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-cyan-400">
+                            <CheckCircle2 size={20} className="text-cyan-500" />
+                          </div>
+                          <span className="text-cyan-400 font-bold text-sm">Status</span>
+                        </div>
+                      </th>
+                      <th className="p-4 text-center border-r border-gray-800 w-[10%]">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-black">
+                            <AlertCircle size={20} className="text-black" />
+                          </div>
+                          <span className="text-white font-bold text-sm">Priority</span>
+                        </div>
+                      </th>
+                      <th className="p-4 text-center w-[15%]">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-cyan-400">
+                            <Users size={20} className="text-cyan-500" />
+                          </div>
+                          <span className="text-cyan-400 font-bold text-sm">Owner</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-800 bg-[#050505]">
+                    {tasks.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-10 text-center text-gray-500 font-medium">No active tasks injected into the matrix.</td>
+                      </tr>
+                    ) : tasks.map((task) => {
+                      
+                      // Progress Bar Logic
+                      let progressWidth = 'w-[10%]';
+                      let progressColor = 'bg-gray-600';
+                      if (task.status === 'Complete') { progressWidth = 'w-full'; progressColor = 'bg-green-500'; }
+                      else if (task.status === 'In Progress') { progressWidth = 'w-[50%]'; progressColor = 'bg-red-500'; }
+                      else { progressWidth = 'w-[20%]'; progressColor = 'bg-yellow-500'; }
+
+                      return (
+                        <tr key={task.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => advanceTask(task.id, task.status)}>
+                          <td className="p-4 border-r border-gray-800">
+                            <p className="text-sm font-medium text-gray-200 truncate max-w-[250px]">{task.title}</p>
+                          </td>
+                          <td className="p-4 border-r border-gray-800 align-middle">
+                            <div className="w-full bg-gray-900 h-3 rounded-sm overflow-hidden">
+                              <div className={`${progressColor} ${progressWidth} h-full transition-all duration-500`}></div>
+                            </div>
+                          </td>
+                          <td className="p-4 text-center border-r border-gray-800">
+                            <span className="text-sm text-gray-400">{task.type || 'Development'}</span>
+                          </td>
+                          <td className="p-4 text-center border-r border-gray-800">
+                            <span className="text-sm text-gray-300">{task.status === 'Complete' ? 'Completed' : task.status}</span>
+                          </td>
+                          <td className={`p-4 text-center border-r border-gray-800 font-bold text-xs uppercase tracking-wider ${PRIORITY_COLORS[task.priority] || 'bg-yellow-500 text-black'}`}>
+                            {task.priority === 'Critical' ? '1 - Critical' : task.priority === 'High' ? '2 - High' : task.priority === 'Medium' ? '3 - Medium' : '5 - Lowest'}
+                          </td>
+                          <td className="p-4 text-center">
+                            <span className="text-sm text-gray-400">{task.assignee}</span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <div className="w-full bg-gray-900 rounded-full h-1.5 overflow-hidden border border-white/5">
-              <div className="bg-yellow-500 h-full rounded-full transition-all duration-1000" style={{ width: `${progressPercentage}%` }}></div>
+
+            {/* RIGHT: THE DONUT CHART */}
+            <div className="flex-[1] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col p-8 items-center justify-center relative">
+              <div className="relative w-64 h-64 mb-10">
+                {/* SVG Donut Chart overlapping mathematical calculation */}
+                <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
+                  {/* Background Circle */}
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#f3f4f6" strokeWidth="6" />
+                  
+                  {/* Completed (Dark Blue in reference image, mapping to our stats) */}
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#1e1b4b" strokeWidth="6" 
+                    strokeDasharray={`${stats.completedPct} ${100 - stats.completedPct}`} 
+                    strokeDashoffset="25" 
+                    className="transition-all duration-1000" 
+                  />
+                  
+                  {/* In Progress (Light Blue in reference image) */}
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#06b6d4" strokeWidth="6" 
+                    strokeDasharray={`${stats.inProgressPct} ${100 - stats.inProgressPct}`} 
+                    strokeDashoffset={25 - stats.completedPct} 
+                    className="transition-all duration-1000" 
+                  />
+
+                  {/* Not Started (Gray/Light Blue) */}
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#9ca3af" strokeWidth="6" 
+                    strokeDasharray={`${stats.notStartedPct} ${100 - stats.notStartedPct}`} 
+                    strokeDashoffset={25 - stats.completedPct - stats.inProgressPct} 
+                    className="transition-all duration-1000" 
+                  />
+                </svg>
+                
+                {/* Center Cutout for Donut Look */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-40 h-40 bg-white rounded-full"></div>
+                </div>
+
+                {/* Floating Percentage Tags */}
+                {stats.completedPct > 0 && (
+                  <div className="absolute bottom-8 right-6 text-white font-black text-xl z-10">{stats.completedPct}%</div>
+                )}
+                {stats.inProgressPct > 0 && (
+                  <div className="absolute top-20 left-4 text-white font-black text-lg z-10">{stats.inProgressPct}%</div>
+                )}
+              </div>
+
+              {/* Legend */}
+              <div className="w-full flex flex-wrap justify-center gap-4 text-xs font-bold text-gray-700">
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#1e1b4b]"></div> Completed / On Schedule</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#06b6d4]"></div> In Progress / Starting Late</div>
+                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#9ca3af]"></div> Not Started</div>
+              </div>
+              <div className="w-full h-1 bg-[#1e1b4b] mt-8 rounded-full"></div>
             </div>
           </div>
-        </header>
+        )}
 
         {/* TASK BOARD (KANBAN) */}
         {activeTab === 'Task Board' && (
@@ -286,7 +437,7 @@ export const Workspace: React.FC = () => {
                     {tasks.filter(t => t.status === col).map(task => (
                       <div key={task.id} className="p-6 bg-black/60 border border-gray-900 rounded-2xl group hover:border-yellow-500/30 transition-all backdrop-blur-sm">
                         <div className="flex flex-col gap-1 mb-4">
-                          <span className={`px-2 py-0.5 rounded text-[7px] font-black uppercase border w-fit ${PRIORITY_COLORS[task.priority || 'Medium']}`}>{task.priority || 'Medium'}</span>
+                          <span className={`px-2 py-0.5 rounded text-[7px] font-black uppercase border w-fit ${task.priority === 'Critical' ? 'text-red-500 border-red-500/20 bg-red-500/10' : task.priority === 'High' ? 'text-orange-500 border-orange-500/20 bg-orange-500/10' : 'text-yellow-500 border-yellow-500/20 bg-yellow-500/10'}`}>{task.priority || 'Medium'}</span>
                           <h4 className="text-[14px] font-bold text-white uppercase group-hover:text-yellow-500 transition-colors">{task.title}</h4>
                         </div>
 
@@ -303,14 +454,6 @@ export const Workspace: React.FC = () => {
                           {task.status !== 'Complete' && <button onClick={() => advanceTask(task.id, task.status)} className="px-3 py-1.5 bg-yellow-500 text-black rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"><Zap size={10} />Advance</button>}
                           {isWSAdmin && <button onClick={() => deleteTask(task.id)} className="text-gray-700 hover:text-red-500"><Trash2 size={12} /></button>}
                         </div>
-
-                        <div className="flex justify-between items-center mt-4">
-                          <div className="flex items-center gap-2">
-                             <div className="w-6 h-6 rounded-lg bg-gray-900 flex items-center justify-center text-[10px] font-black text-yellow-500 border border-gray-800">{task.avatar}</div>
-                             <span className="text-[9px] uppercase font-black text-gray-400">{task.assignee}</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-[9px] font-black uppercase text-yellow-500/80"><Clock size={10} />{task.deadline}</div>
-                        </div>
                       </div>
                     ))}
                   </div>
@@ -318,85 +461,6 @@ export const Workspace: React.FC = () => {
               ))}
             </div>
           </>
-        )}
-
-        {/* ENTITY MATRIX (DASHBOARD) */}
-        {activeTab === 'Entity Matrix' && (
-          <div className="flex-1 flex flex-col gap-6 lg:gap-10 animate-fade-in pb-12 overflow-y-auto pr-2 custom-scrollbar">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <div className="lg:col-span-1 bg-black/40 border border-gray-900 rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden backdrop-blur-xl">
-                <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-gray-500 mb-8 self-start">Task Distribution</h3>
-                <div className="relative w-40 h-40">
-                  <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
-                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#111" strokeWidth="3" />
-                    <circle cx="18" cy="18" r="15.915" fill="none" stroke="#EAB308" strokeWidth="3" strokeDasharray={`${progressPercentage} 100`} className="transition-all duration-1000" />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span className="text-4xl font-black text-white leading-none">{progressPercentage}%</span>
-                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest mt-1">Completion</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                  { label: 'Critical Alert', value: tasks.filter(t => t.priority === 'Critical').length, color: 'text-red-500', bg: 'bg-red-500/5' },
-                  { label: 'System Health', value: 'OPTIMAL', color: 'text-green-500', bg: 'bg-green-500/5' },
-                  { label: 'Active Targets', value: tasks.length, color: 'text-yellow-500', bg: 'bg-yellow-500/5' }
-                ].map((stat, i) => (
-                  <div key={i} className={`${stat.bg} border border-gray-900 rounded-3xl p-8 flex flex-col justify-center relative shadow-2xl`}>
-                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.3em] mb-4">{stat.label}</p>
-                    <p className={`text-5xl font-black tracking-tighter ${stat.color}`}>{stat.value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-black/60 border border-gray-900 rounded-3xl overflow-hidden backdrop-blur-3xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-black/60 border-b border-gray-900 text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">
-                      <th className="p-6">Objective</th>
-                      <th className="p-6">Progress Matrix</th>
-                      <th className="p-6">Type</th>
-                      <th className="p-6">Priority</th>
-                      <th className="p-6">Entity Owner</th>
-                      <th className="p-6 text-right">Deadline</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-900">
-                    {tasks.map(task => (
-                      <tr key={task.id} className="hover:bg-white/5 transition-colors group">
-                        <td className="p-6">
-                          <p className="text-sm font-black text-white uppercase tracking-tight group-hover:text-yellow-500 transition-colors">{task.title}</p>
-                        </td>
-                        <td className="p-6 min-w-[200px]">
-                          <div className="flex items-center gap-4">
-                            <div className="flex-1 h-1.5 bg-gray-900 rounded-full overflow-hidden border border-white/5">
-                              <div className={`h-full rounded-full transition-all duration-1000 ${task.status === 'Complete' ? 'bg-green-500 w-full' : task.status === 'In Progress' ? 'bg-yellow-500 w-1/2' : 'bg-gray-700 w-0'}`} />
-                            </div>
-                            <span className="text-[10px] font-black text-gray-500">{task.status === 'Complete' ? '100%' : task.status === 'In Progress' ? '50%' : '0%'}</span>
-                          </div>
-                        </td>
-                        <td className="p-6"><span className="text-[10px] font-black text-gray-400 uppercase italic opacity-70">{task.type || 'Dev'}</span></td>
-                        <td className="p-6">
-                           <span className={`px-2 py-1 rounded text-[8px] font-black uppercase border ${PRIORITY_COLORS[task.priority || 'Medium']}`}>{task.priority || 'Medium'}</span>
-                        </td>
-                        <td className="p-6">
-                           <div className="flex items-center gap-3">
-                              <div className="w-7 h-7 rounded-lg bg-gray-900 border border-gray-800 flex items-center justify-center text-[10px] font-black text-yellow-500">{task.avatar}</div>
-                              <span className="text-[10px] font-bold text-gray-300 uppercase">{task.assignee}</span>
-                           </div>
-                        </td>
-                        <td className="p-6 text-right"><span className="text-[10px] font-mono text-gray-500">{task.deadline}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
         )}
 
         {/* TEAM */}
@@ -424,11 +488,11 @@ export const Workspace: React.FC = () => {
         )}
 
         {/* UNDER CONSTRUCTION */}
-        {activeTab !== 'Task Board' && activeTab !== 'Entity Matrix' && activeTab !== 'Team' && (
+        {activeTab === 'Team Chat' && (
           <div className="absolute inset-0 bg-[#050505] flex flex-col items-center justify-center p-12 text-center z-[110]">
             <FileText size={64} className="text-yellow-500/20 mb-8" />
             <h3 className="text-3xl font-black uppercase tracking-tighter text-yellow-500">Module Under Construction</h3>
-            <button onClick={() => setActiveTab('Task Board')} className="mt-10 px-8 py-4 border border-yellow-500/20 text-yellow-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-yellow-500">Go Back</button>
+            <button onClick={() => setActiveTab('Entity Matrix')} className="mt-10 px-8 py-4 border border-yellow-500/20 text-yellow-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-yellow-500 hover:text-black transition-colors">Go Back</button>
           </div>
         )}
       </main>
