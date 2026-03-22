@@ -127,6 +127,35 @@ export const Workspace: React.FC = () => {
     });
   };
 
+  const advanceTask = async (taskId: string, currentStatus: string) => {
+    const nextStatusMap: { [key: string]: string } = {
+      'Not Started': 'In Progress',
+      'In Progress': 'Complete',
+      'Complete': 'Not Started'
+    };
+    await updateDoc(doc(db, 'workspace_tasks', taskId), {
+      status: nextStatusMap[currentStatus] || 'Not Started'
+    });
+  };
+
+
+
+  const addComment = async (taskId: string) => {
+    const comment = prompt("Enter team SITREP (Comment):");
+    if (!comment) return;
+    
+    const task = tasks.find(t => t.id === taskId);
+    const newComments = [...(task?.comments || []), {
+      text: comment,
+      user: user?.displayName || 'Agent',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }];
+
+    await updateDoc(doc(db, 'workspace_tasks', taskId), {
+      comments: newComments
+    });
+  };
+
   const createWorkspace = async () => {
     if (!newWorkspaceName || !user) return;
     try {
@@ -188,10 +217,9 @@ export const Workspace: React.FC = () => {
 
   const isWSAdmin = activeWorkspace?.roles?.[user?.uid] === 'admin' || activeWorkspace?.ownerId === user?.uid;
 
-  const deleteTask = async (id: string) => {
-    if (window.confirm("Nuclear Option? This will erase the task node.")) {
-      await deleteDoc(doc(db, 'workspace_tasks', id));
-    }
+  const deleteTask = async (taskId: string) => {
+    if (!isWSAdmin || !window.confirm("Nuclear Option? This will erase the task node.")) return;
+    await deleteDoc(doc(db, 'workspace_tasks', taskId));
   };
 
   const handleLogin = async () => {
@@ -387,23 +415,53 @@ export const Workspace: React.FC = () => {
                 {tasks.filter(t => t.status === col).map(task => (
                   <div 
                     key={task.id} 
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, task.id)}
-                    className="bg-black border border-gray-800 p-6 rounded-2xl hover:border-yellow-500/40 transition-all cursor-grab active:cursor-grabbing group shadow-2xl relative overflow-hidden"
+                    className="p-6 bg-black/60 border border-gray-900 rounded-2xl group hover:border-yellow-500/30 transition-all duration-300 backdrop-blur-sm"
                   >
-                    <div className="absolute top-0 left-0 w-1 h-full bg-gray-800 group-hover:bg-yellow-500 transition-colors"></div>
-                    
-                    <div className="flex justify-between items-start gap-4 mb-6">
-                      <p className="text-sm font-bold text-gray-200 leading-relaxed group-hover:text-white transition-colors">{task.title}</p>
-                      <button 
-                        onClick={() => deleteTask(task.id)}
-                        className="opacity-0 group-hover:opacity-100 p-2 text-gray-600 hover:text-red-500 transition-all"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                    <div className="flex justify-between items-start mb-4">
+                      <h4 className="text-[14px] font-bold text-white tracking-tight leading-tight group-hover:text-yellow-500 transition-colors">
+                        {task.title}
+                      </h4>
+                      {isWSAdmin && (
+                        <button onClick={() => deleteTask(task.id)} className="text-gray-700 hover:text-red-500 transition-colors">
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                     
-                    <div className="flex justify-between items-center">
+                    {/* COMMENTS LIST */}
+                    {task.comments && task.comments.length > 0 && (
+                      <div className="mb-4 space-y-2 max-h-24 overflow-y-auto pr-2 custom-scrollbar">
+                        {task.comments.map((c: any, i: number) => (
+                          <div key={i} className="text-[9px] bg-white/5 p-2 rounded-lg border border-white/5">
+                            <span className="text-yellow-500 font-black uppercase tracking-tighter mr-2">{c.user}:</span>
+                            <span className="text-gray-300">{c.text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center mb-6 pt-2">
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => addComment(task.id)}
+                          className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                          title="Add Team Comment"
+                        >
+                          <MessageSquare size={12} />
+                        </button>
+                        {task.status !== 'Complete' && (
+                          <button 
+                            onClick={() => advanceTask(task.id, task.status)}
+                            className="px-3 py-1.5 bg-yellow-500 text-black rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-yellow-400 transition-all flex items-center gap-2"
+                          >
+                            <Zap size={10} />
+                            Advance
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-gray-900 pt-4">
                       <div className="flex items-center gap-3">
                         <div className="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-[10px] font-black text-yellow-500">
                           {task.avatar}
