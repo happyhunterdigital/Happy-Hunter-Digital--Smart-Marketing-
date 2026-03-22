@@ -263,16 +263,6 @@ export const Workspace: React.FC = () => {
             Create New Workspace
           </button>
         )}
-
-        <div className="mt-20 p-8 border border-red-500/20 bg-red-500/5 rounded-3xl max-w-2xl mx-auto">
-          <p className="text-red-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">CRITICAL: FIRESTORE PERMISSIONS</p>
-          <p className="text-gray-400 text-[10px] leading-relaxed uppercase tracking-widest font-bold">
-            Ifcreation fails, you must set your Firestore Rules to: <br/>
-            <code className="text-white mt-4 block p-4 bg-black rounded-xl">
-              match /workspaces/&#123;ws&#125; &#123; allow read, write: if request.auth != null; &#125;
-            </code>
-          </p>
-        </div>
       </div>
     );
   }
