@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, orderBy, deleteDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, orderBy, deleteDoc, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { CheckCircle2, Clock, Plus, Layout, Users, FileText, MessageSquare, Lock, Trash2, Calendar, Zap } from 'lucide-react';
@@ -13,6 +13,7 @@ export const Workspace: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Task Board');
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
 
   const columns = ['To Do', 'In Progress', 'Done'];
 
@@ -20,6 +21,21 @@ export const Workspace: React.FC = () => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
+        // Step 0: Auto-Accept Invites
+        // Find workspaces where user's email is in 'invites' but UID is not in 'members'
+        const qInvites = query(collection(db, 'workspaces'), where('invites', 'array-contains', u.email));
+        const inviteSnapshot = await getDocs(qInvites);
+        for (const wsDoc of inviteSnapshot.docs) {
+          const wsData = wsDoc.data();
+          if (!wsData.members.includes(u.uid)) {
+            await updateDoc(doc(db, 'workspaces', wsDoc.id), {
+              members: [...wsData.members, u.uid],
+              invites: wsData.invites.filter((email: string) => email !== u.email),
+              [`roles.${u.uid}`]: 'member' // Default role
+            });
+          }
+        }
+
         // Step 1: Discover Workspaces where user is a member
         const qWS = query(collection(db, 'workspaces'), orderBy('createdAt', 'desc'));
         // Note: In production, this would be filtered by membership, 
@@ -115,7 +131,8 @@ export const Workspace: React.FC = () => {
         ownerId: user.uid,
         ownerEmail: user.email,
         createdAt: serverTimestamp(),
-        members: [user.uid]
+        members: [user.uid],
+        roles: { [user.uid]: 'admin' }
       });
       setIsCreatingWorkspace(false);
       setNewWorkspaceName('');
@@ -124,6 +141,27 @@ export const Workspace: React.FC = () => {
       alert("Permission Check Failed: You need to update your Firestore Rules.");
     }
   };
+
+  const inviteMember = async () => {
+    if (!inviteEmail || !activeWorkspace) return;
+    // Note: In a real system, you'd lookup the UID by email via a Cloud Function
+    // For now, we'll simulate the invite by adding the email to an 'invited' list
+    // and assume the user will be added to 'members' when they next log in.
+    const wsRef = doc(db, 'workspaces', activeWorkspace.id);
+    const updatedInvites = [...(activeWorkspace.invites || []), inviteEmail];
+    await updateDoc(wsRef, { invites: updatedInvites });
+    setInviteEmail('');
+    alert(`Invitation sent to ${inviteEmail}. Access will be granted upon their next login.`);
+  };
+
+  const updateMemberRole = async (userId: string, newRole: 'admin' | 'member') => {
+    if (!activeWorkspace) return;
+    const wsRef = doc(db, 'workspaces', activeWorkspace.id);
+    const updatedRoles = { ...(activeWorkspace.roles || {}), [userId]: newRole };
+    await updateDoc(wsRef, { roles: updatedRoles });
+  };
+
+  const isWSAdmin = activeWorkspace?.roles?.[user?.uid] === 'admin' || activeWorkspace?.ownerId === user?.uid;
 
   const deleteTask = async (id: string) => {
     if (window.confirm("Nuclear Option? This will erase the task node.")) {
@@ -241,6 +279,7 @@ export const Workspace: React.FC = () => {
         <nav className="flex-1 space-y-2">
           {[
             { name: 'Task Board', icon: Layout },
+            { name: 'Team', icon: Users },
             { name: 'Whiteboards', icon: FileText },
             { name: 'Documents', icon: FileText },
             { name: 'Team Chat', icon: MessageSquare }
@@ -279,12 +318,14 @@ export const Workspace: React.FC = () => {
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">{activeWorkspace?.name || 'Loading Node...'}</h2>
               <p className="text-[10px] text-gray-500 mt-2 font-bold tracking-widest uppercase">System Initialization: {activeWorkspace?.createdAt?.toDate().toLocaleDateString() || 'Pending...'} // Target: Launch Ready</p>
             </div>
-            <button 
-              onClick={addTask}
-              className="bg-yellow-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all shadow-xl hover:scale-105 active:scale-95"
-            >
-              + Deploy Task
-            </button>
+            {isWSAdmin && (
+              <button 
+                onClick={addTask}
+                className="bg-yellow-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white transition-all shadow-xl hover:scale-105 active:scale-95"
+              >
+                + Deploy Task
+              </button>
+            )}
           </div>
 
           {/* PROGRESS BAR ENGINE */}
@@ -378,7 +419,71 @@ export const Workspace: React.FC = () => {
       </main>
 
       {/* GLOBAL OVERLAYS */}
-      {activeTab !== 'Task Board' && (
+      {activeTab === 'Team' && (
+        <div className="absolute top-32 left-20 lg:left-72 right-0 bottom-0 bg-[#070707] flex flex-col p-12 overflow-y-auto animate-fade-in z-[110]">
+          <div className="max-w-4xl w-full mx-auto">
+            <header className="mb-12">
+              <h3 className="text-4xl font-black uppercase tracking-tighter">Team Sovereignty</h3>
+              <p className="text-gray-500 text-[10px] uppercase tracking-[0.3em] mt-2 font-bold leading-relaxed"> Manage environment access and delegate binary powers to authorized entities.</p>
+            </header>
+
+            {isWSAdmin && (
+              <section className="bg-black/40 border border-gray-900 rounded-3xl p-8 mb-12 backdrop-blur-xl">
+                <h4 className="text-yellow-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6">Invite Member Node</h4>
+                <div className="flex gap-4">
+                  <input 
+                    type="email" 
+                    placeholder="Enter entity email..."
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="flex-1 bg-gray-900 border border-gray-800 text-white p-4 rounded-2xl focus:border-yellow-500 outline-none text-xs font-bold"
+                  />
+                  <button onClick={inviteMember} className="bg-yellow-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px]">Invite Entity</button>
+                </div>
+              </section>
+            )}
+
+            <section className="space-y-6">
+              <h4 className="text-gray-600 text-[10px] font-black uppercase tracking-[0.2em] mb-4">Active Member Matrix</h4>
+              {/* Note: In a complete system, you'd fetch user profiles for these IDs */}
+              {activeWorkspace?.members?.map((memberId: string) => (
+                <div key={memberId} className="bg-black/20 border border-gray-900 rounded-2xl p-6 flex justify-between items-center group hover:border-gray-800 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-500 font-black">
+                      {memberId === user.uid ? 'YOU' : 'ID'}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white uppercase tracking-tight">{memberId === user.uid ? user.displayName : 'Remote Agent'}</p>
+                      <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest">{memberId === user.uid ? user.email : memberId}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-4">
+                    <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                      activeWorkspace?.roles?.[memberId] === 'admin' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' : 'bg-gray-900 text-gray-600 border-gray-800'
+                    }`}>
+                      {activeWorkspace?.roles?.[memberId] || 'member'}
+                    </span>
+                    
+                    {isWSAdmin && memberId !== user.uid && (
+                      <select 
+                        onChange={(e) => updateMemberRole(memberId, e.target.value as 'admin' | 'member')}
+                        className="bg-gray-900 border border-gray-800 text-gray-400 text-[9px] font-black uppercase px-3 py-1.5 rounded-lg outline-none cursor-pointer hover:text-white"
+                      >
+                        <option value="">Change Power</option>
+                        <option value="admin">Promote to Admin</option>
+                        <option value="member">Limit to Member</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </section>
+          </div>
+        </div>
+      )}
+
+      {activeTab !== 'Task Board' && activeTab !== 'Team' && (
         <div className="absolute top-32 left-20 lg:left-72 right-0 bottom-0 bg-[#050505] flex flex-col items-center justify-center p-12 text-center z-[110]">
           <FileText size={64} className="text-yellow-500/20 mb-8" />
           <h3 className="text-3xl font-black uppercase tracking-tighter text-yellow-500">Module Under Construction</h3>
