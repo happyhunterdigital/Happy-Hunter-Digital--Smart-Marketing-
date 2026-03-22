@@ -1,21 +1,27 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onRequest } from "firebase-functions/v2/https";
-import { onDocumentWritten } from "firebase-functions/v2/firestore";
+import { onDocumentWritten, onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import * as crypto from "crypto";
 
 admin.initializeApp();
 const db = getFirestore();
 
-// ============================================================================
-// SYSTEM CONSTANTS & UTILITIES
-// ============================================================================
-const AI_MODEL = "gemini-3.1-flash-lite";
+const AI_MODEL = "gemini-3.1-flash-lite"; 
 const EMBEDDING_MODEL = "gemini-embedding-preview-0409";
+
+const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || "";
+const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
+const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "HAPPY_HUNTER_SECURE_2026";
+const ADMIN_NUMBER = "27601016673";
+
+const TOKEN_PREFIX = "hhd_secure_";
 const BASE_URL = "https://happyhunterdigital.com";
+const VIEWER_PATH = "/view/guide";
 
 const SAFETY_SETTINGS = [
   { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
@@ -24,15 +30,12 @@ const SAFETY_SETTINGS = [
   { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
 ];
 
-// EXPLICIT GLOBAL DECLARATIONS - DO NOT REMOVE
-const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || '';
-const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
-const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
-const ADMIN_NUMBER = "27601016673";
+function generateViewerToken(): string {
+  const timestamp = Date.now().toString(36);
+  const randomPart = crypto.randomBytes(16).toString("hex");
+  return `${TOKEN_PREFIX}${timestamp}_${randomPart}`;
+}
 
-// ============================================================================
-// 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
-// ============================================================================
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
@@ -40,7 +43,7 @@ export const performAudit = onCall({
   timeoutSeconds: 300
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
-
+  
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
 
@@ -49,209 +52,153 @@ export const performAudit = onCall({
 
   try {
     const getPlaces = async (query: string) => {
-      try {
-        const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": P_KEY,
-            "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress,places.nationalPhoneNumber,places.regularOpeningHours,places.photos,places.reviews,places.primaryTypeDisplayName,places.types"
-          },
-          body: JSON.stringify({ textQuery: query, pageSize: 5 })
-        });
-        return await res.json() as any;
-      } catch (e) { return { places: [] }; }
+      const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": P_KEY,
+          "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri"
+        },
+        body: JSON.stringify({ textQuery: query })
+      });
+      return res.json() as any;
     };
 
-    const searchVariants = [
-      `${businessName} ${location}`,
-      businessName,
-      businessName.replace(/\s+/g, '') 
-    ];
+    let pData = await getPlaces(`${businessName} in ${location}`);
+    let biz = pData?.places?.[0] || null;
 
-    let biz: any = null;
-    for (const variant of searchVariants) {
-      const pData = await getPlaces(variant);
-      if (pData?.places?.length > 0) {
-        biz = pData.places.find((p: any) => {
-          const mapName = p.displayName?.text?.toLowerCase().replace(/\s+/g, '') || "";
-          const targetName = businessName.toLowerCase().replace(/\s+/g, '');
-          return mapName.includes(targetName) || targetName.includes(mapName);
-        });
-        if (biz) break;
-        if (!biz) biz = pData.places[0];
-        break;
-      }
+    if (!biz) {
+      pData = await getPlaces(businessName);
+      biz = pData?.places?.[0] || null;
     }
 
-    let competitor: any = null;
-    if (biz?.primaryTypeDisplayName?.text) {
-      const category = biz.primaryTypeDisplayName.text;
-      const compData = await getPlaces(`best ${category} in ${location}`);
-      if (compData.places && compData.places.length > 0) {
-        competitor = compData.places.find((p: any) => p.displayName?.text?.toLowerCase() !== biz.displayName?.text?.toLowerCase());
-      }
-    }
-
-    const websiteUrl: string | null = biz?.websiteUri || null;
+    const websiteUrl = biz?.websiteUri || null;
+    
     let detectedSchemas: string[] = [];
     let hasSchema = false;
-    let websiteText = "None extracted";
 
     if (websiteUrl) {
       try {
-        const webRes = await axios.get(websiteUrl, { timeout: 6000, headers: { "User-Agent": "Mozilla/5.0" } });
+        const webRes = await axios.get(websiteUrl, {
+          timeout: 6000,
+          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
+        });
         const $ = cheerio.load(webRes.data);
-        
-        $('script, style, nav, footer').remove();
-        websiteText = $('body').text().replace(/\s+/g, ' ').substring(0, 3000);
+
         $('script[type="application/ld+json"]').each((_, element) => {
           hasSchema = true;
           try {
             const jsonData = JSON.parse($(element).html() || "{}");
+
             const extractType = (obj: any) => {
               if (!obj) return;
-              if (Array.isArray(obj)) obj.forEach(extractType);
-              else if (typeof obj === 'object') {
+              if (Array.isArray(obj)) {
+                obj.forEach(extractType);
+              } else if (typeof obj === 'object') {
                 if (obj['@type']) detectedSchemas.push(obj['@type']);
                 if (obj['@graph']) extractType(obj['@graph']);
               }
             };
+
             extractType(jsonData);
-          } catch (e) { }
+          } catch(e) { }
         });
+
         detectedSchemas = [...new Set(detectedSchemas)];
         if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
-      } catch (err) { console.log("Web scrape failed or timed out for:", websiteUrl); }
+
+      } catch (err) {
+        console.log("Web scrape failed or timed out for:", websiteUrl);
+      }
     }
 
     const schemaString = detectedSchemas.length > 0 ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
     const bizNameStr = biz?.displayName?.text || "NONE FOUND";
-    const bizTypes = biz?.types?.join(", ") || "None";
-    const bizCategory = biz?.primaryTypeDisplayName?.text || "Generic";
-    const photoCount = biz?.photos?.length || 0;
-    const reviewCount = biz?.userRatingCount || 0;
-    const rating = biz?.rating || 0;
-    const address = biz?.formattedAddress || "None";
-    const phone = biz?.nationalPhoneNumber || "None";
-    const lastReview = biz?.reviews && biz.reviews.length > 0 ? biz.reviews[0].publishTime : "Never";
 
-    const compName = competitor?.displayName?.text || "Unknown Competitor";
-    const compRating = competitor?.rating || 0;
-    const compReviews = competitor?.userRatingCount || 0;
+    let context = "";
+    if (!biz) {
+      context = `GHOST ENTITY: No Google Maps data found for "${businessName}". No Website verified. ${schemaString}`;
+    } else {
+      context = `
+ - User Searched For: "${businessName}"
+ - Google Maps Returned: "${bizNameStr}"
+ - Maps Rating: ${biz.rating || 0} (${biz.userRatingCount || 0} reviews)
+ - Website Linked in Maps: ${websiteUrl || 'NONE LINKED'}
+ - ${schemaString}
+ `;
+    }
 
-    const context = `
---- TARGET ENTITY ---
-Search Query: "${businessName} in ${location}"
-Google Maps Name: "${bizNameStr}"
-Category: ${bizCategory}
-Other Types: ${bizTypes}
-Rating: ${rating} (${reviewCount} reviews)
-Last Review Date: ${lastReview}
-Photos Count: ${photoCount}
-Address: ${address}
-Phone: ${phone}
-Website Scraped: ${websiteUrl || 'NONE'}
-Schemas: ${schemaString}
-Website Content Snip: ${websiteText}
+    const RUBRIC = `
+ SCORING RUBRIC (0-100):
+ - Baseline 30.
+ - Verified Maps Entity (Names Match Exactly): +20 points.
+ - Rating >= 4.0: +15 points.
+ - Schema Markup Detected (true): +25 points (Crucial for AEO).
+ - Ghost Entity OR No Schema: Deduct 30 points.
 
---- COMPETITOR ---
-Competitor Name: "${compName}"
-Competitor Rating: ${compRating} (${compReviews} reviews)
-    `;
+ CRITICAL TRAFFIC HIJACK INSTRUCTION:
+ If the "User Searched For" name and the "Google Maps Returned" name are fundamentally different businesses, you MUST treat this as a TRAFFIC HIJACK.
+ If hijacked, set their total score to 0. Do NOT praise the competitor's rating. In your summary, explicitly state that because their digital footprint is weak, Google algorithms are routing their high-intent customers directly to a competitor named "[Google Maps Returned name]". Agitate this pain point.
 
-    const RUBRIC = `You are a strict Diagnostic Logic Engine analyzing a business's digital footprint. Use words like 'Diagnosis' and 'DNA Mutation' as metaphors for data inconsistencies. Do NOT sound like a literal medical doctor; refer to 'the business' or 'the entity', never 'the patient'. Pass the Data Context through these 5 If/Then Gates. Do NOT output markdown. Output ONLY a valid JSON object matching the required schema exactly.
-
-Gate 1: Foundation (Ownership). If Google Maps Name is "NONE FOUND", Status = "NON-EXISTENT" (Urgency: "Your business is digitally invisible. You do not exist in the local economy."). If the profile appears unclaimed/unverified based on metadata, Status = "UNSECURED" (Urgency: "Your storefront is an open public park. You have no legal control over your entity."). Otherwise, assume "VERIFIED".
-Gate 2: Ghost Effect (Categorization Gap). Perform a semantic intent Cross-Check: Compare the Maps [Category] and hidden [Other Types] against the [Website Content Snip] and [Schemas]. If there is a disconnect (e.g., GBP says 'Attorney' but site says 'LocalBusiness' or lacks legal semantics), Identity Crisis = "Mismatch". Problem: "Your DNA is mutated. Google categorizes you as [Category], but your site signals [Intent]."
-Gate 3: Pulse (Social Proof). If "Last Review Date" is "Never" or >90 days, Review Velocity = "STALE". Urgency: "To a 2026 AI, a silent profile is a dead business." If Photos Count < 20, Media Depth = "VISUAL VOID". Urgency: "Profiles with 100+ photos get 5x clicks. You are a ghost in a world."
-Gate 4: Micro-Fractures (NAP Integrity). Act as a String Similarity Algorithm (Levenshtein Distance). Cross-check the Maps [Address] & [Phone] against the [Website Content Snip]. If they do not appear exactly or similarity is < 95%, NAP Integrity = "FAILED". Urgency: "Micro-mismatches in your address/phone are fragmenting your authority. The algorithm cannot verify your 'Golden Thread'."
-Gate 5: Authority Ownership (The Threat). If Competitor Rating/Reviews > Target, Threat = "Live Threat". Reality: "Authority Displacement: [Competitor Name] has infiltrated your territory and is capturing your local lead share."
-
-Score (0-100%): Start at 100. Deduct heavily for failures (e.g. -40 NON-EXISTENT, -20 STALE, -15 VISUAL VOID, -15 NAP FAILED).
-
-JSON SCHEMA:
-{
-  "score": number,
-  "diagnosis": "string (the blunt, overarching forensic business summary)",
-  "identityCrisis": { "status": "Aligned"|"Mismatch", "problem": "string", "whyItMatters": "string" },
-  "gapAnalysis": [
-    { "title": "Claim Status", "status": "VERIFIED"|"UNSECURED"|"NON-EXISTENT", "urgency": "string" },
-    { "title": "Review Velocity", "status": "HEALTHY"|"STALE"|"REPUTATION RISK", "urgency": "string" },
-    { "title": "Media Depth", "status": "HEALTHY"|"LOW"|"VISUAL VOID", "urgency": "string" },
-    { "title": "NAP Integrity", "status": "VERIFIED"|"FAILED", "urgency": "string" }
-  ],
-  "competitorThreat": { "competitorName": "string", "threatLevel": "string", "reality": "string" },
-  "recoveryRoadmap": { "recommendedAction": "string" }
-}`;
+ INSTRUCTIONS FOR 'truths' ARRAY (Must be exactly 3 items):
+ Truth 1: State if they are Verified, a Ghost, or if a Traffic Hijack occurred (name the competitor).
+ Truth 2: Mention their Website status.
+ Truth 3: Explicitly list the AI Schema Markup types found.
+ `;
 
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `Data Context: ${context}. \n\n ${RUBRIC}` }] }],
+        contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths": ["string", "string", "string"] }` }] }],
         safetySettings: SAFETY_SETTINGS,
         generationConfig: { responseMimeType: "application/json" }
       })
     });
 
-    if (!aiRes.ok) throw new Error(`AI API Error: ${aiRes.status}`);
+    if (!aiRes.ok) {
+      const errText = await aiRes.text();
+      console.error(`Gemini Audit API Error:`, errText);
+      throw new Error(`AI API Error: ${aiRes.status}`);
+    }
+
     const aiData = await aiRes.json() as any;
+    if (!aiData.candidates || !aiData.candidates[0].content.parts[0].text) {
+        throw new Error("Invalid response structure from Gemini API");
+    }
+    
     const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
+    const isHijacked = (biz && analysis.score === 0);
 
-    await db.collection("leads").add({
-      businessName,
-      email: clientEmail,
-      whatsapp: whatsapp || null,
-      score: analysis.score,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
-    });
+    const telemetry = {
+      mapsStatus: !biz ? "GHOST (NOT FOUND)" : isHijacked ? "HIJACKED (COMPETITOR FOUND)" : "VERIFIED",
+      website: websiteUrl || "None Linked",
+      schema: hasSchema,
+      schemasDetected: detectedSchemas
+    };
 
-    const isGoodScore = analysis.score >= 80;
-    const emailHtml = `
-<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; border: 1px solid #333;">
-  <div style="margin-bottom: 20px;">
-    <span style="background-color: #ef4444; color: #fff; padding: 4px 8px; font-size: 10px; font-weight: bold; text-transform: uppercase;">SIGNAL MISMATCH DETECTED</span>
-  </div>
-  <h1 style="color: ${isGoodScore ? '#22c55e' : '#ef4444'}; margin-bottom: 5px;">Digital Survival Score: ${analysis.score}%</h1>
-  <p style="font-size: 14px; color: #a1a1aa; margin-bottom: 30px;"><strong>Diagnosis:</strong> ${analysis.diagnosis}</p>
-  
-  <div style="background-color: #111827; border-left: 4px solid #f59e0b; padding: 20px; margin-bottom: 30px;">
-    <h3 style="color: #f59e0b; margin-top: 0;">The Identity Crisis [${analysis.identityCrisis.status}]</h3>
-    <p style="font-size: 14px; margin-bottom: 10px;"><strong>The Problem:</strong> ${analysis.identityCrisis.problem}</p>
-    <p style="font-size: 14px;"><strong>Why it matters:</strong> ${analysis.identityCrisis.whyItMatters}</p>
-  </div>
+    await db.collection("leads").add({ businessName, email: clientEmail, whatsapp: whatsapp || null, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
 
-  <div style="background-color: #111827; border-left: 4px solid #ef4444; padding: 20px; margin-bottom: 30px;">
-    <h3 style="color: #ef4444; margin-top: 0;">The Competitor Cannibalization Report</h3>
-    <p style="font-size: 14px; margin-bottom: 10px;"><strong>Live Threat:</strong> ${analysis.competitorThreat.threatLevel}</p>
-    <p style="font-size: 14px;"><strong>The Reality:</strong> ${analysis.competitorThreat.reality}</p>
-    <p style="font-size: 14px; color: #ef4444; font-weight: bold; margin-top: 15px;">Every hour this remains unfixed, you are paying for their marketing.</p>
-  </div>
+    const isGoodScore = analysis.score >= 70;
+    const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
+ <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'}; margin-bottom: 20px;">Digital Survival Score: ${analysis.score}/100</h1>
+ <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: left;">${analysis.summary}</p>
+ <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
+ <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
+ <p style="color: #d1d5db; margin-bottom: 25px;">Stop losing revenue to invisible algorithms. Let's map out your custom Recovery Protocol.</p>
+ <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Book a Free Discovery Call</a>
+ </div>
+ </div>`;
 
-  <div style="border-top: 1px solid #333; padding-top: 30px;">
-    <h3 style="color: #eab308; margin-top: 0;">Stop The Revenue Leakage</h3>
-    <p style="color: #d1d5db; margin-bottom: 25px; font-size: 14px;">${analysis.recoveryRoadmap.recommendedAction}</p>
-    <a href="https://calendly.com/motsumitl/30min" style="background-color: #eab308; color: #000; padding: 15px 30px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; font-size: 14px;">BOOK 15-MINUTE ALIGNMENT CALL</a>
-  </div>
-</div>`;
+    await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml } });
 
-    await db.collection("mail").add({
-      to: [clientEmail],
-      message: { subject: `[Diagnostic Report] CRITICAL VULNERABILITY: ${businessName}`, html: emailHtml }
-    });
-
-    return { success: true, ...analysis };
+    return { success: true, ...analysis, telemetry };
 
   } catch (e: any) {
     throw new HttpsError("internal", `Neural Handshake Interrupted. ${e.message}`);
   }
 });
 
-
-// ============================================================================
-// 2. STRATEGIC CHAT (Web Chatbot)
-// ============================================================================
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
@@ -263,20 +210,30 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite.
+  const secureToken = generateViewerToken();
+  const lowerCaseMsg = message.toLowerCase();
+  const isAskingForGBP = lowerCaseMsg.includes("gbp") || lowerCaseMsg.includes("google business profile presentation") || lowerCaseMsg.includes("iws presentation") || lowerCaseMsg.includes("iws slides") || lowerCaseMsg.includes("zero click") || lowerCaseMsg.includes("ai overview");
+  const docParam = isAskingForGBP ? "&doc=gbp" : "";
+  const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
+  
+  await db.collection("secure_access_sessions").doc(secureToken).set({
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
+  });
 
-YOUR KNOWLEDGE BASE:
-- Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673.
-- Mission: We stop South African SMEs from being "Ghosts" to AI algorithms.
-- Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score).
+  const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital. 
+ YOUR KNOWLEDGE BASE:
+ - Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673.
+ - Mission: We stop South African SMEs from being "Ghosts" to AI algorithms.
+ - Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score). Tell users to go to happyhunterdigital.com/audit.
+ 
+ NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revolutions". This guide explains how businesses are losing visibility to Google's AI Overviews and how to fix it.
 
-NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revolutions". This guide explains how businesses are losing visibility to Google's AI Overviews and how to fix it.
-
-RULES:
-1. SMART Q&A: Answer questions intelligently.
-2. PRICING: ONLY reveal prices if specifically asked. ALWAYS use the exact phrase "starting from".
-3. FORMATTING: Do NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <br>) for ALL formatting.
-4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, DO NOT output a URL. Instead, you MUST include the exact tag [SEND_DOC_GBP] if they want the Google Business Profile guide, or [SEND_DOC_SERVICES] if they want the Service & Pricing guide.`;
+ RULES:
+ 1. SMART Q&A: Answer questions intelligently.
+ 2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
+ 3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
+ 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, DO NOT output a URL. Instead, you MUST include the exact tag [SEND_DOC_GBP] if they want the Google Business Profile guide, or [SEND_DOC_SERVICES] if they want the Service & Pricing guide.`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -311,10 +268,6 @@ RULES:
   }
 });
 
-
-// ============================================================================
-// 3. LANDING PAGE SERVICE REQUEST (AUTO EMAIL)
-// ============================================================================
 export const submitServiceRequest = onCall({
   region: "us-central1",
   cors: true,
@@ -386,10 +339,6 @@ export const submitServiceRequest = onCall({
   }
 });
 
-
-// ============================================================================
-// BRAND SCHEMA COMPILER (Firestore Trigger)
-// ============================================================================
 export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async () => {
   try {
     const brandSnapshot = await db.collection("brand_identity").limit(1).get();
@@ -410,10 +359,6 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
   } catch (error) { return null; }
 });
 
-
-// ============================================================================
-// 4. WHATSAPP WEBHOOK
-// ============================================================================
 export const whatsappWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET') {
     if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
@@ -573,9 +518,6 @@ RULES:
           } catch (fallbackErr) { console.error("Generative Fallback Error:", fallbackErr); }
         }
 
-        // ============================================================
-        // WHATSAPP DOCUMENT INTERCEPTOR
-        // ============================================================
         let sendGbpDoc = false;
         let sendServicesDoc = false;
 
@@ -593,7 +535,6 @@ RULES:
         if (chatHistory.length > 10) chatHistory = chatHistory.slice(chatHistory.length - 10);
         await sessionRef.set({ history: chatHistory, last_updated: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 
-        // Step 1: Send the AI conversational text response
         if (botResponse) {
           try {
             await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
@@ -604,7 +545,6 @@ RULES:
           } catch (sendError: any) { console.error("WhatsApp Text Error:", sendError.message); }
         }
 
-        // Step 2: Send native WhatsApp CTA button with absolute document link
         if (sendGbpDoc || sendServicesDoc) {
           const docName = sendGbpDoc ? "AI & GBP Zero Clicks Revolutions Guide" : "Smart Marketing Service Guide";
           const fileName = sendGbpDoc ? "hhd-gbp-zero-clicks.pdf" : "hhd-service-guide.pdf";
@@ -646,10 +586,6 @@ RULES:
   return;
 });
 
-
-// ============================================================================
-// 5. DAILY REVENUE REPORT (Scheduled)
-// ============================================================================
 export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
   const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
@@ -667,10 +603,6 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
   }
 });
 
-
-// ============================================================================
-// 6. VECTOR EMBEDDER (Firestore Trigger)
-// ============================================================================
 export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
   const doc = event.data?.after.data();
   if (!doc || !doc.content) return;
@@ -692,4 +624,111 @@ export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async
       });
     }
   } catch (error) { console.error("Vectorization Failed:", error); }
+});
+
+export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskId}", async (event) => {
+  const snap = event.data;
+  if (!snap) return;
+  const task = snap.data();
+  
+  const phones = [];
+  if (task.assigneePhone) phones.push(task.assigneePhone);
+  if (task.coAssigneePhone) phones.push(task.coAssigneePhone);
+  
+  if (phones.length === 0) return;
+
+  const messagesToSend = phones.map(phone => {
+    const messagePayload = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: phone,
+      type: "text",
+      text: {
+        body: `🚨 *HQ DIRECTIVE ASSIGNED*\n\n*Objective:* ${task.title}\n*Priority:* ${task.priority}\n*Deadline:* ${task.deadline}\n\nLog into Unified Command to update your SITREP.`
+      }
+    };
+
+    return axios.post(
+      `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
+      messagePayload,
+      { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
+    ).catch(e => console.error("Failed to route WhatsApp payload:", e));
+  });
+  
+  await Promise.all(messagesToSend);
+});
+
+export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", async (event) => {
+  const newValue = event.data?.after.data();
+  const previousValue = event.data?.before.data();
+  
+  if (!newValue || !previousValue) return;
+
+  const phones = [];
+  if (newValue.assigneePhone) phones.push(newValue.assigneePhone);
+  if (newValue.coAssigneePhone) phones.push(newValue.coAssigneePhone);
+  
+  if (phones.length === 0) return;
+
+  if (newValue.status !== previousValue.status) {
+    const messagesToSend = phones.map(phone => {
+      const messagePayload = {
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to: phone,
+        type: "text",
+        text: {
+          body: `⚡ *STATUS UPDATE*\n\n*Objective:* ${newValue.title}\n*New Status:* [${newValue.status}]\n\nMatrix updated successfully.`
+        }
+      };
+
+      return axios.post(
+        `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
+        messagePayload,
+        { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
+      ).catch(e => console.error("Failed to route update payload:", e));
+    });
+    
+    await Promise.all(messagesToSend);
+  }
+});
+
+export const chronologicalAIManager = onSchedule("every day 08:00", async () => {
+   const today = new Date().toISOString().split('T')[0];
+   
+   const tasksRef = db.collection("workspace_tasks");
+   const snapshot = await tasksRef.where("status", "!=", "Complete").get();
+
+   const messagesToSend: Promise<any>[] = [];
+
+   snapshot.forEach(doc => {
+     const task = doc.data();
+     const phones = [];
+     if (task.assigneePhone) phones.push(task.assigneePhone);
+     if (task.coAssigneePhone) phones.push(task.coAssigneePhone);
+
+     if (task.deadline === today && phones.length > 0) {
+        phones.forEach(phone => {
+            const messagePayload = {
+              messaging_product: "whatsapp",
+              recipient_type: "individual",
+              to: phone,
+              type: "text",
+              text: {
+                body: `⚠️ *DEADLINE WARNING*\n\n*Objective:* ${task.title}\n*Status:* ${task.status}\n\nThis directive is due TODAY. Ensure execution parameters are met.`
+              }
+            };
+
+            messagesToSend.push(
+              axios.post(
+                `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
+                messagePayload,
+                { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
+              ).catch(e => console.error("Chronological AI Error:", e))
+            );
+        });
+     }
+   });
+
+   await Promise.all(messagesToSend);
 });
