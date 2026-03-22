@@ -7,14 +7,13 @@ import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
 import * as cheerio from "cheerio";
 
-
 admin.initializeApp();
 const db = getFirestore();
 
 // ============================================================================
 // SYSTEM CONSTANTS & UTILITIES
 // ============================================================================
-const AI_MODEL = "gemini-3.1-flash-lite-preview";
+const AI_MODEL = "gemini-3.1-flash-lite";
 const EMBEDDING_MODEL = "gemini-embedding-preview-0409";
 const BASE_URL = "https://happyhunterdigital.com";
 
@@ -30,6 +29,7 @@ const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOK
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || '';
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || 'HAPPY_HUNTER_SECURE_2026';
 const ADMIN_NUMBER = "27601016673";
+
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
 // ============================================================================
@@ -63,25 +63,22 @@ export const performAudit = onCall({
       } catch (e) { return { places: [] }; }
     };
 
-    // Stage 1: Search Variants
     const searchVariants = [
       `${businessName} ${location}`,
       businessName,
-      businessName.replace(/\s+/g, '') // Fallback for "happyhunterdigital" style
+      businessName.replace(/\s+/g, '') 
     ];
 
     let biz: any = null;
     for (const variant of searchVariants) {
       const pData = await getPlaces(variant);
       if (pData?.places?.length > 0) {
-        // Precise Name Matching (Ignoring case and spaces)
         biz = pData.places.find((p: any) => {
           const mapName = p.displayName?.text?.toLowerCase().replace(/\s+/g, '') || "";
           const targetName = businessName.toLowerCase().replace(/\s+/g, '');
           return mapName.includes(targetName) || targetName.includes(mapName);
         });
         if (biz) break;
-        // Fallback to top result if no fuzzy match but we have results
         if (!biz) biz = pData.places[0];
         break;
       }
@@ -106,7 +103,6 @@ export const performAudit = onCall({
         const webRes = await axios.get(websiteUrl, { timeout: 6000, headers: { "User-Agent": "Mozilla/5.0" } });
         const $ = cheerio.load(webRes.data);
         
-        // Extract raw website body text for Semantic/Intent alignment checking
         $('script, style, nav, footer').remove();
         websiteText = $('body').text().replace(/\s+/g, ' ').substring(0, 3000);
         $('script[type="application/ld+json"]').each((_, element) => {
@@ -122,7 +118,7 @@ export const performAudit = onCall({
               }
             };
             extractType(jsonData);
-          } catch (e) { /* silent */ }
+          } catch (e) { }
         });
         detectedSchemas = [...new Set(detectedSchemas)];
         if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
@@ -164,11 +160,11 @@ Competitor Name: "${compName}"
 Competitor Rating: ${compRating} (${compReviews} reviews)
     `;
 
-    const RUBRIC = `You are a strict Diagnostic Logic Engine analyzing a business's digital footprint. Use words like 'Diagnosis' and 'DNA Mutation' as *metaphors* for data inconsistencies. Do NOT sound like a literal medical doctor; refer to 'the business' or 'the entity', never 'the patient'. Pass the Data Context through these 5 If/Then Gates. Do NOT output markdown. Output ONLY a valid JSON object matching the required schema exactly.
+    const RUBRIC = `You are a strict Diagnostic Logic Engine analyzing a business's digital footprint. Use words like 'Diagnosis' and 'DNA Mutation' as metaphors for data inconsistencies. Do NOT sound like a literal medical doctor; refer to 'the business' or 'the entity', never 'the patient'. Pass the Data Context through these 5 If/Then Gates. Do NOT output markdown. Output ONLY a valid JSON object matching the required schema exactly.
 
 Gate 1: Foundation (Ownership). If Google Maps Name is "NONE FOUND", Status = "NON-EXISTENT" (Urgency: "Your business is digitally invisible. You do not exist in the local economy."). If the profile appears unclaimed/unverified based on metadata, Status = "UNSECURED" (Urgency: "Your storefront is an open public park. You have no legal control over your entity."). Otherwise, assume "VERIFIED".
 Gate 2: Ghost Effect (Categorization Gap). Perform a semantic intent Cross-Check: Compare the Maps [Category] and hidden [Other Types] against the [Website Content Snip] and [Schemas]. If there is a disconnect (e.g., GBP says 'Attorney' but site says 'LocalBusiness' or lacks legal semantics), Identity Crisis = "Mismatch". Problem: "Your DNA is mutated. Google categorizes you as [Category], but your site signals [Intent]."
-Gate 3: Pulse (Social Proof). If "Last Review Date" is "Never" or >90 days, Review Velocity = "STALE". Urgency: "To a 2026 AI, a silent profile is a dead business." If Photos Count < 20, Media Depth = "VISUAL VOID". Urgency: "Profiles with 100+ photos get 5x clicks. You are a ghost in a visual world."
+Gate 3: Pulse (Social Proof). If "Last Review Date" is "Never" or >90 days, Review Velocity = "STALE". Urgency: "To a 2026 AI, a silent profile is a dead business." If Photos Count < 20, Media Depth = "VISUAL VOID". Urgency: "Profiles with 100+ photos get 5x clicks. You are a ghost in a world."
 Gate 4: Micro-Fractures (NAP Integrity). Act as a String Similarity Algorithm (Levenshtein Distance). Cross-check the Maps [Address] & [Phone] against the [Website Content Snip]. If they do not appear exactly or similarity is < 95%, NAP Integrity = "FAILED". Urgency: "Micro-mismatches in your address/phone are fragmenting your authority. The algorithm cannot verify your 'Golden Thread'."
 Gate 5: Authority Ownership (The Threat). If Competitor Rating/Reviews > Target, Threat = "Live Threat". Reality: "Authority Displacement: [Competitor Name] has infiltrated your territory and is capturing your local lead share."
 
@@ -267,20 +263,10 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  const lowerCaseMsg = message.toLowerCase();
-  const isAskingForGBP = lowerCaseMsg.includes("gbp")
-    || lowerCaseMsg.includes("google business profile presentation")
-    || lowerCaseMsg.includes("iws presentation")
-    || lowerCaseMsg.includes("iws slides")
-    || lowerCaseMsg.includes("zero click")
-    || lowerCaseMsg.includes("ai overview");
-  const fileName = isAskingForGBP ? "hhd-gbp-zero-clicks.pdf" : "hhd-service-guide.pdf";
-  const secureLink = `${BASE_URL}/assets/${fileName}`;
-
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite.
 
 YOUR KNOWLEDGE BASE:
-- Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
+- Founder & Head Strategist: Thabo Motsumi. Contact: WhatsApp +27 (0) 60 101 6673.
 - Mission: We stop South African SMEs from being "Ghosts" to AI algorithms.
 - Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score).
 
@@ -288,9 +274,9 @@ NEW ASSET: "happyhunterdigital AI & Google Business Profile Zero Clicks Revoluti
 
 RULES:
 1. SMART Q&A: Answer questions intelligently.
-2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
-3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <br>) for ALL formatting.
-4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, DO NOT generate a real URL. You MUST include this EXACT placeholder word in your response instead: [SECURE_DOC_LINK]`;
+2. PRICING: ONLY reveal prices if specifically asked. ALWAYS use the exact phrase "starting from".
+3. FORMATTING: Do NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <br>) for ALL formatting.
+4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, DO NOT output a URL. Instead, you MUST include the exact tag [SEND_DOC_GBP] if they want the Google Business Profile guide, or [SEND_DOC_SERVICES] if they want the Service & Pricing guide.`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -307,10 +293,16 @@ RULES:
     const data = await aiRes.json() as any;
     if (data.candidates && data.candidates[0].content.parts[0].text) {
       let finalReply = data.candidates[0].content.parts[0].text.trim();
+      
       finalReply = finalReply.replace(
-        /\[SECURE_DOC_LINK\]/g,
-        `<br/><br/><a href="${secureLink}" target="_blank" style="color: #eab308; text-decoration: underline;"><strong>[Tap Here to View Document]</strong></a>`
+        /\[SEND_DOC_SERVICES\]/g,
+        `<br/><br/><a href="${BASE_URL}/assets/hhd-service-guide.pdf" target="_blank" style="color: #eab308; text-decoration: underline;"><strong>[Tap Here to View Service Guide]</strong></a>`
       );
+      finalReply = finalReply.replace(
+        /\[SEND_DOC_GBP\]/g,
+        `<br/><br/><a href="${BASE_URL}/assets/hhd-gbp-zero-clicks.pdf" target="_blank" style="color: #eab308; text-decoration: underline;"><strong>[Tap Here to View GBP Guide]</strong></a>`
+      );
+      
       return { reply: finalReply };
     }
     return { reply: "I received an unreadable signal from the core. Try again." };
