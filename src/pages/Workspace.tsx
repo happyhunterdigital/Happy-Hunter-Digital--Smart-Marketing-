@@ -37,17 +37,18 @@ export const Workspace: React.FC = () => {
         }
 
         // Step 1: Discover Workspaces where user is a member
-        const qWS = query(collection(db, 'workspaces'), orderBy('createdAt', 'desc'));
-        // Note: In production, this would be filtered by membership, 
-        // but for the initial flow, we'll fetch then filter or create.
+        const qWS = query(
+          collection(db, 'workspaces'), 
+          where('members', 'array-contains', u.uid),
+          orderBy('createdAt', 'desc')
+        );
+        
         const unsubscribeWS = onSnapshot(qWS, (snapshot) => {
           const wsList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          // Filter workspaces where user is owner or member
-          const myWS = wsList.filter((ws: any) => ws.ownerId === u.uid);
-          setWorkspaces(myWS);
+          setWorkspaces(wsList);
           
-          if (myWS.length > 0 && !activeWorkspace) {
-            setActiveWorkspace(myWS[0]);
+          if (wsList.length > 0 && !activeWorkspace) {
+            setActiveWorkspace(wsList[0]);
           }
           setLoading(false);
         }, (error) => {
@@ -67,16 +68,12 @@ export const Workspace: React.FC = () => {
     if (user && activeWorkspace) {
       const qTasks = query(
         collection(db, 'workspace_tasks'), 
+        where('workspaceId', '==', activeWorkspace.id),
         orderBy('order', 'asc')
-        // Filter by specific workspace ID to ensure exclusivity
       );
       
       const unsubscribeTasks = onSnapshot(qTasks, (snapshot) => {
-        // Client-side filtering as a fallback before aggressive security rules are in place
-        const filteredTasks = snapshot.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .filter((t: any) => t.workspaceId === activeWorkspace.id);
-          
+        const filteredTasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         setTasks(filteredTasks);
       }, (error) => {
         console.error("Task Sync Error:", error);
