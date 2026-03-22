@@ -1,4 +1,3 @@
-src/pages/Workspace.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
@@ -297,7 +296,7 @@ export const Workspace: React.FC = () => {
                           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-gray-800">
                             <FileText size={20} className="text-black" />
                           </div>
-                          <span className="text-white font-bold text-sm">Objective Name</span>
+                          <span className="text-white font-bold text-sm">Name</span>
                         </div>
                       </th>
                       <th className="p-4 text-center border-r border-gray-800 w-[20%]">
@@ -321,7 +320,7 @@ export const Workspace: React.FC = () => {
                           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-cyan-400">
                             <CheckCircle2 size={20} className="text-cyan-500" />
                           </div>
-                          <span className="text-cyan-400 font-bold text-sm">Schedule</span>
+                          <span className="text-cyan-400 font-bold text-sm">Status</span>
                         </div>
                       </th>
                       <th className="p-4 text-center border-r border-gray-800 w-[10%]">
@@ -354,8 +353,6 @@ export const Workspace: React.FC = () => {
                       if (task.status === 'Complete') { progressWidth = 'w-full'; progressColor = 'bg-green-500'; }
                       else if (task.status === 'In Progress') { progressWidth = 'w-[50%]'; progressColor = 'bg-yellow-500'; }
 
-                      const schedule = getScheduleStatus(task.deadline, task.status);
-
                       return (
                         <tr key={task.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => advanceTask(task.id, task.status)}>
                           <td className="p-4 border-r border-gray-800">
@@ -370,10 +367,10 @@ export const Workspace: React.FC = () => {
                             <span className="text-sm text-gray-400">{task.type || 'Development'}</span>
                           </td>
                           <td className="p-4 text-center border-r border-gray-800">
-                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${schedule.color}`}>{schedule.label}</span>
+                            <span className="text-sm text-gray-300">{task.status === 'Complete' ? 'Completed' : task.status}</span>
                           </td>
-                          <td className={`p-4 text-center border-r border-gray-800 font-bold text-[10px] uppercase tracking-widest ${PRIORITY_COLORS[task.priority] || 'bg-gray-800 text-gray-400'}`}>
-                            {task.priority === 'Critical' ? '1 - Critical' : task.priority === 'High' ? '2 - High' : task.priority === 'Medium' ? '3 - Medium' : '4 - Low'}
+                          <td className={`p-4 text-center border-r border-gray-800 font-bold text-xs uppercase tracking-wider ${PRIORITY_COLORS[task.priority] || 'bg-yellow-500 text-black'}`}>
+                            {task.priority === 'Critical' ? '1 - Critical' : task.priority === 'High' ? '2 - High' : task.priority === 'Medium' ? '3 - Medium' : '5 - Lowest'}
                           </td>
                           <td className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2">
