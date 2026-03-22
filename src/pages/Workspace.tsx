@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, orderBy, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { CheckCircle2, Clock, Plus, Layout, Users, FileText, MessageSquare, Lock, Trash2, Calendar } from 'lucide-react';
+import { CheckCircle2, Clock, Plus, Layout, Users, FileText, MessageSquare, Lock, Trash2, Calendar, Zap } from 'lucide-react';
 
 export const Workspace: React.FC = () => {
   const [user, setUser] = useState<any>(null);
