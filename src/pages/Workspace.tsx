@@ -1,3 +1,4 @@
+src/pages/Workspace.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, deleteDoc, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
@@ -110,6 +111,10 @@ export const Workspace: React.FC = () => {
     
     const assigneeName = prompt("Assignee Name:", user?.displayName || 'Agent') || user?.displayName || 'Agent';
     const assigneePhone = prompt("Assignee WhatsApp Number (e.g., 27601016673):");
+    
+    const coAssigneeName = prompt("Co-Assignee Name (Leave blank if none):") || '';
+    const coAssigneePhone = coAssigneeName ? prompt("Co-Assignee WhatsApp Number (e.g., 27601016673):") : '';
+
     const deadline = prompt("Deadline (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
     const priority = prompt("Priority (Critical, High, Medium, Low):", "Medium") || "Medium";
     const type = prompt("Type (Planning, Dev, Design, Audit):", "Dev") || "Dev";
@@ -122,7 +127,10 @@ export const Workspace: React.FC = () => {
       type,
       assignee: assigneeName,
       assigneePhone: assigneePhone || '',
+      coAssignee: coAssigneeName,
+      coAssigneePhone: coAssigneePhone || '',
       avatar: assigneeName.charAt(0).toUpperCase(),
+      coAvatar: coAssigneeName ? coAssigneeName.charAt(0).toUpperCase() : '',
       deadline: deadline || 'N/A',
       createdAt: serverTimestamp(),
       comments: []
@@ -289,7 +297,7 @@ export const Workspace: React.FC = () => {
                           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-gray-800">
                             <FileText size={20} className="text-black" />
                           </div>
-                          <span className="text-white font-bold text-sm">Name</span>
+                          <span className="text-white font-bold text-sm">Objective Name</span>
                         </div>
                       </th>
                       <th className="p-4 text-center border-r border-gray-800 w-[20%]">
@@ -313,7 +321,7 @@ export const Workspace: React.FC = () => {
                           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-cyan-400">
                             <CheckCircle2 size={20} className="text-cyan-500" />
                           </div>
-                          <span className="text-cyan-400 font-bold text-sm">Status</span>
+                          <span className="text-cyan-400 font-bold text-sm">Schedule</span>
                         </div>
                       </th>
                       <th className="p-4 text-center border-r border-gray-800 w-[10%]">
@@ -344,8 +352,9 @@ export const Workspace: React.FC = () => {
                       let progressWidth = 'w-[10%]';
                       let progressColor = 'bg-gray-600';
                       if (task.status === 'Complete') { progressWidth = 'w-full'; progressColor = 'bg-green-500'; }
-                      else if (task.status === 'In Progress') { progressWidth = 'w-[50%]'; progressColor = 'bg-red-500'; }
-                      else { progressWidth = 'w-[20%]'; progressColor = 'bg-yellow-500'; }
+                      else if (task.status === 'In Progress') { progressWidth = 'w-[50%]'; progressColor = 'bg-yellow-500'; }
+
+                      const schedule = getScheduleStatus(task.deadline, task.status);
 
                       return (
                         <tr key={task.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => advanceTask(task.id, task.status)}>
@@ -361,13 +370,16 @@ export const Workspace: React.FC = () => {
                             <span className="text-sm text-gray-400">{task.type || 'Development'}</span>
                           </td>
                           <td className="p-4 text-center border-r border-gray-800">
-                            <span className="text-sm text-gray-300">{task.status === 'Complete' ? 'Completed' : task.status}</span>
+                            <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${schedule.color}`}>{schedule.label}</span>
                           </td>
-                          <td className={`p-4 text-center border-r border-gray-800 font-bold text-xs uppercase tracking-wider ${PRIORITY_COLORS[task.priority] || 'bg-yellow-500 text-black'}`}>
-                            {task.priority === 'Critical' ? '1 - Critical' : task.priority === 'High' ? '2 - High' : task.priority === 'Medium' ? '3 - Medium' : '5 - Lowest'}
+                          <td className={`p-4 text-center border-r border-gray-800 font-bold text-[10px] uppercase tracking-widest ${PRIORITY_COLORS[task.priority] || 'bg-gray-800 text-gray-400'}`}>
+                            {task.priority === 'Critical' ? '1 - Critical' : task.priority === 'High' ? '2 - High' : task.priority === 'Medium' ? '3 - Medium' : '4 - Low'}
                           </td>
                           <td className="p-4 text-center">
-                            <span className="text-sm text-gray-400">{task.assignee}</span>
+                            <div className="flex items-center justify-center gap-2">
+                              <span className="text-sm font-bold text-gray-300">{task.assignee}</span>
+                              {task.coAssignee && <span className="text-xs text-gray-500">& {task.coAssignee}</span>}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -413,10 +425,10 @@ export const Workspace: React.FC = () => {
                 )}
               </div>
 
-              <div className="w-full flex flex-wrap justify-center gap-4 text-xs font-bold text-gray-700">
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#1e1b4b]"></div> Completed / On Schedule</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#06b6d4]"></div> In Progress / Starting Late</div>
-                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#9ca3af]"></div> Not Started</div>
+              <div className="w-full flex flex-col gap-3 text-xs font-bold text-gray-700">
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#1e1b4b] rounded-sm"></div> Completed</div> <span>{stats.completedPct}%</span></div>
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#06b6d4] rounded-sm"></div> In Progress</div> <span>{stats.inProgressPct}%</span></div>
+                <div className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#9ca3af] rounded-sm"></div> Not Started</div> <span>{stats.notStartedPct}%</span></div>
               </div>
               <div className="w-full h-1 bg-[#1e1b4b] mt-8 rounded-full"></div>
             </div>
@@ -469,6 +481,11 @@ export const Workspace: React.FC = () => {
                                <div className="w-6 h-6 rounded-lg bg-gray-900 flex items-center justify-center text-[10px] font-black text-yellow-500 border border-gray-800">{task.avatar}</div>
                                <span className="text-[9px] uppercase font-black text-gray-400 max-w-[80px] truncate">{task.assignee}</span>
                             </div>
+                            {task.coAssignee && (
+                               <div className="flex items-center gap-2">
+                                  <div className="w-6 h-6 rounded-lg bg-gray-900 flex items-center justify-center text-[10px] font-black text-yellow-500 border border-gray-800">{task.coAvatar}</div>
+                               </div>
+                            )}
                             <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500"><Clock size={10} className="text-yellow-500"/>{task.deadline}</div>
                           </div>
                         </div>
@@ -509,7 +526,7 @@ export const Workspace: React.FC = () => {
             <MessageSquare size={64} className="text-yellow-500/20 mb-8" />
             <h3 className="text-3xl font-black uppercase tracking-tighter text-yellow-500">Module Under Construction</h3>
             <p className="text-gray-500 mt-4 max-w-md">The neural chat link for internal team communications is currently being engineered.</p>
-            <button onClick={() => setActiveTab('Entity Matrix')} className="mt-10 px-8 py-4 border border-yellow-500/20 text-yellow-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-yellow-500 hover:text-black transition-colors">Go Back</button>
+            <button onClick={() => setActiveTab('Entity Matrix')} className="mt-10 px-8 py-4 border border-yellow-500/20 text-yellow-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-yellow-500 hover:text-black transition-colors">Return to Dashboard</button>
           </div>
         )}
       </main>
