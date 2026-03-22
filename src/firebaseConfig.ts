@@ -19,7 +19,8 @@ if (!apiKey) {
 
 const firebaseConfig = {
   apiKey: apiKey || "",
-  authDomain: clean(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || `${projectId}.firebaseapp.com`,
+  // Use the custom domain as the authDomain to fix mobile 'sessionStorage' partitioning errors
+  authDomain: clean(import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "happyhunterdigital.com",
   projectId: projectId || "",
   storageBucket: clean(import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || `${projectId}.firebasestorage.app`,
   messagingSenderId: clean(import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || "",
