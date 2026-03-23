@@ -3,6 +3,7 @@ import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp,
 import { db, auth } from '../firebaseConfig';
 import { GoogleAuthProvider, signInWithRedirect, onAuthStateChanged } from 'firebase/auth';
 import { CheckCircle2, Clock, Users, FileText, MessageSquare, Lock, Trash2, Zap, Layout, Activity, Database, AlertCircle } from 'lucide-react';
+import { Telemetry } from '../posthog';
 
 export const Workspace: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -10,7 +11,6 @@ export const Workspace: React.FC = () => {
   const [activeWorkspace, setActiveWorkspace] = useState<any>(null);
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
   const [activeTab, setActiveTab] = useState('Entity Matrix');
   const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
   const [newWorkspaceName, setNewWorkspaceName] = useState('');
@@ -30,9 +30,11 @@ export const Workspace: React.FC = () => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
+        Telemetry.identifyEntity(u.uid, u.email || 'unknown', u.displayName || 'Agent');
         try {
           const qInvites = query(collection(db, 'workspaces'), where('invites', 'array-contains', u.email));
           const inviteSnapshot = await getDocs(qInvites);
+          
           for (const wsDoc of inviteSnapshot.docs) {
             const wsData = wsDoc.data();
             if (!wsData.members.includes(u.uid)) {
@@ -61,6 +63,7 @@ export const Workspace: React.FC = () => {
         setLoading(false);
       }
     });
+
     return () => unsubscribeAuth();
   }, []);
 
@@ -75,7 +78,7 @@ export const Workspace: React.FC = () => {
   }, [user, activeWorkspace]);
 
   const stats = useMemo(() => {
-    const total = tasks.length || 1; 
+    const total = tasks.length || 1;
     const completed = tasks.filter(t => t.status === 'Complete').length;
     const inProgress = tasks.filter(t => t.status === 'In Progress').length;
     const notStarted = tasks.filter(t => t.status === 'Not Started').length;
@@ -113,7 +116,7 @@ export const Workspace: React.FC = () => {
     
     const coAssigneeName = prompt("Co-Assignee Name (Leave blank if none):") || '';
     const coAssigneePhone = coAssigneeName ? prompt("Co-Assignee WhatsApp Number (e.g., 27601016673):") : '';
-
+    
     const deadline = prompt("Deadline (YYYY-MM-DD):", new Date().toISOString().split('T')[0]);
     const priority = prompt("Priority (Critical, High, Medium, Low):", "Medium") || "Medium";
     const type = prompt("Type (Planning, Dev, Design, Audit):", "Dev") || "Dev";
@@ -134,6 +137,8 @@ export const Workspace: React.FC = () => {
       createdAt: serverTimestamp(),
       comments: []
     });
+
+    Telemetry.taskDeployed(title, priority, assigneeName);
   };
 
   const advanceTask = async (taskId: string, currentStatus: string) => {
@@ -142,6 +147,7 @@ export const Workspace: React.FC = () => {
       'In Progress': 'Complete',
       'Complete': 'Not Started'
     };
+    
     await updateDoc(doc(db, 'workspace_tasks', taskId), {
       status: nextStatusMap[currentStatus] || 'Not Started'
     });
@@ -150,12 +156,14 @@ export const Workspace: React.FC = () => {
   const addComment = async (taskId: string) => {
     const comment = prompt("Enter SITREP:");
     if (!comment) return;
+    
     const task = tasks.find(t => t.id === taskId);
     const newComments = [...(task?.comments || []), {
       text: comment,
       user: user?.displayName || 'Agent',
       timestamp: new Date().toLocaleTimeString()
     }];
+    
     await updateDoc(doc(db, 'workspace_tasks', taskId), { comments: newComments });
   };
 
@@ -219,7 +227,6 @@ export const Workspace: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-[100] flex bg-[#050505] text-white font-sans overflow-hidden">
-      
       <aside className="hidden lg:flex w-72 bg-black border-r border-gray-900 flex-col pt-32 pb-8 px-4">
         <div className="mb-8 px-4">
           <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest mb-1">Active Tenant</p>
@@ -233,7 +240,6 @@ export const Workspace: React.FC = () => {
             ))}
           </select>
         </div>
-
         <nav className="flex-1 space-y-2">
           {[
             { name: 'Entity Matrix', icon: FileText },
@@ -246,8 +252,8 @@ export const Workspace: React.FC = () => {
               onClick={() => setActiveTab(item.name)}
               className={`w-full flex items-center gap-4 p-4 rounded-2xl transition-all ${
                 activeTab === item.name 
-                ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' 
-                : 'text-gray-500 hover:text-white hover:bg-white/5'
+                  ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' 
+                  : 'text-gray-500 hover:text-white hover:bg-white/5'
               }`}
             >
               <item.icon size={20} />
@@ -272,7 +278,6 @@ export const Workspace: React.FC = () => {
       </nav>
 
       <main className="flex-1 h-screen flex flex-col pt-24 lg:pt-32 p-4 md:p-12 overflow-hidden bg-[#070707] pb-20 lg:pb-0 relative">
-        
         <header className="mb-8 lg:mb-12 flex flex-col gap-2 shrink-0">
           <div className="flex justify-between items-start">
             <div>
@@ -285,7 +290,6 @@ export const Workspace: React.FC = () => {
 
         {activeTab === 'Entity Matrix' && (
           <div className="flex-1 flex flex-col lg:flex-row gap-8 animate-fade-in pb-12 overflow-hidden">
-            
             <div className="flex-[3] bg-[#0a0a0a] border border-gray-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
               <div className="overflow-x-auto flex-1 custom-scrollbar">
                 <table className="w-full text-left border-collapse whitespace-nowrap">
@@ -347,12 +351,11 @@ export const Workspace: React.FC = () => {
                         <td colSpan={6} className="p-10 text-center text-gray-500 font-medium">No active tasks injected into the matrix.</td>
                       </tr>
                     ) : tasks.map((task) => {
-                      
                       let progressWidth = 'w-[10%]';
                       let progressColor = 'bg-gray-600';
                       if (task.status === 'Complete') { progressWidth = 'w-full'; progressColor = 'bg-green-500'; }
                       else if (task.status === 'In Progress') { progressWidth = 'w-[50%]'; progressColor = 'bg-yellow-500'; }
-
+                      
                       return (
                         <tr key={task.id} className="hover:bg-white/5 transition-colors group cursor-pointer" onClick={() => advanceTask(task.id, task.status)}>
                           <td className="p-4 border-r border-gray-800">
@@ -385,35 +388,30 @@ export const Workspace: React.FC = () => {
                 </table>
               </div>
             </div>
-
+            
             <div className="flex-[1] bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col p-8 items-center justify-center relative">
               <div className="relative w-64 h-64 mb-10">
                 <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
                   <circle cx="18" cy="18" r="15.915" fill="none" stroke="#f3f4f6" strokeWidth="6" />
-                  
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#1e1b4b" strokeWidth="6" 
-                    strokeDasharray={`${stats.completedPct} ${100 - stats.completedPct}`} 
-                    strokeDashoffset="25" 
-                    className="transition-all duration-1000" 
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#1e1b4b" strokeWidth="6"
+                    strokeDasharray={`${stats.completedPct} ${100 - stats.completedPct}`}
+                    strokeDashoffset="25"
+                    className="transition-all duration-1000"
                   />
-                  
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#06b6d4" strokeWidth="6" 
-                    strokeDasharray={`${stats.inProgressPct} ${100 - stats.inProgressPct}`} 
-                    strokeDashoffset={25 - stats.completedPct} 
-                    className="transition-all duration-1000" 
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#06b6d4" strokeWidth="6"
+                    strokeDasharray={`${stats.inProgressPct} ${100 - stats.inProgressPct}`}
+                    strokeDashoffset={25 - stats.completedPct}
+                    className="transition-all duration-1000"
                   />
-
-                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#9ca3af" strokeWidth="6" 
-                    strokeDasharray={`${stats.notStartedPct} ${100 - stats.notStartedPct}`} 
-                    strokeDashoffset={25 - stats.completedPct - stats.inProgressPct} 
-                    className="transition-all duration-1000" 
+                  <circle cx="18" cy="18" r="15.915" fill="none" stroke="#9ca3af" strokeWidth="6"
+                    strokeDasharray={`${stats.notStartedPct} ${100 - stats.notStartedPct}`}
+                    strokeDashoffset={25 - stats.completedPct - stats.inProgressPct}
+                    className="transition-all duration-1000"
                   />
                 </svg>
-                
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-40 h-40 bg-white rounded-full"></div>
                 </div>
-
                 {stats.completedPct > 0 && (
                   <div className="absolute bottom-8 right-6 text-white font-black text-xl z-10">{stats.completedPct}%</div>
                 )}
@@ -421,7 +419,6 @@ export const Workspace: React.FC = () => {
                   <div className="absolute top-20 left-4 text-white font-black text-lg z-10">{stats.inProgressPct}%</div>
                 )}
               </div>
-
               <div className="w-full flex flex-col gap-3 text-xs font-bold text-gray-700">
                 <div className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#1e1b4b] rounded-sm"></div> Completed</div> <span>{stats.completedPct}%</span></div>
                 <div className="flex items-center justify-between"><div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#06b6d4] rounded-sm"></div> In Progress</div> <span>{stats.inProgressPct}%</span></div>
@@ -439,6 +436,7 @@ export const Workspace: React.FC = () => {
                 <button key={col} onClick={() => setMobileColumn(col)} className={`flex-1 py-3 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${mobileColumn === col ? 'bg-yellow-500 text-black' : 'text-gray-500'}`}>{col}</button>
               ))}
             </div>
+            
             <div className="flex gap-4 lg:gap-8 flex-1 overflow-x-auto lg:overflow-x-visible pb-4 custom-scrollbar items-start">
               {columns.map(col => (
                 <div key={col} className={`${mobileColumn === col ? 'flex' : 'hidden lg:flex'} w-full lg:w-96 flex-shrink-0 bg-black/40 border border-gray-900 rounded-3xl p-6 flex flex-col max-h-full transition-all`}>
@@ -446,6 +444,7 @@ export const Workspace: React.FC = () => {
                     <h3 className="font-black text-gray-400 uppercase tracking-widest text-[11px]">{col}</h3>
                     <span className="text-[9px] font-black text-yellow-500 bg-yellow-500/10 px-4 py-1.5 rounded-full">{tasks.filter(t => t.status === col).length}</span>
                   </div>
+                  
                   <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar pb-6">
                     {tasks.filter(t => t.status === col).map(task => {
                       const schedule = getScheduleStatus(task.deadline, task.status);
@@ -458,7 +457,7 @@ export const Workspace: React.FC = () => {
                           </div>
                           
                           <h4 className="text-[14px] font-bold text-white uppercase group-hover:text-yellow-500 transition-colors mb-4">{task.title}</h4>
-
+                          
                           {task.comments && task.comments.length > 0 && (
                             <div className="mb-4 space-y-1 max-h-20 overflow-y-auto custom-scrollbar">
                               {task.comments.map((c: any, i: number) => (
@@ -466,22 +465,22 @@ export const Workspace: React.FC = () => {
                               ))}
                             </div>
                           )}
-
+                          
                           <div className="flex justify-between items-center pt-4 border-t border-gray-900">
                             <button onClick={() => addComment(task.id)} className="p-2 bg-white/5 rounded-lg text-gray-400 hover:text-white transition-colors"><MessageSquare size={12} /></button>
                             {task.status !== 'Complete' && <button onClick={() => advanceTask(task.id, task.status)} className="px-4 py-2 bg-yellow-500 text-black rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2"><Zap size={10} />Advance</button>}
                             {isWSAdmin && <button onClick={() => deleteTask(task.id)} className="text-gray-700 hover:text-red-500 transition-colors"><Trash2 size={12} /></button>}
                           </div>
-
+                          
                           <div className="flex justify-between items-center mt-4 bg-black/50 p-3 rounded-xl border border-gray-800/50">
                             <div className="flex items-center gap-2">
-                               <div className="w-6 h-6 rounded-lg bg-gray-900 flex items-center justify-center text-[10px] font-black text-yellow-500 border border-gray-800">{task.avatar}</div>
-                               <span className="text-[9px] uppercase font-black text-gray-400 max-w-[80px] truncate">{task.assignee}</span>
+                              <div className="w-6 h-6 rounded-lg bg-gray-900 flex items-center justify-center text-[10px] font-black text-yellow-500 border border-gray-800">{task.avatar}</div>
+                              <span className="text-[9px] uppercase font-black text-gray-400 max-w-[80px] truncate">{task.assignee}</span>
                             </div>
                             {task.coAssignee && (
-                               <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-lg bg-gray-900 flex items-center justify-center text-[10px] font-black text-yellow-500 border border-gray-800">{task.coAvatar}</div>
-                               </div>
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-lg bg-gray-900 flex items-center justify-center text-[10px] font-black text-yellow-500 border border-gray-800">{task.coAvatar}</div>
+                              </div>
                             )}
                             <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-gray-500"><Clock size={10} className="text-yellow-500"/>{task.deadline}</div>
                           </div>
@@ -499,12 +498,13 @@ export const Workspace: React.FC = () => {
           <div className="flex-1 flex flex-col pb-12 overflow-y-auto pr-2 custom-scrollbar animate-fade-in relative z-10">
             <header className="mb-12"><h3 className="text-3xl font-black uppercase tracking-tighter">Team Sovereignty</h3></header>
             <section className="bg-black/40 border border-gray-900 rounded-3xl p-8 mb-12 backdrop-blur-xl">
-               <h4 className="text-yellow-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6">Invite Member Node</h4>
-               <div className="flex gap-4">
-                 <input type="email" placeholder="Entity email..." value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="flex-1 bg-gray-900 border border-gray-800 text-white p-4 rounded-2xl outline-none text-xs font-bold" />
-                 <button onClick={inviteMember} className="bg-yellow-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white transition-colors">Invite</button>
-               </div>
+              <h4 className="text-yellow-500 text-[10px] font-black uppercase tracking-[0.2em] mb-6">Invite Member Node</h4>
+              <div className="flex gap-4">
+                <input type="email" placeholder="Entity email..." value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="flex-1 bg-gray-900 border border-gray-800 text-white p-4 rounded-2xl outline-none text-xs font-bold" />
+                <button onClick={inviteMember} className="bg-yellow-500 text-black px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-white transition-colors">Invite</button>
+              </div>
             </section>
+            
             <section className="space-y-6">
               {activeWorkspace?.members?.map((memberId: string) => (
                 <div key={memberId} className="bg-black/20 border border-gray-900 rounded-2xl p-6 flex justify-between items-center hover:border-yellow-500/30 transition-colors">
