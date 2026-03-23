@@ -55,7 +55,7 @@ jobs:
           npx firebase-tools deploy --only firestore:rules --force --non-interactive
 
           # 3. Deploy Storage Rules
-          npx firebase-tools deploy --only storage:rules --force --non-interactive
+          npx firebase-tools deploy --only storage --force --non-interactive
 
           # 4. Deploy Hosting independently
           npx firebase-tools deploy --only hosting --force --non-interactive
