@@ -1,8 +1,8 @@
 import posthog from 'posthog-js';
 
-// Initialize PostHog (Replace with your actual Project API Key from posthog.com)
-posthog.init('YOUR_POSTHOG_PROJECT_API_KEY', {
-  api_host: 'https://app.posthog.com', // Use 'https://eu.posthog.com' if you selected EU hosting
+// Initialize PostHog
+posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
+  api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com',
   loaded: (ph) => {
     if (import.meta.env.DEV) ph.debug(); // Helps with debugging locally
   },
