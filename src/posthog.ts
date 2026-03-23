@@ -3,8 +3,8 @@ import posthog from 'posthog-js';
 // Initialize PostHog (Replace with your actual Project API Key from posthog.com)
 posthog.init('YOUR_POSTHOG_PROJECT_API_KEY', {
   api_host: 'https://app.posthog.com', // Use 'https://eu.posthog.com' if you selected EU hosting
-  loaded: (posthog) => {
-    if (import.meta.env.DEV) posthog.debug(); // Helps with debugging locally
+  loaded: (ph) => {
+    if (import.meta.env.DEV) ph.debug(); // Helps with debugging locally
   },
   autocapture: true, // Automatically tracks button clicks and page views
   capture_pageview: false // We will handle this manually in React Router
