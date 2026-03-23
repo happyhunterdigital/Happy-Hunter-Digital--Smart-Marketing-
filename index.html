@@ -7,14 +7,15 @@
 <meta http-equiv="X-Frame-Options" content="DENY" />
 <meta name="referrer" content="strict-origin-when-cross-origin" />
 <meta http-equiv="Content-Security-Policy" content="
-  default-src 'self' https://*.firebaseapp.com https://*.firebase.com
-    https://*.googleapis.com;
+  default-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.googleapis.com;
   connect-src 'self' https://*.firebaseapp.com https://*.firebase.com
     https://*.googleapis.com https://apis.google.com
     https://us-central1-happy-hunter-systems.cloudfunctions.net
     https://identitytoolkit.googleapis.com https://securetoken.googleapis.com
     https://stream.mux.com https://*.litix.io https://api.mux.com https://*.mux.com
-    https://*.fastly.mux.com wss://*.firebaseio.com;
+    https://*.fastly.mux.com wss://*.firebaseio.com 
+    https://us.i.posthog.com https://eu.i.posthog.com 
+    https://us-assets.i.posthog.com https://eu-assets.i.posthog.com;
   img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com
     https://*.googleusercontent.com https://image.mux.com https://*.mux.com;
   media-src 'self' blob: https://stream.mux.com https://*.mux.com
@@ -25,14 +26,18 @@
     https://*.firebaseapp.com
     https://*.googleapis.com
     https://www.gstatic.com
-    https://cdnjs.cloudflare.com;
+    https://cdnjs.cloudflare.com
+    https://us-assets.i.posthog.com
+    https://eu-assets.i.posthog.com;
   script-src-elem 'self' 'unsafe-inline'
     https://apis.google.com
     https://accounts.google.com
     https://*.firebaseapp.com
     https://*.googleapis.com
     https://www.gstatic.com
-    https://cdnjs.cloudflare.com;
+    https://cdnjs.cloudflare.com
+    https://us-assets.i.posthog.com
+    https://eu-assets.i.posthog.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com;
   frame-src 'self'
@@ -45,13 +50,10 @@
 <link rel="icon" type="image/jpeg"
   href="https://res.cloudinary.com/dka0498ns/image/upload/v1765901353/favicon_kzkevq.jpg" />
 <title>happyhunterdigital | Smart Marketing for the AI Era</title>
-<meta name="description" content="South African digital marketing agency
-specializing in Digital Entity Management, AI-Powered Answer Engines (AEO), and
-Agentic Revenue Ecosystems." />
+<meta name="description" content="South African digital marketing agency specializing in Digital Entity Management, AI-Powered Answer Engines (AEO), and Agentic Revenue Ecosystems." />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="happyhunterdigital | Smart Marketing" />
-<meta property="og:description" content="Stop being a Ghost to algorithms. We build
-AI-ready digital powerhouses." />
+<meta property="og:description" content="Stop being a Ghost to algorithms. We build AI-ready digital powerhouses." />
 <meta property="og:image"
   content="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" />
 <meta property="og:url" content="https://www.happyhunterdigital.com" />
