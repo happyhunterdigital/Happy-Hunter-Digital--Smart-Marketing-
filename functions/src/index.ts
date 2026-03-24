@@ -6,7 +6,6 @@ import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import * as crypto from "crypto";
 
 admin.initializeApp();
 const db = getFirestore();
@@ -22,7 +21,6 @@ const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "HAPPY_HUNTER_SECURE_2026";
 const ADMIN_NUMBER = "27601016673";
 
-const TOKEN_PREFIX = "hhd_secure_";
 const BASE_URL = "https://happyhunterdigital.com";
 
 const SAFETY_SETTINGS = [
@@ -31,12 +29,6 @@ const SAFETY_SETTINGS = [
   { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
   { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
 ];
-
-function generateViewerToken(): string {
-  const timestamp = Date.now().toString(36);
-  const randomPart = crypto.randomBytes(16).toString("hex");
-  return `${TOKEN_PREFIX}${timestamp}_${randomPart}`;
-}
 
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
