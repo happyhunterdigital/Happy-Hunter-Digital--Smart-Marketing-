@@ -1,12 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown, Calendar, Database, CheckCircle2, UploadCloud, Camera } from 'lucide-react';
+import { Search, AlertTriangle, Loader2, Zap, CheckCircle, Download, MessageSquare, ArrowRight, ShieldCheck, XCircle, TrendingDown, Calendar, Database, CheckCircle2 } from 'lucide-react';
 import { db, functions } from '../firebaseConfig';
-import { collection, addDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Telemetry } from '../posthog';
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -16,10 +14,7 @@ export const AiAudit: React.FC = () => {
   const [verdict, setVerdict] = useState<any>(null);
   const reportRef = useRef<HTMLDivElement>(null);
   
-  // Real-time phone validation & Multimodal state
   const [phoneError, setPhoneError] = useState('');
-  const [auditImage, setAuditImage] = useState<File | null>(null);
-  const [visionCritique, setVisionCritique] = useState<string | null>(null);
 
   const scanSteps =[
     "Verifying Google Business Profile...",
@@ -79,35 +74,6 @@ export const AiAudit: React.FC = () => {
       if (progress >= 95) clearInterval(interval);
     }, 50);
 
-    // MULTIMODAL VISION ENGINE PROTOCOL
-    if (auditImage) {
-      try {
-        Telemetry.visualAuditTriggered(form.biz);
-        const storage = getStorage();
-        const imageRef = ref(storage, `visual_audits/${Date.now()}_${auditImage.name}`);
-        const snapshot = await uploadBytes(imageRef, auditImage);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-
-        const docRef = await addDoc(collection(db, 'visual_audits'), {
-          target: form.biz,
-          screenshot_url: downloadURL,
-          audit_prompt: `Analyze this screenshot of a local business web presence. Identify 3 critical structural flaws preventing Answer Engine Optimization (AEO). Be brutal and precise.`,
-          status: 'processing',
-          timestamp: serverTimestamp()
-        });
-
-        const unsubscribe = onSnapshot(docRef, (snap) => {
-          const data = snap.data();
-          if (data && data.ai_critique) {
-            setVisionCritique(data.ai_critique);
-            unsubscribe();
-          }
-        });
-      } catch (err) {
-        console.error("Vision Processing Failed:", err);
-      }
-    }
-
     try {
       const performAudit = httpsCallable(functions, 'performAudit');
       const response = await performAudit({
@@ -158,29 +124,6 @@ export const AiAudit: React.FC = () => {
           <div className="grid md:grid-cols-2 gap-4 mb-6">
             <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-all" placeholder="Business Name" onChange={e => setForm({...form, biz: e.target.value})} required />
             <input className="w-full bg-black p-5 rounded-2xl border border-gray-800 text-white outline-none focus:border-yellow-500 transition-all" placeholder="City / Area" onChange={e => setForm({...form, loc: e.target.value})} required />
-          </div>
-
-          <div className="mb-6 text-left">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2 block">Optional: Upload Screenshot for Visual AI Audit</label>
-            <div className="relative border-2 border-dashed border-gray-800 rounded-2xl p-6 text-center hover:border-yellow-500 transition-colors bg-black/50 cursor-pointer">
-              <input 
-                type="file" 
-                accept="image/*" 
-                onChange={(e) => setAuditImage(e.target.files?.[0] || null)} 
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
-              {auditImage ? (
-                <div className="flex flex-col items-center gap-2">
-                  <CheckCircle2 size={24} className="text-green-500" />
-                  <span className="text-xs font-bold text-white">{auditImage.name}</span>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <UploadCloud size={24} className="text-gray-500" />
-                  <span className="text-xs font-medium text-gray-400">Drag & drop or click to upload UI/Maps screenshot</span>
-                </div>
-              )}
-            </div>
           </div>
 
           <button type="submit" className="w-full bg-yellow-500 p-5 rounded-2xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all shadow-xl">
@@ -277,19 +220,6 @@ export const AiAudit: React.FC = () => {
                 <strong>Diagnosis:</strong> {verdict.diagnosis || verdict.summary}
               </p>
             </div>
-
-            {/* MULTIMODAL AI CRITIQUE INJECTION */}
-            {visionCritique && (
-              <div className="mb-10 p-6 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl relative overflow-hidden animate-fade-in">
-                <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500"></div>
-                <h3 className="text-yellow-500 font-black uppercase tracking-tight flex items-center gap-2 mb-2">
-                  <Camera size={18} /> MULTIMODAL VISION CRITIQUE
-                </h3>
-                <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-                  {visionCritique}
-                </p>
-              </div>
-            )}
 
             <div className="space-y-10">
               {/* SECTION 1: IDENTITY CRISIS */}
