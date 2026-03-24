@@ -10,8 +10,7 @@ import * as cheerio from "cheerio";
 admin.initializeApp();
 const db = getFirestore();
 
-// REVERTED TO STABLE MODEL TO RESTORE CHATBOT AND AUDIT
-const AI_MODEL = "gemini-1.5-flash";
+const AI_MODEL = "gemini-3.1-flash-lite";
 
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
