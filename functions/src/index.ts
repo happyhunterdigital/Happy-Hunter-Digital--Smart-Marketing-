@@ -24,7 +24,6 @@ const ADMIN_NUMBER = "27601016673";
 
 const TOKEN_PREFIX = "hhd_secure_";
 const BASE_URL = "https://happyhunterdigital.com";
-const VIEWER_PATH = "/view/guide";
 
 const SAFETY_SETTINGS = [
   { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
@@ -219,16 +218,10 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  const secureToken = generateViewerToken();
   const lowerCaseMsg = message.toLowerCase();
   const isAskingForGBP = lowerCaseMsg.includes("gbp") || lowerCaseMsg.includes("google business profile presentation") || lowerCaseMsg.includes("iws presentation") || lowerCaseMsg.includes("iws slides") || lowerCaseMsg.includes("zero click") || lowerCaseMsg.includes("ai overview");
-  const docParam = isAskingForGBP ? "&doc=gbp" : "";
-  const secureLink = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
-  
-  await db.collection("secure_access_sessions").doc(secureToken).set({
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
-  });
+  const docName = isAskingForGBP ? "hhd-gbp-zero-clicks.pdf" : "hhd-service-guide.pdf";
+  const directLink = `${BASE_URL}/assets/${docName}`;
 
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital. 
  YOUR KNOWLEDGE BASE:
@@ -242,7 +235,7 @@ export const hunterChat = onCall({
  1. SMART Q&A: Answer questions intelligently.
  2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
  3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
- 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique, 24-hour secure link: <a href="${secureLink}">${secureLink}</a>.`;
+ 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact link: <a href="${directLink}">${directLink}</a>.`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -563,10 +556,8 @@ RULES:
         // Step 2: Send native WhatsApp CTA button with absolute document link
         if (sendGbpDoc || sendServicesDoc) {
           const docName = sendGbpDoc ? "AI & GBP Zero Clicks Revolutions Guide" : "Smart Marketing Service Guide";
-          
-          const secureToken = generateViewerToken();
-          const docParam = sendGbpDoc ? "&doc=gbp" : "";
-          const viewerUrl = `${BASE_URL}${VIEWER_PATH}?id=${secureToken}${docParam}`;
+          const fileName = sendGbpDoc ? "hhd-gbp-zero-clicks.pdf" : "hhd-service-guide.pdf";
+          const viewerUrl = `${BASE_URL}/assets/${fileName}`;
 
           const interactivePayload = {
             messaging_product: "whatsapp",
@@ -576,7 +567,7 @@ RULES:
             interactive: {
               type: "cta_url",
               header: { type: "text", text: docName },
-              body: { text: "Your secure access is ready. Tap below to authenticate and view. This link self-destructs in 24 hours." },
+              body: { text: "Your PDF is ready. Tap below to view or download it directly." },
               footer: { text: "happyhunterdigital.com" },
               action: {
                 name: "cta_url",
@@ -586,13 +577,6 @@ RULES:
           };
 
           try {
-            await db.collection("secure_access_sessions").doc(secureToken).set({
-              phoneNode: from,
-              document: sendGbpDoc ? "gbp" : "services",
-              createdAt: admin.firestore.FieldValue.serverTimestamp(),
-              expiresAt: admin.firestore.Timestamp.fromMillis(Date.now() + 24 * 60 * 60 * 1000)
-            });
-
             await axios.post(
               `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
               interactivePayload,
