@@ -227,7 +227,7 @@ export const hunterChat = onCall({
  1. SMART Q&A: Answer questions intelligently.
  2. ALWAYS state the lowest price using the exact phrase: "starting from" when discussing services.
  3. DO NOT use markdown asterisks. Use HTML tags (<strong>, <p>, <a>, <br>) for ALL formatting. 
- 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact link: <a href="${directLink}">${directLink}</a>.`;
+ 4. DOCUMENT ACCESS: If the user asks for a guide, document, presentation, or access code, provide this exact unique link: <a href="${directLink}">${directLink}</a>.`;
 
   try {
     const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
@@ -587,7 +587,6 @@ RULES:
   return;
 });
 
-
 // ============================================================================
 // 5. DAILY REVENUE REPORT (Scheduled)
 // ============================================================================
@@ -607,7 +606,6 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
     } catch (err) { console.error("Report Failed", err); }
   }
 });
-
 
 // ============================================================================
 // 6. VECTOR EMBEDDER (Firestore Trigger)
@@ -639,46 +637,31 @@ export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskI
   const snap = event.data;
   if (!snap) return;
   const task = snap.data();
-  
   const phones = [];
   if (task.assigneePhone) phones.push(task.assigneePhone);
   if (task.coAssigneePhone) phones.push(task.coAssigneePhone);
-  
   if (phones.length === 0) return;
-
   const messagesToSend = phones.map(phone => {
     const messagePayload = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
       to: phone,
       type: "text",
-      text: {
-        body: `🚨 *HQ DIRECTIVE ASSIGNED*\n\n*Objective:* ${task.title}\n*Priority:* ${task.priority}\n*Deadline:* ${task.deadline}\n\nLog into Unified Command to update your SITREP.`
-      }
+      text: { body: `🚨 **HQ DIRECTIVE ASSIGNED**\n\n**Objective:** ${task.title}\n**Priority:** ${task.priority}\n**Deadline:** ${task.deadline}\n\nLog into Unified Command to update your SITREP.` }
     };
-
-    return axios.post(
-      `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
-      messagePayload,
-      { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
-    ).catch(e => console.error("Failed to route WhatsApp payload:", e));
+    return axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, messagePayload, { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }).catch(e => console.error("Failed to route WhatsApp payload:", e));
   });
-  
   await Promise.all(messagesToSend);
 });
 
 export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", async (event) => {
   const newValue = event.data?.after.data();
   const previousValue = event.data?.before.data();
-  
   if (!newValue || !previousValue) return;
-
   const phones = [];
   if (newValue.assigneePhone) phones.push(newValue.assigneePhone);
   if (newValue.coAssigneePhone) phones.push(newValue.coAssigneePhone);
-  
   if (phones.length === 0) return;
-
   if (newValue.status !== previousValue.status) {
     const messagesToSend = phones.map(phone => {
       const messagePayload = {
@@ -686,58 +669,36 @@ export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", as
         recipient_type: "individual",
         to: phone,
         type: "text",
-        text: {
-          body: `⚡ *STATUS UPDATE*\n\n*Objective:* ${newValue.title}\n*New Status:* [${newValue.status}]\n\nMatrix updated successfully.`
-        }
+        text: { body: `⚡ **STATUS UPDATE**\n\n**Objective:** ${newValue.title}\n**New Status:** [${newValue.status}]\n\nMatrix updated successfully.` }
       };
-
-      return axios.post(
-        `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
-        messagePayload,
-        { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
-      ).catch(e => console.error("Failed to route update payload:", e));
+      return axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, messagePayload, { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }).catch(e => console.error("Failed to route update payload:", e));
     });
-    
     await Promise.all(messagesToSend);
   }
 });
 
 export const chronologicalAIManager = onSchedule("every day 08:00", async () => {
-   const today = new Date().toISOString().split('T')[0];
-   
-   const tasksRef = db.collection("workspace_tasks");
-   const snapshot = await tasksRef.where("status", "!=", "Complete").get();
-
-   const messagesToSend: Promise<any>[] = [];
-
-   snapshot.forEach(doc => {
-     const task = doc.data();
-     const phones = [];
-     if (task.assigneePhone) phones.push(task.assigneePhone);
-     if (task.coAssigneePhone) phones.push(task.coAssigneePhone);
-
-     if (task.deadline === today && phones.length > 0) {
-        phones.forEach(phone => {
-            const messagePayload = {
-              messaging_product: "whatsapp",
-              recipient_type: "individual",
-              to: phone,
-              type: "text",
-              text: {
-                body: `⚠️ *DEADLINE WARNING*\n\n*Objective:* ${task.title}\n*Status:* ${task.status}\n\nThis directive is due TODAY. Ensure execution parameters are met.`
-              }
-            };
-
-            messagesToSend.push(
-              axios.post(
-                `https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`,
-                messagePayload,
-                { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }
-              ).catch(e => console.error("Chronological AI Error:", e))
-            );
-        });
-     }
-   });
-
-   await Promise.all(messagesToSend);
+  const today = new Date().toISOString().split('T')[0];
+  const tasksRef = db.collection("workspace_tasks");
+  const snapshot = await tasksRef.where("status", "!=", "Complete").get();
+  const messagesToSend: Promise<any>[] = [];
+  snapshot.forEach(doc => {
+    const task = doc.data();
+    const phones = [];
+    if (task.assigneePhone) phones.push(task.assigneePhone);
+    if (task.coAssigneePhone) phones.push(task.coAssigneePhone);
+    if (task.deadline === today && phones.length > 0) {
+      phones.forEach(phone => {
+        const messagePayload = {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: phone,
+          type: "text",
+          text: { body: `⚠️ **DEADLINE WARNING**\n\n**Objective:** ${task.title}\n**Status:** ${task.status}\n\nThis directive is due TODAY. Ensure execution parameters are met.` }
+        };
+        messagesToSend.push(axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, messagePayload, { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } }).catch(e => console.error("Chronological AI Error:", e)));
+      });
+    }
+  });
+  await Promise.all(messagesToSend);
 });
