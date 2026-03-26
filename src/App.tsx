@@ -17,7 +17,7 @@ import { ArticleEntity } from './pages/ArticleEntity';
 import { ArticleBlueLink } from './pages/ArticleBlueLink';
 import { SummitPage } from './pages/SummitPage';
 import { Architecture } from './pages/Architecture';
-import { ClientPortal } from './pages/ClientPortal';
+import { ClientPortal } from './pages/ClientPortal/ClientPortal';
 import { SummitPoster } from './pages/SummitPoster';
 import { MegaphoneLanding } from './pages/MegaphoneLanding';
 import { LiveSummit } from './pages/LiveSummit';
