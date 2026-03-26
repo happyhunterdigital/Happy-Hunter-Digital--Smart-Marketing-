@@ -5,7 +5,7 @@ import { CookieConsent } from './components/CookieConsent';
 import { ContentRibbon } from './components/ContentRibbon';
 import { Home } from './pages/Home';
 import { Founders } from './pages/Founders';
-import { CoreServices } from './pages/CoreServices';
+import { CoreServices } from './pages/CoreServices/CoreServices';
 import { EarnedMedia } from './pages/EarnedMedia';
 import { FAQ } from './pages/FAQ';
 import { Admin } from './pages/Admin';
