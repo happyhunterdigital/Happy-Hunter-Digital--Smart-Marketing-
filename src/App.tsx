@@ -23,7 +23,7 @@ import { MegaphoneLanding } from './pages/MegaphoneLanding';
 import { LiveSummit } from './pages/LiveSummit';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import ViewGuide from './pages/ViewGuide';
-import { Workspace } from './pages/Workspace';
+import { Workspace } from './pages/Workspace/Workspace';
 import { Menu, X, Mail, Phone, Facebook, Linkedin, Instagram, Lock, PlusSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { doc, onSnapshot } from 'firebase/firestore';
