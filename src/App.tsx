@@ -1,5 +1,5 @@
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { AiAudit } from './components/AiAudit';
+import { AiAudit } from './pages/Audit/AiAudit';
 import { Chatbot } from './components/Chatbot';
 import { CookieConsent } from './components/CookieConsent';
 import { ContentRibbon } from './components/ContentRibbon';
