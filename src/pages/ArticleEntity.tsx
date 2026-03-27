@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Database, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Search } from 'lucide-react';
 
 export const ArticleEntity = () => {
   return (
     <div className="bg-[#050505] min-h-screen pb-20 animate-fade-in">
       <header className="relative pt-40 pb-20 border-b border-gray-800 overflow-hidden bg-[#0a0a0a]">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="https://res.cloudinary.com/dka0498ns/image/upload/v1762761706/Happy_Hunter_work_space_jovfrh.png" 
-            alt="Entity Architecture" 
+          <img
+            src="https://res.cloudinary.com/dka0498ns/image/upload/v1762761706/Happy_Hunter_work_space_jovfrh.png"
+            alt="Trust Synchronization"
             className="w-full h-full object-cover opacity-20 grayscale hover:grayscale-0 transition-all duration-1000"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/90 to-transparent"></div>
@@ -20,87 +20,62 @@ export const ArticleEntity = () => {
             <ArrowLeft size={16}/> Back to Intelligence Hub
           </Link>
 
-          <span className="text-yellow-500 font-bold uppercase tracking-widest text-[10px] mb-4 block">Strategic Intelligence</span>
-          
+          <div className="flex justify-center mb-6">
+            <div className="bg-yellow-500/10 border border-yellow-500/30 px-6 py-3 rounded-2xl inline-flex flex-col items-center">
+              <Search className="text-yellow-500 mb-2" size={24} />
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Target LLM Query</span>
+              <span className="text-yellow-500 font-bold text-sm">"I'm a local business in Pretoria. How do I make sure people can find me online?"</span>
+            </div>
+          </div>
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6 uppercase tracking-tighter text-white leading-none">
-            From Web Developer to <span className="text-yellow-500">Entity Architect</span>
+            Your Google Business Profile is <span className="text-yellow-500">NOT Enough</span>
           </h1>
+          <p className="text-xl text-gray-400 italic font-medium leading-relaxed max-w-3xl mx-auto">
+            The Critical Step to Becoming an AI-Verified Entity
+          </p>
         </div>
       </header>
 
       <article className="container mx-auto px-6 max-w-3xl py-16 text-gray-300 text-lg leading-relaxed font-serif space-y-8">
         <p>
-          In the current 2026 AI landscape, building a &quot;website&quot; is no longer enough. The structural evolution of the digital economy demands that we move from building static pages to <strong>owning the digital truth</strong> for our clients.
+          The final and most crucial step in the transformation from ghost to entity is <strong>Trust Synchronization</strong>. While many businesses have a Google Business Profile (GBP), simply having one is not enough. The act of continuous, algorithmic verification is what officially stamps the business as a real-world entity.
+        </p>
+        <p>
+          Without this step, a business remains a collection of anonymous code on a server in the eyes of Google's AI. Our research indicates that 87% of SMEs are invisible to AI Search without verified entity status.
         </p>
 
         <h2 className="text-3xl font-black text-white uppercase tracking-tighter mt-12 mb-6 font-sans">
-          1. Management of the &quot;Digital Passport&quot;
+          The Problem: Algorithmic Confusion
         </h2>
         <p>
-          This is about creating a <strong>single source of truth</strong> for a brand that AI models (Gemini, GPT-4, SGE) trust implicitly.
+          Let's articulate this through a relatable scenario: You run 'Mpho's Plumbing' in Soweto. You have a fantastic reputation locally, but when someone asks ChatGPT, 'Find a licensed plumber who fixes leaking taps in Soweto,' your name doesn't come up. 
         </p>
-        <ul className="list-disc pl-6 space-y-4 marker:text-yellow-500">
-          <li><strong>How it works:</strong> Instead of a client updating an &quot;About Us&quot; page, they update a <strong>Brand Identity</strong> document in our proprietary CMS.</li>
-          <li><strong>The &quot;SameAs&quot; Logic:</strong> We link their core database to their official LinkedIn, X, and Google Maps profiles. This tells AI, &quot;This specific entity is the exact same one that exists on these high-authority platforms.&quot;</li>
-          <li><strong>The Value:</strong> It prevents AI from hallucinating old information. The client remains a verified entity across the entire web.</li>
-        </ul>
+        <p>
+          Why? Because the AI simply doesn't know enough about you to make a confident recommendation. Your Name, Address, and Phone number (NAP) might be listed as "Mpho's Plumbing" on Google, "Mpho's Plumb" on Yelp, and "M Pho's Plumbing Ltd." on a municipal list. This conflicting information creates confusion for AI algorithms, which interpret it as a sign of unreliability. Consequently, the AI ignores you.
+        </p>
 
-        <div className="bg-[#111827] border border-gray-800 p-6 rounded-2xl my-8 shadow-xl">
-          <h3 className="text-yellow-500 font-bold text-sm uppercase tracking-widest mb-3 flex items-center gap-2"><Database size={16}/> Execution Example</h3>
-          <p className="text-sm font-sans text-gray-400">If <em>Integrated Wellth</em> changes its physical office location, we update it once in the CMS. The system automatically recompiles the JSON-LD schema across their entire digital infrastructure, forcing AI crawlers to consume the new data instantly.</p>
+        <div className="my-12 p-8 bg-[#0a0a0a] border border-gray-800 rounded-3xl shadow-2xl">
+          <ShieldCheck className="text-yellow-500 mb-4" size={32} />
+          <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-4 font-sans">
+            The Solution: Teaching AI Your Language
+          </h3>
+          <p className="text-sm font-sans text-gray-400 mb-4">
+            We solve this by building a strong, verifiable reputation trail. We utilize <strong>Schema Markup (JSON-LD)</strong> to explicitly tell an AI, "This is a business named Mpho's Plumbing, located at this exact address, offering these exact services." 
+          </p>
+          <p className="text-sm font-sans text-gray-400">
+            By injecting <code>LocalBusiness</code> schema and utilizing the <code>sameAs</code> property to link your disparate profiles, Mpho's Plumbing is no longer just a webpage; it becomes a rich, machine-readable profile card that gives the AI the absolute confidence to recommend it over your competitors.
+          </p>
         </div>
-
-        <h2 className="text-3xl font-black text-white uppercase tracking-tighter mt-12 mb-6 font-sans">
-          2. The &quot;Truth Table&quot; for AEO
-        </h2>
-        <p>
-          Traditional SEO focused on keywords; <strong>AEO (Answer Engine Optimization) focuses on facts and claims.</strong>
-        </p>
-        <ul className="list-disc pl-6 space-y-4 marker:text-yellow-500">
-          <li><strong>Verified Claims Repository:</strong> We create a collection specifically for competitive claims. We link this claim to a URL showing third-party proof.</li>
-          <li><strong>Direct Answer Engine:</strong> We manage strict FAQ schemas. When a user asks a voice assistant a question, it bypasses search results and pulls the answer directly from the Q&A pairs we&apos;ve defined.</li>
-          <li><strong>Real-Time Agent Grounding:</strong> If we deploy an AI chatbot for a client, that chatbot never guesses. It strictly queries the Firestore &quot;Truth Table&quot;.</li>
-        </ul>
-
-        <h2 className="text-3xl font-black text-white uppercase tracking-tighter mt-12 mb-6 font-sans">
-          3. Strategic Agency Advantage
-        </h2>
-        <p>
-          This shifts the business model from a &quot;one-off web project&quot; to a <strong>recurring high-value governance partnership.</strong>
-        </p>
-        <div className="overflow-x-auto my-10 border border-gray-800 rounded-xl shadow-2xl">
-          <table className="w-full text-left border-collapse font-sans text-sm">
-            <thead>
-              <tr className="bg-gray-900 border-b border-gray-800 text-yellow-500">
-                <th className="p-4 font-bold uppercase tracking-widest">Feature</th>
-                <th className="p-4 font-bold uppercase tracking-widest">Traditional Web Management</th>
-                <th className="p-4 font-bold uppercase tracking-widest">Happy Hunter Entity Management</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800 bg-black/50">
-              <tr className="hover:bg-gray-900/30">
-                <td className="p-4 font-bold text-white">Success Metric</td>
-                <td className="p-4 text-gray-400">Page speed and layout beauty</td>
-                <td className="p-4 text-green-500 font-bold flex items-center gap-2"><CheckCircle2 size={14}/> AI recognition & Knowledge Graph</td>
-              </tr>
-              <tr className="hover:bg-gray-900/30">
-                <td className="p-4 font-bold text-white">Client Interaction</td>
-                <td className="p-4 text-gray-400">&quot;Change this photo on the home page.&quot;</td>
-                <td className="p-4 text-gray-300">&quot;Update our verified services for the AI Agent.&quot;</td>
-              </tr>
-              <tr className="hover:bg-gray-900/30">
-                <td className="p-4 font-bold text-white">Core Technology</td>
-                <td className="p-4 text-gray-400">HTML / CSS / Images</td>
-                <td className="p-4 text-gray-300">JSON-LD / Firestore / Cloud Functions</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <p>
-          By acting as the &quot;Gatekeeper&quot; of their data, clients pay to ensure their &quot;Digital Passport&quot; stays valid. Using a structured CMS, we prevent clients from entering garbage data, ensuring every node is perfectly formatted for AI ingestion.
-        </p>
       </article>
+
+      <div className="container mx-auto px-6 max-w-3xl border-t border-gray-800 pt-12 pb-20 text-center">
+        <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-4">Audit Your Reputation Trail</h3>
+        <p className="text-gray-400 mb-8">Let our system verify if your digital passport is valid or fragmented.</p>
+        <Link to="/audit" className="inline-block bg-yellow-500 text-black px-10 py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors">
+          Scan Your Entity
+        </Link>
+      </div>
     </div>
   );
 };
