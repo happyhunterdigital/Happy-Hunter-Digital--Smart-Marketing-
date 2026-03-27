@@ -1,10 +1,9 @@
 import { onCall, HttpsError, onRequest } from "firebase-functions/v2/https";
-import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit } from "./services/auditService";
 import { sendWhatsAppText, sendWhatsAppDoc } from "./services/whatsappService";
-import { ADMIN_NUMBER, VERIFY_TOKEN } from "./config";
+import { VERIFY_TOKEN } from "./config";
 
 admin.initializeApp();
 const db = getFirestore();
