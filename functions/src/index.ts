@@ -7,12 +7,11 @@ import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit, getEmbedding } fro
 import { sendWhatsAppText, sendWhatsAppDoc, sendAdminAlert } from "./services/whatsappService";
 import { callGeminiChat } from "./services/chatService";
 import { sendTaskNotification } from "./services/taskService";
-import { VERIFY_TOKEN, ADMIN_NUMBER } from "./config";
+import { VERIFY_TOKEN, ADMIN_NUMBER, AI_MODEL } from "./config";
 
 admin.initializeApp();
 const db = getFirestore();
 
-// 1. Audit Pipeline
 export const performAudit = onCall({ region: "us-central1", cors: true, timeoutSeconds: 300 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY!;
@@ -28,61 +27,51 @@ export const performAudit = onCall({ region: "us-central1", cors: true, timeoutS
     await db.collection("leads").add({ businessName, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
     await sendAdminAlert(businessName, clientEmail, whatsapp, analysis.score);
     return { success: true, ...analysis };
-  } catch (e: any) { throw new HttpsError("internal", e.message); }
+  } catch (e: any) { throw new HttpsError("internal", `Neural Handshake Interrupted. ${e.message}`); }
 });
 
-// 2. Strategic Chatbot
 export const hunterChat = onCall({ region: "us-central1", cors: true }, async (request) => {
   const { message, history } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY!;
   try {
-    const prompt = `You are Smart Marketing Chat for Happy Hunter Digital. Use HTML tags, NO Markdown asterisks.`;
+    const prompt = `You are Smart Marketing Chat for Happy Hunter Digital using ${AI_MODEL}. Use HTML tags, NO Markdown asterisks.`;
     const formattedHistory = history.map((m: any) => ({ role: m.role === 'bot' ? 'model' : 'user', parts: [{ text: m.text }] }));
     formattedHistory.push({ role: 'user', parts: [{ text: message }] });
     const aiRes = await callGeminiChat(prompt, formattedHistory, G_KEY);
     return { reply: aiRes.candidates[0].content.parts[0].text.trim() };
-  } catch (e: any) { return { reply: "Comms offline. Please email HQ." }; }
+  } catch (e: any) { return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" }; }
 });
 
-// 3. WhatsApp Interface
 export const whatsappWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET' && req.query['hub.verify_token'] === VERIFY_TOKEN) { res.status(200).send(req.query['hub.challenge']); return; }
   if (req.method === 'POST') {
     const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
     if (message?.type === 'text') {
       const from = message.from;
-      const userText = message.text.body.toLowerCase();
       const G_KEY = process.env.GEMINI_API_KEY!;
-      const vectorValues = await getEmbedding(userText, G_KEY);
+      const vectorValues = await getEmbedding(message.text.body.toLowerCase(), G_KEY);
       if (vectorValues) {
         const vectorQuery = await db.collection('verified_claims').findNearest('embedding_vector', admin.firestore.FieldValue.vector(vectorValues), { limit: 1, distanceMeasure: 'COSINE' }).get();
         if (!vectorQuery.empty) {
           const data = vectorQuery.docs[0].data();
           if (data.category === 'guide') await sendWhatsAppDoc(from, 'gbp');
           else await sendWhatsAppText(from, data.content || data.verified_answer);
-          res.status(200).send('EVENT_RECEIVED');
-          return;
+          res.status(200).send('EVENT_RECEIVED'); return;
         }
       }
       await sendWhatsAppText(from, "Handshake Received. How can we assist?");
     }
-    res.status(200).send('EVENT_RECEIVED');
-    return;
+    res.status(200).send('EVENT_RECEIVED'); return;
   }
   res.status(404).send();
 });
 
-// 4. Automated Reporting
 export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
   const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
-  const snapshot = await db.collection("leads").where("timestamp", ">", yesterday).get();
-  if (snapshot.size > 0) {
-    const reportText = `DAILY REVENUE REPORT\n\nTotal New Leads: ${snapshot.size}`;
-    await sendWhatsAppText(ADMIN_NUMBER, reportText);
-  }
+  const snap = await db.collection("leads").where("timestamp", ">", yesterday).get();
+  if (snap.size > 0) await sendWhatsAppText(ADMIN_NUMBER, `DAILY REVENUE REPORT\n\nTotal New Leads: ${snap.size}`);
 });
 
-// 5. System Triggers
 export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
   const doc = event.data?.after.data();
   if (!doc || !doc.content) return;
@@ -97,13 +86,8 @@ export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskI
 
 export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", async (event) => {
   const newValue = event.data?.after.data();
-  const previousValue = event.data?.before.data();
-  if (newValue && previousValue && newValue.status !== previousValue.status && newValue.assigneePhone) {
+  const prevValue = event.data?.before.data();
+  if (newValue && prevValue && newValue.status !== prevValue.status && newValue.assigneePhone) {
     await sendTaskNotification(newValue.assigneePhone, `STATUS UPDATE: ${newValue.title} is now ${newValue.status}`);
   }
-});
-
-export const submitServiceRequest = onCall({ region: "us-central1", cors: true }, async (request) => {
-  await db.collection("leads").add({ ...request.data, source: "Service Request", timestamp: admin.firestore.FieldValue.serverTimestamp() });
-  return { success: true };
 });
