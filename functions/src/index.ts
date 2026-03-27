@@ -12,7 +12,7 @@ import { VERIFY_TOKEN, ADMIN_NUMBER } from "./config";
 admin.initializeApp();
 const db = getFirestore();
 
-// 1. Audit
+// 1. Audit Pipeline
 export const performAudit = onCall({ region: "us-central1", cors: true, timeoutSeconds: 300 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY!;
@@ -31,7 +31,7 @@ export const performAudit = onCall({ region: "us-central1", cors: true, timeoutS
   } catch (e: any) { throw new HttpsError("internal", e.message); }
 });
 
-// 2. Chatbot
+// 2. Strategic Chatbot
 export const hunterChat = onCall({ region: "us-central1", cors: true }, async (request) => {
   const { message, history } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY!;
@@ -44,7 +44,7 @@ export const hunterChat = onCall({ region: "us-central1", cors: true }, async (r
   } catch (e: any) { return { reply: "Comms offline. Please email HQ." }; }
 });
 
-// 3. Webhook
+// 3. WhatsApp Interface
 export const whatsappWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET' && req.query['hub.verify_token'] === VERIFY_TOKEN) { res.status(200).send(req.query['hub.challenge']); return; }
   if (req.method === 'POST') {
@@ -72,12 +72,17 @@ export const whatsappWebhook = onRequest(async (req, res) => {
   res.status(404).send();
 });
 
-// 4. Tasks & Maintenance
-export const submitServiceRequest = onCall({ region: "us-central1", cors: true }, async (request) => {
-  await db.collection("leads").add({ ...request.data, source: "Service Request", timestamp: admin.firestore.FieldValue.serverTimestamp() });
-  return { success: true };
+// 4. Automated Reporting
+export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
+  const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
+  const snapshot = await db.collection("leads").where("timestamp", ">", yesterday).get();
+  if (snapshot.size > 0) {
+    const reportText = `DAILY REVENUE REPORT\n\nTotal New Leads: ${snapshot.size}`;
+    await sendWhatsAppText(ADMIN_NUMBER, reportText);
+  }
 });
 
+// 5. System Triggers
 export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
   const doc = event.data?.after.data();
   if (!doc || !doc.content) return;
@@ -88,4 +93,17 @@ export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async
 export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskId}", async (event) => {
   const task = event.data?.data();
   if (task?.assigneePhone) await sendTaskNotification(task.assigneePhone, `HQ DIRECTIVE ASSIGNED: ${task.title}`);
+});
+
+export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", async (event) => {
+  const newValue = event.data?.after.data();
+  const previousValue = event.data?.before.data();
+  if (newValue && previousValue && newValue.status !== previousValue.status && newValue.assigneePhone) {
+    await sendTaskNotification(newValue.assigneePhone, `STATUS UPDATE: ${newValue.title} is now ${newValue.status}`);
+  }
+});
+
+export const submitServiceRequest = onCall({ region: "us-central1", cors: true }, async (request) => {
+  await db.collection("leads").add({ ...request.data, source: "Service Request", timestamp: admin.firestore.FieldValue.serverTimestamp() });
+  return { success: true };
 });
