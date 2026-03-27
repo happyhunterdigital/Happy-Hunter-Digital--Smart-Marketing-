@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PHONE_NUMBER_ID, WHATSAPP_TOKEN, BASE_URL } from "../config";
+import { PHONE_NUMBER_ID, WHATSAPP_TOKEN, BASE_URL, ADMIN_NUMBER } from "../config";
 
 export const sendWhatsAppText = async (to: string, text: string) => {
   return axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
@@ -30,4 +30,9 @@ export const sendWhatsAppDoc = async (to: string, type: 'gbp' | 'services') => {
       }
     }
   }, { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } });
+};
+
+export const sendAdminAlert = async (businessName: string, email: string, phone: string, score: number) => {
+  const alertText = `🚨 *NEW HIGH-INTENT LEAD DETECTED*\n\n*Entity:* ${businessName}\n*Contact:* ${email}\n*WhatsApp:* ${phone || 'Not Provided'}\n*Survival Score:* ${score}/100\n\n*Directive:* Initiate contact protocol immediately.`;
+  return sendWhatsAppText(ADMIN_NUMBER, alertText);
 };
