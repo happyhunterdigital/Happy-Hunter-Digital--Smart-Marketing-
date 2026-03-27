@@ -29,5 +29,10 @@ export const Telemetry = {
   // Custom Event: Workspace Activity
   taskDeployed: (title: string, priority: string, assignee: string) => {
     posthog.capture('workspace_task_deployed', { title, priority, assignee });
+  },
+
+  // Custom Event: High-Intent Lead Capture
+  serviceRequested: (serviceName: string, targetWebsite: string) => {
+    posthog.capture('service_requested', { service: serviceName, website: targetWebsite });
   }
 };
