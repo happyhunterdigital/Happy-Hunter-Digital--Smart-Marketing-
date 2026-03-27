@@ -5,6 +5,7 @@ import { db, functions } from '../../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { PricingTier } from './PricingTier';
+import { Telemetry } from '../../posthog';
 
 export const CoreServices: React.FC = () => {
   const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
@@ -14,6 +15,10 @@ export const CoreServices: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // FIRE TELEMETRY
+    Telemetry.serviceRequested(form.service, form.website);
+
     try {
       const submitServiceRequest = httpsCallable(functions, 'submitServiceRequest');
       await submitServiceRequest({
