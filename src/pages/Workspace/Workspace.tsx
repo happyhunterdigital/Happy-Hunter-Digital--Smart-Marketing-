@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, onSnapshot, addDoc, updateDoc, doc, serverTimestamp, where, getDocs } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 import { GoogleAuthProvider, signInWithRedirect, onAuthStateChanged } from 'firebase/auth';
-import { Users, FileText, Lock, Layout, Database } from 'lucide-react';
+import { Users, FileText, Lock, Layout, Database, TerminalSquare } from 'lucide-react';
 import { KanbanBoard } from './KanbanBoard';
 import { KnowledgeVault } from './KnowledgeVault';
+import { EntityInjector } from './EntityInjector';
 
 export const Workspace: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -103,6 +104,8 @@ export const Workspace: React.FC = () => {
     </div>
   );
 
+  const isWSAdmin = activeWorkspace?.roles?.[user?.uid] === 'admin' || activeWorkspace?.ownerId === user?.uid;
+
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col lg:flex-row pt-20">
       <aside className="w-full lg:w-72 bg-black border-r border-gray-900 p-6 flex flex-col gap-8">
@@ -114,11 +117,12 @@ export const Workspace: React.FC = () => {
           <button onClick={() => setIsCreatingWorkspace(true)} className="mt-4 text-[10px] text-gray-400 hover:text-white uppercase font-black">+ Create New</button>
         </div>
         <nav className="flex flex-col gap-2">
-          {['Entity Matrix', 'Knowledge Base', 'Team Sovereignty'].map(tab => (
+          {['Entity Matrix', 'Knowledge Base', 'Team Sovereignty', ...(isWSAdmin ? ['Entity Injector'] : [])].map(tab => (
             <button key={tab} onClick={() => setActiveTab(tab)} className={`flex items-center gap-4 p-4 rounded-2xl transition-all font-black uppercase text-[10px] tracking-widest ${activeTab === tab ? 'bg-yellow-500 text-black' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}>
               {tab === 'Entity Matrix' && <Layout size={18}/>}
               {tab === 'Knowledge Base' && <FileText size={18}/>}
               {tab === 'Team Sovereignty' && <Users size={18}/>}
+              {tab === 'Entity Injector' && <TerminalSquare size={18}/>}
               {tab}
             </button>
           ))}
@@ -144,15 +148,19 @@ export const Workspace: React.FC = () => {
 
             {activeTab === 'Entity Matrix' && <KanbanBoard activeWorkspace={activeWorkspace} tasks={tasks} user={user} />}
             {activeTab === 'Knowledge Base' && <KnowledgeVault activeWorkspace={activeWorkspace} />}
+            {activeTab === 'Entity Injector' && isWSAdmin && <EntityInjector activeWorkspace={activeWorkspace} />}
+            
             {activeTab === 'Team Sovereignty' && (
               <div className="max-w-2xl">
-                <section className="bg-black/40 border border-gray-900 rounded-3xl p-8 mb-12">
-                  <h3 className="text-xl font-black uppercase mb-6">Invite Entity Member</h3>
-                  <div className="flex gap-4">
-                    <input type="email" placeholder="email@example.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="flex-1 bg-black border border-gray-800 p-4 rounded-xl outline-none focus:border-yellow-500 font-bold" />
-                    <button onClick={inviteMember} className="bg-yellow-500 text-black px-8 py-4 rounded-xl font-black uppercase text-xs">Send Invite</button>
-                  </div>
-                </section>
+                {isWSAdmin && (
+                  <section className="bg-black/40 border border-gray-900 rounded-3xl p-8 mb-12">
+                    <h3 className="text-xl font-black uppercase mb-6">Invite Entity Member</h3>
+                    <div className="flex gap-4">
+                      <input type="email" placeholder="email@example.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="flex-1 bg-black border border-gray-800 p-4 rounded-xl outline-none focus:border-yellow-500 font-bold" />
+                      <button onClick={inviteMember} className="bg-yellow-500 text-black px-8 py-4 rounded-xl font-black uppercase text-xs">Send Invite</button>
+                    </div>
+                  </section>
+                )}
                 <section>
                   <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-6">Verified Members</h3>
                   <div className="flex flex-col gap-4">
