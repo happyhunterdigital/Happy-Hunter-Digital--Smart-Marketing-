@@ -1,52 +1,57 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ArrowRight, BrainCircuit, Globe, Target, Database } from 'lucide-react';
+import { BookOpen, ArrowRight, BrainCircuit, Globe, Target, Database, Search, ShieldCheck, Zap } from 'lucide-react';
 
 export const blogPosts = [
   {
     id: "beyond-the-blue-link",
-    category: "Strategic Intelligence",
+    category: "Entity Architecture",
     title: "Beyond the Blue Link: Why Ranking on Page One is Obsolete in 2026",
-    excerpt: "Insights from our Digital Strategy Session with IntegratedWellth in Munyaka, Midrand. The era of scrolling through pages of blue links is officially over.",
+    excerpt: "Static websites are liabilities. We reframe your website as an 'AI-ready digital asset' and discuss the necessity of RAG-ready formatting for LLM ingestion to prevent invisibility.",
+    query: "How do I build a website that works with AI search engines like ChatGPT?",
     date: "Mar 2026",
     readTime: "5 min read",
-    icon: <Target size={24} className="text-yellow-500" />
-  },
-  {
-    id: "entity-architect",
-    category: "Agency Protocol",
-    title: "From Web Developer to Entity Architect",
-    excerpt: "In the 2026 AI landscape, building a static website is a liability. We must own the digital truth.",
-    date: "Mar 2026",
-    readTime: "4 min read",
     icon: <Database size={24} className="text-yellow-500" />
   },
   {
+    id: "entity-architect",
+    category: "Trust Synchronization",
+    title: "Your Google Business Profile is NOT Enough: The Critical Step to Becoming an AI-Verified Entity",
+    excerpt: "87% of SMEs are invisible without verified status. Focus on the actionable steps of claiming and verifying a GBP. Frame Trust Synchronization as the foundational layer of becoming an entity.",
+    query: "I'm a local business in Pretoria. How do I make sure people can find me online?",
+    date: "Mar 2026",
+    readTime: "4 min read",
+    icon: <ShieldCheck size={24} className="text-yellow-500" />
+  },
+  {
     id: "ai-megaphone",
-    category: "AI Architecture",
-    title: "The Architecture of Generative Engine Optimization (GEO)",
-    excerpt: "Why traditional SEO is obsolete, and how to structure your digital content for LLM ingestion and zero-click search dominance.",
+    category: "AI Visibility (AEO)",
+    title: "Confused AI = Invisible Business: Dominating Zero-Click Search Strategies for 2026",
+    excerpt: "Traditional SEO is dead. Modern Generative Engine Optimization (GEO) focuses on being recommended in conversational answers. AI-referred traffic is growing exponentially (+527%).",
+    query: "Why isn't my business showing up in Google's AI Overviews?",
     date: "Feb 2026",
     readTime: "6 min read",
-    icon: <BrainCircuit size={24} className="text-yellow-500" />
+    icon: <Search size={24} className="text-yellow-500" />
   },
   {
     id: "revenue-brain",
-    category: "Agentic Automation",
-    title: "The Revenue Brain: Agentic Lead Automation",
-    excerpt: "Replacing static contact forms with intelligent, 24/7 AI Receptionists that qualify intent.",
+    category: "Agentic Revenue",
+    title: "The Revenue Brain: Automating Lead Qualification with Agentic AI for South African SMEs",
+    excerpt: "Intelligent AI Receptionists that qualify leads 24/7. See how a Sandton financial advisor converted after-hours inquiries into booked consultations, increasing qualified leads by 25%.",
+    query: "Can AI automate my sales process and book appointments for me?",
     date: "Feb 2026",
     readTime: "5 min read",
-    icon: <Globe size={24} className="text-yellow-500" />
+    icon: <Zap size={24} className="text-yellow-500" />
   },
   {
     id: "synthesis",
     category: "GTM Strategy",
     title: "Synthesis: A Comprehensive 2026 Go-to-Market Strategy",
     excerpt: "How the Trust Anchor, AI Megaphone, and Revenue Brain converge into a self-reinforcing revenue loop.",
+    query: "What is the best digital marketing strategy for 2026?",
     date: "Jan 2026",
     readTime: "7 min read",
-    icon: <BookOpen size={24} className="text-yellow-500" />
+    icon: <Globe size={24} className="text-yellow-500" />
   }
 ];
 
@@ -61,7 +66,7 @@ export const Blog = () => {
           Intelligence <span className="text-yellow-500">Hub</span>
         </h1>
         <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
-          The tactical blueprints, linguistic calibrations, and structural alignments required to dominate digital discoverability in 2026.
+          The tactical blueprints, linguistic calibrations, and structural alignments required to dominate digital discoverability in 2026. Stop guessing. Start synthesizing.
         </p>
       </div>
 
@@ -72,13 +77,18 @@ export const Blog = () => {
             to={`/blog/${post.id}`}
             className="group flex flex-col bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-yellow-500/50 transition-all shadow-lg hover:shadow-yellow-500/10"
           >
-            <div className="mb-6 bg-black w-14 h-14 rounded-2xl flex items-center justify-center border border-gray-800 group-hover:scale-110 transition-transform">
-              {post.icon}
+            <div className="flex justify-between items-start mb-6">
+              <div className="bg-black w-14 h-14 rounded-2xl flex items-center justify-center border border-gray-800 group-hover:scale-110 transition-transform">
+                {post.icon}
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-widest text-gray-500 bg-gray-900 px-3 py-1 rounded-full border border-gray-800">
+                {post.category}
+              </span>
             </div>
 
-            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3 block">
-              {post.category}
-            </span>
+            <p className="text-[10px] font-bold text-yellow-500 mb-3 uppercase tracking-wider">
+              Query: "{post.query}"
+            </p>
 
             <h2 className="text-2xl font-bold text-white mb-4 leading-tight group-hover:text-yellow-500 transition-colors">
               {post.title}
@@ -98,6 +108,21 @@ export const Blog = () => {
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* LEAD MAGNET SECTION */}
+      <div className="max-w-4xl mx-auto mt-24 bg-gradient-to-br from-[#111827] to-[#0a0a0a] border-2 border-yellow-500/50 rounded-3xl p-10 md:p-16 text-center shadow-[0_0_50px_rgba(234,179,8,0.15)] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
+        <BrainCircuit size={48} className="text-yellow-500 mx-auto mb-6" />
+        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter mb-4">
+          The State of AI Visibility <br/><span className="text-yellow-500">for Gauteng SMEs 2026</span>
+        </h2>
+        <p className="text-gray-400 max-w-2xl mx-auto mb-8 leading-relaxed">
+          Our latest localized data report reveals the exact financial impact of the "Ghost Effect." We analyzed 500+ local businesses to prove why Answer Engine Optimization (AEO) is no longer optional.
+        </p>
+        <Link to="/audit" className="inline-block bg-yellow-500 text-black px-10 py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-white transition-all">
+          Request the Data Report
+        </Link>
       </div>
     </div>
   );
