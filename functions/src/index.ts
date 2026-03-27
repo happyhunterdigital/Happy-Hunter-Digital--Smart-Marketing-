@@ -2,14 +2,14 @@ import { onCall, HttpsError, onRequest } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
 import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit } from "./services/auditService";
-import { sendWhatsAppText, sendWhatsAppDoc } from "./services/whatsappService";
+import { sendWhatsAppText, sendWhatsAppDoc, sendAdminAlert } from "./services/whatsappService";
 import { VERIFY_TOKEN } from "./config";
 
 admin.initializeApp();
 const db = getFirestore();
 
 export const performAudit = onCall({ region: "us-central1", cors: true, timeoutSeconds: 300 }, async (request) => {
-  const { businessName, location, clientEmail } = request.data;
+  const { businessName, location, clientEmail, whatsapp } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY!;
   const P_KEY = process.env.PLACES_API_KEY!;
 
@@ -23,7 +23,11 @@ export const performAudit = onCall({ region: "us-central1", cors: true, timeoutS
     const aiRes = await callGeminiAudit(prompt, G_KEY);
     const analysis = JSON.parse(aiRes.candidates[0].content.parts[0].text);
 
-    await db.collection("leads").add({ businessName, email: clientEmail, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
+    await db.collection("leads").add({ businessName, email: clientEmail, whatsapp: whatsapp || null, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
+    
+    // FIRE ADMIN ALERT
+    await sendAdminAlert(businessName, clientEmail, whatsapp, analysis.score);
+
     return { success: true, ...analysis };
   } catch (e: any) {
     throw new HttpsError("internal", e.message);
