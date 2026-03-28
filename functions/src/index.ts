@@ -19,7 +19,7 @@ export const performAudit = onCall({
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
-  const P_KEY = process.env.PLACES_API_KEY;
+  const P = process.env.PLACES_API_KEY;
 
   if (!businessName || !location || !clientEmail) {
     throw new HttpsError("invalid-argument", "Missing required fields.");
