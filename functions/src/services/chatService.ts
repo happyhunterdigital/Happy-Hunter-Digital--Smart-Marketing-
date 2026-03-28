@@ -21,7 +21,6 @@ export const callGeminiChat = async (prompt: string, history: any[], gKey: strin
 
   const data = await res.json() as any;
   
-  // Defensive check for response structure
   if (!data?.candidates?.[0]?.content?.parts?.[0]?.text) {
     throw new Error("Invalid response structure from Gemini");
   }
