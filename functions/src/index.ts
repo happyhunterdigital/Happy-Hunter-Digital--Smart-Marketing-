@@ -1,25 +1,39 @@
+// functions/src/index.ts
+import { setGlobalOptions } from "firebase-functions/v2";
 import { onCall, HttpsError, onRequest } from "firebase-functions/v2/https";
 import { onDocumentWritten, onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, FieldValue, Timestamp } from "firebase-admin/firestore";
+
 import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit, getEmbedding } from "./services/auditService";
 import { sendWhatsAppText, sendWhatsAppDoc, sendAdminAlert } from "./services/whatsappService";
 import { callGeminiChat } from "./services/chatService";
 import { sendTaskNotification } from "./services/taskService";
 import { VERIFY_TOKEN, ADMIN_NUMBER, AI_MODEL } from "./config";
 
-admin.initializeApp();
-const db = getFirestore();
+// 1. SURGICAL FIX: Allocate sufficient memory to prevent "Resource readiness deadline exceeded"
+// Gen 2 functions (Cloud Run) often time out on boot with the default 256MB when loading the Admin SDK.
+setGlobalOptions({
+  region: "us-central1",
+  memory: "512MiB",
+  timeoutSeconds: 300,
+  maxInstances: 10
+});
+
+let db: admin.firestore.Firestore;
+try {
+  const app = admin.initializeApp();
+  db = getFirestore(app);
+} catch (error) {
+  console.error("Firebase Admin Init Error:", error);
+  db = getFirestore();
+}
 
 // ============================================================================
 // 1. SMART MARKETING AUDIT
 // ============================================================================
-export const performAudit = onCall({
-  region: "us-central1",
-  cors: true,
-  timeoutSeconds: 300
-}, async (request) => {
+export const performAudit = onCall(async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
@@ -60,7 +74,7 @@ export const performAudit = onCall({
       email: clientEmail,
       whatsapp: whatsapp || null,
       score: analysis.score,
-      timestamp: admin.firestore.FieldValue.serverTimestamp()
+      timestamp: FieldValue.serverTimestamp()
     });
 
     await sendAdminAlert(businessName, clientEmail, whatsapp, analysis.score);
@@ -75,10 +89,7 @@ export const performAudit = onCall({
 // ============================================================================
 // 2. STRATEGIC CHATBOT
 // ============================================================================
-export const hunterChat = onCall({
-  region: "us-central1",
-  cors: true,
-}, async (request) => {
+export const hunterChat = onCall(async (request) => {
   const { message, history } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
 
@@ -123,7 +134,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
       if (G_KEY) {
         const vectorValues = await getEmbedding(message.text.body.toLowerCase(), G_KEY);
         if (vectorValues) {
-          const vectorQuery = await db.collection('verified_claims').findNearest('embedding_vector', admin.firestore.FieldValue.vector(vectorValues), { limit: 1, distanceMeasure: 'COSINE' }).get();
+          const vectorQuery = await db.collection('verified_claims').findNearest('embedding_vector', FieldValue.vector(vectorValues), { limit: 1, distanceMeasure: 'COSINE' }).get();
           if (!vectorQuery.empty) {
             const data = vectorQuery.docs[0].data();
             if (data.category === 'guide') await sendWhatsAppDoc(from, 'gbp');
@@ -145,7 +156,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 // 4. DAILY REVENUE REPORT
 // ============================================================================
 export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
-  const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
+  const yesterday = Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snap = await db.collection("leads").where("timestamp", ">", yesterday).get();
   if (snap.size > 0) {
     await sendWhatsAppText(ADMIN_NUMBER, `DAILY REVENUE REPORT\n\nTotal New Leads: ${snap.size}`);
@@ -162,7 +173,7 @@ export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async
   if (G_KEY) {
     const vectorValues = await getEmbedding(doc.content, G_KEY);
     if (vectorValues) {
-      await event.data?.after.ref.update({ embedding_vector: admin.firestore.FieldValue.vector(vectorValues) });
+      await event.data?.after.ref.update({ embedding_vector: FieldValue.vector(vectorValues) });
     }
   }
 });
