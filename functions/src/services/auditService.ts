@@ -5,7 +5,11 @@ import { AI_MODEL, EMBEDDING_MODEL, SAFETY_SETTINGS } from "../config";
 export const getPlacesData = async (query: string, apiKey: string) => {
   const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri" },
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": apiKey,
+      "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri"
+    },
     body: JSON.stringify({ textQuery: query })
   });
   return res.json() as any;
@@ -38,14 +42,20 @@ export const scrapeWebsiteSchema = async (url: string) => {
       } catch (e) {}
     });
     return [...new Set(detected)];
-  } catch (err) { return []; }
+  } catch (err) {
+    return [];
+  }
 };
 
 export const callGeminiAudit = async (prompt: string, gKey: string) => {
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${gKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], safetySettings: SAFETY_SETTINGS, generationConfig: { responseMimeType: "application/json" } })
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      safetySettings: SAFETY_SETTINGS,
+      generationConfig: { responseMimeType: "application/json" }
+    })
   });
   return res.json() as any;
 };
