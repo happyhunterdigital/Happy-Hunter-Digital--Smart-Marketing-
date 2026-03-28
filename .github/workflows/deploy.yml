@@ -69,7 +69,6 @@ jobs:
       - name: Deploy Storage Rules
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-: |
           echo "$GCP_SA_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
           npx firebase-tools deploy --only storage --force --non-interactive
