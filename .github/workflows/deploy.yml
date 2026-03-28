@@ -15,7 +15,6 @@ jobs:
         with:
           node-version: 20
       
-      # FRONTEND BUILD
       - name: Install & Build Frontend
         run: |
           npm install
@@ -30,7 +29,6 @@ jobs:
           VITE_POSTHOG_KEY: ${{ secrets.VITE_POSTHOG_KEY }}
           VITE_POSTHOG_HOST: ${{ secrets.VITE_POSTHOG_HOST }}
       
-      # BACKEND PREP: Inject secrets BEFORE install and build
       - name: Prepare Backend
         run: |
           cd functions
@@ -50,7 +48,6 @@ jobs:
           VERIFY_TOKEN: ${{ secrets.VERIFY_TOKEN }}
           META_SYSTEM_TOKEN: ${{ secrets.META_SYSTEM_TOKEN }}
       
-      # DEPLOY: Sequential deployment with retry logic
       - name: Deploy to Firebase
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
@@ -58,17 +55,12 @@ jobs:
           echo "$GCP_SA_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
           
-          # Deploy Functions with extended timeout
-          npx firebase-tools deploy --only functions --force --non-interactive --timeout 300s
+          npx firebase-tools deploy --only functions --force --non-interactive --timeout 540s
           
-          # Deploy Firestore Rules
           npx firebase-tools deploy --only firestore:rules --force --non-interactive
           
-          # Deploy Storage Rules
           npx firebase-tools deploy --only storage --force --non-interactive
           
-          # Deploy Hosting
           npx firebase-tools deploy --only hosting --force --non-interactive
           
-          # Cleanup
           rm gcp-key.json
