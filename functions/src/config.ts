@@ -1,4 +1,4 @@
-export const AI_MODEL = "gemini-2.0-flash-lite";
+export const AI_MODEL = "gemini-3.1-flash-lite";
 export const EMBEDDING_MODEL = "text-embedding-004";
 export const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || process.env.META_SYSTEM_TOKEN || "";
 export const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
