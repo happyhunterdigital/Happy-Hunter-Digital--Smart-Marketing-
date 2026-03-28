@@ -3,17 +3,17 @@ name: Deploy Happy Hunter Systems
 on:
   push:
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-
+          
       - name: Install & Build Frontend
         run: |
           npm install
@@ -24,53 +24,34 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
- VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_POSTHOG_KEY: ${{ secrets.VITE_POSTHOG_KEY }}
           VITE_POSTHOG_HOST: ${{ secrets.VITE_POSTHOG_HOST }}
-
+          
       - name: Prepare Backend
         run: |
           cd functions
-          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
           echo "PLACES_API_KEY=${{ secrets.PLACES_API_KEY }}" >> .env
           echo "WHATSAPP_TOKEN=${{ secrets.WHATSAPP_TOKEN }}" >> .env
           echo "PHONE_NUMBER_ID=${{ secrets.PHONE_NUMBER_ID }}" >> .env
           echo "VERIFY_TOKEN=${{ secrets.VERIFY_TOKEN }}" >> .env
           npm install
           npm run build
-
-      - name: Deploy Functions
+          
+      - name: Deploy to Firebase Ecosystem
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
+          # 1. Authenticate Service Account
           echo "$GCP_SA_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
+          
+          # 2. Sequential deployment to isolate memory and API visibility issues
           npx firebase-tools deploy --only functions --force --non-interactive
-          rm gcp-key.json
-
-      - name: Deploy Firestore Rules
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-        run: |
-          echo "$GCP_SA_KEY" > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
           npx firebase-tools deploy --only firestore:rules --force --non-interactive
-          rm gcp-key.json
-
-      - name: Deploy Storage Rules
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-        run: |
-          echo "$GCP_SA_KEY" > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
           npx firebase-tools deploy --only storage --force --non-interactive
-          rm gcp-key.json
-
-      - name: Deploy Hosting
-        env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-        run: |
-          echo "$GCP_SA_KEY" > gcp-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
           npx firebase-tools deploy --only hosting --force --non-interactive
+          
+          # 3. Clean up credentials
           rm gcp-key.json
