@@ -55,7 +55,7 @@ jobs:
           echo "$GCP_SA_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
           
-          npx firebase-tools deploy --only functions --force --non-interactive --timeout 540s
+          npx firebase-tools deploy --only functions --force --non-interactive
           
           npx firebase-tools deploy --only firestore:rules --force --non-interactive
           
