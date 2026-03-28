@@ -1,14 +1,20 @@
 import { onCall, HttpsError, onRequest } from "firebase-functions/v2/https";
+import { onDocumentWritten, onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
-import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit } from "./services/auditService";
-import { sendWhatsAppText, sendAdminAlert } from "./services/whatsappService";
+import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit, getEmbedding } from "./services/auditService";
+import { sendWhatsAppText, sendWhatsAppDoc, sendAdminAlert } from "./services/whatsappService";
 import { callGeminiChat } from "./services/chatService";
-import { AI_MODEL } from "./config";
+import { sendTaskNotification } from "./services/taskService";
+import { VERIFY_TOKEN, ADMIN_NUMBER, AI_MODEL } from "./config";
 
 admin.initializeApp();
 const db = getFirestore();
 
+// ============================================================================
+// 1. SMART MARKETING AUDIT
+// ============================================================================
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
@@ -44,7 +50,6 @@ export const performAudit = onCall({
 
     const aiRes = await callGeminiAudit(`You are Hunter AI. Audit: ${businessName}. Context: ${context}. Format JSON: {"score": number, "summary": "string", "truths": ["string", "string", "string"]}`, G_KEY);
 
-    // Safe parsing of AI response
     const textContent = aiRes?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!textContent) throw new Error("Empty AI response");
 
@@ -67,6 +72,9 @@ export const performAudit = onCall({
   }
 });
 
+// ============================================================================
+// 2. STRATEGIC CHATBOT
+// ============================================================================
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
@@ -78,7 +86,7 @@ export const hunterChat = onCall({
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital. Use HTML tags, NO Markdown asterisks. Model: ${AI_MODEL}.`;
+  const SYSTEM_PROMPT = `You are Smart Marketing Chat for Happy Hunter Digital using ${AI_MODEL}. Use HTML tags, NO Markdown asterisks. Founder: Thabo Motsumi. Mission: Stop SA SMEs from being Ghosts to AI. Primary Tool: happyhunterdigital.com/audit. Contact: WhatsApp +27(0) 60 101 6673.`;
 
   try {
     const formattedHistory = (history || []).map((m: any) => ({
@@ -94,5 +102,83 @@ export const hunterChat = onCall({
   } catch (e: any) {
     console.error("Chat Function Error:", e);
     return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
+  }
+});
+
+// ============================================================================
+// 3. WHATSAPP WEBHOOK
+// ============================================================================
+export const whatsappWebhook = onRequest(async (req, res) => {
+  if (req.method === 'GET' && req.query['hub.verify_token'] === VERIFY_TOKEN) {
+    res.status(200).send(req.query['hub.challenge']);
+    return;
+  }
+
+  if (req.method === 'POST') {
+    const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    if (message?.type === 'text') {
+      const from = message.from;
+      const G_KEY = process.env.GEMINI_API_KEY;
+      
+      if (G_KEY) {
+        const vectorValues = await getEmbedding(message.text.body.toLowerCase(), G_KEY);
+        if (vectorValues) {
+          const vectorQuery = await db.collection('verified_claims').findNearest('embedding_vector', admin.firestore.FieldValue.vector(vectorValues), { limit: 1, distanceMeasure: 'COSINE' }).get();
+          if (!vectorQuery.empty) {
+            const data = vectorQuery.docs[0].data();
+            if (data.category === 'guide') await sendWhatsAppDoc(from, 'gbp');
+            else await sendWhatsAppText(from, data.content || data.verified_answer);
+            res.status(200).send('EVENT_RECEIVED');
+            return;
+          }
+        }
+      }
+      await sendWhatsAppText(from, "Handshake Received. How can we assist?");
+    }
+    res.status(200).send('EVENT_RECEIVED');
+    return;
+  }
+  res.status(404).send();
+});
+
+// ============================================================================
+// 4. DAILY REVENUE REPORT
+// ============================================================================
+export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
+  const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
+  const snap = await db.collection("leads").where("timestamp", ">", yesterday).get();
+  if (snap.size > 0) {
+    await sendWhatsAppText(ADMIN_NUMBER, `DAILY REVENUE REPORT\n\nTotal New Leads: ${snap.size}`);
+  }
+});
+
+// ============================================================================
+// 5. VECTORIZE CLAIM (Auto-Embed on Firestore Write)
+// ============================================================================
+export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
+  const doc = event.data?.after.data();
+  if (!doc || !doc.content) return;
+  const G_KEY = process.env.GEMINI_API_KEY;
+  if (G_KEY) {
+    const vectorValues = await getEmbedding(doc.content, G_KEY);
+    if (vectorValues) {
+      await event.data?.after.ref.update({ embedding_vector: admin.firestore.FieldValue.vector(vectorValues) });
+    }
+  }
+});
+
+// ============================================================================
+// 6. TASK NOTIFICATIONS
+// ============================================================================
+export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskId}", async (event) => {
+  const task = event.data?.data();
+  if (task?.assigneePhone) await sendTaskNotification(task.assigneePhone, `HQ DIRECTIVE ASSIGNED: ${task.title}`);
+});
+
+export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", async (event) => {
+  const newValue = event.data?.after.data();
+  const prevValue = event.data?.before.data();
+  if (newValue && prevValue && newValue.status !== prevValue.status && newValue.assigneePhone) {
+    await sendTaskNotification(newValue.assigneePhone, `STATUS UPDATE: ${newValue.title} is now ${newValue.status}`);
   }
 });
