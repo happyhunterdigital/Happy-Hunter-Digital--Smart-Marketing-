@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -25,7 +24,7 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+ VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_POSTHOG_KEY: ${{ secrets.VITE_POSTHOG_KEY }}
           VITE_POSTHOG_HOST: ${{ secrets.VITE_POSTHOG_HOST }}
 
@@ -37,16 +36,8 @@ jobs:
           echo "WHATSAPP_TOKEN=${{ secrets.WHATSAPP_TOKEN }}" >> .env
           echo "PHONE_NUMBER_ID=${{ secrets.PHONE_NUMBER_ID }}" >> .env
           echo "VERIFY_TOKEN=${{ secrets.VERIFY_TOKEN }}" >> .env
-          echo "META_SYSTEM_TOKEN=${{ secrets.META_SYSTEM_TOKEN }}" >> .env
           npm install
           npm run build
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          PLACES_API_KEY: ${{ secrets.PLACES_API_KEY }}
-          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
-          PHONE_NUMBER_ID: ${{ secrets.PHONE_NUMBER_ID }}
-          VERIFY_TOKEN: ${{ secrets.VERIFY_TOKEN }}
-          META_SYSTEM_TOKEN: ${{ secrets.META_SYSTEM_TOKEN }}
 
       - name: Deploy Functions
         env:
@@ -69,6 +60,7 @@ jobs:
       - name: Deploy Storage Rules
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
           echo "$GCP_SA_KEY" > gcp-key.json
           export GOOGLE_APPLICATION_CREDENTIALS="${PWD}/gcp-key.json"
           npx firebase-tools deploy --only storage --force --non-interactive
