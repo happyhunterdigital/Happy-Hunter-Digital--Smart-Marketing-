@@ -8,5 +8,7 @@ export const sendTaskNotification = async (phone: string, body: string) => {
     to: phone,
     type: "text",
     text: { body }
-  }, { headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` } });
+  }, {
+    headers: { Authorization: `Bearer ${WHATSAPP_TOKEN}` }
+  });
 };
