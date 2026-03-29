@@ -49,7 +49,8 @@ export const performAudit = onCall(async (request) => {
     const websiteUrl = biz?.websiteUri || null;
     const detectedSchemas = websiteUrl ? await scrapeWebsiteSchema(websiteUrl) : [];
     
-    const prompt = `You are Hunter AI powered by Gemini 3.1 Flash-Lite Preview. Audit: ${businessName}. Context: ${JSON.stringify(biz)}. Schemas: ${detectedSchemas.join(',')}. Format JSON ONLY (no markdown wrappers): {"score": number, "summary": "string", "truths": ["string", "string", "string"]}`;
+    // Dynamically injecting AI_MODEL to satisfy TS linter and keep config synced
+    const prompt = `You are Hunter AI powered by ${AI_MODEL}. Audit: ${businessName}. Context: ${JSON.stringify(biz)}. Schemas: ${detectedSchemas.join(',')}. Format JSON ONLY (no markdown wrappers): {"score": number, "summary": "string", "truths": ["string", "string", "string"]}`;
     
     const aiRes = await callGeminiAudit(prompt, G_KEY);
     
@@ -91,7 +92,8 @@ export const hunterChat = onCall(async (request) => {
   }
 
   try {
-    const prompt = `You are Smart Marketing Chat for Happy Hunter Digital using Gemini 3.1 Flash-Lite Preview. Use HTML tags, NO Markdown asterisks. Founder: Thabo Motsumi. Mission: Stop SA SMEs from being Ghosts to AI. Primary Tool: happyhunterdigital.com/audit. Contact: WhatsApp +27(0) 60 101 6673.`;
+    // Dynamically injecting AI_MODEL
+    const prompt = `You are Smart Marketing Chat for Happy Hunter Digital using ${AI_MODEL}. Use HTML tags, NO Markdown asterisks. Founder: Thabo Motsumi. Mission: Stop SA SMEs from being Ghosts to AI. Primary Tool: happyhunterdigital.com/audit. Contact: WhatsApp +27(0) 60 101 6673.`;
     const formattedHistory = history.map((m: any) => ({
       role: m.role === 'bot' ? 'model' : 'user',
       parts: [{ text: m.text }]
