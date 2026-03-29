@@ -1,16 +1,25 @@
+// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      colors: { 'brand-dark': '#050505', 'brand-yellow': '#eab308' },
-      fontFamily: { 
+      colors: { 
+        'brand-dark': '#000000', 
+        'brand-yellow': '#eab308' 
+      },
+      fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        handwriting: ['Caveat', 'cursive'] 
+        handwriting: ['Caveat', 'cursive']
+      },
+      boxShadow: {
+        'neural-glow': '0 0 30px rgba(234, 179, 8, 0.3)',
+        'neural-intense': '0 0 50px rgba(234, 179, 8, 0.6)',
       },
       animation: {
         'marquee': 'marquee 30s linear infinite',
         'fade-in': 'fadeIn 0.5s ease-out forwards',
+        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         marquee: {
