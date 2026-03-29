@@ -1,6 +1,7 @@
-export const AI_MODEL = "gemini-3.1-flash-lite";
+// functions/src/config.ts
+export const AI_MODEL = "gemini-3.1-flash-lite-preview";
 export const EMBEDDING_MODEL = "text-embedding-004";
-export const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || "";
+export const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || process.env.META_SYSTEM_TOKEN || "";
 export const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
 export const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "HAPPY_HUNTER_SECURE_2026";
 export const ADMIN_NUMBER = "27601016673";
