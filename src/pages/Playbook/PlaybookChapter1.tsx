@@ -16,11 +16,11 @@ export const PlaybookChapter1 = () => {
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">01</div>
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">AI Personalization: The End of "One Size Fits All"</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
-            Mass marketing is over. In 2026, your customers don't just prefer personalised experiences — they expect them as the baseline.
+            Mass marketing is over. In 2026, your customers do not just prefer personalised experiences. They expect them as the baseline.
           </p>
 
           <p className="text-gray-300 text-lg leading-relaxed mb-10">
-            Think about the last time you felt like a brand truly <em>got</em> you. That feeling didn't happen by accident — it was engineered by AI. And in 2026, that engineering has become so sophisticated that the gap between "brands doing this" and "brands not doing this" has become a canyon.
+            Think about the last time you felt like a brand truly <em>got</em> you. That feeling did not happen by accident. It was engineered by AI. In 2026, that engineering has become so sophisticated that the gap between brands adapting and those stagnating has become a canyon.
           </p>
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
@@ -34,13 +34,13 @@ export const PlaybookChapter1 = () => {
             </div>
             <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl text-center shadow-xl">
               <span className="text-4xl font-black text-yellow-500 block mb-4 mt-2">Real-time</span>
-              <span className="text-xs text-gray-400 font-medium uppercase tracking-widest leading-relaxed">is the new standard — static segments are obsolete</span>
+              <span className="text-xs text-gray-400 font-medium uppercase tracking-widest leading-relaxed">is the new standard. Static segments are obsolete.</span>
             </div>
           </div>
 
           <h3 className="text-2xl font-black text-white mb-4">From Audience Segments to Individual Conversations</h3>
           <p className="text-gray-300 text-lg leading-relaxed mb-8">
-            The old way was to put people in buckets: "Women, 25–34, interested in fitness." The new way? Your AI system knows that <em>this specific person</em> browsed hiking boots three times this week, added a water bottle to their cart and abandoned it, and opens emails at 7am on weekdays. It responds to all of that — automatically, in real time.
+            The old method was to put people in buckets. The new method leverages AI systems that know when a specific individual browses products, abandons a cart, and opens emails. It responds to all of that automatically and in real time.
           </p>
           
           <div className="overflow-x-auto bg-[#0a0a0a] rounded-3xl border border-gray-800 shadow-2xl mb-12">
@@ -66,15 +66,15 @@ export const PlaybookChapter1 = () => {
             </table>
           </div>
 
-          <h3 className="text-2xl font-black text-white mb-4">The Privacy Paradox You Can't Ignore</h3>
+          <h3 className="text-2xl font-black text-white mb-4">The Privacy Paradox</h3>
           <p className="text-gray-300 text-lg leading-relaxed mb-8">
-            Here's the uncomfortable tension sitting at the heart of all this: consumers want personalisation that feels like magic, but they're deeply suspicious of the data collection required to make it happen.
+            Consumers want personalisation that feels seamless, but they are deeply suspicious of the data collection required to make it happen.
           </p>
 
           <div className="p-8 bg-green-500/10 border-l-4 border-green-500 rounded-r-3xl">
             <h4 className="text-green-500 font-black uppercase tracking-widest text-xs mb-2">The Happy Hunter Take</h4>
             <p className="text-white text-base font-medium">
-              The brands winning this paradox aren't fighting it — they're solving it head-on with "Privacy-by-Design." That means building data minimisation and anonymisation into your AI architecture from day one, and being transparent about what you collect and why. Trust isn't a soft metric. In 2026, it's your most bankable asset.
+              The brands winning this paradox are not fighting it. They are solving it head-on with Privacy-by-Design. That means building data minimisation and anonymisation into your AI architecture from day one and being transparent about what you collect and why. Trust is your most bankable asset.
             </p>
           </div>
         </div>
@@ -82,18 +82,18 @@ export const PlaybookChapter1 = () => {
         {/* SECTION 2 */}
         <div className="mb-16 border-b border-gray-800 pb-16">
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">02</div>
-          <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">Email Marketing's Unexpected Comeback Story</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">Email Marketing's Comeback Story</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
-            Everyone predicted email was dying. In 2026, it's the highest-ROI channel in the toolkit — but only if you've moved beyond the static broadcast.
+            In 2026, email is the highest-ROI channel in the toolkit, provided you have moved beyond the static broadcast.
           </p>
 
           <p className="text-gray-300 text-lg leading-relaxed mb-8">
-            With third-party cookies gone, the scramble for owned data channels has been fierce. And the channel that emerged on top? Email. Not the batch-blast, one-size-fits-all email of 2018 — but a sophisticated, interactive, AI-optimised email that functions as a full e-commerce experience inside the inbox.
+            With third-party cookies gone, the scramble for owned data channels has been fierce. The channel that emerged on top is email. Not the batch-blast, one-size-fits-all email of 2018. It is a sophisticated, interactive, AI-optimised email that functions as a full e-commerce experience inside the inbox.
           </p>
 
           <div className="my-10 p-8 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-3xl">
             <p className="text-white text-lg font-medium italic">
-              "Email is no longer a broadcast tower. In 2026, it's a two-way conversation, a storefront, and a loyalty engine — all inside a single send."
+              "Email is no longer a broadcast tower. In 2026, it is a two-way conversation, a storefront, and a loyalty engine all inside a single send."
             </p>
           </div>
 
