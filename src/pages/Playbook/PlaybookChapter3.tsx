@@ -16,11 +16,11 @@ export const PlaybookChapter3 = () => {
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">05</div>
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">AI Agents: From Answering Questions to Solving Problems</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
-            The 2026 service landscape isn't about chatbots that respond — it's about agents that act. There's a significant difference, and it changes everything about your cost structure.
+            The 2026 service landscape is not about chatbots that respond. It is about agents that act. There is a significant difference, and it changes everything about your cost structure.
           </p>
 
           <p className="text-gray-300 text-lg leading-relaxed mb-10">
-            There's a crucial distinction that most businesses are still missing: a chatbot answers questions. An agent solves problems. In 2026, the leading customer service operations have deployed agentic AI that can perform tasks across multiple business systems — checking inventory, processing refunds, updating records — all without a human ever picking up the case.
+            A chatbot answers questions. An agent solves problems. In 2026, the leading customer service operations have deployed agentic AI that can perform tasks across multiple business systems like checking inventory, processing refunds, and updating records without a human ever picking up the case.
           </p>
 
           <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 md:p-12 mb-12 shadow-2xl">
@@ -38,9 +38,9 @@ export const PlaybookChapter3 = () => {
             </div>
           </div>
 
-          <h3 className="text-2xl font-black text-white mb-4">The "Human-in-the-Loop" Rule You Should Never Break</h3>
+          <h3 className="text-2xl font-black text-white mb-4">The "Human-in-the-Loop" Protocol</h3>
           <p className="text-gray-300 text-lg leading-relaxed mb-8">
-            Here's where many businesses make a costly mistake: they automate everything and strip out the humans entirely. The best organisations in 2026 don't do this. They use AI for the routine and keep human agents specifically for "risk points": crisis management, high-value negotiations, and sensitive situations.
+            The best organisations use AI for the routine and keep human agents specifically for "risk points" like crisis management, high-value negotiations, and sensitive situations. Total automation strips away the empathy required for premium service.
           </p>
         </div>
 
