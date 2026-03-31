@@ -1,7 +1,7 @@
 // src/pages/Playbook/PlaybookChapter4.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 export const PlaybookChapter4 = () => {
   return (
@@ -14,6 +14,16 @@ export const PlaybookChapter4 = () => {
         {/* SECTION 7 */}
         <div className="mb-16 border-b border-gray-800 pb-16">
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">07</div>
+          
+          <div className="mb-10 rounded-[2rem] overflow-hidden border border-gray-800 shadow-2xl relative group">
+            <img 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1774978467/happyhunterdigital_Ethics_Trust_ca0kkc.png" 
+              alt="AI Lead Magnets" 
+              className="w-full h-64 md:h-80 object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 grayscale group-hover:grayscale-0" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none"></div>
+          </div>
+
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">Lead Magnets Evolved: Why Nobody Wants Your PDF</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
             The static ebook is dead. In its place are AI-powered interactive tools that solve real problems and convert at double or triple the rate.
@@ -44,6 +54,16 @@ export const PlaybookChapter4 = () => {
         {/* SECTION 8 */}
         <div className="mb-16 border-b border-gray-800 pb-16">
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">08</div>
+          
+          <div className="mb-10 rounded-[2rem] overflow-hidden border border-gray-800 shadow-2xl relative group">
+            <img 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1774978467/happyhunterdigital_Ethics_Trust_ca0kkc.png" 
+              alt="Ethics & Trust" 
+              className="w-full h-64 md:h-80 object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 grayscale group-hover:grayscale-0" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none"></div>
+          </div>
+
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">The Ethics of AI Marketing</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
             As AI becomes the operating system of your marketing department, the ethical questions are not abstract philosophy. They are brand strategy.
