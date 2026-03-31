@@ -75,8 +75,7 @@ const OnboardingForm = () => {
                   <select required defaultValue="" className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold transition-all appearance-none cursor-pointer" onChange={e => setForm({...form, service: e.target.value})}>
                     <option value="" disabled className="font-normal text-gray-500">Select Requested Architecture...</option>
                     {SERVICES_DATA.map(phase => (
-                      /* FIXED TS2339 ERROR: Using phase.ph instead of phase.phase */
-                      <optgroup key={phase.ph} label={`Phase ${phase.ph}: ${phase.title}`}>
+                      <optgroup key={phase.phase} label={`Phase ${phase.phase}: ${phase.title}`}>
                         {phase.tiers.map(tier => (<option key={tier.title} value={tier.title}>{tier.title}</option>))}
                       </optgroup>
                     ))}
@@ -129,20 +128,30 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* DYNAMIC SERVICES RENDER - Displays all data without inflating code lines */}
+      {/* DYNAMIC SERVICES RENDER */}
       <div className="bg-[#050505]">
         {SERVICES_DATA.map((phase, idx) => (
-          <section key={phase.ph} className={`py-24 px-6 relative border-b border-gray-900 ${idx % 2 !== 0 ? 'bg-[#020202]' : ''}`}>
+          <section key={phase.phase} className={`py-24 px-6 relative border-b border-gray-900 ${idx % 2 !== 0 ? 'bg-[#020202]' : ''}`}>
             <div className="container mx-auto max-w-7xl">
               <div className="mb-16 text-center">
-                <h2 className="text-sm font-black text-yellow-500 uppercase tracking-widest mb-2">Phase {phase.ph}</h2>
+                <h2 className="text-sm font-black text-yellow-500 uppercase tracking-widest mb-2">Phase {phase.phase}</h2>
                 <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight">{phase.title}</h3>
-                <p className="text-gray-400 mt-4 max-w-2xl mx-auto">{phase.desc}</p>
+                <p className="text-gray-400 mt-4 max-w-2xl mx-auto">{phase.description}</p>
               </div>
               <div className="grid lg:grid-cols-3 gap-8 items-stretch">
                 {phase.tiers.map(tier => (
                   <PricingTier 
-                    key={tier.title} phase={parseInt(phase.ph)} title={tier.title} subtitle={tier.sub} target={tier.target} description={tier.desc} priceStart={tier.price} features={tier.feats} isPopular={tier.pop} highlightColor={tier.pop ? "yellow-500" : "white"} icon={ICONS[phase.iconType as keyof typeof ICONS] || ICONS.Database} 
+                    key={tier.title} 
+                    phase={phase.phase} 
+                    title={tier.title} 
+                    subtitle={tier.subtitle} 
+                    target={tier.target} 
+                    description={tier.description} 
+                    priceStart={tier.priceStart} 
+                    features={tier.features} 
+                    isPopular={tier.isPopular} 
+                    highlightColor={tier.isPopular ? "yellow-500" : "white"} 
+                    icon={ICONS[phase.iconType as keyof typeof ICONS] || ICONS.Database} 
                   />
                 ))}
               </div>
