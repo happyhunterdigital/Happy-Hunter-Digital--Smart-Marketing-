@@ -22,23 +22,23 @@ export const PlaybookAnchor = () => {
           </h1>
           
           <p className="text-xl text-gray-400 font-medium max-w-3xl mx-auto leading-relaxed">
-            The complete playbook for AI-powered personalization, conversational commerce, and the trust-driven future of digital marketing — written for brands who want to win.
+            The complete playbook for AI-powered personalization, conversational commerce, and the trust-driven future of digital marketing written for brands who want to win.
           </p>
         </div>
       </header>
 
       <article className="container mx-auto px-6 max-w-3xl py-16 text-gray-300 text-lg leading-relaxed space-y-8">
         <p className="text-2xl font-black text-white leading-relaxed">
-          If your digital marketing strategy still looks the way it did in 2023, you're not just behind — you're invisible.
+          If your digital marketing strategy still looks the way it did in 2023, you are not just behind. You are invisible.
         </p>
         <p>
-          The marketing landscape of 2026 isn't a gentle evolution. It's a full-blown reinvention. Artificial intelligence has stopped being a "future-forward" buzzword and become the everyday engine running the brands that are winning right now. Meanwhile, the old playbook — third-party cookies, batch-blast emails, static lead magnets, commission-hungry booking platforms — isn't just outdated. It's dead.
+          The marketing landscape of 2026 is a full-blown reinvention. Artificial intelligence has stopped being a future-forward buzzword and become the everyday engine running the brands that are winning right now. The old playbook of third-party cookies, batch-blast emails, static lead magnets, and commission-hungry booking platforms is dead.
         </p>
         <p>
-          But this isn't bad news. It's a wide-open opportunity. The brands that understand what's actually happening — and move quickly — will be eating the lunch of every competitor still clinging to legacy tactics.
+          This is a wide-open opportunity. The brands that understand what is actually happening will capture the market share of every competitor still clinging to legacy tactics.
         </p>
         <p>
-          This guide is your complete briefing. No jargon for the sake of it. No vague advice. Just a clear, practical picture of the most important shifts in digital marketing right now, and exactly what you need to do about each one.
+          This guide is your complete briefing. We provide a clear, practical picture of the most important shifts in digital marketing right now and exactly what you need to do about each one.
         </p>
 
         <div className="my-12 p-8 bg-yellow-500/10 border-l-4 border-yellow-500 rounded-r-3xl">
@@ -48,7 +48,7 @@ export const PlaybookAnchor = () => {
         </div>
 
         <div className="mt-20 p-10 bg-[#0a0a0a] border border-gray-800 rounded-3xl shadow-2xl">
-          <h3 className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-8 border-b border-gray-800 pb-4">What's Inside This Guide</h3>
+          <h3 className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-8 border-b border-gray-800 pb-4">What is Inside This Guide</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <Link to="/smart-news/playbook/chapter-1" className="group flex items-center justify-between p-4 bg-black border border-gray-800 rounded-xl hover:border-yellow-500 transition-colors">
               <div>
