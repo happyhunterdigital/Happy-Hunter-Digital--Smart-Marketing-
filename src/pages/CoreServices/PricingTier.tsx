@@ -1,5 +1,6 @@
+// src/pages/CoreServices/PricingTier.tsx
 import React from 'react';
-import { CheckCircle2, MessageSquareCode, BrainCircuit, Server } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface PricingTierProps {
   phase: number;
@@ -17,7 +18,7 @@ interface PricingTierProps {
 }
 
 export const PricingTier: React.FC<PricingTierProps> = ({
-  phase, title, subtitle, target, description, priceStart, priceEnd, period, features, isPopular, highlightColor, icon
+  title, subtitle, target, description, priceStart, priceEnd, period, features, isPopular, highlightColor, icon
 }) => {
   return (
     <div className={`p-8 rounded-3xl flex flex-col relative transition-all ${
@@ -30,25 +31,28 @@ export const PricingTier: React.FC<PricingTierProps> = ({
           Most Popular
         </div>
       )}
+      
       <div className="mb-8">
         {icon && <div className={`mb-4 ${highlightColor === 'yellow-500' ? 'text-yellow-500' : 'text-white'}`}>{icon}</div>}
         <h4 className="text-2xl font-black text-white mb-1">{title}</h4>
         <p className={`text-${highlightColor} text-xs font-bold uppercase tracking-widest`}>{subtitle}</p>
       </div>
+      
       <p className="text-sm text-gray-400 mb-8 pb-8 border-b border-gray-800">Best for: {target}</p>
+      
       <div className="flex-grow space-y-4 mb-10">
         <p className="text-white text-sm font-medium">{description}</p>
         <ul className="space-y-3 text-sm text-gray-300">
           {features.map((feature, i) => (
             <li key={i} className="flex items-start gap-2">
-              <CheckCircle2 size={16} className={`text-${highlightColor} shrink-0 mt-0.5`} /> 
+              <CheckCircle2 size={16} className={`text-${highlightColor} shrink-0 mt-0.5`} />
               {feature}
             </li>
           ))}
         </ul>
       </div>
+      
       <div className="mt-auto pt-6 border-t border-gray-800/50">
-        <p className="text-gray-500 line-through text-sm">{priceEnd ? `${priceStart} – ${priceEnd}` : priceStart}</p>
         <p className={`text-3xl font-black ${isPopular ? `text-${highlightColor}` : 'text-white'}`}>
           {priceStart} {priceEnd && <span className="text-lg text-gray-500 font-medium">to</span>} {priceEnd}
         </p>
