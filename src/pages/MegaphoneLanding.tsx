@@ -36,7 +36,7 @@ const OnboardingForm = () => {
             <span className="text-yellow-500">You need an Entity Manager.</span>
           </h2>
           <p className="text-gray-400 text-lg leading-relaxed mb-8">
-            At Happy Hunter Digital, we have perfected the transition from legacy Inbound Marketing to <strong className="text-white">AI-Powered Journey Orchestration</strong>. We do not just get you seen. We get you mathematically verified.
+            At Happy Hunter Digital, we have perfected the transition from legacy Inbound Marketing to <strong className="text-white">AI-Powered Journey Orchestration</strong>. We do not just get you seen; we get you mathematically verified.
           </p>
           <ul className="space-y-4">
             <li className="flex items-center gap-3 text-lg font-bold"><CheckCircle2 className="text-yellow-500" /> Dominate ChatGPT & Gemini</li>
@@ -68,10 +68,8 @@ const OnboardingForm = () => {
                   <select required defaultValue="" className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold transition-all appearance-none cursor-pointer" onChange={e => setForm({...form, service: e.target.value})}>
                     <option value="" disabled className="font-normal text-gray-500">Select Requested Architecture...</option>
                     {SERVICES_DATA.map(phase => (
-                      <optgroup key={phase.phase} label={`Phase ${phase.phase}: ${phase.title}`}>
-                        {phase.tiers.map(tier => (
-                          <option key={tier.title} value={tier.title}>{tier.title}</option>
-                        ))}
+                      <optgroup key={phase.ph} label={`Phase ${phase.ph}: ${phase.title}`}>
+                        {phase.tiers.map(tier => (<option key={tier.title} value={tier.title}>{tier.title}</option>))}
                       </optgroup>
                     ))}
                   </select>
