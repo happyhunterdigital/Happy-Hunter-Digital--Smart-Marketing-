@@ -1,8 +1,20 @@
+// src/pages/Blog.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, ArrowRight, BrainCircuit, Globe, Target, Database, Search, ShieldCheck, Zap } from 'lucide-react';
 
 export const blogPosts = [
+  {
+    id: "playbook",
+    category: "2026 Playbook",
+    title: "The 2026 Digital Marketing Playbook",
+    excerpt: "Your Competitors Are Already Using These Strategies. Are You? The complete playbook for AI-powered personalization, conversational commerce, and the trust-driven future.",
+    query: "What are the essential digital marketing strategies for 2026?",
+    date: "April 2026",
+    readTime: "15 min read",
+    icon: <BookOpen size={24} className="text-yellow-500" />,
+    isPlaybook: true
+  },
   {
     id: "beyond-the-blue-link",
     category: "Entity Architecture",
@@ -63,7 +75,7 @@ export const Blog = () => {
           Strategic Intel
         </span>
         <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 text-white leading-none">
-          Intelligence <span className="text-yellow-500">Hub</span>
+          Smart <span className="text-yellow-500">News</span>
         </h1>
         <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
           The tactical blueprints, linguistic calibrations, and structural alignments required to dominate digital discoverability in 2026. Stop guessing. Start synthesizing.
@@ -72,9 +84,9 @@ export const Blog = () => {
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
         {blogPosts.map((post) => (
-          <Link
-            key={post.id}
-            to={`/blog/${post.id}`}
+          <Link 
+            key={post.id} 
+            to={post.isPlaybook ? `/smart-news/${post.id}` : `/smart-news/${post.id}`} 
             className="group flex flex-col bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-yellow-500/50 transition-all shadow-lg hover:shadow-yellow-500/10"
           >
             <div className="flex justify-between items-start mb-6">
@@ -85,19 +97,19 @@ export const Blog = () => {
                 {post.category}
               </span>
             </div>
-
+            
             <p className="text-[10px] font-bold text-yellow-500 mb-3 uppercase tracking-wider">
               Query: "{post.query}"
             </p>
-
+            
             <h2 className="text-2xl font-bold text-white mb-4 leading-tight group-hover:text-yellow-500 transition-colors">
               {post.title}
             </h2>
-
+            
             <p className="text-gray-400 text-sm leading-relaxed mb-8 flex-grow">
               {post.excerpt}
             </p>
-
+            
             <div className="flex items-center justify-between pt-6 border-t border-gray-800/50 mt-auto">
               <span className="text-xs text-gray-600 font-medium">
                 {post.date} • {post.readTime}
