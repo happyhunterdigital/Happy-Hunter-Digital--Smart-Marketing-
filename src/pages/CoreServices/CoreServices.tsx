@@ -1,92 +1,78 @@
 // src/pages/CoreServices/CoreServices.tsx
-import React from 'react';
-import { Star, Database, BrainCircuit, Mail, MessageSquareCode, FileText, Mic, CalendarCheck, Magnet } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Database, BrainCircuit, Mail, MessageSquareCode, FileText, Mic, CalendarCheck, Magnet, Zap, ShieldCheck, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PricingTier } from './PricingTier';
-import { CoreServicesForm } from './CoreServicesForm';
+import { db, functions } from '../../firebaseConfig';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { Telemetry } from '../../posthog';
 
 export const SERVICES_DATA = [
-  {
-    phase: 1, title: "Once-Off Entity Architecture", iconType: "Database",
-    desc: "High-performance, Server-Side Rendered (SSR) infrastructure engineered specifically for Large Language Model (LLM) ingestion.",
-    tiers: [
-      { subtitle: "Basic", title: "Digital Front Door", priceStart: "R4,500", priceEnd: "R12,500", target: "Startups needing a verified footprint.", description: "A lightning-fast, 1-to-3 page professional site.", features: ["Hand-coded static node", "Sub-200ms TTFB guarantee", "Initial Digital Passport"] },
-      { subtitle: "Essential", title: "Agentic Web Hub", priceStart: "R14,000", priceEnd: "R19,000", target: "Established SMEs.", description: "Built so AI tools can easily read your services.", features: ["5-10 pages (SSR)", "LocalBusiness Schema", "Expert copywriting"], isPopular: true },
-      { subtitle: "Premium", title: "Premium Blueprint", priceStart: "R25,000", priceEnd: "R55,000+", target: "High-value firms.", description: "The ultimate company website with verified visual assets.", features: ["Deep architectural build", "Extensive JSON-LD mesh", "Professional photography"] }
-    ]
-  },
-  {
-    phase: 2, title: "AI-Powered Personalization", iconType: "BrainCircuit",
-    desc: "Deep data integration for real-time recommendation engines and predictive analytics.",
-    tiers: [
-      { subtitle: "Basic", title: "Recommendation Engine", priceStart: "R4,500", period: "setup", target: "Standard API integrations.", description: "Real-time product or content suggestions based on browsing history.", features: ["Browsing history tracking", "From R950/mo management"] },
-      { subtitle: "Essential", title: "Dynamic Content", priceStart: "R12,000", priceEnd: "R180,000", period: "project", target: "Mid-market e-commerce.", description: "AI that alters landing pages and CTAs for specific users in real-time.", features: ["Real-time user adaptation", "Agency-led implementation"], isPopular: true },
-      { subtitle: "Premium", title: "Predictive Analytics", priceStart: "R25,000", period: "setup", target: "Full-scale AI personalization.", description: "Forecasting customer churn or high-value segments.", features: ["Advanced forecasting models", "Up to R20,000/mo management"] }
-    ]
-  },
-  {
-    phase: 3, title: "Email Marketing", iconType: "Mail",
-    desc: "Generative AI testing and automated lifecycle sequences designed to convert inside the inbox.",
-    tiers: [
-      { subtitle: "Basic", title: "Specialist Management", priceStart: "R2,500", priceEnd: "R6,000", period: "month", target: "Lists up to 10,000 contacts.", description: "Freelancer-level email execution and campaign management.", features: ["AI Copy Optimization", "Subject Line Testing"] },
-      { subtitle: "Essential", title: "Lifecycle Automation", priceStart: "R4,500", priceEnd: "R15,000+", period: "month", target: "Agency Retainers.", description: "Automated Welcome, Abandoned Cart, and Win-back sequences.", features: ["Full-funnel strategy", "Generative AI refinement"], isPopular: true },
-      { subtitle: "Premium", title: "Interactive Design", priceStart: "R9,500", period: "month", target: "Advanced E-commerce.", description: "Building in-email checkout or live polls.", features: ["Mini-website functionality", "In-email conversions"] }
-    ]
-  },
-  {
-    phase: 4, title: "WhatsApp Conversational Commerce", iconType: "MessageSquareCode",
-    desc: "Deploy a 24/7 automated workforce. Capture leads, answer FAQs, and process payments inside the chat.",
-    tiers: [
-      { subtitle: "Basic", title: "Rule-Based Bot", priceStart: "R5,999", priceEnd: "R45,000", period: "setup", target: "Legal verification & CRM setup.", description: "Connecting your business to the WhatsApp API.", features: ["From R900/mo platform fee", "Basic FAQ routing"] },
-      { subtitle: "Essential", title: "WhatsApp Flows", priceStart: "R45,000", period: "setup", target: "Interactive forms & catalogs.", description: "Native catalogs and interactive forms inside chat.", features: ["Stripe/PayFast Integration", "From R8,000/mo platform fee"], isPopular: true },
-      { subtitle: "Premium", title: "AI NLP Bot", priceStart: "R180,000", priceEnd: "R400,000", period: "setup", target: "Enterprise NLP.", description: "Complex conversational AI with deep system integrations.", features: ["Custom workflows", "Meta message costs apply"] }
-    ]
-  },
-  {
-    phase: 5, title: "Professional Content (E-E-A-T)", iconType: "FileText",
-    desc: "Professional human-led content commands a Human Premium to combat AI slop and establish authority.",
-    tiers: [
-      { subtitle: "Basic", title: "SEO-Optimized Blogs", priceStart: "R2,000", priceEnd: "R3,500", period: "project", target: "Standard benchmark (R3.00/word).", description: "1,500+ word blogs with AI research and human editing.", features: ["AI research scaffolding", "Human-led editing"] },
-      { subtitle: "Essential", title: "Specialized Writing", priceStart: "R3,500", period: "project", target: "Legal, medical, or financial.", description: "Technical content requiring expert authorship.", features: ["R5.00+ per word", "E-E-A-T compliant"], isPopular: true },
-      { subtitle: "Premium", title: "Thought Leadership", priceStart: "R550", priceEnd: "R800+", period: "hour", target: "Brand authority building.", description: "Opinion pieces and whitepapers by senior experts.", features: ["Senior/Expert writers", "High-level strategy"] }
-    ]
-  },
-  {
-    phase: 6, title: "Live Chat & Conversational Agents", iconType: "Mic",
-    desc: "Automated receptionists and real-time ticket resolution bots synced across your ecosystem.",
-    tiers: [
-      { subtitle: "Basic", title: "Web Chat Widgets", priceStart: "R3,500", priceEnd: "R8,000", period: "month", target: "Customer service bots.", description: "Basic AI support agents for real-time ticket resolution.", features: ["Website integration", "FAQ handling"] },
-      { subtitle: "Essential", title: "AI Voice Agents", priceStart: "R5,000", priceEnd: "R20,000", period: "month", target: "Automated phone receptionists.", description: "Handling bookings and voice queries over the phone.", features: ["Setup and maintenance", "Real-time voice synthesis"], isPopular: true },
-      { subtitle: "Premium", title: "Omnichannel Support", priceStart: "R15,000", priceEnd: "R50,000", period: "month", target: "Enterprise retainers.", description: "Syncing context across WhatsApp, Web, and Social Media.", features: ["Complex logic updates", "Ongoing AI training"] }
-    ]
-  },
-  {
-    phase: 7, title: "Direct Booking Engines", iconType: "CalendarCheck",
-    desc: "Bypass high-commission OTAs for hospitality and professional services using dynamic architecture.",
-    tiers: [
-      { subtitle: "Basic", title: "Engine Integration", priceStart: "R660", period: "month", target: "Property Management Systems.", description: "Connecting the booking interface to your PMS.", features: ["R0 Setup fees", "Direct website bookings"] },
-      { subtitle: "Essential", title: "Channel Manager", priceStart: "R1,500+", period: "month", target: "Syncing availability.", description: "Synchronizing across Booking.com, Airbnb, and direct sites.", features: ["Cross-platform sync", "Prevents double-booking"], isPopular: true },
-      { subtitle: "Premium", title: "Dynamic Pricing", priceStart: "R12,980+", period: "setup", target: "Custom Enterprise Systems.", description: "AI modules that dynamically adjust rates based on demand.", features: ["Specialized directories", "Complex portals"] }
-    ]
-  },
-  {
-    phase: 8, title: "AI-Powered Lead Magnets", iconType: "Magnet",
-    desc: "Interactive tools that replace static PDF ebooks for exponentially higher conversion rates.",
-    tiers: [
-      { subtitle: "Basic", title: "Software-only (SaaS)", priceStart: "R350", priceEnd: "R900", period: "month", target: "Tool access only.", description: "Access to builder tools for calculators and quizzes.", features: ["Self-service generation", "Basic templates"] },
-      { subtitle: "Essential", title: "Interactive Tools", priceStart: "R9,950", period: "setup", target: "Once-off funnel creation.", description: "Tools providing instant, personalized results like loan calculators.", features: ["Personalized AI Reports", "High conversion rates"], isPopular: true },
-      { subtitle: "Premium", title: "Custom GPTs", priceStart: "R9,950", priceEnd: "R39,950", period: "month", target: "Comprehensive full-house.", description: "Specialized AI assistants offered as a value-add.", features: ["Monthly Lead Gen Packages", "Fully managed acquisition"] }
-    ]
-  }
+  { ph: "1", title: "Entity Architecture", icon: <Database size={32}/>, desc: "High-performance Server-Side Rendered (SSR) infrastructure engineered specifically for LLM ingestion.", tiers: [
+    { sub: "Basic", title: "Digital Front Door", price: "R4,500 - R12,500", desc: "A lightning-fast, 1-to-3 page professional site to get your business online securely.", target: "Startups needing a verified, high-speed footprint.", feats: ["Hand-coded static node", "Sub-200ms TTFB guarantee", "Initial Digital Passport"] },
+    { sub: "Essential", title: "Agentic Web Hub", price: "R14,000 - R19,000", desc: "A comprehensive site built so Google and AI tools can easily read and recommend your services.", target: "Established SMEs requiring dedicated service pages.", feats: ["5-10 hand-coded pages (SSR)", "LocalBusiness Schema", "Expert copywriting"], pop: true },
+    { sub: "Premium", title: "Premium Blueprint", price: "R25,000 - R55,000+", desc: "The ultimate company website, including professional photography and video to build absolute trust.", target: "High-value firms (medical, financial, legal).", feats: ["Deep architectural build", "Extensive JSON-LD mesh", "Verified visual assets"] }
+  ]},
+  { ph: "2", title: "AI-Powered Personalization", icon: <BrainCircuit size={32}/>, desc: "Deep data integration for real-time recommendation engines and predictive analytics.", tiers: [
+    { sub: "Basic", title: "Recommendation Engines", price: "R4,500 - R25,000", desc: "Real-time product or content suggestions based on browsing history.", target: "Standard API integrations.", feats: ["Browsing history tracking", "From R950/mo management"] },
+    { sub: "Essential", title: "Dynamic Website Content", price: "R12,000 - R180,000", desc: "AI that alters landing pages and CTAs for specific users in real-time.", target: "Mid-market e-commerce businesses.", feats: ["Real-time user adaptation", "Agency-led implementation"], pop: true },
+    { sub: "Premium", title: "Predictive Analytics", price: "Up to R20,000/mo", desc: "Forecasting customer churn or high-value segments.", target: "Full-scale AI personalization projects.", feats: ["Advanced forecasting models", "High-value segmenting"] }
+  ]},
+  { ph: "3", title: "Email Marketing", icon: <Mail size={32}/>, desc: "Generative AI testing and automated lifecycle sequences designed to convert inside the inbox.", tiers: [
+    { sub: "Basic", title: "Specialist Management", price: "R2,500 - R6,000/mo", desc: "Freelancer-level email execution and campaign management.", target: "Lists up to 10,000 contacts.", feats: ["AI Copy Optimization", "Subject Line Testing"] },
+    { sub: "Essential", title: "Lifecycle Automation", price: "R950 - R15,000+/mo", desc: "Automated Welcome, Abandoned Cart, and Win-back sequences.", target: "Agency Retainers (Full-funnel).", feats: ["Automated sequences", "Generative AI refinement"], pop: true },
+    { sub: "Premium", title: "Interactive Design", price: "Custom Quoted", desc: "Building in-email checkout or live polls (mini-website functionality).", target: "Advanced E-commerce.", feats: ["In-email conversions", "Live polls & checkouts"] }
+  ]},
+  { ph: "4", title: "WhatsApp Conversational Commerce", icon: <MessageSquareCode size={32}/>, desc: "Deploy a 24/7 automated workforce. Capture leads, answer FAQs, and process payments inside the chat.", tiers: [
+    { sub: "Basic", title: "WhatsApp API Setup", price: "R5,999 - R45,000", desc: "Legal verification and technical integration with CRM/Shopify.", target: "Rule-based bots.", feats: ["API Integration", "From R900/mo platform fee"] },
+    { sub: "Essential", title: "WhatsApp Flows", price: "R900 - R8,000/mo", desc: "Building interactive forms and native catalogs inside the chat.", target: "Monthly Platform maintenance.", feats: ["Native catalogs", "Interactive forms"], pop: true },
+    { sub: "Premium", title: "Payment Integration", price: "R180k - R400k", desc: "Connecting Stripe, PayFast, or Ozow for in-chat transactions.", target: "AI NLP bots.", feats: ["In-chat transactions", "Meta costs ~R0.72/msg"] }
+  ]},
+  { ph: "5", title: "Professional Content (E-E-A-T)", icon: <FileText size={32}/>, desc: "Professional human-led content commands a Human Premium to combat AI slop and establish authority.", tiers: [
+    { sub: "Basic", title: "SEO-Optimized Content", price: "R3.00 / word", desc: "Long-form blogs (1,500+ words) with AI research and human editing.", target: "Standard benchmark projects.", feats: ["AI research scaffolding", "Human-led editing"] },
+    { sub: "Essential", title: "Technical/Specialized Writing", price: "R5.00+ / word", desc: "Legal, medical, or financial content requiring expert authorship.", target: "Per Project: R2,000 - R3,500.", feats: ["Expert authorship", "E-E-A-T compliant"], pop: true },
+    { sub: "Premium", title: "Thought Leadership", price: "R550 - R800+/hr", desc: "Opinion pieces and whitepapers for brand authority.", target: "Senior/Expert writers.", feats: ["Brand authority", "Opinion pieces"] }
+  ]},
+  { ph: "6", title: "Live Chat & Conversational Agents", icon: <Mic size={32}/>, desc: "Automated receptionists and real-time ticket resolution bots synced across your ecosystem.", tiers: [
+    { sub: "Basic", title: "Web Chat Widgets", price: "R3,500 - R8,000/mo", desc: "Customer service bots for real-time ticket resolution.", target: "Chatbot Retainer.", feats: ["Real-time resolution", "Website integration"] },
+    { sub: "Essential", title: "AI Voice Agents", price: "R5,000 - R20,000/mo", desc: "Automated receptionists handling bookings and FAQs over the phone.", target: "Includes setup and maintenance.", feats: ["Voice synthesis", "Booking handling"], pop: true },
+    { sub: "Premium", title: "Omnichannel Support", price: "R15k - R50k/mo", desc: "Syncing context across WhatsApp, Web, and Social Media.", target: "Enterprise Retainers.", feats: ["Complex logic updates", "Ongoing training"] }
+  ]},
+  { ph: "7", title: "Direct Booking Engines", icon: <CalendarCheck size={32}/>, desc: "Bypass high-commission OTAs for hospitality and professional services.", tiers: [
+    { sub: "Basic", title: "Engine Integration", price: "R0 Setup", desc: "Connecting the booking interface to the Property Management System (PMS).", target: "Local providers (like NightsBridge).", feats: ["PMS Integration", "Direct website bookings"] },
+    { sub: "Essential", title: "Channel Manager", price: "R660 - R1,500+/mo", desc: "Synchronizing availability across Booking.com, Airbnb, and direct sites.", target: "Monthly Subscription.", feats: ["Cross-platform sync", "Prevents double-booking"], pop: true },
+    { sub: "Premium", title: "Dynamic Pricing Modules", price: "R12,980+", desc: "AI that adjusts rates based on demand.", target: "Custom Enterprise Systems.", feats: ["Demand-based pricing", "Specialized directories"] }
+  ]},
+  { ph: "8", title: "AI-Powered Lead Magnets", icon: <Magnet size={32}/>, desc: "Interactive tools that replace static PDF ebooks for higher conversion rates.", tiers: [
+    { sub: "Basic", title: "Software-only (SaaS)", price: "R350 - R900/mo", desc: "Access to builder tools for calculators and quizzes.", target: "Tool access only.", feats: ["Self-service generation", "Basic templates"] },
+    { sub: "Essential", title: "Interactive Calculators", price: "R9,950 Setup", desc: "Tools providing instant, personalized results (e.g., loan or cost calculators).", target: "Once-off funnel creation.", feats: ["Personalized AI Reports", "Instant results"], pop: true },
+    { sub: "Premium", title: "Custom GPTs & Full House", price: "R9,950 - R39,950/mo", desc: "Specialized AI assistants offered as a value-add and comprehensive lead gen.", target: "Monthly Lead Gen Packages.", feats: ["Custom AI Assistants", "Full-house acquisition"] }
+  ]}
 ];
 
-const ICONS: Record<string, React.ReactNode> = {
-  Database: <Database size={32} />, BrainCircuit: <BrainCircuit size={32} />, Mail: <Mail size={32} />,
-  MessageSquareCode: <MessageSquareCode size={32} />, FileText: <FileText size={32} />, Mic: <Mic size={32} />,
-  CalendarCheck: <CalendarCheck size={32} />, Magnet: <Magnet size={32} />
-};
-
 export const CoreServices: React.FC = () => {
+  const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    Telemetry.serviceRequested(form.service, form.website);
+    try {
+      const submitServiceRequest = httpsCallable(functions, 'submitServiceRequest');
+      await submitServiceRequest({ ...form });
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Submission Error:", error);
+      await addDoc(collection(db, "leads"), { ...form, source: "Fallback Client-Side Capture", timestamp: serverTimestamp() });
+      setSubmitted(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="bg-[#050505] min-h-screen pb-0 animate-fade-in font-sans selection:bg-yellow-500 selection:text-black">
       <header className="relative pt-40 pb-24 border-b border-gray-800 overflow-hidden bg-[#0a0a0a]">
@@ -115,37 +101,72 @@ export const CoreServices: React.FC = () => {
       </header>
 
       {SERVICES_DATA.map((phase, idx) => (
-        <section key={phase.phase} className={`py-24 px-6 relative border-b border-gray-900 ${idx % 2 !== 0 ? 'bg-[#020202]' : ''}`}>
+        <section key={phase.ph} className={`py-24 px-6 relative border-b border-gray-900 ${idx % 2 !== 0 ? 'bg-[#020202]' : ''}`}>
           <div className="container mx-auto max-w-7xl">
             <div className="mb-16 text-center">
-              <h2 className="text-sm font-black text-yellow-500 uppercase tracking-widest mb-2">Phase {phase.phase}</h2>
+              <h2 className="text-sm font-black text-yellow-500 uppercase tracking-widest mb-2">Phase {phase.ph}</h2>
               <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight">{phase.title}</h3>
               <p className="text-gray-400 mt-4 max-w-2xl mx-auto">{phase.desc}</p>
             </div>
             <div className="grid lg:grid-cols-3 gap-8 items-stretch">
               {phase.tiers.map(tier => (
-                <PricingTier
-                  key={tier.title}
-                  phase={phase.phase}
-                  title={tier.title}
-                  subtitle={tier.subtitle}
-                  target={tier.target}
-                  description={tier.description}
-                  priceStart={tier.priceStart}
-                  priceEnd={tier.priceEnd}
-                  period={tier.period}
-                  features={tier.features}
-                  isPopular={tier.isPopular}
-                  highlightColor={tier.isPopular ? "yellow-500" : "white"}
-                  icon={ICONS[phase.iconType]}
-                />
+                <PricingTier key={tier.title} phase={parseInt(phase.ph)} title={tier.title} subtitle={tier.sub} target={tier.target} description={tier.desc} priceStart={tier.price} features={tier.feats} isPopular={tier.pop} highlightColor={tier.pop ? "yellow-500" : "white"} icon={phase.icon} />
               ))}
             </div>
           </div>
         </section>
       ))}
 
-      <CoreServicesForm />
+      <section className="py-24 px-6 bg-black text-white border-t-8 border-yellow-500">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">
+              You do not need another agency.<br/><span className="text-yellow-500">You need an Entity Manager.</span>
+            </h2>
+            <p className="text-gray-400 text-lg leading-relaxed mb-8">
+              We have perfected the transition from legacy Inbound Marketing to <strong className="text-white">AI-Powered Journey Orchestration</strong>. We do not just get you seen. We get you mathematically verified.
+            </p>
+          </div>
+          
+          <div className="bg-[#111827] border border-gray-800 p-10 rounded-[2.5rem] shadow-2xl text-white relative min-h-[450px] flex flex-col justify-center">
+            <div className="absolute top-0 left-0 w-full h-2 bg-yellow-500 rounded-t-[2.5rem]"></div>
+            {submitted ? (
+              <div className="text-center animate-fade-in">
+                <ShieldCheck className="mx-auto text-yellow-500 mb-6" size={72} />
+                <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Request Secured</h3>
+                <p className="font-bold text-gray-400 mb-8 text-sm leading-relaxed max-w-sm mx-auto">
+                  Your intelligence brief has been dispatched to <strong className="text-white">{form.email}</strong>. The team is reviewing your entity data and will contact you shortly.
+                </p>
+                <button onClick={() => setSubmitted(false)} className="inline-block w-full bg-yellow-500 text-black py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-white transition-colors shadow-xl">Submit Another Request</button>
+              </div>
+            ) : (
+              <div className="animate-fade-in">
+                <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 mt-2">Initialize Your Audit</h3>
+                <p className="font-bold text-gray-400 mb-8 text-sm">Select your required protocol below. We will capture your request and immediately initialize your AI Entity Scanner.</p>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <input type="text" placeholder="Full Name" required className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all" onChange={e => setForm({...form, name: e.target.value})} />
+                  <div className="relative">
+                    <select required defaultValue="" className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold transition-all appearance-none cursor-pointer" onChange={e => setForm({...form, service: e.target.value})}>
+                      <option value="" disabled className="font-normal text-gray-500">Select Requested Architecture...</option>
+                      {SERVICES_DATA.map(phase => (
+                        <optgroup key={phase.ph} label={`Phase ${phase.ph}: ${phase.title}`}>
+                          {phase.tiers.map(tier => (<option key={tier.title} value={tier.title}>{tier.title}</option>))}
+                        </optgroup>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-yellow-500"><ChevronDown size={20} /></div>
+                  </div>
+                  <input type="text" placeholder="Website URL (e.g. www.yourbrand.com)" required className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all" onChange={e => setForm({...form, website: e.target.value})} />
+                  <input type="email" placeholder="Secure Email Address" required className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all" onChange={e => setForm({...form, email: e.target.value})} />
+                  <button type="submit" disabled={loading} className="w-full bg-yellow-500 text-black py-5 rounded-xl font-black uppercase tracking-widest text-sm hover:bg-white transition-colors mt-4 shadow-xl disabled:opacity-70 flex justify-center items-center gap-2">
+                    {loading ? 'Transmitting Request...' : 'Request Service Protocol'} <Zap size={16} />
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
