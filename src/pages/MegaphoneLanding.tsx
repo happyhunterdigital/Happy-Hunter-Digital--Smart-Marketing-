@@ -6,6 +6,13 @@ import { db, functions } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { SERVICES_DATA } from './CoreServices/CoreServices';
+import { PricingTier } from './CoreServices/PricingTier';
+
+const ICONS: Record<string, React.ReactNode> = {
+  Database: <Database size={32} />, BrainCircuit: <BrainCircuit size={32} />, Mail: <Mail size={32} />,
+  MessageSquareCode: <MessageSquareCode size={32} />, FileText: <FileText size={32} />, Mic: <Mic size={32} />,
+  CalendarCheck: <CalendarCheck size={32} />, Magnet: <Magnet size={32} />
+};
 
 const OnboardingForm = () => {
   const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
@@ -36,7 +43,7 @@ const OnboardingForm = () => {
             <span className="text-yellow-500">You need an Entity Manager.</span>
           </h2>
           <p className="text-gray-400 text-lg leading-relaxed mb-8">
-            At Happy Hunter Digital, we have perfected the transition from legacy Inbound Marketing to <strong className="text-white">AI-Powered Journey Orchestration</strong>. We do not just get you seen; we get you mathematically verified.
+            We have perfected the transition from legacy Inbound Marketing to <strong className="text-white">AI-Powered Journey Orchestration</strong>. We do not just get you seen; we get you mathematically verified.
           </p>
           <ul className="space-y-4">
             <li className="flex items-center gap-3 text-lg font-bold"><CheckCircle2 className="text-yellow-500" /> Dominate ChatGPT & Gemini</li>
@@ -52,7 +59,7 @@ const OnboardingForm = () => {
               <ShieldCheck className="mx-auto text-yellow-500 mb-6" size={72} />
               <h3 className="text-4xl font-black text-white uppercase tracking-tighter mb-4">Request Secured</h3>
               <p className="font-bold text-gray-400 mb-8 text-sm leading-relaxed max-w-sm mx-auto">
-                Your intelligence brief has been dispatched to <strong className="text-white">{form.email}</strong>. The team is reviewing your entity data and will contact you shortly.
+                Your intelligence brief has been dispatched. The team is reviewing your entity data.
               </p>
               <button onClick={() => setSubmitted(false)} className="inline-block w-full bg-yellow-500 text-black py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-white transition-colors shadow-xl">
                 Submit Another Request
@@ -61,13 +68,14 @@ const OnboardingForm = () => {
           ) : (
             <div className="animate-fade-in">
               <h3 className="text-3xl font-black text-white uppercase tracking-tighter mb-2 mt-2">Initialize Your Audit</h3>
-              <p className="font-bold text-gray-400 mb-8 text-sm">Select your required protocol below. We will capture your request and immediately initialize your AI Entity Scanner.</p>
+              <p className="font-bold text-gray-400 mb-8 text-sm">Select your required protocol below to initialize your AI Entity Scanner.</p>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <input type="text" placeholder="Full Name" required className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all" onChange={e => setForm({...form, name: e.target.value})} />
                 <div className="relative">
                   <select required defaultValue="" className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold transition-all appearance-none cursor-pointer" onChange={e => setForm({...form, service: e.target.value})}>
                     <option value="" disabled className="font-normal text-gray-500">Select Requested Architecture...</option>
                     {SERVICES_DATA.map(phase => (
+                      /* FIXED TS2339 ERROR: Using phase.ph instead of phase.phase */
                       <optgroup key={phase.ph} label={`Phase ${phase.ph}: ${phase.title}`}>
                         {phase.tiers.map(tier => (<option key={tier.title} value={tier.title}>{tier.title}</option>))}
                       </optgroup>
@@ -92,6 +100,7 @@ const OnboardingForm = () => {
 export const MegaphoneLanding: React.FC = () => {
   return (
     <div className="min-h-screen bg-yellow-500 font-sans animate-fade-in selection:bg-black selection:text-yellow-500">
+      {/* HERO SECTION */}
       <section className="relative pt-24 pb-24 md:pt-32 md:pb-32 px-6 overflow-hidden border-b-[16px] border-black">
         <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
           <svg className="w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
@@ -120,56 +129,27 @@ export const MegaphoneLanding: React.FC = () => {
         </div>
       </section>
 
-      <section className="py-24 px-6 bg-[#050505] text-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-             <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4">Our 8-Phase Architectural Protocol</h2>
-             <p className="text-gray-400 max-w-2xl mx-auto text-lg">We deploy highly specialized, modular services tailored for the South African market to guarantee AI discovery and agentic conversion.</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-             <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl hover:border-yellow-500 transition-colors group">
-               <Database className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={40} />
-               <h3 className="font-bold text-lg mb-2">Entity Architecture</h3>
-               <p className="text-sm text-gray-400">High-performance SSR structures for LLM ingestion.</p>
-             </div>
-             <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl hover:border-yellow-500 transition-colors group">
-               <BrainCircuit className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={40} />
-               <h3 className="font-bold text-lg mb-2">AI Personalization</h3>
-               <p className="text-sm text-gray-400">Real-time recommendation engines and dynamic content.</p>
-             </div>
-             <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl hover:border-yellow-500 transition-colors group">
-               <Mail className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={40} />
-               <h3 className="font-bold text-lg mb-2">Email Marketing</h3>
-               <p className="text-sm text-gray-400">Generative AI testing and lifecycle automation.</p>
-             </div>
-             <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl hover:border-yellow-500 transition-colors group">
-               <MessageSquareCode className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={40} />
-               <h3 className="font-bold text-lg mb-2">WhatsApp Commerce</h3>
-               <p className="text-sm text-gray-400">Native catalogs, NLP bots, and in-chat payments.</p>
-             </div>
-             <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl hover:border-yellow-500 transition-colors group">
-               <FileText className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={40} />
-               <h3 className="font-bold text-lg mb-2">E-E-A-T Content</h3>
-               <p className="text-sm text-gray-400">Human-led thought leadership and expert writing.</p>
-             </div>
-             <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl hover:border-yellow-500 transition-colors group">
-               <Mic className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={40} />
-               <h3 className="font-bold text-lg mb-2">Voice & Chat Agents</h3>
-               <p className="text-sm text-gray-400">Automated receptionists handling queries 24/7.</p>
-             </div>
-             <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl hover:border-yellow-500 transition-colors group">
-               <CalendarCheck className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={40} />
-               <h3 className="font-bold text-lg mb-2">Direct Bookings</h3>
-               <p className="text-sm text-gray-400">Bypass high-commission OTAs with smart PMS sync.</p>
-             </div>
-             <div className="bg-[#0a0a0a] border border-gray-800 p-8 rounded-3xl hover:border-yellow-500 transition-colors group">
-               <Magnet className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={40} />
-               <h3 className="font-bold text-lg mb-2">AI Lead Magnets</h3>
-               <p className="text-sm text-gray-400">Interactive calculators replacing static PDF ebooks.</p>
-             </div>
-          </div>
-        </div>
-      </section>
+      {/* DYNAMIC SERVICES RENDER - Displays all data without inflating code lines */}
+      <div className="bg-[#050505]">
+        {SERVICES_DATA.map((phase, idx) => (
+          <section key={phase.ph} className={`py-24 px-6 relative border-b border-gray-900 ${idx % 2 !== 0 ? 'bg-[#020202]' : ''}`}>
+            <div className="container mx-auto max-w-7xl">
+              <div className="mb-16 text-center">
+                <h2 className="text-sm font-black text-yellow-500 uppercase tracking-widest mb-2">Phase {phase.ph}</h2>
+                <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight">{phase.title}</h3>
+                <p className="text-gray-400 mt-4 max-w-2xl mx-auto">{phase.desc}</p>
+              </div>
+              <div className="grid lg:grid-cols-3 gap-8 items-stretch">
+                {phase.tiers.map(tier => (
+                  <PricingTier 
+                    key={tier.title} phase={parseInt(phase.ph)} title={tier.title} subtitle={tier.sub} target={tier.target} description={tier.desc} priceStart={tier.price} features={tier.feats} isPopular={tier.pop} highlightColor={tier.pop ? "yellow-500" : "white"} icon={ICONS[phase.iconType as keyof typeof ICONS] || ICONS.Database} 
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        ))}
+      </div>
 
       <OnboardingForm />
     </div>
