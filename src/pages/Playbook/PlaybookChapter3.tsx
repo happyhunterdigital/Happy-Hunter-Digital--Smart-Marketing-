@@ -14,6 +14,16 @@ export const PlaybookChapter3 = () => {
         {/* SECTION 5 */}
         <div className="mb-16 border-b border-gray-800 pb-16">
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">05</div>
+          
+          <div className="mb-10 rounded-[2rem] overflow-hidden border border-gray-800 shadow-2xl relative group">
+            <img 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1774977369/happyhunterdigital_AI_Agents_Live_Chat_t2u4oo.png" 
+              alt="AI Agents and Live Chat" 
+              className="w-full h-64 md:h-80 object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 grayscale group-hover:grayscale-0" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none"></div>
+          </div>
+
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">AI Agents: From Answering Questions to Solving Problems</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
             The 2026 service landscape is not about chatbots that respond. It is about agents that act. There is a significant difference, and it changes everything about your cost structure.
@@ -40,13 +50,23 @@ export const PlaybookChapter3 = () => {
 
           <h3 className="text-2xl font-black text-white mb-4">The "Human-in-the-Loop" Protocol</h3>
           <p className="text-gray-300 text-lg leading-relaxed mb-8">
-            The best organisations use AI for the routine and keep human agents specifically for "risk points" like crisis management, high-value negotiations, and sensitive situations. Total automation strips away the empathy required for premium service.
+            The best organisations use AI for the routine and keep human agents specifically for risk points like crisis management, high-value negotiations, and sensitive situations. Total automation strips away the empathy required for premium service.
           </p>
         </div>
 
         {/* SECTION 6 */}
         <div className="mb-16 border-b border-gray-800 pb-16">
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">06</div>
+          
+          <div className="mb-10 rounded-[2rem] overflow-hidden border border-gray-800 shadow-2xl relative group">
+            <img 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1774977591/happyhunterdigital_Direct_Bookings_t8xreh.png" 
+              alt="Direct Bookings Optimization" 
+              className="w-full h-64 md:h-80 object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 grayscale group-hover:grayscale-0" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none"></div>
+          </div>
+
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">Direct Bookings: Stop Paying 25% Commission</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
             For hospitality and service businesses, the OTA dependency trap is haemorrhaging margins. In 2026, the smart money is investing in direct booking infrastructure.
