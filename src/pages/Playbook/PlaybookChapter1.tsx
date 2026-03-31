@@ -14,13 +14,23 @@ export const PlaybookChapter1 = () => {
         {/* SECTION 1 */}
         <div className="mb-16 border-b border-gray-800 pb-16">
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">01</div>
+          
+          <div className="mb-10 rounded-[2rem] overflow-hidden border border-gray-800 shadow-2xl relative group">
+            <img 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1774976201/_A_cinematic_high-contrast_image_of_a_person_working_confidently_at_a_sleek_desk_setup_with_multiple_screens_think_dynamic_forward-looking_energy._cknr5x.png" 
+              alt="AI Personalization" 
+              className="w-full h-64 md:h-80 object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 grayscale group-hover:grayscale-0" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none"></div>
+          </div>
+
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">AI Personalization: The End of "One Size Fits All"</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
             Mass marketing is over. In 2026, your customers do not just prefer personalised experiences. They expect them as the baseline.
           </p>
 
           <p className="text-gray-300 text-lg leading-relaxed mb-10">
-            Think about the last time you felt like a brand truly <em>got</em> you. That feeling did not happen by accident. It was engineered by AI. In 2026, that engineering has become so sophisticated that the gap between brands adapting and those stagnating has become a canyon.
+            Think about the last time you felt like a brand truly <b>got</b> you. That feeling did not happen by accident. It was engineered by AI. In 2026, that engineering has become so sophisticated that the gap between brands adapting and those stagnating has become a canyon.
           </p>
 
           <div className="grid md:grid-cols-3 gap-6 mb-12">
@@ -82,6 +92,16 @@ export const PlaybookChapter1 = () => {
         {/* SECTION 2 */}
         <div className="mb-16 border-b border-gray-800 pb-16">
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">02</div>
+          
+          <div className="mb-10 rounded-[2rem] overflow-hidden border border-gray-800 shadow-2xl relative group">
+            <img 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1774976519/happyhunterdigital_Email_Marketing_zqxmk4.png" 
+              alt="Email Marketing Renaissance" 
+              className="w-full h-64 md:h-80 object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 grayscale group-hover:grayscale-0" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent pointer-events-none"></div>
+          </div>
+
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">Email Marketing's Comeback Story</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
             In 2026, email is the highest-ROI channel in the toolkit, provided you have moved beyond the static broadcast.
