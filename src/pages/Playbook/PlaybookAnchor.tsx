@@ -6,9 +6,18 @@ import { ArrowLeft, BookOpen, ArrowRight } from 'lucide-react';
 export const PlaybookAnchor = () => {
   return (
     <div className="bg-[#050505] min-h-screen pb-20 animate-fade-in font-sans">
-      <header className="relative pt-40 pb-20 border-b border-gray-800 bg-[#0a0a0a] text-center">
-        <div className="container mx-auto px-6 max-w-4xl">
-          <Link to="/smart-news" className="inline-flex text-gray-500 hover:text-yellow-500 items-center gap-2 mb-10 uppercase text-[10px] font-black tracking-[0.2em] transition-colors">
+      <header className="relative pt-40 pb-20 border-b border-gray-800 bg-[#0a0a0a] text-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://res.cloudinary.com/dka0498ns/image/upload/v1772910873/happyhunterdigital_background_tczv4w.png"
+            alt="The 2026 Marketing Report"
+            className="w-full h-full object-cover opacity-20 grayscale hover:grayscale-0 transition-all duration-1000"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent"></div>
+        </div>
+        
+        <div className="relative z-10 container mx-auto px-6 max-w-4xl">
+          <Link to="/smart-news" className="inline-flex text-gray-400 hover:text-yellow-500 items-center gap-2 mb-10 uppercase text-[10px] font-black tracking-[0.2em] transition-colors">
             <ArrowLeft size={16}/> Back to Smart News
           </Link>
           
