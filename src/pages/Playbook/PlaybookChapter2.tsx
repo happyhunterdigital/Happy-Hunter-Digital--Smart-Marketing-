@@ -16,11 +16,11 @@ export const PlaybookChapter2 = () => {
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">03</div>
           <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">WhatsApp Commerce: The Highest-Leverage Channel</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
-            A 98% open rate. A complete sales funnel inside a single chat. This is where conversational commerce is happening right now.
+            A 98% open rate and a complete sales funnel inside a single chat. This is where conversational commerce is happening right now.
           </p>
 
           <p className="text-gray-300 text-lg leading-relaxed mb-8">
-            In 2026, the most sophisticated B2C brands don't just use WhatsApp for support — they use it to run their entire sales funnel. Discovery, consideration, purchase, and post-sale care, all within a single chat window.
+            In 2026, the most sophisticated B2C brands do not just use WhatsApp for support. They use it to run their entire sales funnel. Discovery, consideration, purchase, and post-sale care all happen within a single chat window.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 mb-12">
@@ -34,22 +34,22 @@ export const PlaybookChapter2 = () => {
             </div>
           </div>
 
-          <h3 className="text-2xl font-black text-white mb-4">How the WhatsApp Sales Funnel Actually Works</h3>
+          <h3 className="text-2xl font-black text-white mb-4">How the WhatsApp Sales Funnel Works</h3>
           <p className="text-gray-300 text-lg leading-relaxed mb-8">
-            The game-changer is WhatsApp Flows — native interactive components that let customers browse product catalogues, select options, fill forms, and complete purchases without ever leaving the app. This eliminates the #1 cause of cart abandonment: the redirect.
+            The game-changer is WhatsApp Flows. These are native interactive components that let customers browse product catalogues, select options, fill forms, and complete purchases without ever leaving the app. This eliminates the primary cause of cart abandonment.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             <div className="bg-gray-900 border border-gray-800 p-6 rounded-2xl">
               <span className="text-3xl block mb-4">🔍</span>
               <h4 className="text-lg font-bold text-white mb-2">Product Discovery</h4>
-              <p className="text-gray-400 text-sm mb-4">AI-driven catalogues guide customers to exactly what they're looking for.</p>
+              <p className="text-gray-400 text-sm mb-4">AI-driven catalogues guide customers to exactly what they are looking for.</p>
               <div className="text-green-500 text-[10px] font-black uppercase tracking-widest">↑ 14x Revenue Increase</div>
             </div>
             <div className="bg-gray-900 border border-gray-800 p-6 rounded-2xl">
               <span className="text-3xl block mb-4">🛒</span>
               <h4 className="text-lg font-bold text-white mb-2">Cart Recovery</h4>
-              <p className="text-gray-400 text-sm mb-4">Personalised recovery messages with native in-chat payment links.</p>
+              <p className="text-gray-400 text-sm mb-4">Personalised recovery messages paired with native in-chat payment links.</p>
               <div className="text-green-500 text-[10px] font-black uppercase tracking-widest">↑ 2.8x Higher Recovery</div>
             </div>
           </div>
@@ -58,9 +58,9 @@ export const PlaybookChapter2 = () => {
         {/* SECTION 4 */}
         <div className="mb-16 border-b border-gray-800 pb-16">
           <div className="text-yellow-500 font-black uppercase tracking-widest text-sm mb-4">04</div>
-          <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">The Content Wars: Why "Human" Is Now a Premium</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-6">The Content Wars: Why Human Insight is Premium</h2>
           <p className="text-xl text-gray-400 font-medium leading-relaxed mb-8">
-            AI can produce content at scale. It cannot produce the lived experience, professional authority, and nuanced judgment that Google — and your customers — are increasingly demanding.
+            AI can produce content at scale. It cannot produce the lived experience, professional authority, and nuanced judgment that Google and your customers demand.
           </p>
 
           <div className="grid md:grid-cols-2 gap-6 mb-12">
@@ -68,18 +68,18 @@ export const PlaybookChapter2 = () => {
               <div className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">The Losing Strategy</div>
               <h4 className="text-xl font-bold text-white mb-6">AI Content at Volume</h4>
               <ul className="space-y-4 text-sm text-gray-400">
-                <li className="flex items-start gap-2"><span className="text-gray-600 mt-0.5">→</span> Mass-produced, generic articles</li>
-                <li className="flex items-start gap-2"><span className="text-gray-600 mt-0.5">→</span> Simulated expertise without lived experience</li>
-                <li className="flex items-start gap-2"><span className="text-gray-600 mt-0.5">→</span> Content that looks human but feels robotic</li>
+                <li className="flex items-start gap-2"><span className="text-gray-600 mt-0.5">•</span> Mass-produced, generic articles</li>
+                <li className="flex items-start gap-2"><span className="text-gray-600 mt-0.5">•</span> Simulated expertise without lived experience</li>
+                <li className="flex items-start gap-2"><span className="text-gray-600 mt-0.5">•</span> Content that looks human but feels robotic</li>
               </ul>
             </div>
             <div className="bg-black border border-gray-800 p-8 rounded-3xl">
               <div className="text-yellow-500 text-[10px] font-black uppercase tracking-widest mb-4">The Winning Strategy</div>
               <h4 className="text-xl font-bold text-white mb-6">AI-Assisted, Human-Led</h4>
               <ul className="space-y-4 text-sm text-gray-300">
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">→</span> AI handles research, structure & SEO</li>
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">→</span> Humans own narrative voice & judgment</li>
-                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">→</span> Genuine practitioner insight for YMYL</li>
+                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">•</span> AI handles research, structure & SEO</li>
+                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">•</span> Humans own narrative voice & judgment</li>
+                <li className="flex items-start gap-2"><span className="text-yellow-500 mt-0.5">•</span> Genuine practitioner insight for YMYL</li>
               </ul>
             </div>
           </div>
