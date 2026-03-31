@@ -1,5 +1,5 @@
 // src/pages/CoreServices/CoreServices.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { Star, Database, BrainCircuit, Mail, MessageSquareCode, FileText, Mic, CalendarCheck, Magnet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PricingTier } from './PricingTier';
@@ -29,7 +29,7 @@ export const SERVICES_DATA = [
     description: "Generative AI testing and automated lifecycle sequences designed to convert inside the inbox.",
     tiers: [
       { subtitle: "Basic", title: "Specialist Management", priceStart: "R2,500 - R6,000/mo", target: "Lists up to 10,000 contacts.", description: "Freelancer-level email execution and campaign management.", features: ["AI Copy Optimization", "Subject Line Testing"] },
-      { subtitle: "Essential", title: "Lifecycle Automation", priceStart: "R950 - R15,000+/mo", target: "Agency Retainers.", description: "Automated Welcome, Abandoned Cart, and Win-back sequences.", features: ["Full-funnel strategy", "Generative AI refinement"], isPopular: true },
+      { subtitle: "Essential", title: "Lifecycle Automation", priceStart: "R9,500 - R15,000/mo", target: "Agency Retainers.", description: "Automated Welcome, Abandoned Cart, and Win-back sequences.", features: ["Full-funnel strategy", "Generative AI refinement"], isPopular: true },
       { subtitle: "Premium", title: "Interactive Design", priceStart: "Custom Quoted", target: "Advanced E-commerce.", description: "Building in-email checkout or live polls.", features: ["Mini-website functionality", "In-email conversions"] }
     ]
   },
@@ -64,7 +64,7 @@ export const SERVICES_DATA = [
     phase: 7, title: "Direct Booking Engines", iconType: "CalendarCheck",
     description: "Bypass high-commission OTAs for hospitality and professional services.",
     tiers: [
-      { subtitle: "Basic", title: "Engine Integration", priceStart: "R0 Setup", target: "Local providers (like NightsBridge).", description: "Connecting the booking interface to the Property Management System (PMS).", features: ["PMS Integration", "Direct website bookings"] },
+      { subtitle: "Basic", title: "Engine Integration", priceStart: "R1,600", target: "Local providers (like NightsBridge).", description: "Connecting the booking interface to the Property Management System (PMS).", features: ["PMS Integration", "Direct website bookings"] },
       { subtitle: "Essential", title: "Channel Manager", priceStart: "R660 - R1,500+/mo", target: "Monthly Subscription.", description: "Synchronizing availability across Booking.com, Airbnb, and direct sites.", features: ["Cross-platform sync", "Prevents double-booking"], isPopular: true },
       { subtitle: "Premium", title: "Dynamic Pricing", priceStart: "R12,980+", target: "Custom Enterprise Systems.", description: "AI modules that adjust rates based on demand.", features: ["Demand-based pricing", "Specialized directories"] }
     ]
