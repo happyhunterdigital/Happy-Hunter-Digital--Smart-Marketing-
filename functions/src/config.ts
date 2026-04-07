@@ -6,7 +6,7 @@ export const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
 export const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "HAPPY_HUNTER_SECURE_2026";
 export const ADMIN_NUMBER = "27601016673";
 export const BASE_URL = "https://happyhunterdigital.com";
-export const SAFETY_SETTINGS = [
+export const SAFETY_SETTINGS =[
   { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
   { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
   { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
