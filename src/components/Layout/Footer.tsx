@@ -1,4 +1,3 @@
-// src/components/Layout/Footer.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Phone, Facebook, Linkedin, Instagram, Leaf } from 'lucide-react';
@@ -15,10 +14,15 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
 
   return (
     <footer className="py-24 border-t border-gray-900 bg-black text-left mt-20 px-6">
-      <div className="container mx-auto grid md:grid-cols-2 lg:grid-cols-4 gap-16">
+      <div className="container mx-auto grid md:grid-cols-2 lg:grid-cols-5 gap-16">
+        
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" className="w-12 h-12 rounded-full border border-yellow-500/30 object-cover" alt="Logo" />
+            <img 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" 
+              className="w-12 h-12 rounded-full border border-yellow-500/30 object-cover" 
+              alt="Logo" 
+            />
             <span className="font-handwriting text-3xl lowercase">
               <span className="text-white">happy</span><span className="text-yellow-500">hunter</span><span className="text-gray-400">digital</span>
             </span>
@@ -32,6 +36,15 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
             <a href="mailto:motsumitl@happyhunterdigital.com" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all"><Mail size={16} className="text-yellow-500"/> motsumitl@happyhunterdigital.com</a>
             <a href="https://wa.me/27601016673" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all"><Phone size={16} className="text-yellow-500"/> +27 (0) 60 101 6673</a>
           </div>
+        </div>
+
+        <div className="space-y-6">
+          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Entity Location</h3>
+          <p className="text-gray-400 text-[10px] leading-relaxed">
+            First floor, Unit 35, 29 Rhodes Ave,<br />
+            Florida North, Roodepoort, 1710<br />
+            Johannesburg, South Africa
+          </p>
         </div>
 
         <div className="space-y-6">
@@ -53,6 +66,7 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
             <a href="https://www.facebook.com/Happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><Facebook size={20}/></a>
           </div>
         </div>
+
       </div>
 
       <div className="container mx-auto mt-24 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 gap-6">
