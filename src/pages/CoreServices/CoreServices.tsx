@@ -19,7 +19,7 @@ export const SERVICES_DATA = [
     description: "Deep data integration for real-time recommendation engines and predictive analytics.",
     tiers: [
       { subtitle: "Basic", title: "Recommendation Engine", priceStart: "R4,500 - R25,000", target: "Standard API integrations.", description: "Real-time product or content suggestions based on browsing history.", features: ["Browsing history tracking", "From R950/mo management"] },
-      { subtitle: "Essential", title: "Dynamic Content", priceStart: "R12,000 - R180,000", target: "Mid-market e-commerce.", description: "AI that alters landing pages and CTAs for specific users in real-time.", features: ["Real-time user adaptation", "Agency-led implementation"], isPopular: true },
+      { subtitle: "Essential", title: "Dynamic Content", priceStart: "From R12,000", target: "Mid-market e-commerce.", description: "AI that alters landing pages and CTAs for specific users in real-time.", features: ["Real-time user adaptation", "Agency-led implementation"], isPopular: true },
       { subtitle: "Premium", title: "Predictive Analytics", priceStart: "Up to R20,000/mo", target: "Full-scale AI personalization.", description: "Forecasting customer churn or high-value segments.", features: ["Advanced forecasting models", "High-value segmenting"] }
     ]
   },
