@@ -1,4 +1,3 @@
-// src/pages/CoreServices/CoreServices.tsx
 import React from 'react';
 import { Star, Database, BrainCircuit, Mail, MessageSquareCode, FileText, Mic, CalendarCheck, Magnet } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -39,7 +38,7 @@ export const SERVICES_DATA = [
     tiers: [
       { subtitle: "Basic", title: "WhatsApp API Setup", priceStart: "R5,999 - R45,000", target: "Rule-based bots.", description: "Legal verification and technical integration with CRM/Shopify.", features: ["API Integration", "From R900/mo platform fee"] },
       { subtitle: "Essential", title: "WhatsApp Flows", priceStart: "R900 - R8,000/mo", target: "Monthly Platform maintenance.", description: "Building interactive forms and native catalogs inside the chat.", features: ["Native catalogs", "Interactive forms"], isPopular: true },
-      { subtitle: "Premium", title: "Payment Integration", priceStart: "R180k - R400k", target: "AI NLP bots.", description: "Connecting Stripe, PayFast, or Ozow for in-chat transactions.", features: ["In-chat transactions", "Meta costs ~R0.72/msg"] }
+      { subtitle: "Premium", title: "Payment Integration", priceStart: "R180k - R400k", target: "AI NLP bots.", description: "Connecting Stripe, PayFast, or Ozow for in-chat transactions.", features: ["In-chat transactions", "Meta costs ~R0.72/msg", "Price Drivers: Logic complexity & transaction volume"] }
     ]
   },
   {
@@ -91,10 +90,12 @@ export const CoreServices: React.FC = () => {
     <div className="bg-[#050505] min-h-screen pb-0 animate-fade-in font-sans selection:bg-yellow-500 selection:text-black">
       <header className="relative pt-40 pb-24 border-b border-gray-800 overflow-hidden bg-[#0a0a0a]">
         <div className="absolute inset-0 z-0">
-          <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893108/Untitled_design_4_jghatq.png" alt="Strategic Services" className="w-full h-full object-cover object-center opacity-50 mix-blend-overlay transition-all duration-1000" />
+          <img 
+            src="https://res.cloudinary.com/dka0498ns/image/upload/v1772893108/Untitled_design_4_jghatq.png" alt="Strategic Services" className="w-full h-full object-cover object-center opacity-50 mix-blend-overlay transition-all duration-1000" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent"></div>
           <div className="absolute inset-0 bg-gradient-to-b from-[#050505]/50 to-transparent"></div>
         </div>
+        
         <div className="relative z-10 container mx-auto px-6 text-center max-w-4xl">
           <span className="inline-block px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[10px] font-black uppercase tracking-[0.3em] mb-6">The 2026 Protocol</span>
           <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 leading-none text-white">
@@ -102,9 +103,11 @@ export const CoreServices: React.FC = () => {
             <span className="text-yellow-500 italic text-white underline decoration-yellow-500/30 underline-offset-[12px]">AI-ready websites</span>
           </h1>
           <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-3xl mx-auto mb-8">For South African business owners, brokers, and founders who are tired of losing high-value clients to competitors after hours. We ensure your business never misses a lead.</p>
+          
           <div className="flex justify-center gap-4 mb-8">
             <Link to="/audit" className="inline-block bg-yellow-500 text-black px-10 py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors">Initialize Smart Business Scan</Link>
           </div>
+
           <div className="flex flex-col items-center justify-center gap-2">
             <div className="flex gap-1 text-yellow-500">
               {[1, 2, 3, 4, 5].map((star) => (<Star key={star} className="fill-yellow-500 text-yellow-500" size={16} />))}
@@ -122,9 +125,10 @@ export const CoreServices: React.FC = () => {
               <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight">{phase.title}</h3>
               <p className="text-gray-400 mt-4 max-w-2xl mx-auto">{phase.description}</p>
             </div>
+            
             <div className="grid lg:grid-cols-3 gap-8 items-stretch">
               {phase.tiers.map(tier => (
-                <PricingTier
+                <PricingTier 
                   key={tier.title}
                   phase={phase.phase}
                   title={tier.title}
