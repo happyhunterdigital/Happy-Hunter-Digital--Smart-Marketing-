@@ -8,6 +8,7 @@ import { Chatbot } from './components/Chatbot';
 import { CookieConsent } from './components/CookieConsent';
 import { ContentRibbon } from './components/ContentRibbon';
 import { AIEntityEngine } from './components/AIEntityEngine';
+import { OrganizationSchema } from './components/OrganizationSchema';
 
 // Pages
 import { Home } from './pages/Home';
@@ -52,6 +53,7 @@ function App() {
   return (
     <div className={`min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black`}>
       <AIEntityEngine />
+      <OrganizationSchema />
       <CookieConsent />
       {!isLandingPage && <ContentRibbon />}
       
