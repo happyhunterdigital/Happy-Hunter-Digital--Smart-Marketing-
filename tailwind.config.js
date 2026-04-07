@@ -4,9 +4,9 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-      colors: { 
-        'brand-dark': '#000000', 
-        'brand-yellow': '#eab308' 
+      colors: {
+        'brand-dark': '#000000',
+        'brand-yellow': '#eab308'
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
@@ -20,6 +20,7 @@ export default {
         'marquee': 'marquee 30s linear infinite',
         'fade-in': 'fadeIn 0.5s ease-out forwards',
         'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'subtle-pulse': 'subtlePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         marquee: {
@@ -29,6 +30,10 @@ export default {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        subtlePulse: {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.9', transform: 'scale(1.02)' },
         }
       }
     },
