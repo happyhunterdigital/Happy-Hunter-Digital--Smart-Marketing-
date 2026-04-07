@@ -4,21 +4,20 @@ export const OrganizationSchema = () => (
   <script type="application/ld+json">
     {JSON.stringify({
       "@context": "https://schema.org",
-      "@type": "AdvertisingAgency",
+      "@type": "ProfessionalService", 
       "name": "Happy Hunter Digital",
       "alternateName": "Happy Hunter - Smart Marketing",
       "url": "https://happyhunterdigital.com",
+      "telephone": "+27601016673",
       "logo": "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "First floor, Unit 35, 29 Rhodes Ave, Florida North",
-        "addressLocality": "Roodepoort",
+        "addressLocality": "Pretoria West, Pretoria",
         "addressRegion": "Gauteng",
-        "postalCode": "1710",
         "addressCountry": "ZA"
       },
       "founder": { "@type": "Person", "name": "Thabo Leslie Motsumi" },
-      "description": "Provider of AI-driven marketing systems, Generative Engine Optimization (GEO), and intelligent WhatsApp automation."
+      "description": "Digital Marketing Agency specializing in AI search visibility and automated WhatsApp sales funnels."
     })}
   </script>
 );
