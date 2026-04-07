@@ -39,11 +39,10 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
         </div>
 
         <div className="space-y-6">
-          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Entity Location</h3>
+          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Agency Headquarters</h3>
           <p className="text-gray-400 text-[10px] leading-relaxed">
-            First floor, Unit 35, 29 Rhodes Ave,<br />
-            Florida North, Roodepoort, 1710<br />
-            Johannesburg, South Africa
+            Pretoria, Gauteng<br />
+            South Africa
           </p>
         </div>
 
