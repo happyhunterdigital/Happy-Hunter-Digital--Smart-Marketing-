@@ -2,25 +2,9 @@ import React from 'react';
 import { Target, Zap, ShieldCheck, Search, ArrowRight, BarChart3, Database, TrendingDown, BookOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const OrganizationSchema = () => (
-  <script type="application/ld+json">
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "ProfessionalService",
-      "name": "Happy Hunter Digital",
-      "url": "https://happyhunterdigital.com",
-      "logo": "https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg",
-      "address": { "@type": "PostalAddress", "addressLocality": "Pretoria", "addressCountry": "ZA" },
-      "founder": { "@type": "Person", "name": "Thabo Leslie Motsumi" }
-    })}
-  </script>
-);
-
 export const Home = () => {
   return (
     <div className="animate-fade-in">
-      <OrganizationSchema />
-      
       {/* HERO SECTION */}
       <section className="relative container-fluid px-6 text-center py-32 md:py-48 overflow-hidden min-h-[90vh] flex flex-col justify-center">
         <div 
@@ -41,11 +25,14 @@ export const Home = () => {
           </h1>
           
           <p className="max-w-3xl mx-auto text-gray-300 text-lg md:text-xl font-medium mb-12 leading-relaxed drop-shadow-md">
-            In 2026, your customers aren't scrolling through pages of blue links anymore. They are asking ChatGPT, Gemini, and Google's AI Overviews for direct recommendations. If you aren't a <b>Verified Entity</b>, you simply do not exist. 
+            In 2026, your customers aren't scrolling through pages of blue links anymore. They are asking ChatGPT, Gemini, and Google's AI Overviews for direct recommendations. If you aren't a <b>Verified Entity</b>, you simply do not exist.
           </p>
-
+          
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link to="/audit" className="bg-yellow-500 text-black px-10 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all flex items-center justify-center gap-2 shadow-[0_0_40px_rgba(234,179,8,0.3)]">
+            <Link 
+              to="/audit" 
+              className="bg-yellow-500 text-black px-10 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all flex items-center justify-center gap-2 shadow-[0_0_50px_rgba(234,179,8,0.5)] animate-subtle-pulse"
+            >
               <Search size={20} /> Initialize Your Survival Scan
             </Link>
           </div>
@@ -59,7 +46,7 @@ export const Home = () => {
             <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight mb-4">The Tripartite Protocol</h2>
             <p className="text-gray-400 leading-relaxed text-lg">We transition your organization away from superficial marketing tactics. We build mathematically sound, AI-ready digital assets that force algorithms to recommend you.</p>
           </div>
-
+          
           <div className="grid md:grid-cols-3 gap-8">
             <div className="p-8 bg-[#0a0a0a] border border-gray-800 rounded-3xl hover:border-yellow-500/50 transition-colors group shadow-xl">
               <ShieldCheck className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={48}/>
@@ -67,14 +54,14 @@ export const Home = () => {
               <p className="text-gray-400 leading-relaxed text-sm mb-6">Before an AI will risk recommending your business, it must trust you. We establish your baseline algorithmic trust through rigorous Google Business Profile verification and advanced Schema architecture.</p>
               <Link to="/architecture" className="text-[10px] font-black uppercase tracking-widest text-yellow-500 hover:text-white flex items-center gap-1">Explore Architecture <ArrowRight size={12}/></Link>
             </div>
-
+            
             <div className="p-8 bg-[#0a0a0a] border border-gray-800 rounded-3xl hover:border-yellow-500/50 transition-colors group shadow-xl">
               <Database className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={48}/>
               <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-tighter">2. The AI Megaphone</h3>
               <p className="text-gray-400 leading-relaxed text-sm mb-6">Traditional SEO chases clicks. Answer Engine Optimization (AEO) secures citations. We format your content using explicit RAG-ready structures so your brand is the definitive source of truth.</p>
               <Link to="/blog/ai-megaphone" className="text-[10px] font-black uppercase tracking-widest text-yellow-500 hover:text-white flex items-center gap-1">Read AEO Intel <ArrowRight size={12}/></Link>
             </div>
-
+            
             <div className="p-8 bg-[#0a0a0a] border border-gray-800 rounded-3xl hover:border-yellow-500/50 transition-colors group shadow-xl">
               <Zap className="text-yellow-500 mb-6 group-hover:scale-110 transition-transform" size={48}/>
               <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-tighter">3. The Revenue Brain</h3>
@@ -86,4 +73,4 @@ export const Home = () => {
       </section>
     </div>
   );
-}
+};
