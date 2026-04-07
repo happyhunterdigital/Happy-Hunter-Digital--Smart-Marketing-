@@ -1,4 +1,3 @@
-// src/pages/FAQ.tsx
 import React, { useState } from 'react';
 import { Sparkles, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -10,6 +9,23 @@ const FAQS = [
   { q: "What is an AI Receptionist?", a: "A 24/7 automated agent deployed via WhatsApp or web that qualifies leads, answers complex FAQs based on your proprietary data, and books appointments autonomously." }
 ];
 
+const FAQSchema = () => (
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": FAQS.map(faq => ({
+        "@type": "Question",
+        "name": faq.q,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.a
+        }
+      }))
+    })}
+  </script>
+);
+
 export const FAQ = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -20,6 +36,7 @@ export const FAQ = () => {
 
   return (
     <div className="container mx-auto px-6 py-20 animate-fade-in min-h-[85vh]">
+      <FAQSchema />
       <div className="max-w-3xl mx-auto">
         <h1 className="text-5xl md:text-6xl font-black uppercase tracking-tighter mb-8 text-white">Zero-Click <span className="text-yellow-500 italic">Insights</span></h1>
         
@@ -27,9 +44,9 @@ export const FAQ = () => {
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
             <Search className="text-yellow-500" size={20} />
           </div>
-          <input 
-            type="text" 
-            placeholder="Ask the AI Knowledge Base..." 
+          <input
+            type="text"
+            placeholder="Ask the AI Knowledge Base..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-black border border-gray-800 text-white pl-12 pr-6 py-5 rounded-2xl focus:border-yellow-500 focus:shadow-neural-glow outline-none font-mono transition-all text-sm"
@@ -47,7 +64,7 @@ export const FAQ = () => {
               <p className="text-gray-400 text-sm leading-relaxed pl-7 border-l-2 border-gray-800 ml-2">{faq.a}</p>
             </div>
           )) : (
-             <div className="text-center py-10 text-gray-500 font-mono">No relevant insights found in the current vector database.</div>
+            <div className="text-center py-10 text-gray-500 font-mono">No relevant insights found in the current vector database.</div>
           )}
         </div>
 
