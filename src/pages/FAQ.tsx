@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom';
 
 const FAQS = [
   { q: "What is the difference between standard SEO and GEO?", a: "SEO optimizes for ranking links. Generative Engine Optimization (GEO) is the practice of structuring content so AI models (ChatGPT, Gemini) synthesize and cite your brand as the definitive answer." },
+  { q: "What is Vibe-Coding?", a: "Vibe-Coding is our proprietary method of translating your brand's core identity, voice, and target market into a fully operational, autonomous AI marketing engine." },
   { q: "Why is my traffic dropping despite high SEO rankings?", a: "You are in the 'Zero-Click' crisis. 40% of B2B queries are now answered within the AI interface. We shift your strategy from chasing clicks to securing your 'Share of Model'." },
   { q: "How do you solve the 'Ghost Effect'?", a: "By establishing a Trust Anchor. We unify your fragmented digital data points and deploy strict JSON-LD schema so AI agents can resolve your identity with 100% confidence." },
-  { q: "What is an AI Receptionist?", a: "A 24/7 automated agent deployed via WhatsApp or web that qualifies leads, answers complex FAQs based on your proprietary data, and books appointments autonomously." }
+  { q: "What is an AI Receptionist?", a: "A 24/7 automated agent deployed via WhatsApp or web that qualifies leads, answers complex FAQs based on your proprietary data, and books appointments autonomously." },
+  { q: "Do you provide legal, medical, or financial services?", a: "No. We are a Digital Entity Architecture Firm. We build the websites, automated WhatsApp bots, and AI search strategies that help legal, medical, and financial professionals get found and booked by more clients." }
 ];
 
 const FAQSchema = () => (
