@@ -10,7 +10,6 @@ import { callGeminiChat } from "./services/chatService";
 import { sendTaskNotification } from "./services/taskService";
 import { VERIFY_TOKEN, ADMIN_NUMBER, AI_MODEL } from "./config";
 
-// Export the unified Meta Webhook directly from the metaService file
 export { metaWebhook } from "./services/metaService";
 
 setGlobalOptions({
