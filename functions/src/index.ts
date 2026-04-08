@@ -1,4 +1,3 @@
-// functions/src/index.ts
 import { setGlobalOptions } from "firebase-functions/v2";
 import { onCall, HttpsError, onRequest } from "firebase-functions/v2/https";
 import { onDocumentWritten, onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
@@ -11,7 +10,7 @@ import { callGeminiChat } from "./services/chatService";
 import { sendTaskNotification } from "./services/taskService";
 import { VERIFY_TOKEN, ADMIN_NUMBER, AI_MODEL } from "./config";
 
-export { metaWebhook } from "./services/metaService";
+export { metaWebhook } from "./webhooks/metaWebhook";
 
 setGlobalOptions({
   region: "us-central1",
