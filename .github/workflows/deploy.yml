@@ -9,11 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          
+
       - name: Install & Build Frontend
         run: |
           npm install
@@ -27,7 +27,7 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_POSTHOG_KEY: ${{ secrets.VITE_POSTHOG_KEY }}
           VITE_POSTHOG_HOST: ${{ secrets.VITE_POSTHOG_HOST }}
-          
+
       - name: Prepare Backend
         run: |
           cd functions
@@ -36,9 +36,11 @@ jobs:
           echo "WHATSAPP_TOKEN=${{ secrets.WHATSAPP_TOKEN }}" >> .env
           echo "PHONE_NUMBER_ID=${{ secrets.PHONE_NUMBER_ID }}" >> .env
           echo "VERIFY_TOKEN=${{ secrets.VERIFY_TOKEN }}" >> .env
+          echo "META_PAGE_ACCESS_TOKEN=${{ secrets.META_PAGE_ACCESS_TOKEN }}" >> .env
+          echo "META_VERIFY_TOKEN=${{ secrets.META_VERIFY_TOKEN }}" >> .env
           npm install
           npm run build
-          
+
       - name: Deploy to Firebase Ecosystem
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
