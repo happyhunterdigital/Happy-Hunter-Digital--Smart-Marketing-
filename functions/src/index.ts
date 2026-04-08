@@ -5,12 +5,13 @@ import { onDocumentWritten, onDocumentCreated, onDocumentUpdated } from "firebas
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import * as admin from "firebase-admin";
 import { getFirestore, FieldValue, Timestamp } from "firebase-admin/firestore";
-
 import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit, getEmbedding } from "./services/auditService";
 import { sendWhatsAppText, sendWhatsAppDoc, sendAdminAlert } from "./services/whatsappService";
 import { callGeminiChat } from "./services/chatService";
 import { sendTaskNotification } from "./services/taskService";
 import { VERIFY_TOKEN, ADMIN_NUMBER, AI_MODEL } from "./config";
+
+export { metaWebhook } from "./services/metaService";
 
 setGlobalOptions({
   region: "us-central1",
@@ -48,14 +49,15 @@ export const performAudit = onCall(async (request) => {
 
     const websiteUrl = biz?.websiteUri || null;
     const detectedSchemas = websiteUrl ? await scrapeWebsiteSchema(websiteUrl) : [];
-    
-    // Dynamically injecting AI_MODEL to satisfy TS linter and keep config synced
-    const prompt = `You are Hunter AI powered by ${AI_MODEL}. Audit: ${businessName}. Context: ${JSON.stringify(biz)}. Schemas: ${detectedSchemas.join(',')}. Format JSON ONLY (no markdown wrappers): {"score": number, "summary": "string", "truths": ["string", "string", "string"]}`;
-    
+
+    const prompt = `You are Hunter AI powered by ${AI_MODEL}. Audit: ${businessName}.
+Context: ${JSON.stringify(biz)}. Schemas: ${detectedSchemas.join(',')}. Format JSON ONLY
+(no markdown wrappers): {"score": number, "summary": "string", "truths": ["string", "string", "string"]}`;
+
     const aiRes = await callGeminiAudit(prompt, G_KEY);
-    
+
     if (aiRes.error) throw new Error(`Google API Error: ${aiRes.error.message}`);
-    
+
     let textContent = aiRes?.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!textContent) throw new Error("AI core returned empty payload.");
 
@@ -70,7 +72,7 @@ export const performAudit = onCall(async (request) => {
     });
 
     sendAdminAlert(businessName, clientEmail, whatsapp, analysis.score).catch(err => {
-        console.error("Non-fatal WhatsApp alert error:", err.message);
+      console.error("Non-fatal WhatsApp alert error:", err.message);
     });
 
     return { success: true, ...analysis };
@@ -92,12 +94,16 @@ export const hunterChat = onCall(async (request) => {
   }
 
   try {
-    // Dynamically injecting AI_MODEL
-    const prompt = `You are Smart Marketing Chat for Happy Hunter Digital using ${AI_MODEL}. Use HTML tags, NO Markdown asterisks. Founder: Thabo Motsumi. Mission: Stop SA SMEs from being Ghosts to AI. Primary Tool: happyhunterdigital.com/audit. Contact: WhatsApp +27(0) 60 101 6673.`;
+    const prompt = `You are Smart Marketing Chat for Happy Hunter Digital using
+${AI_MODEL}. Use HTML tags, NO Markdown asterisks. Founder: Thabo Motsumi. Mission:
+Stop SA SMEs from being Ghosts to AI. Primary Tool: happyhunterdigital.com/audit. Contact:
+WhatsApp +27(0) 60 101 6673.`;
+
     const formattedHistory = history.map((m: any) => ({
       role: m.role === 'bot' ? 'model' : 'user',
       parts: [{ text: m.text }]
     }));
+
     formattedHistory.push({ role: 'user', parts: [{ text: message }] });
 
     const aiRes = await callGeminiChat(prompt, formattedHistory, G_KEY);
@@ -122,14 +128,17 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 
   if (req.method === 'POST') {
     const message = req.body.entry?.[0]?.changes?.[0]?.value?.messages?.[0];
+    
     if (message?.type === 'text') {
       const from = message.from;
       const G_KEY = process.env.GEMINI_API_KEY;
-      
+
       if (G_KEY) {
         const vectorValues = await getEmbedding(message.text.body.toLowerCase(), G_KEY);
         if (vectorValues && !vectorValues.error) {
-          const vectorQuery = await db.collection('verified_claims').findNearest('embedding_vector', FieldValue.vector(vectorValues), { limit: 1, distanceMeasure: 'COSINE' }).get();
+          const vectorQuery = await db.collection('verified_claims').findNearest('embedding_vector',
+            FieldValue.vector(vectorValues), { limit: 1, distanceMeasure: 'COSINE' }).get();
+            
           if (!vectorQuery.empty) {
             const data = vectorQuery.docs[0].data();
             if (data.category === 'guide') await sendWhatsAppDoc(from, 'gbp');
@@ -153,6 +162,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
   const yesterday = Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("leads").where("timestamp", ">", yesterday).get();
+  
   if (snapshot.size > 0) {
     await sendWhatsAppText(ADMIN_NUMBER, `DAILY REVENUE REPORT\n\nTotal New Leads: ${snapshot.size}`);
   }
@@ -164,9 +174,10 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
 export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
   const doc = event.data?.after.data();
   if (!doc || !doc.content) return;
+  
   const G_KEY = process.env.GEMINI_API_KEY;
   if (!G_KEY) return;
-  
+
   const vectorValues = await getEmbedding(doc.content, G_KEY);
   if (vectorValues && !vectorValues.error) {
     await event.data?.after.ref.update({ embedding_vector: FieldValue.vector(vectorValues) });
