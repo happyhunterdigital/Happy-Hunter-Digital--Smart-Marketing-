@@ -29,7 +29,7 @@ export const performAudit = onCall({
 
     const websiteUrl = biz?.websiteUri || null;
     
-    // FIX: Actually utilizing the imported scraping function
+    // Explicitly utilizing the imported scraping function to clear the linting error
     const detectedSchemas = websiteUrl ? await scrapeWebsiteSchema(websiteUrl) : [];
     const hasSchema = detectedSchemas.length > 0;
 
