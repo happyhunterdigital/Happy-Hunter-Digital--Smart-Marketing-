@@ -1,9 +1,8 @@
 import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 interface PricingTierProps {
-  phase: number;
+  phase: number | string;
   title: string;
   subtitle: string;
   target: string;
@@ -20,10 +19,15 @@ interface PricingTierProps {
 export const PricingTier: React.FC<PricingTierProps> = ({
   title, subtitle, target, description, priceStart, priceEnd, period, features, isPopular, highlightColor, icon
 }) => {
+  
+  // Create the dynamic WhatsApp message for the specific Tier
+  const waMessage = encodeURIComponent(`Hi Thabo, I am ready to invest in the ${title} package. Let's talk.`);
+  const waLink = `https://wa.me/27601016673?text=${waMessage}`;
+
   return (
     <div className={`p-8 rounded-3xl flex flex-col relative transition-all ${
-      isPopular 
-        ? `bg-gradient-to-br from-[#111827] to-[#0a0a0a] border-2 border-${highlightColor}/50 shadow-[0_0_40px_rgba(234,179,8,0.1)] transform lg:-translate-y-4 z-10 hover:border-${highlightColor}` 
+      isPopular
+        ? `bg-gradient-to-br from-[#111827] to-[#0a0a0a] border-2 border-${highlightColor}/50 shadow-[0_0_40px_rgba(234,179,8,0.1)] transform lg:-translate-y-4 z-10 hover:border-${highlightColor}`
         : `bg-[#0a0a0a] border border-gray-800 hover:border-${highlightColor}/30`
     }`}>
       {isPopular && (
@@ -31,15 +35,12 @@ export const PricingTier: React.FC<PricingTierProps> = ({
           Most Popular
         </div>
       )}
-
       <div className="mb-8">
         {icon && <div className={`mb-4 ${highlightColor === 'yellow-500' ? 'text-yellow-500' : 'text-white'}`}>{icon}</div>}
         <h4 className="text-2xl font-black text-white mb-1">{title}</h4>
         <p className={`text-${highlightColor} text-xs font-bold uppercase tracking-widest`}>{subtitle}</p>
       </div>
-
       <p className="text-sm text-gray-400 mb-8 pb-8 border-b border-gray-800">Best for: {target}</p>
-
       <div className="flex-grow space-y-4 mb-10">
         <p className="text-white text-sm font-medium">{description}</p>
         <ul className="space-y-3 text-sm text-gray-300">
@@ -51,7 +52,6 @@ export const PricingTier: React.FC<PricingTierProps> = ({
           ))}
         </ul>
       </div>
-
       <div className="mt-auto pt-6 border-t border-gray-800/50">
         <p className={`text-3xl font-black ${isPopular ? `text-${highlightColor}` : 'text-white'}`}>
           {priceStart} {priceEnd && <span className="text-lg text-gray-500 font-medium">to</span>} {priceEnd}
@@ -59,17 +59,18 @@ export const PricingTier: React.FC<PricingTierProps> = ({
         <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 mb-6 min-h-[14px]">
           {period || 'Once-Off Investment'}
         </p>
-        
-        <Link 
-          to="/audit" 
+        <a
+          href={waLink}
+          target="_blank"
+          rel="noreferrer"
           className={`w-full block text-center py-4 rounded-xl font-black uppercase tracking-widest transition-all ${
-            isPopular 
-              ? 'bg-yellow-500 text-black hover:bg-white shadow-lg' 
+            isPopular
+              ? 'bg-yellow-500 text-black hover:bg-white shadow-lg'
               : 'bg-gray-800 text-white hover:bg-yellow-500 hover:text-black'
           }`}
         >
-          Invest Now
-        </Link>
+          Invest
+        </a>
       </div>
     </div>
   );
