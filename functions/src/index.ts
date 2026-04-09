@@ -1,7 +1,14 @@
 import * as admin from "firebase-admin";
+import { setGlobalOptions } from "firebase-functions/v2";
 
-// Initialize Firebase Admin once at the top level
 admin.initializeApp();
+
+setGlobalOptions({
+  region: "us-central1",
+  memory: "512MiB",
+  timeoutSeconds: 300,
+  maxInstances: 10
+});
 
 // 1. Webhooks
 export { metaWebhook } from "./services/metaService";
@@ -13,5 +20,5 @@ export { hunterChat } from "./endpoints/chatEndpoint";
 export { submitServiceRequest } from "./endpoints/serviceRequestEndpoint";
 
 // 3. Database Triggers & Scheduled Cron Jobs
-export { compileEntitySchema } from "./endpoints/schemaEndpoint";
+export { processEntitySchema } from "./endpoints/schemaEndpoint";
 export { dailyRevenueReport, notifyNewTaskAssignment, notifyTaskUpdate } from "./endpoints/cronAndTasks";
