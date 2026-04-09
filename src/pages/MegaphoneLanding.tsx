@@ -1,18 +1,10 @@
-// src/pages/MegaphoneLanding.tsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, CheckCircle2, Volume2, ShieldCheck, ChevronDown, Database, BrainCircuit, Mail, MessageSquareCode, FileText, Mic, CalendarCheck, Magnet } from 'lucide-react';
 import { db, functions } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { SERVICES_DATA } from './CoreServices/CoreServices';
-import { PricingTier } from './CoreServices/PricingTier';
-
-const ICONS: Record<string, React.ReactNode> = {
-  Database: <Database size={32} />, BrainCircuit: <BrainCircuit size={32} />, Mail: <Mail size={32} />,
-  MessageSquareCode: <MessageSquareCode size={32} />, FileText: <FileText size={32} />, Mic: <Mic size={32} />,
-  CalendarCheck: <CalendarCheck size={32} />, Magnet: <Magnet size={32} />
-};
+import { SERVICES_DATA } from '../data/servicesData';
 
 const OnboardingForm = () => {
   const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
@@ -51,7 +43,7 @@ const OnboardingForm = () => {
             <li className="flex items-center gap-3 text-lg font-bold"><CheckCircle2 className="text-yellow-500" /> Eradicate the Ghost Effect</li>
           </ul>
         </div>
-        
+
         <div className="bg-[#111827] border border-gray-800 p-10 rounded-[2.5rem] shadow-2xl text-white relative min-h-[450px] flex flex-col justify-center">
           <div className="absolute top-0 left-0 w-full h-2 bg-yellow-500 rounded-t-[2.5rem]"></div>
           {submitted ? (
@@ -71,19 +63,25 @@ const OnboardingForm = () => {
               <p className="font-bold text-gray-400 mb-8 text-sm">Select your required protocol below to initialize your AI Entity Scanner.</p>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <input type="text" placeholder="Full Name" required className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all" onChange={e => setForm({...form, name: e.target.value})} />
+                
                 <div className="relative">
                   <select required defaultValue="" className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold transition-all appearance-none cursor-pointer" onChange={e => setForm({...form, service: e.target.value})}>
                     <option value="" disabled className="font-normal text-gray-500">Select Requested Architecture...</option>
                     {SERVICES_DATA.map(phase => (
                       <optgroup key={phase.phase} label={`Phase ${phase.phase}: ${phase.title}`}>
-                        {phase.tiers.map(tier => (<option key={tier.title} value={tier.title}>{tier.title}</option>))}
+                        {phase.tiers.map(tier => (
+                          <option key={tier.title} value={tier.title}>{tier.title}</option>
+                        ))}
                       </optgroup>
                     ))}
                   </select>
                   <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-yellow-500"><ChevronDown size={20} /></div>
                 </div>
+
                 <input type="text" placeholder="Website URL (e.g. www.yourbrand.com)" required className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all" onChange={e => setForm({...form, website: e.target.value})} />
+                
                 <input type="email" placeholder="Secure Email Address" required className="w-full bg-[#0a0a0a] text-white p-4 rounded-xl border border-gray-800 outline-none focus:border-yellow-500 font-bold placeholder:font-normal transition-all" onChange={e => setForm({...form, email: e.target.value})} />
+
                 <button type="submit" disabled={loading} className="w-full bg-yellow-500 text-black py-5 rounded-xl font-black uppercase tracking-widest text-sm hover:bg-white transition-colors mt-4 shadow-xl disabled:opacity-70 flex justify-center items-center gap-2">
                   {loading ? 'Transmitting Request...' : 'Request Service Protocol'} <Zap size={16} />
                 </button>
@@ -99,7 +97,6 @@ const OnboardingForm = () => {
 export const MegaphoneLanding: React.FC = () => {
   return (
     <div className="min-h-screen bg-yellow-500 font-sans animate-fade-in selection:bg-black selection:text-yellow-500">
-      {/* HERO SECTION */}
       <section className="relative pt-24 pb-24 md:pt-32 md:pb-32 px-6 overflow-hidden border-b-[16px] border-black">
         <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
           <svg className="w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
@@ -127,39 +124,6 @@ export const MegaphoneLanding: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* DYNAMIC SERVICES RENDER */}
-      <div className="bg-[#050505]">
-        {SERVICES_DATA.map((phase, idx) => (
-          <section key={phase.phase} className={`py-24 px-6 relative border-b border-gray-900 ${idx % 2 !== 0 ? 'bg-[#020202]' : ''}`}>
-            <div className="container mx-auto max-w-7xl">
-              <div className="mb-16 text-center">
-                <h2 className="text-sm font-black text-yellow-500 uppercase tracking-widest mb-2">Phase {phase.phase}</h2>
-                <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight">{phase.title}</h3>
-                <p className="text-gray-400 mt-4 max-w-2xl mx-auto">{phase.description}</p>
-              </div>
-              <div className="grid lg:grid-cols-3 gap-8 items-stretch">
-                {phase.tiers.map(tier => (
-                  <PricingTier 
-                    key={tier.title} 
-                    phase={phase.phase} 
-                    title={tier.title} 
-                    subtitle={tier.subtitle} 
-                    target={tier.target} 
-                    description={tier.description} 
-                    priceStart={tier.priceStart} 
-                    features={tier.features} 
-                    isPopular={tier.isPopular} 
-                    highlightColor={tier.isPopular ? "yellow-500" : "white"} 
-                    icon={ICONS[phase.iconType as keyof typeof ICONS] || ICONS.Database} 
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        ))}
-      </div>
-
       <OnboardingForm />
     </div>
   );
