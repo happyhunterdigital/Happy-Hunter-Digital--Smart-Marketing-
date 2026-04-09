@@ -6,75 +6,48 @@ import { CoreServicesForm } from './CoreServicesForm';
 
 export const SERVICES_DATA = [
   {
-    phase: 1, title: "Entity Architecture (Vibe Definition)", iconType: "Database",
-    description: "Stop being a 'ghost' to algorithms. We codify your brand into a lightning-fast 'Digital Passport' that AI search tools like ChatGPT explicitly trust.",
+    phase: 1, title: "AI-Ready Websites", iconType: "Database",
+    description: "Stop losing customers to outdated websites. We build lightning-fast, modern platforms that Google and AI assistants love to recommend.",
     tiers: [
-      { subtitle: "Basic", title: "Digital Front Door", priceStart: "R4,500 - R12,500", target: "Startups needing a verified footprint.", description: "A lightning-fast, 1-to-3 page professional site.", features: ["Hand-coded static node", "Sub-200ms TTFB guarantee", "Initial Digital Passport"] },
-      { subtitle: "Essential", title: "Smart Business Hub", priceStart: "R14,000 - R19,000", target: "Established SMEs.", description: "A comprehensive site built so AI tools correctly categorize and recommend your specific services.", features: ["5-10 hand-coded pages (SSR)", "LocalBusiness Schema", "Expert copywriting"], isPopular: true },
-      { subtitle: "Premium", title: "Premium Blueprint", priceStart: "R25,000 - R55,000+", target: "High-value firms.", description: "The ultimate company website with verified visual assets.", features: ["Deep architectural build", "Extensive JSON-LD mesh", "Professional photography"] }
+      { subtitle: "Essential", title: "The Market Entry", priceStart: "R3,950 - R6,500", target: "Startups & Solo-preneurs.", description: "The last basic website you will ever need to buy.", features: ["1-3 Professional Pages", "Ultra-Fast Loading Speeds", "AI Search Discoverable", "WhatsApp Chat Button"] },
+      { subtitle: "Comprehensive", title: "The Growth Hub", priceStart: "R12,500 - R18,500", target: "Growing businesses.", description: "Turn your website into an autonomous revenue employee.", features: ["5-10 Pages + Blog", "Full AI Search Optimization", "Smart Lead Capture Tools", "Automated WhatsApp Follow-ups"], isPopular: true },
+      { subtitle: "Premium", title: "The Enterprise Engine", priceStart: "R35,000 - R55,000+", target: "Established brands.", description: "Total digital dominance through intelligent automation.", features: ["Unlimited Custom Pages", "Omnichannel AI Sync", "Predictive Customer Analytics", "Dedicated Account Manager"] }
     ]
   },
   {
-    phase: 2, title: "AI-Powered Personalization", iconType: "BrainCircuit",
-    description: "Deep data integration for real-time recommendation engines and predictive analytics.",
+    phase: 2, title: "24/7 Digital Receptionists", iconType: "Mic",
+    description: "Never let a customer wait. Our AI agents answer questions, qualify leads, and book appointments around the clock.",
     tiers: [
-      { subtitle: "Basic", title: "Recommendation Engine", priceStart: "R4,500 - R25,000", target: "Standard API integrations.", description: "Real-time product or content suggestions based on browsing history.", features: ["Browsing history tracking", "From R950/mo management"] },
-      { subtitle: "Essential", title: "Dynamic Content", priceStart: "R12,000 - R180,000", target: "Mid-market e-commerce.", description: "AI that alters landing pages and CTAs for specific users in real-time.", features: ["Real-time user adaptation", "Agency-led implementation"], isPopular: true },
-      { subtitle: "Premium", title: "Predictive Analytics", priceStart: "Up to R20,000/mo", target: "Full-scale AI personalization.", description: "Forecasting customer churn or high-value segments.", features: ["Advanced forecasting models", "High-value segmenting"] }
+      { subtitle: "Starter", title: "Basic Web Chat", priceStart: "R450 - R950/mo", target: "Small teams.", description: "Instantly route customer questions to the right answers.", features: ["Smart FAQ Handling", "Ticket Routing", "Easy Website Integration"] },
+      { subtitle: "Business", title: "Smart Sales Chatbots", priceStart: "R1,800 - R4,500/mo", target: "High-traffic sites.", description: "AI that talks to your customers like a real sales rep.", features: ["AI-Powered Responses", "Instant Lead Qualification", "Automated Calendar Booking"], isPopular: true },
+      { subtitle: "Enterprise", title: "Omnichannel Support", priceStart: "R15,000+/mo", target: "Large operations.", description: "A unified AI team handling your Website, WhatsApp, and Socials.", features: ["Web + WhatsApp + Social", "Phone Receptionist Included", "Advanced Reporting Dashboard"] }
     ]
   },
   {
-    phase: 3, title: "Email Marketing (Vibe Scaling)", iconType: "Mail",
-    description: "Generative AI testing and automated lifecycle sequences designed to convert inside the inbox.",
+    phase: 3, title: "Automated WhatsApp Sales", iconType: "MessageSquareCode",
+    description: "Turn the app your customers already use every day into your most powerful and frictionless sales channel.",
     tiers: [
-      { subtitle: "Basic", title: "Specialist Management", priceStart: "R2,500 - R6,000/mo", target: "Lists up to 10,000 contacts.", description: "Freelancer-level email execution and campaign management.", features: ["AI Copy Optimization", "Subject Line Testing"] },
-      { subtitle: "Essential", title: "Lifecycle Automation", priceStart: "R9,500 - R15,000/mo", target: "Agency Retainers.", description: "Automated Welcome, Abandoned Cart, and Win-back sequences.", features: ["Full-funnel strategy", "Generative AI refinement"], isPopular: true },
-      { subtitle: "Premium", title: "Interactive Design", priceStart: "Custom Quoted", target: "Advanced E-commerce.", description: "Building in-email checkout or live polls.", features: ["Mini-website functionality", "In-email conversions"] }
+      { subtitle: "Essential", title: "Automated Setup", priceStart: "R4,500 - R6,500", target: "Local businesses.", description: "Get your business officially verified on the WhatsApp API.", features: ["Official API Integration", "Basic Auto-Replies", "Secure Lead Capture"] },
+      { subtitle: "Comprehensive", title: "Interactive Catalogs", priceStart: "R12,500 - R18,500", target: "E-commerce & Retail.", description: "Let customers browse and select products directly in chat.", features: ["Native WhatsApp Catalogs", "Interactive Menu Forms", "Automated Nurturing Flows"], isPopular: true },
+      { subtitle: "Premium", title: "In-Chat Payments", priceStart: "R35,000+", target: "High-volume sellers.", description: "Complete the entire transaction without leaving WhatsApp.", features: ["Direct Payment Gateways", "Advanced AI Sales Bots", "Frictionless Checkout Experience"] }
     ]
   },
   {
-    phase: 4, title: "WhatsApp Autonomous Agents", iconType: "MessageSquareCode",
-    description: "Never miss another lead. We Vibe-Code your brand's persona into AI assistants that answer questions and book appointments directly in WhatsApp 24/7.",
+    phase: 4, title: "Expert Authority Content", iconType: "FileText",
+    description: "High-quality, expertly crafted content that proves your absolute industry authority to both human readers and AI algorithms.",
     tiers: [
-      { subtitle: "Basic", title: "WhatsApp API Setup", priceStart: "R5,999 - R45,000", target: "Rule-based bots.", description: "Legal verification and technical integration with CRM/Shopify.", features: ["API Integration", "From R900/mo platform fee"] },
-      { subtitle: "Essential", title: "Interactive Chat Flows", priceStart: "R900 - R8,000/mo", target: "Monthly Platform maintenance.", description: "Building interactive forms and native catalogs inside the chat.", features: ["Native catalogs", "Interactive forms"], isPopular: true },
-      { subtitle: "Premium", title: "In-Chat Payments", priceStart: "R180k - R400k", target: "AI NLP bots.", description: "Connecting Stripe, PayFast, or Ozow so customers can buy directly in the chat.", features: ["In-chat transactions", "Price Driver: Logic complexity"] }
+      { subtitle: "Essential", title: "High-Ranking Articles", priceStart: "From R1.50/word", target: "Brands needing visibility.", description: "Well-researched blog posts designed to capture search traffic.", features: ["Search Engine Optimization", "Human-Led Editing", "Deep Industry Research"] },
+      { subtitle: "Comprehensive", title: "Automated Email Marketing", priceStart: "R4,500 - R7,500/mo", target: "Sales teams.", description: "Smart email sequences that nurture leads into paying customers.", features: ["Welcome Sequences", "Abandoned Cart Recovery", "Conversion Copywriting"], isPopular: true },
+      { subtitle: "Premium", title: "Strategic Whitepapers", priceStart: "R12,500+", target: "B2B & Enterprise.", description: "Deep-dive technical content that establishes ultimate authority.", features: ["Expert Authorship", "High-Level Strategy", "Custom Lead Magnet Design"] }
     ]
   },
   {
-    phase: 5, title: "Expert Authority Content", iconType: "FileText",
-    description: "We Vibe-Code your content strategy. We write high-quality articles that prove to both humans and AI that you are the absolute expert in your industry.",
+    phase: 5, title: "Direct Booking Engines", iconType: "CalendarCheck",
+    description: "Bypass expensive third-party platforms. Take direct bookings, manage your calendar, and keep 100% of your revenue.",
     tiers: [
-      { subtitle: "Basic", title: "SEO-Optimized Blogs", priceStart: "R3.00 / word", target: "Standard benchmark projects.", description: "1,500+ word blogs with AI research and human editing.", features: ["AI research scaffolding", "Human-led editing"] },
-      { subtitle: "Essential", title: "Specialized Writing", priceStart: "R5.00+ / word", target: "Legal, medical, or financial.", description: "Technical content requiring expert authorship.", features: ["Expert authorship", "E-E-A-T compliant"], isPopular: true },
-      { subtitle: "Premium", title: "Thought Leadership", priceStart: "R550 - R800+/hr", target: "Brand authority building.", description: "Opinion pieces and whitepapers for brand authority.", features: ["Senior/Expert writers", "High-level strategy"] }
-    ]
-  },
-  {
-    phase: 6, title: "24/7 Digital Receptionist", iconType: "Mic",
-    description: "Automated receptionists and real-time ticket resolution bots synced across your ecosystem.",
-    tiers: [
-      { subtitle: "Basic", title: "Web Chat Widgets", priceStart: "R3,500 - R8,000/mo", target: "Customer service bots.", description: "Basic AI support agents for real-time ticket resolution.", features: ["Real-time resolution", "Website integration"] },
-      { subtitle: "Essential", title: "AI Voice Agents", priceStart: "R5,000 - R20,000/mo", target: "Automated phone receptionists.", description: "Automated receptionists handling bookings and FAQs over the phone.", features: ["Voice synthesis", "Price Driver: Call Volume"], isPopular: true },
-      { subtitle: "Premium", title: "Omnichannel Support", priceStart: "R15k - R50k/mo", target: "Enterprise retainers.", description: "Syncing context across WhatsApp, Web, and Social Media.", features: ["Complex logic updates", "Price Driver: Integration Depth"] }
-    ]
-  },
-  {
-    phase: 7, title: "Direct Booking Engines", iconType: "CalendarCheck",
-    description: "Bypass high-commission OTAs for hospitality and professional services.",
-    tiers: [
-      { subtitle: "Basic", title: "Engine Integration", priceStart: "R1,600", target: "Local providers.", description: "Connecting the booking interface to the Property Management System (PMS).", features: ["PMS Integration", "Direct website bookings"] },
-      { subtitle: "Essential", title: "Channel Manager", priceStart: "R660 - R1,500+/mo", target: "Monthly Subscription.", description: "Synchronizing availability across Booking.com, Airbnb, and direct sites.", features: ["Cross-platform sync", "Prevents double-booking"], isPopular: true },
-      { subtitle: "Premium", title: "Dynamic Pricing", priceStart: "R12,980+", target: "Custom Enterprise Systems.", description: "AI modules that adjust rates based on demand.", features: ["Demand-based pricing", "Specialized directories"] }
-    ]
-  },
-  {
-    phase: 8, title: "Smart Customer Tools", iconType: "Magnet",
-    description: "Interactive tools that replace static PDF ebooks for exponentially higher conversion rates.",
-    tiers: [
-      { subtitle: "Basic", title: "Software-only (SaaS)", priceStart: "R350 - R900/mo", target: "Tool access only.", description: "Access to builder tools for calculators and quizzes.", features: ["Self-service generation", "Basic templates"] },
-      { subtitle: "Essential", title: "Interactive Tools", priceStart: "R9,950 Setup", target: "Once-off funnel creation.", description: "Tools providing instant, personalized results like loan calculators.", features: ["Personalized AI Reports", "High conversion rates"], isPopular: true },
-      { subtitle: "Premium", title: "Custom GPTs", priceStart: "R9,950 - R39,950/mo", target: "Monthly Lead Gen Packages.", description: "Specialized AI assistants offered as a value-add.", features: ["Custom AI Assistants", "Full-house acquisition"] }
+      { subtitle: "Essential", title: "Booking Integration", priceStart: "R950 - R1,500/mo", target: "Single locations.", description: "Seamlessly connect your website to your booking management system.", features: ["Property System Sync", "Direct Website Bookings", "Zero Commission Fees"] },
+      { subtitle: "Comprehensive", title: "Channel Manager", priceStart: "R1,500+/mo", target: "Multi-platform hosts.", description: "Sync your availability perfectly across Airbnb, Booking.com, and your site.", features: ["Cross-Platform Sync", "Double-Booking Prevention", "Centralized Dashboard"], isPopular: true },
+      { subtitle: "Premium", title: "Dynamic Pricing AI", priceStart: "R12,980+", target: "Large operators.", description: "Automatically adjust your rates based on market demand to maximize profit.", features: ["Demand-Based Rates", "Revenue Maximization", "Custom Pricing Rules"] }
     ]
   }
 ];
@@ -108,7 +81,6 @@ export const CoreServices: React.FC = () => {
             <Link to="/audit" className="inline-block bg-yellow-500 text-black px-10 py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-white transition-colors">Initialize Smart Business Scan</Link>
           </div>
 
-          {/* VERIFIED TRANSFORMATIONS TRUST SIGNAL */}
           <div className="p-6 bg-black/60 backdrop-blur-md border border-gray-800 rounded-2xl max-w-3xl mx-auto text-left shadow-2xl">
             <h4 className="text-yellow-500 text-[10px] font-black uppercase tracking-widest mb-4">Verified Transformations</h4>
             <div className="grid md:grid-cols-2 gap-6">
