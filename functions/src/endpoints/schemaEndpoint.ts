@@ -2,7 +2,7 @@ import { onDocumentWritten } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 
-export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
+export const processEntitySchema = onDocumentWritten("brand_identity/{docId}", async (event) => {
   console.log("CMS Data change detected. Recompiling Entity Schema...");
   try {
     const db = admin.firestore();
