@@ -12,7 +12,7 @@ export const sendPrivateReply = async (commentId: string, replyText: string, pla
     const url = `https://graph.facebook.com/v19.0/me/messages`;
     const payload = {
       recipient: { comment_id: commentId },
-      message: { text: replyText.replace(/\*/g, '') } // STRICT MARKDOWN REMOVAL FOR META API
+      message: { text: replyText.replace(/\*/g, '') } 
     };
     await axios.post(url, payload, {
       headers: {
@@ -20,7 +20,7 @@ export const sendPrivateReply = async (commentId: string, replyText: string, pla
         'Authorization': `Bearer ${META_PAGE_ACCESS_TOKEN}`
       }
     });
-    console.log(`[${platform}] Private Agentic Reply sent successfully to comment: ${commentId}`);
+    console.log(`[${platform}] Private Agentic Reply sent successfully to comment node: ${commentId}`);
   } catch (error: any) {
     console.error(`[${platform}] Error sending private reply:`, error.response?.data || error.message);
   }
@@ -36,6 +36,7 @@ export const sendPublicReply = async (commentId: string, messageText: string) =>
         'Authorization': `Bearer ${META_PAGE_ACCESS_TOKEN}`
       }
     });
+    console.log(`Public confirmation dispatched to comment node: ${commentId}`);
   } catch (error: any) {
     console.error("Error posting public reply:", error.response?.data || error.message);
   }
@@ -43,21 +44,23 @@ export const sendPublicReply = async (commentId: string, messageText: string) =>
 
 const processAndReply = async (commentId: string, userMessage: string, platform: "facebook" | "instagram") => {
   const G_KEY = process.env.GEMINI_API_KEY;
-  if (!G_KEY) return;
-
+  if (!G_KEY) {
+    console.error(`[${platform}] GEMINI_API_KEY is missing. Cannot generate AI response.`);
+    return;
+  }
   try {
-    const systemPrompt = `You are Smart Marketing Chat for Happy Hunter Digital using ${AI_MODEL}. 
-    Use plain text. NEVER USE ASTERISKS OR BOLDING. Keep it to 2 sentences max.
-    Mission: Stop SA SMEs from being Ghosts to AI. Tool: happyhunterdigital.com/audit. Contact: +27(0) 60 101 6673.
-    You are replying directly to a user's comment via a private DM. Be highly conversational.`;
+    console.log(`[${platform}] Processing comment ID: ${commentId}. User said: "${userMessage}"`);
+    const systemPrompt = `You are Smart Marketing Chat for Happy Hunter Digital using ${AI_MODEL}. Use plain text, NO Markdown asterisks, NO HTML tags. Founder: Thabo Motsumi. Mission: Stop SA SMEs from being Ghosts to AI. Primary Tool: happyhunterdigital.com/audit. Contact: WhatsApp +27(0) 60 101 6673. You are replying directly to a user's comment on a ${platform} post via a private DM. Keep it very short, friendly, and helpful.`;
 
-    const history = [{ role: 'user', parts: [{ text: `User commented on ${platform}: ${userMessage}` }] }];
+    const history = [
+      { role: 'user', parts: [{ text: `User commented on ${platform}: ${userMessage}` }] }
+    ];
     
     const aiRes = await callGeminiChat(systemPrompt, history, G_KEY);
     if (aiRes.error) throw new Error(aiRes.error.message);
     
-    let replyText = aiRes?.candidates?.[0]?.content?.parts?.[0]?.text;
-    const finalMessage = replyText ? replyText.replace(/\*/g, '').trim() : "Thanks for connecting! Run your free AI Audit at happyhunterdigital.com/audit.";
+    const replyText = aiRes?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const finalMessage = replyText ? replyText.replace(/\*/g, '').trim() : "Thanks for connecting! How can we help you dominate AI search today?";
     
     await sendPrivateReply(commentId, finalMessage, platform);
   } catch (error: any) {
@@ -67,9 +70,15 @@ const processAndReply = async (commentId: string, userMessage: string, platform:
 
 export const metaWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET') {
-    if (req.query['hub.mode'] === 'subscribe' && req.query['hub.verify_token'] === META_VERIFY_TOKEN) {
-      res.status(200).send(req.query['hub.challenge']);
+    const mode = req.query['hub.mode'];
+    const token = req.query['hub.verify_token'];
+    const challenge = req.query['hub.challenge'];
+
+    if (mode === 'subscribe' && token === META_VERIFY_TOKEN) {
+      console.log("Webhook verified successfully by Meta.");
+      res.status(200).send(challenge);
     } else {
+      console.error("Webhook verification failed. Token mismatch.");
       res.status(403).send('Verification failed');
     }
     return;
@@ -77,24 +86,32 @@ export const metaWebhook = onRequest(async (req, res) => {
 
   if (req.method === 'POST') {
     const body = req.body;
+    console.log("INCOMING META WEBHOOK PAYLOAD:", JSON.stringify(body, null, 2));
+
     if (body.object === 'page' || body.object === 'instagram') {
       const entries = body.entry || [];
       for (const entry of entries) {
         const changes = entry.changes || [];
         for (const change of changes) {
-          // FB Logic
           if (body.object === 'page' && change.field === 'feed' && change.value?.item === 'comment' && change.value?.verb === 'add') {
-            if (change.value.from?.id === entry.id) continue;
+            if (change.value.from?.id === entry.id) {
+              console.log("Ignored comment made by the Page itself.");
+              continue;
+            }
             await processAndReply(change.value.comment_id, change.value.message, "facebook");
           }
-          // IG Logic
           if (body.object === 'instagram' && change.field === 'comments' && change.value?.id) {
-            if (change.value.from?.id === entry.id) continue;
+            if (change.value.from?.id === entry.id) {
+              console.log("Ignored comment made by the IG Account itself.");
+              continue;
+            }
             await processAndReply(change.value.id, change.value.text, "instagram");
           }
         }
       }
     }
     res.status(200).send("EVENT_RECEIVED");
+  } else {
+    res.status(404).send("Not Found");
   }
 });
