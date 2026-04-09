@@ -56,8 +56,8 @@ export const PricingTier: React.FC<PricingTierProps> = ({
         <p className={`text-3xl font-black ${isPopular ? `text-${highlightColor}` : 'text-white'}`}>
           {priceStart} {priceEnd && <span className="text-lg text-gray-500 font-medium">to</span>} {priceEnd}
         </p>
-        <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 mb-6">
-          {period ? `for the period of ${period}` : 'Once-Off Investment'}
+        <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 mb-6 min-h-[14px]">
+          {period || 'Once-Off Investment'}
         </p>
         
         <Link 
