@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Zap, CheckCircle2, Volume2, ShieldCheck, ChevronDown } from 'lucide-react';
+import { ArrowRight, Zap, CheckCircle2, Volume2, ShieldCheck, ChevronDown, Database, BrainCircuit } from 'lucide-react';
 import { db, functions } from '../firebaseConfig';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { SERVICES_DATA } from '../data/servicesData';
+import { SERVICES_DATA, MASTER_TIERS, STANDALONE_SERVICES } from '../data/servicesData';
+import { PricingTier } from './CoreServices/PricingTier';
+
+const ICONS: Record<string, React.ReactNode> = {
+  Database: <Database size={32} />, 
+  BrainCircuit: <BrainCircuit size={32} />, 
+  ShieldCheck: <ShieldCheck size={32} />
+};
 
 const OnboardingForm = () => {
   const [form, setForm] = useState({ name: '', website: '', service: '', email: '' });
@@ -97,6 +104,7 @@ const OnboardingForm = () => {
 export const MegaphoneLanding: React.FC = () => {
   return (
     <div className="min-h-screen bg-yellow-500 font-sans animate-fade-in selection:bg-black selection:text-yellow-500">
+      {/* HERO */}
       <section className="relative pt-24 pb-24 md:pt-32 md:pb-32 px-6 overflow-hidden border-b-[16px] border-black">
         <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
           <svg className="w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
@@ -124,6 +132,49 @@ export const MegaphoneLanding: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* RENDER NEW MASTER TIERS (DARK MODE) */}
+      <div className="bg-[#020202]">
+        {MASTER_TIERS.map((phase) => (
+          <section key={phase.title} className="py-24 px-6 relative border-b border-gray-900">
+            <div className="container mx-auto max-w-7xl">
+              <div className="mb-16 text-center">
+                <h2 className="text-sm font-black text-yellow-500 uppercase tracking-widest mb-2">The Complete Ecosystem</h2>
+                <h3 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tight">{phase.title}</h3>
+                <p className="text-gray-400 mt-4 max-w-2xl mx-auto">{phase.description}</p>
+              </div>
+              <div className="grid lg:grid-cols-3 gap-8 items-stretch">
+                {phase.tiers.map(tier => (
+                  <PricingTier key={tier.title} phase={phase.phase} title={tier.title} subtitle={tier.subtitle} target={tier.target} description={tier.description} priceStart={tier.priceStart} period={tier.period} features={tier.features} isPopular={tier.isPopular} highlightColor={tier.isPopular ? "yellow-500" : "white"} icon={ICONS[phase.iconType as keyof typeof ICONS] || ICONS.ShieldCheck} />
+                ))}
+              </div>
+            </div>
+          </section>
+        ))}
+      </div>
+
+      {/* STANDALONE & GBP SERVICES GRID (DARK MODE) */}
+      <section className="py-24 px-6 relative bg-[#0a0a0a]">
+        <div className="container mx-auto max-w-7xl">
+          <div className="mb-16 text-center">
+            <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight">Standalone & Growth Services</h2>
+            <p className="text-gray-400 mt-4 max-w-2xl mx-auto">Targeted upgrades, Google Business Profile setups, and monthly AEO retainers.</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {STANDALONE_SERVICES.map((item, i) => (
+              <div key={i} className="bg-[#050505] border border-gray-800 p-6 rounded-2xl hover:border-yellow-500/50 transition-colors flex flex-col">
+                <h4 className="text-lg font-black text-white mb-2">{item.title}</h4>
+                <p className="text-sm text-gray-400 mb-6 flex-grow">{item.desc}</p>
+                <p className="text-xl font-black text-yellow-500 mb-6">{item.price}</p>
+                <a href={`https://wa.me/27601016673?text=${encodeURIComponent(`Hi Thabo, I am ready to invest in the ${item.title} service.`)}`} target="_blank" rel="noreferrer" className="w-full block text-center py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all bg-gray-800 text-white hover:bg-yellow-500 hover:text-black mt-auto">
+                  Invest
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <OnboardingForm />
     </div>
   );
