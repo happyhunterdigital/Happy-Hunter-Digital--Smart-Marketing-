@@ -1,7 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
-import axios from "axios";
-import * as cheerio from "cheerio";
 import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit } from "../services/auditService";
 import { sendAdminAlert } from "../services/whatsappService";
 import { AI_MODEL } from "../config";
@@ -30,40 +28,12 @@ export const performAudit = onCall({
     }
 
     const websiteUrl = biz?.websiteUri || null;
-    let detectedSchemas: string[] = [];
-    let hasSchema = false;
+    
+    // FIX: Actually utilizing the imported scraping function
+    const detectedSchemas = websiteUrl ? await scrapeWebsiteSchema(websiteUrl) : [];
+    const hasSchema = detectedSchemas.length > 0;
 
-    if (websiteUrl) {
-      try {
-        const webRes = await axios.get(websiteUrl, {
-          timeout: 6000,
-          headers: { "User-Agent": "Mozilla/5.0" }
-        });
-        const $ = cheerio.load(webRes.data);
-        $('script[type="application/ld+json"]').each((_, element) => {
-          hasSchema = true;
-          try {
-            const jsonData = JSON.parse($(element).html() || "{}");
-            const extractType = (obj: any) => {
-              if (!obj) return;
-              if (Array.isArray(obj)) {
-                obj.forEach(extractType);
-              } else if (typeof obj === 'object') {
-                if (obj['@type']) detectedSchemas.push(obj['@type']);
-                if (obj['@graph']) extractType(obj['@graph']);
-              }
-            };
-            extractType(jsonData);
-          } catch(e) { }
-        });
-        detectedSchemas = [...new Set(detectedSchemas)];
-        if (detectedSchemas.length === 0 && hasSchema) detectedSchemas = ["Valid Schema (Unknown Type)"];
-      } catch (err) {
-        console.log("Web scrape failed or timed out for:", websiteUrl);
-      }
-    }
-
-    const schemaString = detectedSchemas.length > 0 ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
+    const schemaString = hasSchema ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
     const bizNameStr = biz?.displayName?.text || "NONE FOUND";
     const context = !biz ? `GHOST ENTITY: No Google Maps data found for "${businessName}". No Website verified. ${schemaString}` : `
       - User Searched For: "${businessName}"
