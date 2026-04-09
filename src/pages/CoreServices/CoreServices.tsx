@@ -18,9 +18,9 @@ export const SERVICES_DATA = [
     phase: 2, title: "24/7 Digital Receptionists", iconType: "Mic",
     description: "Never let a customer wait. Our AI agents answer questions, qualify leads, and book appointments around the clock.",
     tiers: [
-      { subtitle: "Starter", title: "Basic Web Chat", priceStart: "R450 - R950/mo", target: "Small teams.", description: "Instantly route customer questions to the right answers.", features: ["Smart FAQ Handling", "Ticket Routing", "Easy Website Integration"] },
-      { subtitle: "Business", title: "Smart Sales Chatbots", priceStart: "R1,800 - R4,500/mo", target: "High-traffic sites.", description: "AI that talks to your customers like a real sales rep.", features: ["AI-Powered Responses", "Instant Lead Qualification", "Automated Calendar Booking"], isPopular: true },
-      { subtitle: "Enterprise", title: "Omnichannel Support", priceStart: "R15,000+/mo", target: "Large operations.", description: "A unified AI team handling your Website, WhatsApp, and Socials.", features: ["Web + WhatsApp + Social", "Phone Receptionist Included", "Advanced Reporting Dashboard"] }
+      { subtitle: "Starter", title: "Basic Web Chat", priceStart: "R450 - R950", period: "Monthly", target: "Small teams.", description: "Instantly route customer questions to the right answers.", features: ["Smart FAQ Handling", "Ticket Routing", "Easy Website Integration"] },
+      { subtitle: "Business", title: "Smart Sales Chatbots", priceStart: "R1,800 - R4,500", period: "Monthly", target: "High-traffic sites.", description: "AI that talks to your customers like a real sales rep.", features: ["AI-Powered Responses", "Instant Lead Qualification", "Automated Calendar Booking"], isPopular: true },
+      { subtitle: "Enterprise", title: "Omnichannel Support", priceStart: "R15,000+", period: "Monthly", target: "Large operations.", description: "A unified AI team handling your Website, WhatsApp, and Socials.", features: ["Web + WhatsApp + Social", "Phone Receptionist Included", "Advanced Reporting Dashboard"] }
     ]
   },
   {
@@ -37,7 +37,7 @@ export const SERVICES_DATA = [
     description: "High-quality, expertly crafted content that proves your absolute industry authority to both human readers and AI algorithms.",
     tiers: [
       { subtitle: "Essential", title: "High-Ranking Articles", priceStart: "From R1.50/word", target: "Brands needing visibility.", description: "Well-researched blog posts designed to capture search traffic.", features: ["Search Engine Optimization", "Human-Led Editing", "Deep Industry Research"] },
-      { subtitle: "Comprehensive", title: "Automated Email Marketing", priceStart: "R4,500 - R7,500/mo", target: "Sales teams.", description: "Smart email sequences that nurture leads into paying customers.", features: ["Welcome Sequences", "Abandoned Cart Recovery", "Conversion Copywriting"], isPopular: true },
+      { subtitle: "Comprehensive", title: "Automated Email Marketing", priceStart: "R4,500 - R7,500", period: "Monthly", target: "Sales teams.", description: "Smart email sequences that nurture leads into paying customers.", features: ["Welcome Sequences", "Abandoned Cart Recovery", "Conversion Copywriting"], isPopular: true },
       { subtitle: "Premium", title: "Strategic Whitepapers", priceStart: "R12,500+", target: "B2B & Enterprise.", description: "Deep-dive technical content that establishes ultimate authority.", features: ["Expert Authorship", "High-Level Strategy", "Custom Lead Magnet Design"] }
     ]
   },
@@ -45,11 +45,21 @@ export const SERVICES_DATA = [
     phase: 5, title: "Direct Booking Engines", iconType: "CalendarCheck",
     description: "Bypass expensive third-party platforms. Take direct bookings, manage your calendar, and keep 100% of your revenue.",
     tiers: [
-      { subtitle: "Essential", title: "Booking Integration", priceStart: "R950 - R1,500/mo", target: "Single locations.", description: "Seamlessly connect your website to your booking management system.", features: ["Property System Sync", "Direct Website Bookings", "Zero Commission Fees"] },
-      { subtitle: "Comprehensive", title: "Channel Manager", priceStart: "R1,500+/mo", target: "Multi-platform hosts.", description: "Sync your availability perfectly across Airbnb, Booking.com, and your site.", features: ["Cross-Platform Sync", "Double-Booking Prevention", "Centralized Dashboard"], isPopular: true },
+      { subtitle: "Essential", title: "Booking Integration", priceStart: "R950 - R1,500", period: "Monthly", target: "Single locations.", description: "Seamlessly connect your website to your booking management system.", features: ["Property System Sync", "Direct Website Bookings", "Zero Commission Fees"] },
+      { subtitle: "Comprehensive", title: "Channel Manager", priceStart: "R1,500+", period: "Monthly Subscription", target: "Multi-platform hosts.", description: "Sync your availability perfectly across Airbnb, Booking.com, and your site.", features: ["Cross-Platform Sync", "Double-Booking Prevention", "Centralized Dashboard"], isPopular: true },
       { subtitle: "Premium", title: "Dynamic Pricing AI", priceStart: "R12,980+", target: "Large operators.", description: "Automatically adjust your rates based on market demand to maximize profit.", features: ["Demand-Based Rates", "Revenue Maximization", "Custom Pricing Rules"] }
     ]
   }
+];
+
+const STANDALONE_SERVICES = [
+  { title: "Additional Pages", price: "From R750 / page", desc: "Expand your AI-Ready digital footprint." },
+  { title: "E-commerce Add-on", price: "From R4,500", desc: "Full online store integration and product cataloging." },
+  { title: "Booking System", price: "From R2,500", desc: "Native calendar and scheduling integration." },
+  { title: "SEO Blogs", price: "From R1.50 / word", desc: "High-ranking, AI-optimized authority content." },
+  { title: "Technical Writing", price: "From R3.00 / word", desc: "Expert-level industry documentation." },
+  { title: "Whitepapers & Strategy", price: "From R5,500", desc: "Deep-dive lead magnets and strategic blueprints." },
+  { title: "Custom GPT / AI Agent", price: "From R9,950", desc: "Bespoke AI assistants trained on your proprietary data." }
 ];
 
 const ICONS: Record<string, React.ReactNode> = {
@@ -116,6 +126,7 @@ export const CoreServices: React.FC = () => {
                   target={tier.target}
                   description={tier.description}
                   priceStart={tier.priceStart}
+                  period={tier.period}
                   features={tier.features}
                   isPopular={tier.isPopular}
                   highlightColor={tier.isPopular ? "yellow-500" : "white"}
@@ -126,6 +137,28 @@ export const CoreServices: React.FC = () => {
           </div>
         </section>
       ))}
+
+      {/* STANDALONE SERVICES SECTION */}
+      <section className="py-24 px-6 relative border-b border-gray-900 bg-[#050505]">
+        <div className="container mx-auto max-w-7xl">
+          <div className="mb-16 text-center">
+            <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight">Standalone Services</h2>
+            <p className="text-gray-400 mt-4 max-w-2xl mx-auto">Targeted upgrades to scale your digital entity infrastructure.</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {STANDALONE_SERVICES.map((item, i) => (
+              <div key={i} className="bg-[#0a0a0a] border border-gray-800 p-6 rounded-2xl hover:border-yellow-500/50 transition-colors flex flex-col">
+                <h4 className="text-lg font-black text-white mb-2">{item.title}</h4>
+                <p className="text-sm text-gray-400 mb-6 flex-grow">{item.desc}</p>
+                <p className="text-xl font-black text-yellow-500 mb-6">{item.price}</p>
+                <Link to="/audit" className="w-full block text-center py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all bg-gray-800 text-white hover:bg-yellow-500 hover:text-black mt-auto">
+                  Invest Now
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <CoreServicesForm />
     </div>
