@@ -1,8 +1,10 @@
 import * as admin from "firebase-admin";
 import { setGlobalOptions } from "firebase-functions/v2";
 
+// Initialize Firebase Admin once at the top level
 admin.initializeApp();
 
+// Configure Global Options for all Cloud Functions
 setGlobalOptions({
   region: "us-central1",
   memory: "512MiB",
