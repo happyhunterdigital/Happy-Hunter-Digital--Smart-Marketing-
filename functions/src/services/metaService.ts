@@ -1,6 +1,6 @@
 import { onRequest } from "firebase-functions/v2/https";
 import axios from "axios";
-import { META_VERIFY_TOKEN, META_PAGE_ACCESS_TOKEN, AI_MODEL } from "../config";
+import { META_VERIFY_TOKEN, META_PAGE_ACCESS_TOKEN, AI_MODEL, GEMINI_API_KEY } from "../config";
 import { callGeminiChat } from "./chatService";
 
 export const sendPrivateReply = async (commentId: string, replyText: string, platform: "facebook" | "instagram") => {
@@ -20,7 +20,7 @@ export const sendPrivateReply = async (commentId: string, replyText: string, pla
         'Authorization': `Bearer ${META_PAGE_ACCESS_TOKEN}`
       }
     });
-    console.log(`[${platform}] Private Agentic Reply sent successfully to comment node: ${commentId}`);
+    console.log(`[${platform}] Private Agentic Reply sent successfully to node: ${commentId}`);
   } catch (error: any) {
     console.error(`[${platform}] Error sending private reply:`, error.response?.data || error.message);
   }
@@ -43,8 +43,7 @@ export const sendPublicReply = async (commentId: string, messageText: string) =>
 };
 
 const processAndReply = async (commentId: string, userMessage: string, platform: "facebook" | "instagram") => {
-  const G_KEY = process.env.GEMINI_API_KEY;
-  if (!G_KEY) {
+  if (!GEMINI_API_KEY) {
     console.error(`[${platform}] GEMINI_API_KEY is missing. Cannot generate AI response.`);
     return;
   }
@@ -56,7 +55,7 @@ const processAndReply = async (commentId: string, userMessage: string, platform:
       { role: 'user', parts: [{ text: `User commented on ${platform}: ${userMessage}` }] }
     ];
     
-    const aiRes = await callGeminiChat(systemPrompt, history, G_KEY);
+    const aiRes = await callGeminiChat(systemPrompt, history, GEMINI_API_KEY);
     if (aiRes.error) throw new Error(aiRes.error.message);
     
     const replyText = aiRes?.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -93,18 +92,26 @@ export const metaWebhook = onRequest(async (req, res) => {
       for (const entry of entries) {
         const changes = entry.changes || [];
         for (const change of changes) {
+          
+          // 1. FB Comments
           if (body.object === 'page' && change.field === 'feed' && change.value?.item === 'comment' && change.value?.verb === 'add') {
-            if (change.value.from?.id === entry.id) {
-              console.log("Ignored comment made by the Page itself.");
-              continue;
-            }
+            if (change.value.from?.id === entry.id) continue;
             await processAndReply(change.value.comment_id, change.value.message, "facebook");
           }
-          if (body.object === 'instagram' && change.field === 'comments' && change.value?.id) {
-            if (change.value.from?.id === entry.id) {
-              console.log("Ignored comment made by the IG Account itself.");
-              continue;
+
+          // 2. FB Reactions (Likes, Loves, etc.)
+          if (body.object === 'page' && change.field === 'feed' && change.value?.item === 'reaction' && change.value?.verb === 'add') {
+            if (change.value.from?.id === entry.id) continue;
+            // The Graph API allows private replies to specific objects. We use post_id or comment_id based on the reaction target.
+            const targetId = change.value.comment_id || change.value.post_id;
+            if (targetId) {
+              await sendPrivateReply(targetId, "Thanks for the reaction! Run your free AI visibility audit at happyhunterdigital.com/audit to see if your business is AI-ready.", "facebook");
             }
+          }
+
+          // 3. IG Comments
+          if (body.object === 'instagram' && change.field === 'comments' && change.value?.id) {
+            if (change.value.from?.id === entry.id) continue;
             await processAndReply(change.value.id, change.value.text, "instagram");
           }
         }
