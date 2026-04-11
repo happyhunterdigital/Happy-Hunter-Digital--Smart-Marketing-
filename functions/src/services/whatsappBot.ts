@@ -1,9 +1,11 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import axios from "axios";
-import { VERIFY_TOKEN, ADMIN_NUMBER, AI_MODEL, PHONE_NUMBER_ID, WHATSAPP_TOKEN } from "../config";
+import { VERIFY_TOKEN, ADMIN_NUMBER, AI_MODEL, PHONE_NUMBER_ID, WHATSAPP_TOKEN, GEMINI_API_KEY } from "../config";
 import { callGeminiChat } from "./chatService";
 import { FieldValue } from "firebase-admin/firestore";
+import { getEmbedding } from "./auditService";
+import { sendWhatsAppDoc } from "./whatsappService";
 
 export const whatsappWebhook = onRequest(async (req, res) => {
   if (req.method === 'GET') {
@@ -49,7 +51,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         let botResponse = "";
         let mediaUrl = null;
 
-        // Check if it's an exact keyword match in Firestore
         if (!snapshot.empty) {
           const data = snapshot.docs[0].data();
           
@@ -71,6 +72,10 @@ export const whatsappWebhook = onRequest(async (req, res) => {
             botResponse = `🚀 *Welcome to the Smart Marketing Tribe!* 🚀\n\nWe are excited to have you.\n${data.content}\n\nIntroduce yourself once you're in!`;
           } else if (data.category === 'blog') {
             botResponse = `💡 *Insight Snippet:* ${data.snippet}\n\nRead the full article here: ${data.url}`;
+          } else if (data.category === 'guide') {
+            await sendWhatsAppDoc(from, 'gbp');
+            res.status(200).send('EVENT_RECEIVED');
+            return;
           } else {
             botResponse = `✅ *Official Info:* ${data.content || data.verified_answer}`;
           }
@@ -78,8 +83,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
         } 
         // 3. IF NO EXACT MATCH, ROUTE TO GEMINI AI
         else {
-          const G_KEY = process.env.GEMINI_API_KEY;
-          if (G_KEY) {
+          if (GEMINI_API_KEY) {
             try {
               const sessionRef = db.collection('whatsapp_sessions').doc(from);
               const sessionDoc = await sessionRef.get();
@@ -100,7 +104,7 @@ export const whatsappWebhook = onRequest(async (req, res) => {
               }));
               formattedHistory.push({ role: 'user', parts: [{ text: userText }] });
 
-              const aiRes = await callGeminiChat(systemPrompt, formattedHistory, G_KEY);
+              const aiRes = await callGeminiChat(systemPrompt, formattedHistory, GEMINI_API_KEY);
               if (aiRes.error) throw new Error(aiRes.error.message);
               
               const replyText = aiRes?.candidates?.[0]?.content?.parts?.[0]?.text;
