@@ -2,7 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit } from "../services/auditService";
 import { sendAdminAlert } from "../services/whatsappService";
-import { AI_MODEL } from "../config";
+import { AI_MODEL, GEMINI_API_KEY, PLACES_API_KEY } from "../config";
 import { FieldValue } from "firebase-admin/firestore";
 
 export const performAudit = onCall({
@@ -12,23 +12,20 @@ export const performAudit = onCall({
   timeoutSeconds: 300
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
-  const G_KEY = process.env.GEMINI_API_KEY;
-  const P_KEY = process.env.PLACES_API_KEY;
 
   if (!businessName || !location || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
-  if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
+  if (!GEMINI_API_KEY || !PLACES_API_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
 
   try {
-    let pData = await getPlacesData(`${businessName} in ${location}`, P_KEY);
+    let pData = await getPlacesData(`${businessName} in ${location}`, PLACES_API_KEY);
     let biz = pData?.places?.[0] || null;
 
     if (!biz) {
-      pData = await getPlacesData(businessName, P_KEY);
+      pData = await getPlacesData(businessName, PLACES_API_KEY);
       biz = pData?.places?.[0] || null;
     }
 
     const websiteUrl = biz?.websiteUri || null;
-    
     const detectedSchemas = websiteUrl ? await scrapeWebsiteSchema(websiteUrl) : [];
     const hasSchema = detectedSchemas.length > 0;
 
@@ -43,7 +40,7 @@ export const performAudit = onCall({
 
     const prompt = `You are Hunter AI powered by ${AI_MODEL}. Audit: ${businessName}. Context: ${context}. SCORING RUBRIC (0-100): Baseline 30. Verified Maps Entity (Names Match Exactly): +20. Rating >= 4.0: +15. Schema Markup Detected (true): +25. Ghost Entity OR No Schema: Deduct 30. If hijacked, set their total score to 0. INSTRUCTIONS FOR 'truths' ARRAY: Truth 1: State if they are Verified, a Ghost, or if a Traffic Hijack occurred. Truth 2: Mention their Website status. Truth 3: Explicitly list the AI Schema Markup found. Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "string", "string"]}`;
 
-    const aiRes = await callGeminiAudit(prompt, G_KEY);
+    const aiRes = await callGeminiAudit(prompt, GEMINI_API_KEY);
     if (aiRes.error) throw new Error(aiRes.error.message);
     
     let textContent = aiRes?.candidates?.[0]?.content?.parts?.[0]?.text;
