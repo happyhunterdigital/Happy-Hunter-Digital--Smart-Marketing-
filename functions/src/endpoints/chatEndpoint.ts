@@ -1,19 +1,17 @@
 import { onCall } from "firebase-functions/v2/https";
 import { callGeminiChat } from "../services/chatService";
-import { AI_MODEL } from "../config";
+import { AI_MODEL, GEMINI_API_KEY } from "../config";
 
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
 }, async (request) => {
   const { message, history } = request.data;
-  const G_KEY = process.env.GEMINI_API_KEY;
 
-  if (!message || !G_KEY) {
+  if (!message || !GEMINI_API_KEY) {
     return { reply: "Connection offline. Missing parameters." };
   }
 
-  // Explicitly utilizing the AI_MODEL variable to satisfy TypeScript compiler
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital using ${AI_MODEL}.
   YOUR KNOWLEDGE BASE:
   - Founder & Head Strategist: Thabo Motsumi.
@@ -35,7 +33,7 @@ export const hunterChat = onCall({
     })) : [];
     formattedHistory.push({ role: 'user', parts: [{ text: message }] });
 
-    const aiRes = await callGeminiChat(SYSTEM_PROMPT, formattedHistory, G_KEY);
+    const aiRes = await callGeminiChat(SYSTEM_PROMPT, formattedHistory, GEMINI_API_KEY);
     if (aiRes.error) throw new Error(aiRes.error.message);
     
     const replyText = aiRes?.candidates?.[0]?.content?.parts?.[0]?.text;
