@@ -10,6 +10,7 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
   const db = admin.firestore();
   const yesterday = Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("leads").where("timestamp", ">", yesterday).get();
+  
   if (snapshot.size > 0) {
     await sendWhatsAppText(ADMIN_NUMBER, `DAILY REVENUE REPORT\n\nTotal New Leads: ${snapshot.size}`);
   }
@@ -17,13 +18,37 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
 
 export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskId}", async (event) => {
   const task = event.data?.data();
-  if (task?.assigneePhone) await sendTaskNotification(task.assigneePhone, `HQ DIRECTIVE ASSIGNED: ${task.title}`).catch(()=>{});
+  if (task?.assigneePhone) {
+    await sendTaskNotification(task.assigneePhone, `HQ DIRECTIVE ASSIGNED: ${task.title}`).catch(()=>{});
+  }
 });
 
 export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", async (event) => {
   const newValue = event.data?.after.data();
   const prevValue = event.data?.before.data();
+  
   if (newValue && prevValue && newValue.status !== prevValue.status && newValue.assigneePhone) {
     await sendTaskNotification(newValue.assigneePhone, `STATUS UPDATE: ${newValue.title} is now ${newValue.status}`).catch(()=>{});
   }
+});
+
+export const cleanseVisualAudits = onSchedule("every day 00:00", async () => {
+  const bucket = admin.storage().bucket();
+  const [files] = await bucket.getFiles({ prefix: "visual_audits/" });
+
+  const now = Date.now();
+  const twentyFourHours = 24 * 60 * 60 * 1000;
+  let deletedCount = 0;
+
+  for (const file of files) {
+    const [metadata] = await file.getMetadata();
+    const creationTime = new Date(metadata.timeCreated).getTime();
+
+    if (now - creationTime > twentyFourHours) {
+      await file.delete();
+      deletedCount++;
+    }
+  }
+
+  console.log(`Defensive Protocol Executed: Cleansed ${deletedCount} expired audit images.`);
 });
