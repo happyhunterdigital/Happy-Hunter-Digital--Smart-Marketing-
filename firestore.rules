@@ -2,29 +2,27 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // HELPER: Global Admin Oversight
+    // DEFENSE NODE 1: Cryptographic Admin Verification
     function isAdmin() {
-      return request.auth != null && (
-        request.auth.token.email.lower() == 'motsumitl@happyhunterdigital.com' ||
-        request.auth.token.email.lower() == 'happyhunterdigital@gmail.com' ||
-        request.auth.token.email.lower() == 'motsumitl@gmail.com'
-      );
+      return request.auth != null && request.auth.token.admin == true;
     }
 
-    // 1. MULTI-TENANT WORKSPACES
+    // DEFENSE NODE 2: App Check Verification
+    function isVerifiedApp() {
+      return request.token.app != null;
+    }
+
     match /workspaces/{workspaceId} {
       allow read, write: if request.auth != null;
     }
 
-    // 2. WORKSPACE TASK NODES
     match /workspace_tasks/{taskId} {
       allow read, write: if request.auth != null;
     }
 
-    // 3. VISUAL AUDITS (Public trigger, restricted read)
     match /visual_audits/{docId} {
-      allow create: if true;
-      allow read: if true; 
+      allow create: if isVerifiedApp();
+      allow read: if isVerifiedApp(); 
     }
 
     match /users/{userId} {
@@ -32,17 +30,17 @@ service cloud.firestore {
     }
 
     match /leads/{leadId} {
-      allow create: if true;
+      allow create: if isVerifiedApp();
       allow read, update, delete: if request.auth != null;
     }
 
     match /prospects/{prospectId} {
-      allow create: if true;
+      allow create: if isVerifiedApp();
       allow read, update, delete: if request.auth != null;
     }
 
     match /mail/{mailId} {
-      allow create: if true;
+      allow create: if isVerifiedApp();
       allow read, update, delete: if false;
     }
 
