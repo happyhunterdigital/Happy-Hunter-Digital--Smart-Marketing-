@@ -4,11 +4,11 @@ service firebase.storage {
     
     // Secure Visual Audits Folder
     match /visual_audits/{fileName} {
-      // Anyone can read the image so the AI and your UI can see it
       allow read: if true;
       
-      // Only allow image uploads under 5 Megabytes
-      allow write: if request.resource.size < 5 * 1024 * 1024 
+      // Uploads restricted to Verified Apps AND strict size/type constraints
+      allow write: if request.token.app != null 
+                   && request.resource.size < 5 * 1024 * 1024 
                    && request.resource.contentType.matches('image/.*');
     }
     
