@@ -1,15 +1,14 @@
 import * as admin from "firebase-admin";
 import { setGlobalOptions } from "firebase-functions/v2";
 
-// Initialize Firebase Admin once at the top level
 admin.initializeApp();
 
-// Configure Global Options for all Cloud Functions
 setGlobalOptions({
   region: "us-central1",
   memory: "512MiB",
-  timeoutSeconds: 300,
-  maxInstances: 10
+  timeoutSeconds: 60,
+  maxInstances: 10,
+  concurrency: 80
 });
 
 // 1. Webhooks
@@ -20,7 +19,13 @@ export { whatsappWebhook } from "./services/whatsappBot";
 export { performAudit } from "./endpoints/auditEndpoint";
 export { hunterChat } from "./endpoints/chatEndpoint";
 export { submitServiceRequest } from "./endpoints/serviceRequestEndpoint";
+export { grantAdminAccess } from "./endpoints/adminManager";
 
 // 3. Database Triggers & Scheduled Cron Jobs
 export { processEntitySchema } from "./endpoints/schemaEndpoint";
-export { dailyRevenueReport, notifyNewTaskAssignment, notifyTaskUpdate } from "./endpoints/cronAndTasks";
+export { 
+  dailyRevenueReport, 
+  notifyNewTaskAssignment, 
+  notifyTaskUpdate, 
+  cleanseVisualAudits 
+} from "./endpoints/cronAndTasks";
