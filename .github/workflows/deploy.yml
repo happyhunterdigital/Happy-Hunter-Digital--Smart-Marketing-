@@ -47,14 +47,14 @@ jobs:
       - name: Deploy Complete Architecture to Firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "CRITICAL ERROR: FIREBASE_SERVICE_ACCOUNT secret is missing or empty."
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT_KEY" ]; then
+            echo "CRITICAL ERROR: FIREBASE_SERVICE_ACCOUNT_KEY secret is missing or empty."
             exit 1
           fi
 
-          echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/firebase-sa.json
+          echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > /tmp/firebase-sa.json
           
           firebase deploy \
             --project happy-hunter-systems \
