@@ -46,11 +46,17 @@ jobs:
 
       - name: Deploy Complete Architecture to Firebase
         env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: |
-          if [ -n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" ]; then
-            echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-sa.json
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "CRITICAL ERROR: FIREBASE_SERVICE_ACCOUNT secret is missing or empty."
+            exit 1
           fi
-          # Explicitly targeting the project ID prevents the "missing site name" assertion error
-          firebase deploy --project happy-hunter-systems --non-interactive --force
+
+          echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/firebase-sa.json
+          
+          firebase deploy \
+            --project happy-hunter-systems \
+            --non-interactive \
+            --force
