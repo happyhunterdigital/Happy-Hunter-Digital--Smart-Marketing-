@@ -52,4 +52,5 @@ jobs:
           if [ -n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" ]; then
             echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/firebase-sa.json
           fi
-          firebase deploy --non-interactive --force
+          # Explicitly targeting the project ID prevents the "missing site name" assertion error
+          firebase deploy --project happy-hunter-systems --non-interactive --force
