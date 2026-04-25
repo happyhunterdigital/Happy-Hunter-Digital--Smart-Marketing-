@@ -1,8 +1,8 @@
 name: System - Generate Lock Files
-on: workflow_dispatch # This allows you to trigger it manually with a button
+on: workflow_dispatch
 
 permissions:
-  contents: write # Gives the agent permission to save files to your repo
+  contents: write
 
 jobs:
   generate-locks:
@@ -27,7 +27,7 @@ jobs:
           git config --global user.name 'Happy Hunter Bot'
           git config --global user.email 'bot@happyhunterdigital.com'
           git add package-lock.json functions/package-lock.json
-          # Only commit if there are changes
+          
           if [[ -n $(git status -s) ]]; then
             git commit -m "chore: Auto-generate lockfiles for system stability"
             git push
