@@ -1,7 +1,7 @@
 // src/components/Layout/Header.tsx
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, PlusSquare, Lock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, Search } from 'lucide-react';
 
 interface HeaderProps {
   menuOpen: boolean;
@@ -9,67 +9,114 @@ interface HeaderProps {
   isLandingPage: boolean;
 }
 
+const NAV_ITEMS = [
+  { label: 'Work', href: '/earned-media' },
+  { label: 'Services', href: '/services' },
+  { label: 'Insights', href: '/smart-news' },
+  { label: 'About', href: '/founders' },
+];
+
 export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLandingPage }) => {
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (isLandingPage) return null;
 
   return (
     <>
-      <div className="fixed top-16 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
-        <nav className="w-full max-w-7xl bg-black/60 backdrop-blur-xl border border-white/10 rounded-full px-5 py-3 flex justify-between items-center shadow-2xl pointer-events-auto">
-          <Link to="/" className="flex items-center gap-2 pl-1 shrink-0">
-            <img 
-              src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" 
-              alt="Logo" 
-              className="w-9 h-9 rounded-full border border-yellow-500/30 object-cover" 
-            />
-            <span className="font-handwriting text-2xl md:text-3xl tracking-wide lowercase whitespace-nowrap text-white">
-              happy<span className="text-yellow-500">hunter</span>digital
-            </span>
-          </Link>
-
-          <div className="hidden lg:flex items-center gap-4 xl:gap-6 px-4">
-            <Link to="/architecture" className="text-[9px] font-black uppercase tracking-[0.1em] text-yellow-500 hover:text-white transition-all whitespace-nowrap">Architecture</Link>
-            <Link to="/services" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Services</Link>
-            <Link to="/earned-media" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Earned Media</Link>
-            <Link to="/live" className="text-[9px] font-black uppercase tracking-[0.15em] text-red-500 hover:text-white transition-all whitespace-nowrap flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>LIVE
-            </Link>
-            <Link to="/smart-news" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Smart News</Link>
-            <Link to="/founders" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-300 hover:text-yellow-500 transition-all whitespace-nowrap">Founders</Link>
-            <Link to="/workspace" className="text-[9px] font-black uppercase tracking-[0.15em] text-yellow-500 hover:text-white transition-all whitespace-nowrap flex items-center gap-1"><PlusSquare size={10}/> Workspace</Link>
-            <Link to="/portal" className="text-[9px] font-black uppercase tracking-[0.15em] text-gray-500 hover:text-yellow-500 transition-all whitespace-nowrap flex items-center gap-1"><Lock size={10}/> Portal</Link>
-          </div>
-
-          <Link to="/audit" className="hidden lg:block bg-yellow-500 text-black px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white transition-all shadow-xl whitespace-nowrap shrink-0">
-            Start Audit
-          </Link>
-
-          <button className="lg:hidden text-white pr-2 shrink-0" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <X size={24}/> : <Menu size={24}/>}
-          </button>
-        </nav>
-      </div>
-
-      {menuOpen && (
-        <div className="fixed top-32 left-4 right-4 z-[100] bg-black/95 backdrop-blur-2xl border border-gray-800 rounded-3xl p-8 shadow-2xl animate-fade-in lg:hidden">
-          <div className="flex flex-col space-y-6 text-center font-bold uppercase tracking-widest text-sm">
-            <Link to="/architecture" className="text-yellow-500 hover:text-white">Architecture</Link>
-            <Link to="/services" className="hover:text-yellow-500 text-white">Services</Link>
-            <Link to="/live" className="text-red-500 hover:text-white flex items-center justify-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> LIVE BROADCAST
-            </Link>
-            <Link to="/earned-media" className="hover:text-yellow-500 text-white">Earned Media</Link>
-            <Link to="/smart-news" className="hover:text-yellow-500 text-white">Smart News</Link>
-            <Link to="/founders" className="hover:text-yellow-500 text-white">Founders</Link>
-            <Link to="/workspace" className="text-yellow-500 flex items-center justify-center gap-2 hover:text-white"><PlusSquare size={14}/> HQ Workspace</Link>
-            <Link to="/faq" className="hover:text-yellow-500 text-white">FAQ</Link>
-            <Link to="/portal" className="text-gray-500 flex items-center justify-center gap-2 hover:text-yellow-500"><Lock size={14}/> Client Portal</Link>
-            <div className="pt-4 border-t border-white/10">
-              <Link to="/audit" className="inline-block bg-yellow-500 text-black px-8 py-3 rounded-full text-xs font-black w-full uppercase">Start Audit</Link>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled
+            ? 'py-3 bg-[#0a0a0f]/80 backdrop-blur-2xl border-b border-white/5'
+            : 'py-6 bg-transparent'
+        }`}
+      >
+        <div className="container mx-auto px-6 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <span className="text-black font-black text-lg">H</span>
             </div>
+            <div className="hidden sm:block">
+              <span className="text-white font-bold text-lg tracking-tight">happyhunter</span>
+              <span className="text-amber-500 font-bold text-lg">digital</span>
+            </div>
+          </Link>
+
+          <nav className="hidden lg:flex items-center gap-1">
+            {NAV_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  location.pathname === item.href
+                    ? 'text-amber-400 bg-amber-500/10'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <Link
+              to="/audit"
+              className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all hover:scale-[1.02]"
+            >
+              <Search size={16} />
+              Free Audit
+            </Link>
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="lg:hidden p-2 rounded-xl bg-white/5 text-white hover:bg-white/10 transition-colors"
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
         </div>
-      )}
+      </header>
+
+      <div
+        className={`fixed inset-0 z-40 bg-[#0a0a0f]/95 backdrop-blur-2xl transition-all duration-500 lg:hidden ${
+          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <nav className="flex flex-col items-center justify-center h-full gap-6">
+          {NAV_ITEMS.map((item, i) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              onClick={() => setMenuOpen(false)}
+              className="text-3xl font-black text-white hover:text-amber-400 transition-colors"
+              style={{
+                transitionDelay: menuOpen ? `${i * 50}ms` : '0ms',
+                transform: menuOpen ? 'translateY(0)' : 'translateY(20px)',
+                opacity: menuOpen ? 1 : 0
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            to="/audit"
+            onClick={() => setMenuOpen(false)}
+            className="mt-4 px-8 py-4 bg-amber-500 text-black font-black text-lg rounded-2xl"
+            style={{
+              transitionDelay: menuOpen ? '200ms' : '0ms',
+              transform: menuOpen ? 'translateY(0)' : 'translateY(20px)',
+              opacity: menuOpen ? 1 : 0
+            }}
+          >
+            Start Free Audit
+          </Link>
+        </nav>
+      </div>
     </>
   );
 };
