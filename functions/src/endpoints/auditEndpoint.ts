@@ -19,7 +19,6 @@ export const performAudit = onCall({
   try {
     const db = admin.firestore();
     
-    // Securely capture the lead even without the AI processing
     await db.collection("leads").add({ 
       businessName, 
       email: clientEmail, 
@@ -29,10 +28,8 @@ export const performAudit = onCall({
       timestamp: FieldValue.serverTimestamp() 
     });
     
-    // Alert the admin via WhatsApp
     sendAdminAlert(businessName, clientEmail, whatsapp, 0).catch(() => {});
 
-    // Return a static fallback payload to satisfy the frontend UI without calling Gemini
     return { 
       success: true, 
       score: 0,
