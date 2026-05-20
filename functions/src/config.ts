@@ -1,11 +1,9 @@
 // functions/src/config.ts
-// DUMMY VARIABLES TO SATISFY TYPESCRIPT COMPILER (KEY REMAINS DEAD)
 export const AI_MODEL = "";
 export const EMBEDDING_MODEL = "";
 export const SAFETY_SETTINGS: any[] = [];
 export const GEMINI_API_KEY = "";
 
-// ACTIVE VARIABLES
 export const PLACES_API_KEY = process.env.PLACES_API_KEY || "";
 export const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || process.env.META_SYSTEM_TOKEN || "";
 export const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
