@@ -24,7 +24,6 @@ export const sendPrivateReply = async (commentId: string, replyText: string, pla
 
 const processAndReply = async (commentId: string, userMessage: string, platform: "facebook" | "instagram") => {
   try {
-    // GEMINI REMOVED. Static fallback applied.
     const finalMessage = "Thanks for connecting! Run your free visibility audit at happyhunterdigital.com/audit to see if your business is AI-ready.";
     await sendPrivateReply(commentId, finalMessage, platform);
   } catch (error: any) {
