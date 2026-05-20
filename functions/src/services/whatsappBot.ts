@@ -87,7 +87,6 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           mediaUrl = data.media_url;
         } 
         else {
-          // GEMINI COMPLETELY REMOVED. Static fallback applied.
           botResponse = "Thanks for your message! Our AI is currently offline for security upgrades. Please visit https://happyhunterdigital.com or hold for a human agent.";
         }
 
