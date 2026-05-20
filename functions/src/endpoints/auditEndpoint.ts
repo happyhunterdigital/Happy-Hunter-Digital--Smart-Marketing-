@@ -1,8 +1,7 @@
+// functions/src/endpoints/auditEndpoint.ts
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
-import { getPlacesData, scrapeWebsiteSchema, callGeminiAudit } from "../services/auditService";
 import { sendAdminAlert } from "../services/whatsappService";
-import { AI_MODEL, GEMINI_API_KEY, PLACES_API_KEY } from "../config";
 import { FieldValue } from "firebase-admin/firestore";
 
 export const performAudit = onCall({
@@ -13,64 +12,41 @@ export const performAudit = onCall({
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
 
-  if (!businessName || !location || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
-  if (!GEMINI_API_KEY || !PLACES_API_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
+  if (!businessName || !location || !clientEmail) {
+    throw new HttpsError("invalid-argument", "Missing required fields.");
+  }
 
   try {
-    let pData = await getPlacesData(`${businessName} in ${location}`, PLACES_API_KEY);
-    let biz = pData?.places?.[0] || null;
-
-    if (!biz) {
-      pData = await getPlacesData(businessName, PLACES_API_KEY);
-      biz = pData?.places?.[0] || null;
-    }
-
-    const websiteUrl = biz?.websiteUri || null;
-    const detectedSchemas = websiteUrl ? await scrapeWebsiteSchema(websiteUrl) : [];
-    const hasSchema = detectedSchemas.length > 0;
-
-    const schemaString = hasSchema ? `Detected JSON-LD Schemas: ${detectedSchemas.join(", ")}` : "No Schema Markup detected.";
-    const bizNameStr = biz?.displayName?.text || "NONE FOUND";
-    const context = !biz ? `GHOST ENTITY: No Google Maps data found for "${businessName}". No Website verified. ${schemaString}` : `
-      - User Searched For: "${businessName}"
-      - Google Maps Returned: "${bizNameStr}"
-      - Maps Rating: ${biz.rating || 0} (${biz.userRatingCount || 0} reviews)
-      - Website Linked in Maps: ${websiteUrl || 'NONE LINKED'}
-      - ${schemaString}`;
-
-    const prompt = `You are Hunter AI powered by ${AI_MODEL}. Audit: ${businessName}. Context: ${context}. SCORING RUBRIC (0-100): Baseline 30. Verified Maps Entity (Names Match Exactly): +20. Rating >= 4.0: +15. Schema Markup Detected (true): +25. Ghost Entity OR No Schema: Deduct 30. If hijacked, set their total score to 0. INSTRUCTIONS FOR 'truths' ARRAY: Truth 1: State if they are Verified, a Ghost, or if a Traffic Hijack occurred. Truth 2: Mention their Website status. Truth 3: Explicitly list the AI Schema Markup found. Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "string", "string"]}`;
-
-    const aiRes = await callGeminiAudit(prompt, GEMINI_API_KEY);
-    if (aiRes.error) throw new Error(aiRes.error.message);
+    const db = admin.firestore();
     
-    let textContent = aiRes?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!textContent) throw new Error("AI core returned empty payload.");
+    // Securely capture the lead even without the AI processing
+    await db.collection("leads").add({ 
+      businessName, 
+      email: clientEmail, 
+      whatsapp: whatsapp || null, 
+      score: 0, 
+      status: "manual_audit_required",
+      timestamp: FieldValue.serverTimestamp() 
+    });
     
-    textContent = textContent.replace(/```json/gi, "").replace(/```/g, "").trim();
-    const analysis = JSON.parse(textContent);
+    // Alert the admin via WhatsApp
+    sendAdminAlert(businessName, clientEmail, whatsapp, 0).catch(() => {});
 
-    const isHijacked = (biz && analysis.score === 0);
-    const telemetry = {
-      mapsStatus: !biz ? "GHOST (NOT FOUND)" : isHijacked ? "HIJACKED (COMPETITOR FOUND)" : "VERIFIED",
-      website: websiteUrl || "None Linked",
-      schema: hasSchema,
-      schemasDetected: detectedSchemas
+    // Return a static fallback payload to satisfy the frontend UI without calling Gemini
+    return { 
+      success: true, 
+      score: 0,
+      summary: "The AI Core is currently offline for security upgrades. Your entity data has been securely captured. A human architect will perform a manual forensic scan and contact you shortly.",
+      truths: ["Automated scan bypassed.", "Manual review initiated.", "Contacting via secure channels."],
+      telemetry: {
+        mapsStatus: "PENDING",
+        website: "PENDING",
+        schema: false,
+        schemasDetected: []
+      }
     };
 
-    const db = admin.firestore();
-    await db.collection("leads").add({ businessName, email: clientEmail, whatsapp: whatsapp || null, score: analysis.score, timestamp: FieldValue.serverTimestamp() });
-    
-    const isGoodScore = analysis.score >= 70;
-    const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
-      <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'};">Digital Survival Score: ${analysis.score}/100</h1><p>${analysis.summary}</p></div>`;
-
-    await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml } });
-    
-    sendAdminAlert(businessName, clientEmail, whatsapp, analysis.score).catch(() => {});
-
-    return { success: true, ...analysis, telemetry };
-
   } catch (e: any) {
-    throw new HttpsError("internal", `Neural Handshake Interrupted. ${e.message}`);
+    throw new HttpsError("internal", `System Interrupted. ${e.message}`);
   }
 });
