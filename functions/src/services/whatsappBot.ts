@@ -7,7 +7,9 @@ import { callDeepSeekChat } from "./chatService";
 import { FieldValue } from "firebase-admin/firestore";
 import { sendWhatsAppDoc } from "./whatsappService";
 
-export const whatsappWebhook = onRequest(async (req, res) => {
+export const whatsappWebhook = onRequest({
+  secrets: ["DEEPSEEK_API_KEY"] // EXPLICIT RUNTIME SECRET PERMISSION
+}, async (req, res) => {
   if (req.method === 'GET') {
     if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
       res.status(200).send(req.query['hub.challenge']);
