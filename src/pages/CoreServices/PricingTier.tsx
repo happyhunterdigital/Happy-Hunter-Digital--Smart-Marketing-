@@ -1,5 +1,8 @@
-import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+// src/pages/CoreServices/PricingTier.tsx
+import React, { useState } from 'react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../../firebaseConfig';
 
 interface PricingTierProps {
   phase: number | string;
@@ -17,12 +20,28 @@ interface PricingTierProps {
 }
 
 export const PricingTier: React.FC<PricingTierProps> = ({
-  title, subtitle, target, description, priceStart, priceEnd, period, features, isPopular, highlightColor, icon
+  phase, title, subtitle, target, description, priceStart, priceEnd, period, features, isPopular, highlightColor, icon
 }) => {
-  
-  // Create the dynamic WhatsApp message for the specific Tier
-  const waMessage = encodeURIComponent(`Hi Thabo, I am ready to invest in the ${title} package. Let's talk.`);
-  const waLink = `https://wa.me/27601016673?text=${waMessage}`;
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+      const response = await createCheckoutSession({
+        serviceName: `${title} (Phase ${phase})`,
+        priceString: priceStart
+      }) as any;
+
+      if (response.data?.url) {
+        window.location.href = response.data.url; // Redirect directly to Stripe Secure Checkout
+      }
+    } catch (error) {
+      console.error("Payment Gateway Error:", error);
+      alert("Secure payment gateway is currently initializing. Please try again in a moment or contact us on WhatsApp.");
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={`p-8 rounded-3xl flex flex-col relative transition-all ${
@@ -59,18 +78,17 @@ export const PricingTier: React.FC<PricingTierProps> = ({
         <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-1 mb-6 min-h-[14px]">
           {period || 'Once-Off Investment'}
         </p>
-        <a
-          href={waLink}
-          target="_blank"
-          rel="noreferrer"
-          className={`w-full block text-center py-4 rounded-xl font-black uppercase tracking-widest transition-all ${
+        <button
+          onClick={handleCheckout}
+          disabled={loading}
+          className={`w-full flex justify-center items-center gap-2 py-4 rounded-xl font-black uppercase tracking-widest transition-all ${
             isPopular
-              ? 'bg-yellow-500 text-black hover:bg-white shadow-lg'
-              : 'bg-gray-800 text-white hover:bg-yellow-500 hover:text-black'
+              ? 'bg-yellow-500 text-black hover:bg-white shadow-lg disabled:bg-yellow-500/50'
+              : 'bg-gray-800 text-white hover:bg-yellow-500 hover:text-black disabled:bg-gray-800/50'
           }`}
         >
-          Invest
-        </a>
+          {loading ? <Loader2 className="animate-spin" size={18} /> : 'Invest Securely'}
+        </button>
       </div>
     </div>
   );
