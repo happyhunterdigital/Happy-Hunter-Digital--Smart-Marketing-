@@ -2,7 +2,8 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import axios from "axios";
-import { VERIFY_TOKEN, ADMIN_NUMBER, PHONE_NUMBER_ID, WHATSAPP_TOKEN } from "../config";
+import { VERIFY_TOKEN, ADMIN_NUMBER, PHONE_NUMBER_ID, WHATSAPP_TOKEN, DEEPSEEK_API_KEY } from "../config";
+import { callDeepSeekChat } from "./chatService";
 import { FieldValue } from "firebase-admin/firestore";
 import { sendWhatsAppDoc } from "./whatsappService";
 
@@ -87,7 +88,42 @@ export const whatsappWebhook = onRequest(async (req, res) => {
           mediaUrl = data.media_url;
         } 
         else {
-          botResponse = "Thanks for your message! Our AI is currently offline for security upgrades. Please visit https://happyhunterdigital.com or hold for a human agent.";
+          if (DEEPSEEK_API_KEY) {
+            try {
+              const sessionRef = db.collection('whatsapp_sessions').doc(from);
+              const sessionDoc = await sessionRef.get();
+              let history = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
+
+              const systemPrompt = `You are the Official AI Assistant for Happy Hunter Digital.
+Keep answers short, professional, and friendly. NO markdown asterisks.
+SERVICES:
+- Tier 1 Essential (R9,950/mo): 3-5 page site, GBP Optimization, Q&A Seeding, Basic WhatsApp Bot.
+- Tier 2 Comprehensive (R19,950/mo): AEO Content, Advanced JSON-LD, 3 WhatsApp flows.
+- Tier 3 Premium (R39,950/mo): Deep build, AI Voice Agents, Predictive Analytics.
+STANDALONE: GBP Setup & Verification (R2,950), AI Visibility Audit (R3,950), WhatsApp API Setup (R7,950).
+If users want an audit, tell them to visit happyhunterdigital.com/audit.`;
+
+              const formattedHistory = history.map((m: any) => ({
+                role: m.role === 'bot' ? 'model' : 'user',
+                parts: [{ text: m.text }]
+              }));
+              formattedHistory.push({ role: 'user', parts: [{ text: userText }] });
+
+              const aiRes = await callDeepSeekChat(systemPrompt, formattedHistory);
+              botResponse = aiRes.reply.replace(/\*/g, '').trim();
+
+              history.push({ role: 'user', text: userText });
+              history.push({ role: 'bot', text: botResponse });
+              if (history.length > 10) history = history.slice(history.length - 10);
+
+              await sessionRef.set({ history, lastUpdated: FieldValue.serverTimestamp() });
+            } catch (err) {
+              console.error("WA LLM Error:", err);
+              botResponse = "The automated response system is temporarily offline.";
+            }
+          } else {
+            botResponse = "Neural link offline. Please visit happyhunterdigital.com.";
+          }
         }
 
         if (mediaUrl) {
