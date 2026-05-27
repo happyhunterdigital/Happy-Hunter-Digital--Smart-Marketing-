@@ -9,6 +9,7 @@ import { FieldValue } from "firebase-admin/firestore";
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
+  secrets: ["DEEPSEEK_API_KEY"], // EXPLICIT RUNTIME SECRET PERMISSION
   maxInstances: 10,
   timeoutSeconds: 300
 }, async (request) => {
