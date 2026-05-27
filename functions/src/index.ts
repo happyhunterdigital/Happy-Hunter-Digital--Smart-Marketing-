@@ -21,7 +21,6 @@ export { performAudit } from "./endpoints/auditEndpoint";
 export { hunterChat } from "./endpoints/chatEndpoint";
 export { submitServiceRequest } from "./endpoints/serviceRequestEndpoint";
 export { grantAdminAccess } from "./endpoints/adminManager";
-export { createCheckoutSession } from "./endpoints/paymentEndpoint";
 
 // 3. Database Triggers & Scheduled Cron Jobs
 export { processEntitySchema } from "./endpoints/schemaEndpoint";
