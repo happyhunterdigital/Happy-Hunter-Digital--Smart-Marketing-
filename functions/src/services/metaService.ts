@@ -66,7 +66,9 @@ const processAndReply = async (commentId: string, userMessage: string, platform:
   }
 };
 
-export const metaWebhook = onRequest(async (req, res) => {
+export const metaWebhook = onRequest({
+  secrets: ["GEMINI_API_KEY"] // EXPLICIT RUNTIME SECRET PERMISSION FOR SOCIAL
+}, async (req, res) => {
   if (req.method === 'GET') {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
