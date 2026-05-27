@@ -1,5 +1,5 @@
 // functions/src/services/geminiSocialService.ts
-import { AI_MODEL, SAFETY_SETTINGS, GEMINI_API_KEY } from "../config";
+import { AI_MODEL, SAFETY_SETTINGS } from "../config";
 
 export const callGeminiForSocial = async (prompt: string, history: any[], gKey: string) => {
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${gKey}`, {
