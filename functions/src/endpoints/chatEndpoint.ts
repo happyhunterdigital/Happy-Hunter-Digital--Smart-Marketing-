@@ -6,6 +6,7 @@ import { AI_MODEL, DEEPSEEK_API_KEY } from "../config";
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
+  secrets: ["DEEPSEEK_API_KEY"], // EXPLICIT RUNTIME SECRET PERMISSION
 }, async (request) => {
   const { message, history } = request.data;
 
