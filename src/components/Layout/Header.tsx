@@ -12,7 +12,7 @@ interface HeaderProps {
 const NAV_ITEMS = [
   { label: 'Work', href: '/earned-media' },
   { label: 'Services', href: '/services' },
-  { label: 'Insights', href: '/smart-news' },
+  { label: 'Smart News', href: '/smart-news' }, // UPDATED FROM INSIGHTS
   { label: 'About', href: '/founders' },
 ];
 
@@ -67,14 +67,16 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
           <div className="flex items-center gap-3">
             <Link
               to="/audit"
-              className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all hover:scale-[1.02]"
+              className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-amber-500
+hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all hover:scale-[1.02]"
             >
               <Search size={16} />
               Free Audit
             </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="lg:hidden p-2 rounded-xl bg-white/5 text-white hover:bg-white/10 transition-colors"
+              className="lg:hidden p-2 rounded-xl bg-white/5 text-white hover:bg-white/10
+transition-colors"
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -83,9 +85,10 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
       </header>
 
       <div
-        className={`fixed inset-0 z-40 bg-[#0a0a0f]/95 backdrop-blur-2xl transition-all duration-500 lg:hidden ${
-          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-40 bg-[#0a0a0f]/95 backdrop-blur-2xl transition-all duration-500
+lg:hidden ${
+  menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+}`}
       >
         <nav className="flex flex-col items-center justify-center h-full gap-6">
           {NAV_ITEMS.map((item, i) => (
