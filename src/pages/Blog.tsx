@@ -16,6 +16,16 @@ export const blogPosts = [
     isPlaybook: true
   },
   {
+    id: "local-search-2026", // NEW CASE STUDY
+    category: "Local Search",
+    title: "The Evolution of Local Search in 2026: Entity Alignment & Authentic Video",
+    excerpt: "Local search is governed by dynamic Entity Authority, not static keywords. Google now prioritizes high-velocity social signals and raw, owner-shot video over traditional citations.",
+    query: "How does Google's local Map Pack work in 2026?",
+    date: "May 2026",
+    readTime: "8 min read",
+    icon: <Target size={24} className="text-yellow-500" />
+  },
+  {
     id: "beyond-the-blue-link",
     category: "Entity Architecture",
     title: "Beyond the Blue Link: Why Ranking on Page One is Obsolete in 2026",
@@ -86,7 +96,7 @@ export const Blog = () => {
         {blogPosts.map((post) => (
           <Link 
             key={post.id} 
-            to={post.isPlaybook ? `/smart-news/${post.id}` : `/smart-news/${post.id}`} 
+            to={post.isPlaybook ? `/smart-news/playbook` : `/blog/${post.id}`} 
             className="group flex flex-col bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 hover:border-yellow-500/50 transition-all shadow-lg hover:shadow-yellow-500/10"
           >
             <div className="flex justify-between items-start mb-6">
@@ -122,7 +132,6 @@ export const Blog = () => {
         ))}
       </div>
 
-      {/* LEAD MAGNET SECTION */}
       <div className="max-w-4xl mx-auto mt-24 bg-gradient-to-br from-[#111827] to-[#0a0a0a] border-2 border-yellow-500/50 rounded-3xl p-10 md:p-16 text-center shadow-[0_0_50px_rgba(234,179,8,0.15)] relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
         <BrainCircuit size={48} className="text-yellow-500 mx-auto mb-6" />
