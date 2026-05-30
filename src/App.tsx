@@ -25,7 +25,7 @@ import { ArticleRevenue } from './pages/ArticleRevenue';
 import { ArticleSynthesis } from './pages/ArticleSynthesis';
 import { ArticleEntity } from './pages/ArticleEntity';
 import { ArticleBlueLink } from './pages/ArticleBlueLink';
-import { ArticleLocalSearch } from './pages/ArticleLocalSearch'; // NEW IMPORT
+import { ArticleLocalSearch } from './pages/ArticleLocalSearch'; // SURGICAL ROUTE IMPORT
 import { SummitPage } from './pages/SummitPage';
 import { Architecture } from './pages/Architecture';
 import { ClientPortal } from './pages/ClientPortal/ClientPortal';
@@ -77,7 +77,7 @@ function App() {
           <Route path="/blog/synthesis" element={<ArticleSynthesis />} />
           <Route path="/blog/entity-architect" element={<ArticleEntity />} />
           <Route path="/blog/beyond-the-blue-link" element={<ArticleBlueLink />} />
-          <Route path="/blog/local-search-2026" element={<ArticleLocalSearch />} /> {/* NEW ROUTE */}
+          <Route path="/blog/local-search-2026" element={<ArticleLocalSearch />} /> {/* REGISTERED ROUTE */}
           <Route path="/smart-news/playbook" element={<PlaybookAnchor />} />
           <Route path="/smart-news/playbook/chapter-1" element={<PlaybookChapter1 />} />
           <Route path="/smart-news/playbook/chapter-2" element={<PlaybookChapter2 />} />
