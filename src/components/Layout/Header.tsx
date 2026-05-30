@@ -12,7 +12,7 @@ interface HeaderProps {
 const NAV_ITEMS = [
   { label: 'Work', href: '/earned-media' },
   { label: 'Services', href: '/services' },
-  { label: 'Smart News', href: '/smart-news' }, // UPDATED FROM INSIGHTS
+  { label: 'Smart News', href: '/smart-news' },
   { label: 'About', href: '/founders' },
 ];
 
@@ -31,17 +31,34 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 flex flex-col ${
           scrolled
-            ? 'py-3 bg-[#0a0a0f]/80 backdrop-blur-2xl border-b border-white/5'
-            : 'py-6 bg-transparent'
+            ? 'bg-[#0a0a0f]/90 backdrop-blur-2xl border-b border-white/5'
+            : 'bg-transparent'
         }`}
       >
-        <div className="container mx-auto px-6 flex items-center justify-between">
+        {/* NAV TICKER NEWS JUST BELOW TOP EDGE */}
+        <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-black h-8 overflow-hidden flex items-center relative z-20 shadow-md">
+          <div className="flex animate-marquee whitespace-nowrap items-center font-sans text-[10px] font-black uppercase tracking-[0.2em] w-full">
+            <span className="mx-8">System Update: DeepSeek Hybrid Migration Complete - 90% Cost Savings Realized</span>
+            <span className="mx-8 text-black/30">/</span>
+            <span className="mx-8">Intelligence Alert: Google Local Map Pack now prioritizes Owner-Shot Video</span>
+            <span className="mx-8 text-black/30">/</span>
+            <span className="mx-8">AEO Strategy Guide: Beyond the Blue Link is live on Smart News</span>
+            <span className="mx-8 text-black/30">/</span>
+            <span className="mx-8">System Update: DeepSeek Hybrid Migration Complete - 90% Cost Savings Realized</span>
+          </div>
+        </div>
+
+        {/* MAIN NAVIGATION BAR */}
+        <div className={`container mx-auto px-6 flex items-center justify-between transition-all duration-500 ${scrolled ? 'py-3' : 'py-6'}`}>
+          {/* RESTORED LOGO WITH CORRECT PATH */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center group-hover:scale-105 transition-transform">
-              <span className="text-black font-black text-lg">H</span>
-            </div>
+            <img 
+              src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" 
+              alt="Logo" 
+              className="w-10 h-10 rounded-xl object-cover border border-amber-500/20 group-hover:scale-105 transition-transform" 
+            />
             <div className="hidden sm:block">
               <span className="text-white font-bold text-lg tracking-tight">happyhunter</span>
               <span className="text-amber-500 font-bold text-lg">digital</span>
@@ -67,16 +84,14 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
           <div className="flex items-center gap-3">
             <Link
               to="/audit"
-              className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-amber-500
-hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all hover:scale-[1.02]"
+              className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all hover:scale-[1.02]"
             >
               <Search size={16} />
               Free Audit
             </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="lg:hidden p-2 rounded-xl bg-white/5 text-white hover:bg-white/10
-transition-colors"
+              className="lg:hidden p-2 rounded-xl bg-white/5 text-white hover:bg-white/10 transition-colors"
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -85,10 +100,9 @@ transition-colors"
       </header>
 
       <div
-        className={`fixed inset-0 z-40 bg-[#0a0a0f]/95 backdrop-blur-2xl transition-all duration-500
-lg:hidden ${
-  menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-}`}
+        className={`fixed inset-0 z-40 bg-[#0a0a0f]/95 backdrop-blur-2xl transition-all duration-500 lg:hidden ${
+          menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
       >
         <nav className="flex flex-col items-center justify-center h-full gap-6">
           {NAV_ITEMS.map((item, i) => (
