@@ -1,5 +1,6 @@
+// src/components/Chatbot.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, Bot, Loader2 } from 'lucide-react';
+import { MessageSquare, X, Send, Loader2 } from 'lucide-react';
 import { functions } from '../firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
 
@@ -46,7 +47,7 @@ export const Chatbot: React.FC = () => {
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close Smart Marketing AI" : "Open Smart Marketing AI"}
-        className="fixed bottom-6 right-6 z-[150] bg-yellow-500 text-black p-4 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:scale-110 transition-transform focus:ring-2 focus:ring-yellow-500 focus:outline-none"
+        className="fixed bottom-6 right-6 z-[150] bg-amber-500 text-black p-4 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:scale-110 transition-transform focus:ring-2 focus:ring-amber-500 focus:outline-none"
       >
         {open ? <X size={24} /> : <MessageSquare size={24} />}
       </button>
@@ -55,7 +56,12 @@ export const Chatbot: React.FC = () => {
         <div className="fixed bottom-24 right-6 z-[150] w-[calc(100vw-3rem)] sm:w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
           <div className="bg-black p-4 border-b border-gray-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Bot className="text-yellow-500" size={20} />
+              {/* BRANDED AVATAR INCORPORATED */}
+              <img 
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1772910873/happyhunterdigital_background_tczv4w.png" 
+                className="w-8 h-8 rounded-full border border-amber-500/30 object-cover" 
+                alt="AI Avatar" 
+              />
               <span className="font-bold text-white text-sm uppercase tracking-wider">SMART MARKETING AI</span>
             </div>
             <div className="flex items-center gap-2">
@@ -66,7 +72,7 @@ export const Chatbot: React.FC = () => {
           <div className="flex-1 p-4 overflow-y-auto h-80 space-y-4 bg-black/50 scrollbar-hide">
             {messages.map((m, i) => (
               <div key={i} className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] min-w-0 p-3 rounded-xl text-sm leading-relaxed space-y-2 [&_a]:underline [&_a]:font-bold transition-all ${m.role === 'user' ? 'bg-yellow-500 text-black font-medium [&_a]:text-black' : 'bg-gray-800 text-gray-200 [&_a]:text-yellow-500 hover:[&_a]:text-white'}`} dangerouslySetInnerHTML={{ __html: m.text }} />
+                <div className={`max-w-[85%] min-w-0 p-3 rounded-xl text-sm leading-relaxed space-y-2 [&_a]:underline [&_a]:font-bold transition-all ${m.role === 'user' ? 'bg-amber-500 text-black font-medium [&_a]:text-black' : 'bg-gray-800 text-gray-200 [&_a]:text-amber-500 hover:[&_a]:text-white'}`} dangerouslySetInnerHTML={{ __html: m.text }} />
               </div>
             ))}
             {loading && (
@@ -83,8 +89,8 @@ export const Chatbot: React.FC = () => {
             <div ref={scrollRef} />
           </div>
           <form onSubmit={sendMessage} className="p-3 bg-gray-900 border-t border-gray-800 flex gap-2 items-center">
-            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Enter command..." className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-yellow-500 outline-none disabled:opacity-50 min-w-0" disabled={loading} />
-            <button type="submit" disabled={loading || !input.trim()} className="text-yellow-500 hover:text-white p-3 disabled:opacity-50 transition-colors shrink-0 font-bold uppercase tracking-widest text-[10px]">Send</button>
+            <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Enter command..." className="flex-1 bg-black text-white text-sm p-3 rounded-lg border border-gray-800 focus:border-amber-500 outline-none disabled:opacity-50 min-w-0" disabled={loading} />
+            <button type="submit" disabled={loading || !input.trim()} className="text-amber-500 hover:text-white p-3 disabled:opacity-50 transition-colors shrink-0 font-bold uppercase tracking-widest text-[10px]">Send</button>
           </form>
         </div>
       )}
