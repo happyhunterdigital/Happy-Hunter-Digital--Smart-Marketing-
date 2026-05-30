@@ -1,6 +1,6 @@
 // src/components/Chatbot.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, Loader2 } from 'lucide-react';
+import { X, Send, Loader2 } from 'lucide-react';
 import { functions } from '../firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
 
@@ -44,19 +44,25 @@ export const Chatbot: React.FC = () => {
 
   return (
     <>
+      {/* GLOWING PROFILE BUBBLE FOR THE CHATBOT TRIGGER */}
       <button
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close Smart Marketing AI" : "Open Smart Marketing AI"}
-        className="fixed bottom-6 right-6 z-[150] bg-amber-500 text-black p-4 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:scale-110 transition-transform focus:ring-2 focus:ring-amber-500 focus:outline-none"
+        className="fixed bottom-6 right-6 z-[150] bg-amber-500 text-black p-0.5 w-14 h-14 rounded-full shadow-[0_0_25px_rgba(251,191,36,0.4)] hover:scale-110 transition-transform focus:ring-2 focus:ring-amber-500 focus:outline-none overflow-hidden"
       >
-        {open ? <X size={24} /> : <MessageSquare size={24} />}
+        {open ? <X className="mx-auto" size={24} /> : (
+          <img 
+            src="https://res.cloudinary.com/dka0498ns/image/upload/v1772910873/happyhunterdigital_background_tczv4w.png" 
+            className="w-full h-full object-cover rounded-full" 
+            alt="Chatbot Avatar" 
+          />
+        )}
       </button>
 
       {open && (
         <div className="fixed bottom-24 right-6 z-[150] w-[calc(100vw-3rem)] sm:w-80 md:w-96 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[600px] animate-fade-in">
           <div className="bg-black p-4 border-b border-gray-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {/* BRANDED AVATAR INCORPORATED */}
               <img 
                 src="https://res.cloudinary.com/dka0498ns/image/upload/v1772910873/happyhunterdigital_background_tczv4w.png" 
                 className="w-8 h-8 rounded-full border border-amber-500/30 object-cover" 
