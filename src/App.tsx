@@ -7,7 +7,6 @@ import { Header } from './components/Layout/Header';
 import { Footer } from './components/Layout/Footer';
 import { Chatbot } from './components/Chatbot';
 import { CookieConsent } from './components/CookieConsent';
-import { ContentRibbon } from './components/ContentRibbon';
 import { AIEntityEngine } from './components/AIEntityEngine';
 import { OrganizationSchema } from './components/OrganizationSchema';
 
@@ -25,7 +24,7 @@ import { ArticleRevenue } from './pages/ArticleRevenue';
 import { ArticleSynthesis } from './pages/ArticleSynthesis';
 import { ArticleEntity } from './pages/ArticleEntity';
 import { ArticleBlueLink } from './pages/ArticleBlueLink';
-import { ArticleLocalSearch } from './pages/ArticleLocalSearch'; // SURGICAL ROUTE IMPORT
+import { ArticleLocalSearch } from './pages/ArticleLocalSearch';
 import { SummitPage } from './pages/SummitPage';
 import { Architecture } from './pages/Architecture';
 import { ClientPortal } from './pages/ClientPortal/ClientPortal';
@@ -53,11 +52,12 @@ function App() {
   const isLandingPage = location.pathname === '/the-ai-megaphone' || location.pathname === '/view/guide';
 
   return (
-    <div className={`min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black`}>
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black">
       <AIEntityEngine />
       <OrganizationSchema />
       <CookieConsent />
-      {!isLandingPage && <ContentRibbon />}
+      
+      {/* STATIC YELLOW CONTENT RIBBON HAS BEEN COMPLETELY REMOVED */}
       
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} isLandingPage={isLandingPage} />
 
@@ -77,7 +77,7 @@ function App() {
           <Route path="/blog/synthesis" element={<ArticleSynthesis />} />
           <Route path="/blog/entity-architect" element={<ArticleEntity />} />
           <Route path="/blog/beyond-the-blue-link" element={<ArticleBlueLink />} />
-          <Route path="/blog/local-search-2026" element={<ArticleLocalSearch />} /> {/* REGISTERED ROUTE */}
+          <Route path="/blog/local-search-2026" element={<ArticleLocalSearch />} />
           <Route path="/smart-news/playbook" element={<PlaybookAnchor />} />
           <Route path="/smart-news/playbook/chapter-1" element={<PlaybookChapter1 />} />
           <Route path="/smart-news/playbook/chapter-2" element={<PlaybookChapter2 />} />
