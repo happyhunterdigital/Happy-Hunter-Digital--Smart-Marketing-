@@ -37,7 +37,6 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
             : 'bg-transparent'
         }`}
       >
-        {/* NAV TICKER NEWS PLACED AT THE TOP EDGE OF THE HEADER */}
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-black h-8 overflow-hidden flex items-center relative z-20 shadow-md">
           <div className="flex animate-marquee whitespace-nowrap items-center font-sans text-[10px] font-black uppercase tracking-[0.2em] w-full">
             <span className="mx-8">System Update: DeepSeek Hybrid Migration Complete - 90% Cost Savings Realized</span>
@@ -50,12 +49,10 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
           </div>
         </div>
 
-        {/* MAIN NAVIGATION BAR */}
         <div className={`container mx-auto px-6 flex items-center justify-between transition-all duration-500 ${scrolled ? 'py-3' : 'py-6'}`}>
-          {/* UPDATED LOGO PATH */}
           <Link to="/" className="flex items-center gap-3 group">
             <img 
-              src="https://res.cloudinary.com/dka0498ns/image/upload/v1780148049/copy_of_happyhunterdigital_-stop_being_invisible_let_s_build_your_revenue_system_pqy7tz.png" 
+              src="https://res.cloudinary.com/dkyg07qvv/image/upload/v1780205914/happyhunterdigital_logo_l61qn8.jpg" 
               alt="Logo" 
               className="w-10 h-10 rounded-xl object-cover border border-amber-500/20 group-hover:scale-105 transition-transform" 
             />
