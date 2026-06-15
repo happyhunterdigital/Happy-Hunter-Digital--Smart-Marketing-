@@ -52,7 +52,7 @@ export const Chatbot: React.FC = () => {
       >
         {open ? <X className="mx-auto" size={24} /> : (
           <img 
-            src="https://res.cloudinary.com/dka0498ns/image/upload/v1772910873/happyhunterdigital_background_tczv4w.png" 
+            src="https://res.cloudinary.com/dka0498ns/image/upload/v1781510674/Smart_Marketing_ChatBot_sogsuz.png" 
             className="w-full h-full object-cover rounded-full" 
             alt="Chatbot Avatar" 
           />
@@ -64,7 +64,7 @@ export const Chatbot: React.FC = () => {
           <div className="bg-black p-4 border-b border-gray-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <img 
-                src="https://res.cloudinary.com/dka0498ns/image/upload/v1772910873/happyhunterdigital_background_tczv4w.png" 
+                src="https://res.cloudinary.com/dka0498ns/image/upload/v1781510674/Smart_Marketing_ChatBot_sogsuz.png" 
                 className="w-8 h-8 rounded-full border border-amber-500/30 object-cover" 
                 alt="AI Avatar" 
               />
