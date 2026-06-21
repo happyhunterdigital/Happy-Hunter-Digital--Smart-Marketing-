@@ -119,6 +119,8 @@ jobs:
           echo "✓ Deployment completed"
 
       - name: Verify Firebase Deployment
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
         run: |
           echo "Verifying Firebase project..."
           firebase hosting:channel:list --project happy-hunter-systems || exit 1
