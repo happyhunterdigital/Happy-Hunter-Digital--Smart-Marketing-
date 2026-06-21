@@ -35,7 +35,7 @@ jobs:
           npm audit || true
 
       - name: Check TypeScript Strict Compilation
-        run: npx tsc --noEmit
+        run: npm install && npx tsc --noEmit
 
       - name: Check for secrets exposure
         run: |
