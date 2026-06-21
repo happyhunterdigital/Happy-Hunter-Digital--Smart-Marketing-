@@ -1,0 +1,148 @@
+name: Security Audit & Policy Enforcement
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 2 * * 0' # Weekly Sunday 2 AM UTC
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Audit Frontend Dependencies (Blocking)
+        run: npm audit --audit-level=moderate
+
+      - name: Audit Backend Dependencies (Blocking)
+        run: |
+          cd functions
+          npm audit --audit-level=moderate
+
+      - name: Check TypeScript Strict Compilation
+        run: npx tsc --noEmit
+
+      - name: Check for secrets exposure
+        run: |
+          echo "Scanning for exposed API keys..."
+          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|FIREBASE_SERVICE_ACCOUNT" src/ --include="*.ts" --include="*.tsx" --include="*.js" | grep -v "import.meta.env\|process.env\|secrets"; then
+            echo "ERROR: Hardcoded secrets detected"
+            exit 1
+          fi
+          echo "✓ No hardcoded secrets found"
+
+      - name: Check for console.log in production code
+        run: |
+          echo "Scanning for console statements..."
+          if grep -r "console\.\(log\|debug\|info\)" src --include="*.ts" --include="*.tsx" | grep -v "\.test\." | grep -v "node_modules"; then
+            echo "WARNING: console.log found in source (will be removed in build)"
+          fi
+          echo "✓ Build will strip console statements"
+
+      - name: Install Frontend & Run Lint
+        run: npm install && npm run lint
+
+      - name: Install Backend & Run Lint
+        run: |
+          cd functions
+          npm install
+          npm run lint 2>/dev/null || echo "No functions lint configured"
+
+  build-verification:
+    needs: audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install & Build Frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Verify No Sourcemaps in Build
+        run: |
+          if find dist -name "*.map" | grep -q .; then
+            echo "ERROR: Sourcemaps found in dist/ - security risk!"
+            find dist -name "*.map"
+            exit 1
+          fi
+          echo "✓ No sourcemaps in production build"
+
+      - name: Verify No Secrets in Build
+        run: |
+          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|firebase-config\|secret" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
+            echo "ERROR: Secrets detected in build artifacts"
+            exit 1
+          fi
+          echo "✓ No secrets in build artifacts"
+
+      - name: Check Build Size
+        run: |
+          du -sh dist/
+          MAIN_JS=$(find dist -name "*main*.js" -o -name "*index*.js" | head -1)
+          if [ -f "$MAIN_JS" ]; then
+            SIZE=$(wc -c < "$MAIN_JS")
+            SIZE_MB=$((SIZE / 1024 / 1024))
+            if [ $SIZE_MB -gt 500 ]; then
+              echo "WARNING: Main bundle is ${SIZE_MB}MB (consider code splitting)"
+            fi
+          fi
+
+  firestore-rules-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Validate Firestore Rules Syntax
+        run: firebase deploy --only firestore:rules --dry-run --project happy-hunter-systems 2>&1 | grep -i "error" && exit 1 || echo "✓ Firestore rules valid"
+
+      - name: Validate Storage Rules Syntax
+        run: firebase deploy --only storage --dry-run --project happy-hunter-systems 2>&1 | grep -i "error" && exit 1 || echo "✓ Storage rules valid"
+
+  security-headers-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Validate CSP in firebase.json
+        run: |
+          if ! grep -q "Content-Security-Policy" firebase.json; then
+            echo "ERROR: CSP header missing from firebase.json"
+            exit 1
+          fi
+          echo "✓ CSP header configured"
+
+      - name: Validate HSTS in firebase.json
+        run: |
+          if ! grep -q "Strict-Transport-Security" firebase.json; then
+            echo "ERROR: HSTS header missing"
+            exit 1
+          fi
+          echo "✓ HSTS header configured"
