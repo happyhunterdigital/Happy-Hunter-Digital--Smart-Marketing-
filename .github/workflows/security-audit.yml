@@ -119,11 +119,33 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Set up Firebase Credentials
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+        run: |
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT_KEY" ]; then
+            echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > /tmp/firebase-sa.json
+          fi
+
       - name: Validate Firestore Rules Syntax
-        run: firebase deploy --only firestore:rules --dry-run --project happy-hunter-systems 2>&1 | grep -i "error" && exit 1 || echo "✓ Firestore rules valid"
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
+        run: |
+          if [ -f /tmp/firebase-sa.json ]; then
+            firebase deploy --only firestore:rules --dry-run --project happy-hunter-systems 2>&1 | grep -i "error" && exit 1 || echo "✓ Firestore rules valid"
+          else
+            echo "Skipping due to missing credentials (e.g. PR from fork)"
+          fi
 
       - name: Validate Storage Rules Syntax
-        run: firebase deploy --only storage --dry-run --project happy-hunter-systems 2>&1 | grep -i "error" && exit 1 || echo "✓ Storage rules valid"
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
+        run: |
+          if [ -f /tmp/firebase-sa.json ]; then
+            firebase deploy --only storage --dry-run --project happy-hunter-systems 2>&1 | grep -i "error" && exit 1 || echo "✓ Storage rules valid"
+          else
+            echo "Skipping due to missing credentials"
+          fi
 
   security-headers-check:
     runs-on: ubuntu-latest
