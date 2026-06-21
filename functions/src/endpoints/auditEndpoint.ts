@@ -61,7 +61,7 @@ const checkRateLimit = async (
 export const performAudit = onCall({
   region: "us-central1",
   cors: ALLOWED_ORIGINS,
-  enforceAppCheck: false, // TEMPORARILY DISABLED: Proves if 401 is an App Check console config issue
+  enforceAppCheck: true, // SECURITY: Reject calls without a valid App Check token
   secrets: ["DEEPSEEK_API_KEY"], // EXPLICIT RUNTIME SECRET PERMISSION
   maxInstances: 10,
   timeoutSeconds: 300
