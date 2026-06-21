@@ -13,9 +13,8 @@ const clean = (value?: string): string | undefined => {
 const apiKey = clean(import.meta.env.VITE_FIREBASE_API_KEY);
 const projectId = clean(import.meta.env.VITE_FIREBASE_PROJECT_ID);
 
-// FAIL-SAFE: If the API key is missing from GitHub Secrets, warn the console
 if (!apiKey) {
-  console.error("CRITICAL: VITE_FIREBASE_API_KEY is missing. Handshake will fail.");
+  console.error("CRITICAL: Firebase API Key is missing. Handshake will fail.");
 }
 
 const firebaseConfig = {
