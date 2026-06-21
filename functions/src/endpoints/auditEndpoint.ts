@@ -91,11 +91,22 @@ export const performAudit = onCall({
   }
 
   try {
-    let pData = await getPlacesData(`${safeBizName} in ${safeLocation}`, PLACES_API_KEY);
+    let pData;
+    try {
+      pData = await getPlacesData(`${safeBizName} in ${safeLocation}`, PLACES_API_KEY);
+    } catch (placesError: any) {
+      console.error("Places lookup failed, aborting audit instead of scoring as ghost", placesError.message);
+      throw new HttpsError("internal", "Could not verify business on Google Maps right now. Please try again shortly.");
+    }
     let biz = pData?.places?.[0] || null;
 
     if (!biz) {
-      pData = await getPlacesData(safeBizName, PLACES_API_KEY);
+      try {
+        pData = await getPlacesData(safeBizName, PLACES_API_KEY);
+      } catch (placesError: any) {
+        console.error("Places lookup failed on retry, aborting audit instead of scoring as ghost", placesError.message);
+        throw new HttpsError("internal", "Could not verify business on Google Maps right now. Please try again shortly.");
+      }
       biz = pData?.places?.[0] || null;
     }
 

@@ -14,7 +14,21 @@ export const getPlacesData = async (query: string, apiKey: string) => {
     },
     body: JSON.stringify({ textQuery: query })
   });
-  return res.json() as any;
+
+  const data = await res.json() as any;
+
+  if (!res.ok) {
+    console.error("Places API request failed", {
+      status: res.status,
+      query,
+      response: data
+    });
+    // Distinguish "API broke" from "no results" so the caller doesn't
+    // silently treat an auth/billing failure as a ghost entity
+    throw new Error(`Places API error (${res.status}): ${data?.error?.message || "unknown"}`);
+  }
+
+  return data;
 };
 
 export const getEmbedding = async (text: string, apiKey: string) => {
