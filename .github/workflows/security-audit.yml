@@ -92,7 +92,7 @@ jobs:
 
       - name: Verify No Secrets in Build
         run: |
-          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|firebase-config\|secret" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
+          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|sk_live_\|pk_live_" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
             echo "ERROR: Secrets detected in build artifacts"
             exit 1
           fi

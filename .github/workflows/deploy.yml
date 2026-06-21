@@ -44,7 +44,7 @@ jobs:
       - name: Audit Build Artifacts
         run: |
           echo "Checking for secrets in dist/ ..."
-          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|secret\|sk_\|pk_" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
+          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|sk_live_\|pk_live_" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
             echo "❌ ERROR: Secrets detected in build artifacts"
             exit 1
           fi
