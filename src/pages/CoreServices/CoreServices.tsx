@@ -41,7 +41,7 @@ export const CoreServices: React.FC = () => {
               </div>
               <div className="grid lg:grid-cols-3 gap-8 items-stretch">
                 {phase.tiers.map(tier => (
-                  <PricingTier key={tier.title} phase={phase.phase} title={tier.title} subtitle={tier.subtitle} target={tier.target} description={tier.description} priceStart={tier.priceStart} period={tier.period} features={tier.features} isPopular={tier.isPopular} highlightColor={tier.isPopular ? "yellow-500" : "white"} icon={ICONS[phase.iconType as keyof typeof ICONS] || ICONS.ShieldCheck} />
+                  <PricingTier key={tier.title} phase={phase.phase} title={tier.title} subtitle={tier.subtitle} target={tier.target} description={tier.description} priceStart={tier.priceStart} period={(tier as any).period} features={tier.features} isPopular={tier.isPopular} highlightColor={tier.isPopular ? "yellow-500" : "white"} icon={ICONS[phase.iconType as keyof typeof ICONS] || ICONS.ShieldCheck} />
                 ))}
               </div>
             </div>
@@ -61,7 +61,7 @@ export const CoreServices: React.FC = () => {
               </div>
               <div className="grid lg:grid-cols-3 gap-8 items-stretch">
                 {phase.tiers.map(tier => (
-                  <PricingTier key={tier.title} phase={phase.phase} title={tier.title} subtitle={tier.subtitle} target={tier.target} description={tier.description} priceStart={tier.priceStart} period={tier.period} features={tier.features} isPopular={tier.isPopular} highlightColor={tier.isPopular ? "yellow-500" : "white"} icon={ICONS[phase.iconType as keyof typeof ICONS] || ICONS.Database} />
+                  <PricingTier key={tier.title} phase={phase.phase} title={tier.title} subtitle={tier.subtitle} target={tier.target} description={tier.description} priceStart={tier.priceStart} period={(tier as any).period} features={tier.features} isPopular={tier.isPopular} highlightColor={tier.isPopular ? "yellow-500" : "white"} icon={ICONS[phase.iconType as keyof typeof ICONS] || ICONS.Database} />
                 ))}
               </div>
             </div>
