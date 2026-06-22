@@ -62,7 +62,7 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: ALLOWED_ORIGINS,
   enforceAppCheck: false, // TEMPORARILY DISABLED: Was causing 401 errors in production
-  secrets: ["DEEPSEEK_API_KEY"], // EXPLICIT RUNTIME SECRET PERMISSION
+  secrets: ["DEEPSEEK_API_KEY", "PLACES_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID"], // EXPLICIT RUNTIME SECRET PERMISSION
   maxInstances: 10,
   timeoutSeconds: 300
 }, async (request) => {
