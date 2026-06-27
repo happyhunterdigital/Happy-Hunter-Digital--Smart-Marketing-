@@ -10,7 +10,7 @@ import * as cheerio from "cheerio";
 admin.initializeApp();
 const db = getFirestore();
 
-const AI_MODEL = "gemini-3.1-flash-lite";
+const AI_MODEL = "gemini-2.0-flash-lite";
 
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
@@ -146,7 +146,13 @@ export const performAudit = onCall({
       const blockReason = aiData?.promptFeedback?.blockReason || aiData?.candidates?.[0]?.finishReason || "UNKNOWN";
       throw new Error(`Gemini returned no content. Reason: ${blockReason}`);
     }
-    const analysis = JSON.parse(rawText);
+    let analysis: any;
+    try {
+      const cleaned = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
+      analysis = JSON.parse(cleaned);
+    } catch {
+      throw new Error(`Gemini returned unparsable JSON: ${rawText.substring(0, 200)}`);
+    }
 
     const isHijacked = (biz && analysis.score === 0);
 
@@ -170,6 +176,7 @@ export const performAudit = onCall({
     return { success: true, ...analysis, telemetry };
 
   } catch (e: any) {
+    console.error("[performAudit] CRASH:", e.message, e.stack);
     throw new HttpsError("internal", `Neural Handshake Interrupted. ${e.message}`);
   }
 });
