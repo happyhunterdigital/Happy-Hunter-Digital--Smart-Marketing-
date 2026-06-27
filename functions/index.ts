@@ -135,7 +135,18 @@ export const performAudit = onCall({
     });
 
     const aiData = await aiRes.json() as any;
-    const analysis = JSON.parse(aiData.candidates[0].content.parts[0].text);
+
+    if (!aiRes.ok) {
+      const errMsg = aiData?.error?.message || `Gemini API returned ${aiRes.status}`;
+      throw new Error(`Gemini API Error: ${errMsg}`);
+    }
+
+    const rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) {
+      const blockReason = aiData?.promptFeedback?.blockReason || aiData?.candidates?.[0]?.finishReason || "UNKNOWN";
+      throw new Error(`Gemini returned no content. Reason: ${blockReason}`);
+    }
+    const analysis = JSON.parse(rawText);
 
     const isHijacked = (biz && analysis.score === 0);
 
