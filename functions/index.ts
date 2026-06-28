@@ -10,8 +10,6 @@ import * as cheerio from "cheerio";
 admin.initializeApp();
 const db = getFirestore();
 
-const AI_MODEL = "gemini-2.0-flash-lite";
-
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
 // ============================================================================
@@ -23,11 +21,11 @@ export const performAudit = onCall({
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   
-  const G_KEY = process.env.GEMINI_API_KEY;
+  const DS_KEY = process.env.DEEPSEEK_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
 
   if (!businessName || !location || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
-  if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
+  if (!DS_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
 
   try {
     const getPlaces = async (query: string) => {
@@ -125,33 +123,35 @@ export const performAudit = onCall({
  Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is completely missing.
  `;
 
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths":["string", "string", "string"] }` }] }],
-        generationConfig: { responseMimeType: "application/json" }
-      })
-    });
-
-    const aiData = await aiRes.json() as any;
-
-    if (!aiRes.ok) {
-      const errMsg = aiData?.error?.message || `Gemini API returned ${aiRes.status}`;
-      throw new Error(`Gemini API Error: ${errMsg}`);
-    }
-
-    const rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawText) {
-      const blockReason = aiData?.promptFeedback?.blockReason || aiData?.candidates?.[0]?.finishReason || "UNKNOWN";
-      throw new Error(`Gemini returned no content. Reason: ${blockReason}`);
-    }
     let analysis: any;
+
     try {
+      const dsRes = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${DS_KEY}` },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [
+            { role: "system", content: "You are Hunter AI. Respond strictly with valid JSON." },
+            { role: "user", content: `Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths":["string", "string", "string"] }` }
+          ],
+          response_format: { type: "json_object" }
+        })
+      });
+
+      const dsData = await dsRes.json() as any;
+      if (!dsRes.ok) throw new Error(dsData?.error?.message || `DeepSeek API returned ${dsRes.status}`);
+      
+      const rawText = dsData?.choices?.[0]?.message?.content;
+      if (!rawText) throw new Error("DeepSeek returned no content.");
+      
       const cleaned = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
       analysis = JSON.parse(cleaned);
-    } catch {
-      throw new Error(`Gemini returned unparsable JSON: ${rawText.substring(0, 200)}`);
+      console.log("[performAudit] DeepSeek: OK");
+
+    } catch (dsErr: any) {
+      console.error("[performAudit] DeepSeek Failed:", dsErr.message);
+      throw new Error(`DeepSeek AI Error: ${dsErr.message}`);
     }
 
     const isHijacked = (biz && analysis.score === 0);
@@ -189,9 +189,9 @@ export const hunterChat = onCall({
   cors: true,
 }, async (request) => {
   const { message } = request.data;
-  const G_KEY = process.env.GEMINI_API_KEY;
+  const DS_KEY = process.env.DEEPSEEK_API_KEY;
 
-  if (!message || !G_KEY) {
+  if (!message || !DS_KEY) {
     return { reply: "Connection offline. Missing parameters." };
   }
 
@@ -213,19 +213,23 @@ export const hunterChat = onCall({
  2. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).`;
 
   try {
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
+    const dsRes = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${DS_KEY}` },
       body: JSON.stringify({
-        systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: message }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: message }
+        ],
+        temperature: 0.1,
+        max_tokens: 500
       })
     });
 
-    if (!aiRes.ok) return { reply: "My neural link is currently overloaded. Please email HQ." };
-    const data = await aiRes.json() as any;
-    if (data.candidates && data.candidates[0].content.parts[0].text) return { reply: data.candidates[0].content.parts[0].text.trim() };
+    if (!dsRes.ok) return { reply: "My neural link is currently overloaded. Please email HQ." };
+    const data = await dsRes.json() as any;
+    if (data.choices && data.choices[0]?.message?.content) return { reply: data.choices[0].message.content.trim() };
     return { reply: "I received an unreadable signal from the core. Try again." };
   } catch (e) {
     return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
