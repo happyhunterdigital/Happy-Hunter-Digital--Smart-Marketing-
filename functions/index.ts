@@ -10,7 +10,7 @@ import * as cheerio from "cheerio";
 admin.initializeApp();
 const db = getFirestore();
 
-const AI_MODEL = "gemini-2.0-flash-lite";
+const AI_MODEL = "gemini-3.1-flash-lite";
 
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
