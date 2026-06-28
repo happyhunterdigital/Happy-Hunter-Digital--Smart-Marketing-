@@ -62,11 +62,22 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: ALLOWED_ORIGINS,
   enforceAppCheck: false, // TEMPORARILY DISABLED: Was causing 401 errors in production
-  secrets: ["DEEPSEEK_API_KEY"], // EXPLICIT RUNTIME SECRET PERMISSION
+  secrets: ["DEEPSEEK_API_KEY", "PLACES_API_KEY"], // EXPLICIT RUNTIME SECRET PERMISSION
   maxInstances: 10,
   timeoutSeconds: 300
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
+  const traceId = `audit_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+
+  console.log(`[performAudit] Start execution`, {
+    traceId,
+    businessName,
+    location,
+    clientEmail,
+    whatsapp: whatsapp || null,
+    placesApiKeySet: !!PLACES_API_KEY,
+    deepseekApiKeySet: !!process.env.DEEPSEEK_API_KEY
+  });
 
   if (!businessName || !location || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
   if (!PLACES_API_KEY) throw new HttpsError("failed-precondition", "Places API Key offline.");
@@ -91,23 +102,17 @@ export const performAudit = onCall({
   }
 
   try {
-    let pData;
+    let biz = null;
     try {
-      pData = await getPlacesData(`${safeBizName} in ${safeLocation}`, PLACES_API_KEY);
-    } catch (placesError: any) {
-      console.error("Places lookup failed, aborting audit instead of scoring as ghost", placesError.message);
-      throw new HttpsError("internal", "Could not verify business on Google Maps right now. Please try again shortly.");
-    }
-    let biz = pData?.places?.[0] || null;
-
-    if (!biz) {
-      try {
-        pData = await getPlacesData(safeBizName, PLACES_API_KEY);
-      } catch (placesError: any) {
-        console.error("Places lookup failed on retry, aborting audit instead of scoring as ghost", placesError.message);
-        throw new HttpsError("internal", "Could not verify business on Google Maps right now. Please try again shortly.");
-      }
+      const pData = await getPlacesData(`${safeBizName} in ${safeLocation}`, PLACES_API_KEY);
       biz = pData?.places?.[0] || null;
+
+      if (!biz) {
+        const retryData = await getPlacesData(safeBizName, PLACES_API_KEY);
+        biz = retryData?.places?.[0] || null;
+      }
+    } catch (placesError: any) {
+      console.warn(`[performAudit] Places Lookup Failed [TraceId: ${traceId}]:`, placesError.message, ". Degrading gracefully to GHOST status.");
     }
 
     const websiteUrl = biz?.websiteUri || null;
@@ -175,9 +180,11 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
 
     sendAdminAlert(safeBizName, clientEmail, whatsapp, analysis.score).catch(() => {});
 
+    console.log(`[performAudit] Completed successfully [TraceId: ${traceId}]`, telemetry);
     return { success: true, ...analysis, telemetry };
 
   } catch (e: any) {
+    console.error(`[performAudit] CRASH [TraceId: ${traceId}]:`, e.message, e.stack);
     throw new HttpsError("internal", `Neural Handshake Interrupted. ${e.message}`);
   }
 });

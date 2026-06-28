@@ -19,6 +19,12 @@ export const BASE_URL = "https://happyhunterdigital.com";
 
 // Fail loudly at cold start if critical webhook secrets are missing, rather than
 // silently accepting unverified webhook traffic.
+if (!DEEPSEEK_API_KEY) {
+  console.warn("WARNING: DEEPSEEK_API_KEY env var is not set in config. AI features will fail.");
+}
+if (!PLACES_API_KEY) {
+  console.warn("WARNING: PLACES_API_KEY env var is not set in config. Google Places features will fail.");
+}
 if (!VERIFY_TOKEN) {
   console.error("CRITICAL: VERIFY_TOKEN env var is not set. WhatsApp webhook verification will fail closed.");
 }

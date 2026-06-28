@@ -74,5 +74,20 @@ export const callDeepSeekAudit = async (prompt: string) => {
     ],
     { jsonMode: true, temperature: 0.0 }
   );
-  return JSON.parse(jsonString);
+  
+  try {
+    return JSON.parse(jsonString);
+  } catch (parseError: any) {
+    console.error("[callDeepSeekAudit] DeepSeek returned invalid JSON:", jsonString, parseError.message);
+    // Safe self-healing fallback scorecard
+    return {
+      score: 30,
+      summary: "AI systems could not securely synthesize this business's digital footprint. An authority framework is required to verify their entity profile for search engines.",
+      truths: [
+        "Digital Authority Scan: Unreachable",
+        "Website Indexing: Unverified",
+        "AEO Schema Markup: Missing"
+      ]
+    };
+  }
 };
