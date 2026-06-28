@@ -216,9 +216,9 @@ export const hunterChat = onCall({
   cors: true,
 }, async (request) => {
   const { message } = request.data;
-  const G_KEY = process.env.GEMINI_API_KEY;
+  const DS_KEY = process.env.DEEPSEEK_API_KEY;
 
-  if (!message || !G_KEY) {
+  if (!message || !DS_KEY) {
     return { reply: "Connection offline. Missing parameters." };
   }
 
@@ -240,19 +240,23 @@ export const hunterChat = onCall({
  2. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).`;
 
   try {
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
+    const dsRes = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${DS_KEY}` },
       body: JSON.stringify({
-        systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: "user", parts: [{ text: message }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: message }
+        ],
+        temperature: 0.1,
+        max_tokens: 500
       })
     });
 
-    if (!aiRes.ok) return { reply: "My neural link is currently overloaded. Please email HQ." };
-    const data = await aiRes.json() as any;
-    if (data.candidates && data.candidates[0].content.parts[0].text) return { reply: data.candidates[0].content.parts[0].text.trim() };
+    if (!dsRes.ok) return { reply: "My neural link is currently overloaded. Please email HQ." };
+    const data = await dsRes.json() as any;
+    if (data.choices && data.choices[0]?.message?.content) return { reply: data.choices[0].message.content.trim() };
     return { reply: "I received an unreadable signal from the core. Try again." };
   } catch (e) {
     return { reply: "Comms offline. Please email motsumitl@happyhunterdigital.com" };
