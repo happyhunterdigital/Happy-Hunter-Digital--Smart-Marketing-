@@ -214,6 +214,7 @@ export const performAudit = onCall({
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
+  secrets: ["DEEPSEEK_API_KEY"]
 }, async (request) => {
   const { message } = request.data;
   const DS_KEY = process.env.DEEPSEEK_API_KEY;
