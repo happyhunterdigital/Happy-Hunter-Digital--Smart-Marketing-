@@ -23,11 +23,14 @@ export const performAudit = onCall({
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   
+  const DS_KEY = process.env.DEEPSEEK_API_KEY;
+  const DS_KEY = process.env.DEEPSEEK_API_KEY;
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
 
   if (!businessName || !location || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
-  if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
+  if (!P_KEY) throw new HttpsError("failed-precondition", "Places API Offline.");
+  if (!DS_KEY && !G_KEY) throw new HttpsError("failed-precondition", "AI Core Offline - No provider configured.");
 
   try {
     const getPlaces = async (query: string) => {
@@ -125,27 +128,50 @@ export const performAudit = onCall({
  Truth 3: Explicitly list the AI Schema Markup (JSON-LD) types found (${detectedSchemas.join(", ")}) or state it is completely missing.
  `;
 
-    const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths":["string", "string", "string"] }` }] }],
-        generationConfig: { responseMimeType: "application/json" }
-      })
-    });
+    const auditPrompt = `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths":["string", "string", "string"] }`;
 
-    const aiData = await aiRes.json() as any;
+    let rawText: string | null = null;
 
-    if (!aiRes.ok) {
-      const errMsg = aiData?.error?.message || `Gemini API returned ${aiRes.status}`;
-      throw new Error(`Gemini API Error: ${errMsg}`);
+    // PRIMARY: DeepSeek V4 Flash
+    if (DS_KEY) {
+      try {
+        const dsRes = await fetch("https://api.deepseek.com/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${DS_KEY}` },
+          body: JSON.stringify({
+            model: "deepseek-v4-flash",
+            messages: [{ role: "user", content: auditPrompt }],
+            response_format: { type: "json_object" }
+          })
+        });
+        const dsData = await dsRes.json() as any;
+        if (dsRes.ok && dsData?.choices?.[0]?.message?.content) {
+          rawText = dsData.choices[0].message.content;
+          console.log("[performAudit] DeepSeek V4 Flash: OK");
+        } else {
+          console.warn("[performAudit] DeepSeek failed:", JSON.stringify(dsData?.error || {}));
+        }
+      } catch (dsErr: any) { console.warn("[performAudit] DeepSeek threw:", dsErr.message); }
     }
 
-    const rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawText) {
-      const blockReason = aiData?.promptFeedback?.blockReason || aiData?.candidates?.[0]?.finishReason || "UNKNOWN";
-      throw new Error(`Gemini returned no content. Reason: ${blockReason}`);
+    // FALLBACK: Gemini
+    if (!rawText && G_KEY) {
+      const aiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${AI_MODEL}:generateContent?key=${G_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts:[{ text: auditPrompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+      const aiData = await aiRes.json() as any;
+      if (!aiRes.ok) throw new Error(`Gemini Error: ${aiData?.error?.message || aiRes.status}`);
+      rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text || null;
+      if (!rawText) throw new Error(`Gemini empty. Reason: ${aiData?.candidates?.[0]?.finishReason || "UNKNOWN"}`);
+      console.log("[performAudit] Gemini fallback: OK");
     }
+
+    if (!rawText) throw new Error("All AI providers failed. Check DEEPSEEK_API_KEY and GEMINI_API_KEY.")
     let analysis: any;
     try {
       const cleaned = rawText.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
