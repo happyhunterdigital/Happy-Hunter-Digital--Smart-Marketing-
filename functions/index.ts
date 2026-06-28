@@ -19,7 +19,8 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
-  timeoutSeconds: 300
+  timeoutSeconds: 300,
+  secrets: ["DEEPSEEK_API_KEY", "GEMINI_API_KEY", "PLACES_API_KEY"]
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   
