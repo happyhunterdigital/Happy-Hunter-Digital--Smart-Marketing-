@@ -25,7 +25,6 @@ export const performAudit = onCall({
   const { businessName, location, clientEmail, whatsapp } = request.data;
   
   const DS_KEY = process.env.DEEPSEEK_API_KEY;
-  const DS_KEY = process.env.DEEPSEEK_API_KEY;
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
 
