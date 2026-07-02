@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { AuditForm } from './AuditForm';
 import { AuditResults } from './AuditResults';
 import { httpsCallable } from 'firebase/functions';
@@ -20,6 +20,33 @@ interface AuditData {
   };
 }
 
+// Transform new API response to old AuditResults format
+const transformToVerdict = (data: AuditData) => ({
+  score: data.score,
+  summary: data.summary,
+  diagnosis: data.summary,
+  truths: data.truths,
+  revenueLoss: { amount: 'R18,500+' },
+  identityCrisis: { status: data.telemetry.mapsStatus },
+  gapAnalysis: [
+    {
+      title: 'Google Maps Visibility',
+      status: data.telemetry.mapsStatus.includes('GHOST') ? 'CRITICAL' : 'OK',
+      urgency: data.telemetry.mapsStatus.includes('GHOST') ? 'HIGH' : 'LOW'
+    },
+    {
+      title: 'Schema Markup',
+      status: data.telemetry.schema ? 'OK' : 'MISSING',
+      urgency: data.telemetry.schema ? 'LOW' : 'MEDIUM'
+    },
+    {
+      title: 'Website Linked',
+      status: data.telemetry.website !== 'None Linked' ? 'OK' : 'MISSING',
+      urgency: data.telemetry.website !== 'None Linked' ? 'LOW' : 'HIGH'
+    }
+  ]
+});
+
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
@@ -28,22 +55,17 @@ export const AiAudit: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AuditData | null>(null);
   const [error, setError] = useState('');
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setForm({ ...form, wa: val });
-    
     const phoneRegex = /^[+]?[\d\s-]{10,}$/;
-    if (val && !phoneRegex.test(val.replace(/\s/g, ''))) {
-      setPhoneError('Invalid phone format. Use +27601016673 format.');
-    } else {
-      setPhoneError('');
-    }
+    setPhoneError(val && !phoneRegex.test(val.replace(/\s/g, '')) ? 'Invalid phone format. Use +27601016673 format.' : '');
   };
 
   const runForensicScan = async () => {
     if (phoneError || !form.wa) return;
-    
     setLoading(true);
     setError('');
     setScanProgress(0);
@@ -55,36 +77,31 @@ export const AiAudit: React.FC = () => {
 
     try {
       const performAudit = httpsCallable(functions, 'performAudit');
-      
       const response = await performAudit({
         businessName: form.biz,
         location: form.loc,
         clientEmail: form.mail,
         whatsapp: form.wa
       });
-
       clearInterval(progressInterval);
       setScanProgress(100);
       setResult(response.data as AuditData);
       setStep(4);
     } catch (err: any) {
       clearInterval(progressInterval);
-      console.error('Audit failed:', err);
-      
       const msg = err?.message || '';
-      if (msg.includes('resource-exhausted') || msg.includes('Too many requests')) {
-        setError('Rate limit exceeded. Please try again in an hour.');
-      } else if (msg.includes('invalid-argument')) {
-        setError('Please check your inputs and try again.');
-      } else if (msg.includes('failed-precondition')) {
-        setError('System configuration error. Please contact support.');
-      } else {
-        setError('Neural Handshake Interrupted. Please try again shortly.');
-      }
+      if (msg.includes('resource-exhausted')) setError('Rate limit exceeded. Please try again in an hour.');
+      else if (msg.includes('invalid-argument')) setError('Please check your inputs and try again.');
+      else if (msg.includes('failed-precondition')) setError('System configuration error. Please contact support.');
+      else setError('Neural Handshake Interrupted. Please try again shortly.');
       setStep(2);
     } finally {
       setLoading(false);
     }
+  };
+
+  const downloadPDF = () => {
+    alert('PDF download coming soon');
   };
 
   return (
@@ -95,9 +112,7 @@ export const AiAudit: React.FC = () => {
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
               Digital Entity <span className="text-yellow-500">Audit</span>
             </h1>
-            <p className="text-gray-400 font-mono text-sm">
-              Verify your existence in the AI-driven search ecosystem.
-            </p>
+            <p className="text-gray-400 font-mono text-sm">Verify your existence in the AI-driven search ecosystem.</p>
           </div>
         )}
 
@@ -121,13 +136,10 @@ export const AiAudit: React.FC = () => {
 
         {step === 4 && result && (
           <AuditResults 
-            result={result} 
-            onReset={() => {
-              setStep(1);
-              setResult(null);
-              setForm({ biz: '', loc: '', name: '', mail: '', wa: '' });
-              setError('');
-            }}
+            verdict={transformToVerdict(result)}
+            reportRef={reportRef}
+            downloadPDF={downloadPDF}
+            bizName={form.biz}
           />
         )}
       </div>
