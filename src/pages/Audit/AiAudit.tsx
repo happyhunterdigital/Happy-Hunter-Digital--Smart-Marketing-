@@ -1,9 +1,8 @@
-// src/pages/Audit/AiAudit.tsx
 import React, { useState } from 'react';
 import { AuditForm } from './AuditForm';
 import { AuditResults } from './AuditResults';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { app } from '../../firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../../firebaseConfig';
 
 interface AuditData {
   success: boolean;
@@ -48,13 +47,13 @@ export const AiAudit: React.FC = () => {
     setLoading(true);
     setError('');
     setScanProgress(0);
+    setStep(3);
 
     const progressInterval = setInterval(() => {
       setScanProgress(prev => Math.min(prev + 18, 90));
     }, 800);
 
     try {
-      const functions = getFunctions(app);
       const performAudit = httpsCallable(functions, 'performAudit');
       
       const response = await performAudit({
