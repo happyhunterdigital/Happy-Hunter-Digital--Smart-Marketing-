@@ -1,10 +1,15 @@
-// src/pages/Audit/AuditForm.tsx
 import React, { useState } from 'react';
 import { Search, Zap, Terminal, Code, Loader2 } from 'lucide-react';
 
 interface AuditFormProps {
   step: number;
-  form: any;
+  form: {
+    biz: string;
+    loc: string;
+    name: string;
+    mail: string;
+    wa: string;
+  };
   setForm: (form: any) => void;
   setStep: (step: number) => void;
   phoneError: string;
