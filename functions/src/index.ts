@@ -12,21 +12,17 @@ setGlobalOptions({
   concurrency: 80
 });
 
-// 1. Webhooks
-export { metaWebhook } from "./services/metaService";
-export { whatsappWebhook } from "./services/whatsappBot";
-
-// 2. Callable Endpoints
+// Export all functions
 export { performAudit } from "./endpoints/auditEndpoint";
 export { hunterChat } from "./endpoints/chatEndpoint";
 export { submitServiceRequest } from "./endpoints/serviceRequestEndpoint";
 export { grantAdminAccess } from "./endpoints/adminManager";
-
-// 3. Database Triggers & Scheduled Cron Jobs
+export { metaWebhook } from "./services/metaService";
+export { whatsappWebhook } from "./services/whatsappBot";
 export { processEntitySchema } from "./endpoints/schemaEndpoint";
-export { 
-  dailyRevenueReport, 
-  notifyNewTaskAssignment, 
-  notifyTaskUpdate, 
-  cleanseVisualAudits 
+export {
+  dailyRevenueReport,
+  notifyNewTaskAssignment,
+  notifyTaskUpdate,
+  cleanseVisualAudits
 } from "./endpoints/cronAndTasks";
