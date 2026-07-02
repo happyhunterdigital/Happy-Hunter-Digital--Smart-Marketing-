@@ -10,10 +10,10 @@ interface DeepSeekMessage {
 
 export async function callDeepSeek(
   messages: DeepSeekMessage[],
-  options: { jsonMode?: boolean; temperature?: number } = {}
+  options: { jsonMode?: boolean; temperature?: number; maxRetries?: number } = {}
 ): Promise<string> {
   if (!DEEPSEEK_API_KEY) {
-    throw new Error("DEEPSEEK_API_KEY is missing");
+    throw new Error("DEEPSEEK_API_KEY is missing from environment");
   }
 
   const payload: any = {
@@ -26,20 +26,40 @@ export async function callDeepSeek(
     payload.response_format = { type: "json_object" };
   }
 
-  const response = await fetch(DEEPSEEK_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  let lastError: Error | null = null;
+  const retries = options.maxRetries ?? 2;
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(DEEPSEEK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`DeepSeek API error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json() as any;
+      const content = data?.choices?.[0]?.message?.content;
+
+      if (!content) {
+        throw new Error("DeepSeek returned empty content");
+      }
+
+      return content;
+    } catch (err: any) {
+      lastError = err;
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+      }
+    }
   }
 
-  const data = await response.json() as any;
-  return data.choices[0].message.content;
+  throw lastError || new Error("DeepSeek call failed after retries");
 }
