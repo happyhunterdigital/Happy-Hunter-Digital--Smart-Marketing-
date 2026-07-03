@@ -164,12 +164,12 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
 
     const telemetry = {
       mapsStatus: "SCRAPED",
-      website: safeWebsiteUrl,
-      schema: scrapedData.schemas.length > 0,
-      schemasDetected: scrapedData.schemas,
-      title: scrapedData.title,
-      description: scrapedData.description,
-      viewport: scrapedData.viewport
+      website: String(safeWebsiteUrl || ""),
+      schema: Boolean(scrapedData.schemas && scrapedData.schemas.length > 0),
+      schemasDetected: Array.isArray(scrapedData.schemas) ? scrapedData.schemas.map(String) : [],
+      title: String(scrapedData.title || ""),
+      description: String(scrapedData.description || ""),
+      viewport: String(scrapedData.viewport || "")
     };
 
     const db = admin.firestore();
