@@ -1,7 +1,7 @@
 // functions/src/services/metaService.ts
 import { onRequest } from "firebase-functions/v2/https";
 import axios from "axios";
-import { META_VERIFY_TOKEN, META_PAGE_ACCESS_TOKEN, DEEPSEEK_API_KEY } from "../config";
+import { META_VERIFY_TOKEN, META_PAGE_ACCESS_TOKEN } from "../config";
 import { callDeepSeek } from "./deepseekService";
 
 export const sendPrivateReply = async (commentId: string, replyText: string, platform: "facebook" | "instagram") => {
@@ -44,7 +44,7 @@ export const sendPublicReply = async (commentId: string, messageText: string) =>
 };
 
 const processAndReply = async (commentId: string, userMessage: string, platform: "facebook" | "instagram") => {
-  if (!DEEPSEEK_API_KEY) {
+  if (!process.env.DEEPSEEK_API_KEY) {
     console.error(`[${platform}] DEEPSEEK_API_KEY is missing. Cannot generate AI response.`);
     return;
   }

@@ -1,5 +1,5 @@
 // functions/src/services/deepseekService.ts
-import { DEEPSEEK_API_KEY } from "../config";
+
 
 const DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions";
 
@@ -12,7 +12,8 @@ export async function callDeepSeek(
   messages: DeepSeekMessage[],
   options: { jsonMode?: boolean; temperature?: number; maxRetries?: number } = {}
 ): Promise<string> {
-  if (!DEEPSEEK_API_KEY) {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) {
     throw new Error("DEEPSEEK_API_KEY is missing from environment");
   }
 
@@ -35,7 +36,7 @@ export async function callDeepSeek(
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${DEEPSEEK_API_KEY}`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify(payload),
       });

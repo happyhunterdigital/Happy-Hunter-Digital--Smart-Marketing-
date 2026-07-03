@@ -2,7 +2,7 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import axios from "axios";
-import { VERIFY_TOKEN, ADMIN_NUMBER, PHONE_NUMBER_ID, WHATSAPP_TOKEN, DEEPSEEK_API_KEY } from "../config";
+import { VERIFY_TOKEN, ADMIN_NUMBER, PHONE_NUMBER_ID, WHATSAPP_TOKEN } from "../config";
 import { callDeepSeekChat } from "./chatService";
 import { FieldValue } from "firebase-admin/firestore";
 import { sendWhatsAppDoc } from "./whatsappService";
@@ -90,7 +90,7 @@ export const whatsappWebhook = onRequest({
           mediaUrl = data.media_url;
         } 
         else {
-          if (DEEPSEEK_API_KEY) {
+          if (process.env.DEEPSEEK_API_KEY) {
             try {
               const sessionRef = db.collection('whatsapp_sessions').doc(from);
               const sessionDoc = await sessionRef.get();

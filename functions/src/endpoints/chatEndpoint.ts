@@ -1,7 +1,7 @@
 // functions/src/endpoints/chatEndpoint.ts
 import { onCall } from "firebase-functions/v2/https";
 import { callDeepSeekChat } from "../services/chatService";
-import { AI_MODEL, DEEPSEEK_API_KEY } from "../config";
+import { AI_MODEL } from "../config";
 
 export const hunterChat = onCall({
   region: "us-central1",
@@ -10,7 +10,7 @@ export const hunterChat = onCall({
 }, async (request) => {
   const { message, history } = request.data;
 
-  if (!message || !DEEPSEEK_API_KEY) {
+  if (!message || !process.env.DEEPSEEK_API_KEY) {
     return { reply: "Connection offline. Missing parameters." };
   }
 
