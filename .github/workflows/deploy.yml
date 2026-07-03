@@ -121,6 +121,15 @@ jobs:
           cd functions && npm install
           echo "✓ functions/package-lock.json regenerated with axios + cheerio"
 
+      - name: Create Functions .env File
+        env:
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          PHONE_NUMBER_ID: ${{ secrets.PHONE_NUMBER_ID }}
+        run: |
+          echo "WHATSAPP_TOKEN=$WHATSAPP_TOKEN" >> functions/.env
+          echo "PHONE_NUMBER_ID=$PHONE_NUMBER_ID" >> functions/.env
+          echo "✓ functions/.env file generated dynamically"
+
       - name: Deploy Complete Architecture to Firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
