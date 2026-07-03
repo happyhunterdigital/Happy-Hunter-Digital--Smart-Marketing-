@@ -10,9 +10,13 @@ export const getPlacesData = async (query: string, apiKey: string) => {
     headers: {
       "Content-Type": "application/json",
       "X-Goog-Api-Key": apiKey,
-      "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress"
+      "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress,places.location"
     },
-    body: JSON.stringify({ textQuery: query })
+    body: JSON.stringify({ 
+      textQuery: query,
+      languageCode: "en",
+      regionCode: "ZA"
+    })
   });
 
   const data = await res.json() as any;

@@ -111,9 +111,15 @@ export const performAudit = onCall({
         biz = retryData?.places?.[0] || null;
       }
     } catch (placesError: any) {
-      console.warn(`[performAudit] Places Lookup Failed [TraceId: ${traceId}]:`, placesError.message, ". Degrading gracefully to GHOST status.");
+      console.warn(`[performAudit] Places Lookup Failed [TraceId: ${traceId}]:`, placesError.message);
     }
-    const websiteUrl = biz?.websiteUri || null;
+
+    if (!biz || !biz.location || biz.location.latitude === undefined || biz.location.longitude === undefined) {
+      console.warn(`[performAudit] Business not found or coordinates missing [TraceId: ${traceId}]. Aborting.`);
+      throw new HttpsError("not-found", "Business not found. Please verify the name and city.");
+    }
+
+    const websiteUrl = biz.websiteUri || null;
     const mapsName = biz?.displayName?.text || null;
     const rating = biz?.rating || 0;
     const reviewCount = biz?.userRatingCount || 0;
