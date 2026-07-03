@@ -6,6 +6,7 @@ interface AuditFormProps {
   form: {
     biz: string;
     loc: string;
+    web: string;
     name: string;
     mail: string;
     wa: string;
@@ -59,6 +60,22 @@ export const AuditForm: React.FC<AuditFormProps> = ({
               onBlur={() => setTerminalFocus(false)}
               onChange={e => setForm({...form, biz: e.target.value})} 
               value={form.biz}
+              required 
+            />
+          </div>
+
+          <div className={`p-4 rounded-xl border transition-all ${terminalFocus ? 'border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.3)] bg-black' : 'border-gray-800 bg-gray-900/50'}`}>
+            <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 block">
+              <b>TARGET_WEBSITE_URL</b>
+            </label>
+            <input 
+              className="w-full bg-transparent text-white font-mono text-lg outline-none placeholder:text-gray-700" 
+              placeholder="e.g. https://happyhunterdigital.com" 
+              type="url"
+              onFocus={() => setTerminalFocus(true)}
+              onBlur={() => setTerminalFocus(false)}
+              onChange={e => setForm({...form, web: e.target.value})} 
+              value={form.web}
               required 
             />
           </div>

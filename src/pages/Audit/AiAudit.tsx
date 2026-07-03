@@ -22,7 +22,7 @@ interface AuditData {
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
+  const [form, setForm] = useState({ biz: '', loc: '', web: '', name: '', mail: '', wa: '' });
   const [phoneError, setPhoneError] = useState('');
   const [scanProgress, setScanProgress] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,8 @@ export const AiAudit: React.FC = () => {
       const performAudit = httpsCallable(functions, 'performAudit');
       const response = await performAudit({
         businessName: form.biz,
-        location: form.loc,
+        city: form.loc,
+        websiteUrl: form.web,
         clientEmail: form.mail,
         whatsapp: form.wa
       });
@@ -110,7 +111,7 @@ export const AiAudit: React.FC = () => {
             onReset={() => {
               setResult(null);
               setStep(1);
-              setForm({ biz: '', loc: '', name: '', mail: '', wa: '' });
+              setForm({ biz: '', loc: '', web: '', name: '', mail: '', wa: '' });
               setError('');
             }}
           />
