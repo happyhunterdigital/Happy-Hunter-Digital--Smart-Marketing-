@@ -110,7 +110,7 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: ALLOWED_ORIGINS,
   enforceAppCheck: false, // TEMPORARILY DISABLED: Was causing 401 errors in production
-  secrets: ["DEEPSEEK_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID"], // Provisioned in Secret Manager via deploy.yml CI step
+  secrets: ["DEEPSEEK_API_KEY"], // Restored to DEEPSEEK_API_KEY only (WHATSAPP_TOKEN & PHONE_NUMBER_ID are non-secret env vars)
   maxInstances: 10,
   timeoutSeconds: 300
 }, async (request) => {
@@ -143,9 +143,9 @@ export const performAudit = onCall({
     (request.rawRequest?.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
     request.rawRequest?.ip ||
     "unknown";
-  const withinLimit = await checkRateLimit(`audit_${callerIp}`, 3, 60);
+  const withinLimit = await checkRateLimit(`audit_${callerIp}`, 3, 525600); // 3 requests per 1 year (525600 minutes) to limit strictly per computer
   if (!withinLimit) {
-    throw new HttpsError("resource-exhausted", "Too many requests. Please try again in an hour.");
+    throw new HttpsError("resource-exhausted", "You have exhausted your limit of 3 audits per computer.");
   }
 
   const safeBizName = sanitizeInput(businessName, 100);
@@ -356,6 +356,9 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
         <ul style="color: #ccc;">
           ${analysis.truths.map((t: string) => `<li>${escapeHtml(t)}</li>`).join('')}
         </ul>
+      </div>
+      <div style="margin-top: 30px; border-top: 1px solid #222; padding-top: 20px; color: #888; font-size: 13px;">
+        💡 <strong>Need an in-depth analysis?</strong> Please contact <a href="mailto:motsumitl@happyhunterdigital.com" style="color: #eab308; text-decoration: none;">motsumitl@happyhunterdigital.com</a>
       </div>
     </div>`;
 

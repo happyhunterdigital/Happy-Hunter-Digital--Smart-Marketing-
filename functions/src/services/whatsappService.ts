@@ -71,6 +71,9 @@ export const sendAuditResultToClient = async (
     truthLines,
     ``,
     `━━━━━━━━━━━━━━━━━━━━━`,
+    `💡 *Need an in-depth analysis?*`,
+    `Contact *motsumitl@happyhunterdigital.com* for in-depth analysis.`,
+    ``,
     `💡 Want to fix these issues? Reply *YES* or visit happyhunterdigital.com`
   ].join("\n");
 

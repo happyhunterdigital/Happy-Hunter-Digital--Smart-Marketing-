@@ -40,6 +40,14 @@ export const AiAudit: React.FC = () => {
 
   const runForensicScan = async () => {
     if (phoneError || !form.wa) return;
+
+    // LocalStorage limit check
+    const currentCount = parseInt(localStorage.getItem('hhd_audit_count') || '0', 10);
+    if (currentCount >= 3) {
+      setError('You have exhausted your limit of 3 audits per computer.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setScanProgress(0);
@@ -60,12 +68,20 @@ export const AiAudit: React.FC = () => {
       });
       clearInterval(progressInterval);
       setScanProgress(100);
+
+      // Increment scan count on success
+      localStorage.setItem('hhd_audit_count', String(currentCount + 1));
+
       setResult(response.data as AuditData);
       setStep(4);
     } catch (err: any) {
       clearInterval(progressInterval);
       const msg = err?.message || '';
-      if (msg.includes('resource-exhausted')) setError('Rate limit exceeded. Please try again in an hour.');
+      if (msg.includes('resource-exhausted') || msg.includes('exhausted')) {
+        setError('You have exhausted your limit of 3 audits per computer.');
+        // Securely write to localStorage to prevent bypass
+        localStorage.setItem('hhd_audit_count', '3');
+      }
       else if (msg.includes('not-found') || msg.includes('Business not found')) setError('Business not found. Please verify the name and city.');
       else if (msg.includes('invalid-argument')) {
         if (msg.toLowerCase().includes('url') || msg.toLowerCase().includes('domain')) {
