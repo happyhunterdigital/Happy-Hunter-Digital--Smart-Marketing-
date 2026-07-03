@@ -30,6 +30,15 @@ const isValidEmail = (email: string): boolean => {
   return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
 };
 
+/**
+ * Validates that a string looks like a real domain or URL (must have a TLD).
+ * Rejects bare words like "happyhunterdigital" with no dot/TLD.
+ * GBP/Maps URLs pass automatically via isGbpUrl() before this check.
+ */
+const isValidDomainOrUrl = (urlStr: string): boolean => {
+  return /^(https?:\/\/)?([\.\da-z-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i.test(urlStr);
+};
+
 const checkRateLimit = async (
   identifier: string,
   maxRequests: number = 3,
@@ -107,6 +116,14 @@ export const performAudit = onCall({
 
   if (!safeBizName || !safeCity) {
     throw new HttpsError("invalid-argument", "One of the input fields is invalid after sanitization.");
+  }
+
+  // Validate website URL format when one is provided (and it's not a GBP/Maps link)
+  if (hasWebsite && !gbpOnly && !isValidDomainOrUrl(safeWebsiteUrl)) {
+    throw new HttpsError(
+      "invalid-argument",
+      "The website URL must be a valid domain (e.g., domain.com or https://domain.com). Bare names without a TLD are not accepted."
+    );
   }
 
   try {
@@ -210,29 +227,31 @@ ${context}
 </data>
 
 Audit requirements to evaluate:
-1. SEO meta tags (title, description, schema markup)
-2. Content quality (marketing clarity, value proposition, copywriting)
-3. Call-to-action (CTA) effectiveness (clarity of steps for visitor)
-4. User experience (structure, legibility, layout hierarchy)
-5. Mobile responsiveness (inferred from presence and format of HTML viewport meta tags)
-6. Brand consistency (cohesion of message, tone)
-7. Google Business Profile (GBP) signals — note whether schema markup includes LocalBusiness types indicating GBP alignment, and comment on local SEO readiness.
+1. Google Business Profile (GBP) alignment — check whether LocalBusiness, Organization, or similar schema types are present. Assess whether the site sends strong local SEO signals to Google Maps. This is MANDATORY to evaluate regardless of other findings.
+2. SEO meta tags (title, description, schema markup quality)
+3. Content quality (marketing clarity, value proposition, copywriting)
+4. Call-to-action (CTA) effectiveness (clarity of steps for visitor)
+5. User experience (structure, legibility, layout hierarchy)
+6. Mobile responsiveness (inferred from presence and format of HTML viewport meta tags)
+7. Brand consistency (cohesion of message, tone)
 
 SCORING RUBRIC (0-100):
 - Start at 100 points, then deduct based on critical weaknesses found:
+  - No LocalBusiness/GBP schema or poor local SEO signals: Deduct up to 10 points
   - Missing/poor SEO meta title/description: Deduct up to 15 points
-  - Missing/poor Schema Markup: Deduct up to 15 points
+  - Missing/poor Schema Markup overall: Deduct up to 10 points
   - Unclear/missing value proposition: Deduct up to 20 points
   - Ineffective/missing primary CTAs: Deduct up to 20 points
-  - Poor layout readability/structure: Deduct up to 15 points
+  - Poor layout readability/structure: Deduct up to 10 points
   - Missing/invalid viewport tag (poor mobile support): Deduct up to 15 points
 
-INSTRUCTIONS FOR 'truths' ARRAY (Must contain exactly 3 items):
-- Truth 1: Summarize the state of SEO optimization & metadata, including any GBP/LocalBusiness schema signals detected.
-- Truth 2: Evaluate the core content quality, messaging clarity, and CTA effectiveness.
-- Truth 3: Synthesize the technical UX findings (responsiveness, schema, structure).
+INSTRUCTIONS FOR 'truths' ARRAY (Must contain exactly 4 items):
+- Truth 1 (MANDATORY — GBP): Explicitly state whether Google Business Profile schema signals (LocalBusiness, Organization, etc.) are detected. Comment on the business's Google Maps / local SEO readiness.
+- Truth 2 (SEO): Summarize the state of SEO metadata (title, description, schema markup).
+- Truth 3 (Content & CTA): Evaluate core content quality, messaging clarity, and CTA effectiveness.
+- Truth 4 (Technical UX): Synthesize technical UX findings (responsiveness, structure, layout).
 
-Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "string", "string"]}`;
+Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "string", "string", "string"]}`;
 
       analysis = await callDeepSeekAudit(prompt);
 

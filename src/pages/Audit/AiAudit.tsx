@@ -67,7 +67,13 @@ export const AiAudit: React.FC = () => {
       const msg = err?.message || '';
       if (msg.includes('resource-exhausted')) setError('Rate limit exceeded. Please try again in an hour.');
       else if (msg.includes('not-found') || msg.includes('Business not found')) setError('Business not found. Please verify the name and city.');
-      else if (msg.includes('invalid-argument')) setError('Please check your inputs and try again.');
+      else if (msg.includes('invalid-argument')) {
+        if (msg.toLowerCase().includes('url') || msg.toLowerCase().includes('domain')) {
+          setError('Invalid website URL. Please enter a full domain like happyhunterdigital.com or https://happyhunterdigital.com.');
+        } else {
+          setError('Please check your inputs and try again.');
+        }
+      }
       else if (msg.includes('failed-precondition')) setError('System configuration error. Please contact support.');
       else setError('Neural Handshake Interrupted. Please try again shortly.');
       setStep(2);
