@@ -103,6 +103,18 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
         run: firebase deploy --only storage --dry-run --project happy-hunter-systems || exit 1
 
+      - name: Set Firebase Runtime Secrets
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PLACES_API_KEY: ${{ secrets.PLACES_API_KEY }}
+        run: |
+          printf '%s' "$DEEPSEEK_API_KEY" | firebase functions:secrets:set DEEPSEEK_API_KEY --project happy-hunter-systems --data-file -
+          printf '%s' "$GEMINI_API_KEY" | firebase functions:secrets:set GEMINI_API_KEY --project happy-hunter-systems --data-file -
+          printf '%s' "$PLACES_API_KEY" | firebase functions:secrets:set PLACES_API_KEY --project happy-hunter-systems --data-file -
+          echo "✓ Firebase runtime secrets updated"
+
       - name: Deploy Complete Architecture to Firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
