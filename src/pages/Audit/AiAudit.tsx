@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { AuditForm } from './AuditForm';
 import { AuditResults } from './AuditResults';
 import { httpsCallable } from 'firebase/functions';
@@ -20,33 +20,6 @@ interface AuditData {
   };
 }
 
-// Transform new API response to old AuditResults format
-const transformToVerdict = (data: AuditData) => ({
-  score: data.score,
-  summary: data.summary,
-  diagnosis: data.summary,
-  truths: data.truths,
-  revenueLoss: { amount: 'R18,500+' },
-  identityCrisis: { status: data.telemetry.mapsStatus },
-  gapAnalysis: [
-    {
-      title: 'Google Maps Visibility',
-      status: data.telemetry.mapsStatus.includes('GHOST') ? 'CRITICAL' : 'OK',
-      urgency: data.telemetry.mapsStatus.includes('GHOST') ? 'HIGH' : 'LOW'
-    },
-    {
-      title: 'Schema Markup',
-      status: data.telemetry.schema ? 'OK' : 'MISSING',
-      urgency: data.telemetry.schema ? 'LOW' : 'MEDIUM'
-    },
-    {
-      title: 'Website Linked',
-      status: data.telemetry.website !== 'None Linked' ? 'OK' : 'MISSING',
-      urgency: data.telemetry.website !== 'None Linked' ? 'LOW' : 'HIGH'
-    }
-  ]
-});
-
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
@@ -55,7 +28,6 @@ export const AiAudit: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AuditData | null>(null);
   const [error, setError] = useState('');
-  const reportRef = useRef<HTMLDivElement>(null);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -101,9 +73,6 @@ export const AiAudit: React.FC = () => {
     }
   };
 
-  const downloadPDF = () => {
-    alert('PDF download coming soon');
-  };
 
   return (
     <div className="min-h-screen bg-black text-white py-20 px-4">
@@ -137,10 +106,13 @@ export const AiAudit: React.FC = () => {
 
         {step === 4 && result && (
           <AuditResults 
-            verdict={transformToVerdict(result)}
-            reportRef={reportRef}
-            downloadPDF={downloadPDF}
-            bizName={form.biz}
+            result={result}
+            onReset={() => {
+              setResult(null);
+              setStep(1);
+              setForm({ biz: '', loc: '', name: '', mail: '', wa: '' });
+              setError('');
+            }}
           />
         )}
       </div>
