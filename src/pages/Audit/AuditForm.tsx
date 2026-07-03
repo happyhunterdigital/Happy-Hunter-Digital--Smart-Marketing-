@@ -66,18 +66,20 @@ export const AuditForm: React.FC<AuditFormProps> = ({
 
           <div className={`p-4 rounded-xl border transition-all ${terminalFocus ? 'border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.3)] bg-black' : 'border-gray-800 bg-gray-900/50'}`}>
             <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 block">
-              <b>TARGET_WEBSITE_URL</b>
+              <b>TARGET_WEBSITE_URL</b> <span className="text-gray-700 normal-case">— optional</span>
             </label>
             <input 
               className="w-full bg-transparent text-white font-mono text-lg outline-none placeholder:text-gray-700" 
               placeholder="e.g. https://happyhunterdigital.com" 
-              type="url"
+              type="text"
               onFocus={() => setTerminalFocus(true)}
               onBlur={() => setTerminalFocus(false)}
               onChange={e => setForm({...form, web: e.target.value})} 
               value={form.web}
-              required 
             />
+            <p className="text-[10px] font-mono text-gray-600 mt-2">
+              No website? Paste your Google Maps / GBP link instead — we'll run a GBP-only audit.
+            </p>
           </div>
 
           <div className={`p-4 rounded-xl border transition-all ${terminalFocus ? 'border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.3)] bg-black' : 'border-gray-800 bg-gray-900/50'}`}>

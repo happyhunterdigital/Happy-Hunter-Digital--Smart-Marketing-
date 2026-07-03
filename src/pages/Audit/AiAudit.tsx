@@ -11,6 +11,8 @@ interface AuditData {
   truths: string[];
   telemetry: {
     mapsStatus: string;
+    gbpOnly: boolean;
+    gbpUrl: string;
     website: string;
     schema: boolean;
     schemasDetected: string[];
@@ -52,7 +54,7 @@ export const AiAudit: React.FC = () => {
       const response = await performAudit({
         businessName: form.biz,
         city: form.loc,
-        websiteUrl: form.web,
+        websiteUrl: form.web || "",
         clientEmail: form.mail,
         whatsapp: form.wa
       });
