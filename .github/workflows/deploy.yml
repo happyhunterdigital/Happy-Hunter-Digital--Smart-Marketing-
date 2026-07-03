@@ -109,10 +109,14 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PLACES_API_KEY: ${{ secrets.PLACES_API_KEY }}
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          PHONE_NUMBER_ID: ${{ secrets.PHONE_NUMBER_ID }}
         run: |
           printf '%s' "$DEEPSEEK_API_KEY" | firebase functions:secrets:set DEEPSEEK_API_KEY --project happy-hunter-systems --data-file -
           printf '%s' "$GEMINI_API_KEY" | firebase functions:secrets:set GEMINI_API_KEY --project happy-hunter-systems --data-file -
           printf '%s' "$PLACES_API_KEY" | firebase functions:secrets:set PLACES_API_KEY --project happy-hunter-systems --data-file -
+          printf '%s' "$WHATSAPP_TOKEN" | firebase functions:secrets:set WHATSAPP_TOKEN --project happy-hunter-systems --data-file -
+          printf '%s' "$PHONE_NUMBER_ID" | firebase functions:secrets:set PHONE_NUMBER_ID --project happy-hunter-systems --data-file -
           echo "✓ Firebase runtime secrets updated"
 
       - name: Refresh Functions Lock File

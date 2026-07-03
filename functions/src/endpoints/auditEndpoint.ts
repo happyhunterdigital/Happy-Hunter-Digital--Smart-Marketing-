@@ -110,7 +110,7 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: ALLOWED_ORIGINS,
   enforceAppCheck: false, // TEMPORARILY DISABLED: Was causing 401 errors in production
-  secrets: ["DEEPSEEK_API_KEY"], // Only DEEPSEEK_API_KEY is in Secret Manager; WHATSAPP_TOKEN is a Cloud Run env var
+  secrets: ["DEEPSEEK_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID"], // Provisioned in Secret Manager via deploy.yml CI step
   maxInstances: 10,
   timeoutSeconds: 300
 }, async (request) => {
