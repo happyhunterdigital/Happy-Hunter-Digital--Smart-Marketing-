@@ -1,121 +1,116 @@
-// src/pages/Audit/AuditResults.tsx
 import React from 'react';
-import { AlertTriangle, Download, MessageSquare, ShieldCheck, TrendingDown, Calendar, Database } from 'lucide-react';
-import { SchemaVisualizer } from '../../components/Audit/SchemaVisualizer';
-import { AudioBriefing } from '../../components/Audit/AudioBriefing';
+import { Shield, Globe, Code2, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
 
 interface AuditResultsProps {
-  verdict: any;
-  reportRef: React.RefObject<HTMLDivElement>;
-  downloadPDF: () => void;
-  bizName: string;
+  result: {
+    success: boolean;
+    score: number;
+    summary: string;
+    truths: string[];
+    telemetry: {
+      mapsStatus: string;
+      website: string;
+      schema: boolean;
+      schemasDetected: string[];
+      mapsName?: string;
+      rating?: number;
+      reviewCount?: number;
+    };
+  };
+  onReset: () => void;
 }
 
-export const AuditResults: React.FC<AuditResultsProps> = ({ verdict, reportRef, downloadPDF, bizName }) => {
+export const AuditResults: React.FC<AuditResultsProps> = ({ result, onReset }) => {
+  const isGood = result.score >= 70;
+  const isGhost = result.telemetry.mapsStatus.includes('GHOST');
+  const isHijacked = result.telemetry.mapsStatus.includes('HIJACKED');
+
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
-      
-      <AudioBriefing score={verdict.score} summary={verdict.summary} bizName={bizName} />
-
-      <div ref={reportRef} className="p-8 md:p-12 bg-black border border-gray-800 rounded-[3rem] shadow-2xl relative overflow-hidden">
-        
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-10 border-b border-gray-800 pb-10">
-          <div className="text-center md:text-left">
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-500 mb-2">Your Digital Survival Score</p>
-            <div className="flex items-center gap-4 justify-center md:justify-start">
-              <span className={`text-7xl md:text-8xl font-black leading-none ${verdict.score >= 80 ? 'text-green-500' : verdict.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>{verdict.score}</span>
-              <span className="text-gray-700 text-2xl font-bold">/100</span>
-            </div>
+    <div className="max-w-4xl mx-auto animate-fade-in">
+      <div className="bg-black border border-gray-800 rounded-[2rem] overflow-hidden shadow-2xl">
+        <div className={`p-8 md:p-12 text-center relative overflow-hidden ${isGhost ? 'bg-gray-900' : isHijacked ? 'bg-red-950/30' : 'bg-gray-900/50'}`}>
+          <div className={`absolute top-0 left-0 w-full h-1 ${isGood ? 'bg-green-500' : isGhost ? 'bg-gray-600' : 'bg-yellow-500'}`}></div>
+          
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-mono uppercase tracking-widest mb-6">
+            {isGood ? <CheckCircle size={14} className="text-green-500" /> : <AlertTriangle size={14} className="text-yellow-500" />}
+            Audit Complete — {result.telemetry.mapsStatus}
           </div>
-          <div className="bg-red-500/5 border border-red-500/20 p-6 rounded-3xl flex items-center gap-4 w-full md:w-auto">
-            <TrendingDown className="text-red-500" size={32} />
-            <div>
-              <p className="text-red-500 font-black text-2xl leading-none">{verdict.revenueLoss?.amount || 'R18,500+'}</p>
-              <p className="text-red-500/70 text-[9px] uppercase font-bold mt-1 tracking-widest">Est. Monthly Revenue Recovery</p>
-            </div>
-          </div>
-        </div>
 
-        {/* HEADER: DIAGNOSIS */}
-        <div className="mb-10 p-6 bg-red-500/10 border border-red-500/20 rounded-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
-          <h3 className="text-red-500 font-black uppercase tracking-tight flex items-center gap-2 mb-2">
-            <AlertTriangle size={18} /> CRITICAL VULNERABILITY
-          </h3>
-          <p className="text-gray-300 text-sm leading-relaxed">
-            <b>Diagnosis:</b> {verdict.diagnosis || verdict.summary}
+          <h2 className="text-5xl md:text-7xl font-black text-white mb-2">{result.score}<span className="text-2xl text-gray-600">/100</span></h2>
+          <p className={`text-lg font-mono ${isGood ? 'text-green-400' : 'text-yellow-400'}`}>
+            {isGhost ? 'GHOST ENTITY DETECTED' : isHijacked ? 'TRAFFIC HIJACK RISK' : 'ENTITY VERIFIED'}
           </p>
         </div>
 
-        <SchemaVisualizer schemas={verdict.telemetry?.schemasDetected || []} />
+        <div className="p-8 md:p-12 border-b border-gray-900">
+          <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-4">Intelligence Summary</h3>
+          <p className="text-gray-300 leading-relaxed text-lg">{result.summary}</p>
+        </div>
 
-        <div className="space-y-10">
-          {/* SECTION 1: IDENTITY CRISIS */}
-          <div>
-            <h3 className="text-white font-black uppercase text-xl md:text-2xl tracking-tight mb-4 flex items-center gap-3 border-b border-gray-800 pb-4">
-              <ShieldCheck size={24} className={verdict.identityCrisis?.status === 'Aligned' ? 'text-green-500' : 'text-yellow-500'}/>
-              Section 1: The Identity Crisis <span className="text-sm font-medium text-gray-500 ml-auto tracking-widest bg-gray-900 px-3 py-1 rounded-full">{verdict.identityCrisis?.status || 'Analyzing...'}</span>
-            </h3>
-            <div className="space-y-4">
-              <p className="text-gray-300 text-sm"><b>The Truths:</b> {verdict.truths?.join(" | ") || "Pending detailed verification."}</p>
+        <div className="p-8 md:p-12 border-b border-gray-900">
+          <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-6">Audit Truths</h3>
+          <div className="space-y-4">
+            {result.truths.map((truth, i) => (
+              <div key={i} className="flex items-start gap-4 p-4 bg-gray-900/50 rounded-xl border border-gray-800">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${i === 0 ? 'bg-yellow-500/20 text-yellow-500' : i === 1 ? 'bg-blue-500/20 text-blue-500' : 'bg-purple-500/20 text-purple-500'}`}>
+                  {i + 1}
+                </div>
+                <p className="text-gray-300 text-sm leading-relaxed pt-1">{truth}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-8 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-6 bg-gray-900/30 rounded-xl border border-gray-800">
+            <div className="flex items-center gap-3 mb-3">
+              <Shield size={18} className={isGhost ? 'text-gray-600' : 'text-green-500'} />
+              <span className="text-xs font-mono text-gray-500 uppercase">Google Maps Status</span>
             </div>
+            <p className="text-white font-mono text-sm">{result.telemetry.mapsStatus}</p>
+            {result.telemetry.mapsName && (
+              <p className="text-gray-500 text-xs mt-1">Found: {result.telemetry.mapsName}</p>
+            )}
+            {result.telemetry.rating ? (
+              <p className="text-gray-500 text-xs mt-1">Rating: {result.telemetry.rating} ({result.telemetry.reviewCount} reviews)</p>
+            ) : null}
           </div>
 
-          {/* SECTION 2: THE GAP ANALYSIS */}
-          {verdict.gapAnalysis && (
-            <div>
-              <h3 className="text-white font-black uppercase text-xl md:text-2xl tracking-tight mb-4 flex items-center gap-3 border-b border-gray-800 pb-4">
-                <Database size={24} className="text-red-500"/>
-                Section 2: The Gap Analysis
-              </h3>
-              <p className="text-gray-500 text-xs uppercase tracking-widest mb-6 border-l-2 border-red-500 pl-3">These are the "silent killers" of your local ranking.</p>
-              
-              <div className="grid gap-4">
-                {verdict.gapAnalysis?.map((gap: any, i: number) => (
-                  <div key={i} className="bg-black border border-gray-800 rounded-xl overflow-hidden relative">
-                    <div className={`absolute top-0 left-0 w-1 h-full ${gap.status === 'HEALTHY' || gap.status === 'VERIFIED' ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                    <div className="p-5 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                      <div className="w-full">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-white font-bold text-sm tracking-wide">• {gap.title}</h4>
-                          <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded ${gap.status === 'HEALTHY' || gap.status === 'VERIFIED' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>[{gap.status}]</span>
-                        </div>
-                        <p className="text-gray-400 text-xs leading-relaxed"><b>Urgency:</b> {gap.urgency}</p>
-                      </div>
-                    </div>
-                  </div>
+          <div className="p-6 bg-gray-900/30 rounded-xl border border-gray-800">
+            <div className="flex items-center gap-3 mb-3">
+              <Globe size={18} className={result.telemetry.website !== 'None Linked' ? 'text-blue-500' : 'text-gray-600'} />
+              <span className="text-xs font-mono text-gray-500 uppercase">Website</span>
+            </div>
+            <p className="text-white font-mono text-sm truncate">{result.telemetry.website}</p>
+          </div>
+
+          <div className="p-6 bg-gray-900/30 rounded-xl border border-gray-800 md:col-span-2">
+            <div className="flex items-center gap-3 mb-3">
+              <Code2 size={18} className={result.telemetry.schema ? 'text-purple-500' : 'text-gray-600'} />
+              <span className="text-xs font-mono text-gray-500 uppercase">Schema Markup</span>
+            </div>
+            <p className="text-white font-mono text-sm mb-2">
+              {result.telemetry.schema ? `${result.telemetry.schemasDetected.length} schema(s) detected` : 'No Schema Markup detected'}
+            </p>
+            {result.telemetry.schema && (
+              <div className="flex flex-wrap gap-2">
+                {result.telemetry.schemasDetected.map((s, i) => (
+                  <span key={i} className="px-2 py-1 bg-purple-500/10 border border-purple-500/30 rounded text-xs font-mono text-purple-400">
+                    {s}
+                  </span>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* SECTION 4: RECOVERY ROADMAP */}
-        <div className="mt-12 p-8 md:p-10 bg-black border border-yellow-500/30 rounded-[2rem] text-center relative overflow-hidden group hover:shadow-neural-glow transition-all">
-          <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
-          <p className="text-yellow-500 font-black uppercase tracking-widest text-xs mb-2">Section 4: The Recovery Roadmap</p>
-          <h3 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-4">Immediate Entity Alignment</h3>
-          <p className="text-gray-400 mb-8 text-sm md:text-base max-w-xl mx-auto leading-relaxed border-t border-gray-800 pt-6 mt-6">
-            <b>Recommendation:</b> Schedule a diagnostic mapping session to execute your proprietary recovery protocol.
-          </p>
-          <a href="https://calendly.com/motsumitl/30min" target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 bg-yellow-500 text-black px-8 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(234,179,8,0.2)] w-full md:w-auto">
-            <Calendar size={18} /> Book Your 15-Minute Alignment Call
-          </a>
-          <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest mt-4 italic">Secure your territory before your competitors lock you out of the Knowledge Graph.</p>
+        <div className="p-8 md:p-12 border-t border-gray-900 text-center">
+          <button onClick={onReset} 
+            className="inline-flex items-center gap-3 px-8 py-4 bg-yellow-500 rounded-xl font-black uppercase text-black hover:bg-white transition-all">
+            <RotateCcw size={18} /> Run Another Audit
+          </button>
+          <p className="text-gray-600 text-xs font-mono mt-4">Report sent to your email. Check your inbox.</p>
         </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <button onClick={downloadPDF} className="w-full p-5 bg-black border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:bg-gray-900 transition-all flex items-center justify-center gap-3">
-          <Download size={18}/> Export Report to PDF
-        </button>
-        <a 
-          href={`https://wa.me/27601016673?text=Hi%20Thabo!%20I%20just%20completed%20the%20Survival%20Scan%20for%20${bizName}%20and%20scored%20${verdict.score}/100.%20Let%27s%20talk%20about%20my%20Recovery%20Protocol.`}
-          target="_blank" rel="noreferrer"
-          className="w-full p-5 bg-black border border-gray-800 text-white rounded-2xl font-bold uppercase text-xs hover:text-yellow-500 hover:border-yellow-500 transition-all flex items-center justify-center gap-3"
-        >
-          <MessageSquare size={18}/> Message Thabo on WhatsApp
-        </a>
       </div>
     </div>
   );

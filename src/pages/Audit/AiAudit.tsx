@@ -1,67 +1,79 @@
 import React, { useState, useRef } from 'react';
-import { db, functions } from '../../firebaseConfig';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { AuditForm } from './AuditForm';
 import { AuditResults } from './AuditResults';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../../firebaseConfig';
+
+interface AuditData {
+  success: boolean;
+  score: number;
+  summary: string;
+  truths: string[];
+  telemetry: {
+    mapsStatus: string;
+    website: string;
+    schema: boolean;
+    schemasDetected: string[];
+    mapsName?: string;
+    rating?: number;
+    reviewCount?: number;
+  };
+}
+
+// Transform new API response to old AuditResults format
+const transformToVerdict = (data: AuditData) => ({
+  score: data.score,
+  summary: data.summary,
+  diagnosis: data.summary,
+  truths: data.truths,
+  revenueLoss: { amount: 'R18,500+' },
+  identityCrisis: { status: data.telemetry.mapsStatus },
+  gapAnalysis: [
+    {
+      title: 'Google Maps Visibility',
+      status: data.telemetry.mapsStatus.includes('GHOST') ? 'CRITICAL' : 'OK',
+      urgency: data.telemetry.mapsStatus.includes('GHOST') ? 'HIGH' : 'LOW'
+    },
+    {
+      title: 'Schema Markup',
+      status: data.telemetry.schema ? 'OK' : 'MISSING',
+      urgency: data.telemetry.schema ? 'LOW' : 'MEDIUM'
+    },
+    {
+      title: 'Website Linked',
+      status: data.telemetry.website !== 'None Linked' ? 'OK' : 'MISSING',
+      urgency: data.telemetry.website !== 'None Linked' ? 'LOW' : 'HIGH'
+    }
+  ]
+});
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ biz: '', loc: '', name: '', mail: '', wa: '' });
-  const [scanProgress, setScanProgress] = useState(0);
-  const [verdict, setVerdict] = useState<any>(null);
-  const reportRef = useRef<HTMLDivElement>(null);
   const [phoneError, setPhoneError] = useState('');
-
-  const calculateRevenueLoss = (score: number) => {
-    if (score <= 30) return { amount: 'R18,500+', desc: 'Severe ghost entity status. Maximum revenue leakage.' };
-    if (score <= 55) return { amount: 'R9,800+', desc: 'Critical signal failures. Significant monthly loss.' };
-    return { amount: 'R3,200+', desc: 'Moderate gaps detected. Optimization required.' };
-  };
-
-  const validatePhone = (phone: string) => {
-    const phoneRegex = /^\+[1-9]\d{1,14}$/;
-    if (!phone) {
-      setPhoneError('WhatsApp number is required.');
-      return false;
-    }
-    if (!phone.startsWith('+')) {
-      setPhoneError('Must start with a + country code.');
-      return false;
-    }
-    if (phone.includes(' ')) {
-      setPhoneError('Remove all spaces.');
-      return false;
-    }
-    if (!phoneRegex.test(phone)) {
-      setPhoneError('Invalid international format.');
-      return false;
-    }
-    setPhoneError('');
-    return true;
-  };
+  const [scanProgress, setScanProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<AuditData | null>(null);
+  const [error, setError] = useState('');
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.target.value;
-    setForm({ ...form, wa: input });
-    if (input.length > 0) validatePhone(input);
+    const val = e.target.value;
+    setForm({ ...form, wa: val });
+    const phoneRegex = /^[+]?[\d\s-]{10,}$/;
+    setPhoneError(val && !phoneRegex.test(val.replace(/\s/g, '')) ? 'Invalid phone format. Use +27601016673 format.' : '');
   };
 
   const runForensicScan = async () => {
-    if (!validatePhone(form.wa)) {
-        alert("Please fix the WhatsApp number format before proceeding.");
-        return;
-    }
-
+    if (phoneError || !form.wa) return;
+    setLoading(true);
+    setError('');
+    setScanProgress(0);
     setStep(3);
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 2;
-      setScanProgress(progress);
-      if (progress >= 95) clearInterval(interval);
-    }, 50);
+
+    const progressInterval = setInterval(() => {
+      setScanProgress(prev => Math.min(prev + 18, 90));
+    }, 800);
 
     try {
       const performAudit = httpsCallable(functions, 'performAudit');
@@ -71,58 +83,66 @@ export const AiAudit: React.FC = () => {
         clientEmail: form.mail,
         whatsapp: form.wa
       });
-      const data = response.data as any;
-      if (!data.success) throw new Error("Server rejected audit.");
-
-      const rev = calculateRevenueLoss(data.score);
-      setVerdict({ ...data, revenueLoss: rev });
-      
-      clearInterval(interval);
+      clearInterval(progressInterval);
       setScanProgress(100);
-      setTimeout(() => setStep(4), 500);
-
+      setResult(response.data as AuditData);
+      setStep(4);
     } catch (err: any) {
-      clearInterval(interval);
-      console.error(err);
-      alert("Neural Link Interrupted. Please check your connection and retry.");
-      setStep(1);
+      clearInterval(progressInterval);
+      const msg = err?.message || '';
+      if (msg.includes('resource-exhausted')) setError('Rate limit exceeded. Please try again in an hour.');
+      else if (msg.includes('invalid-argument')) setError('Please check your inputs and try again.');
+      else if (msg.includes('failed-precondition')) setError('System configuration error. Please contact support.');
+      else setError('Neural Handshake Interrupted. Please try again shortly.');
+      setStep(2);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const downloadPDF = async () => {
-    if (!reportRef.current) return;
-    const canvas = await html2canvas(reportRef.current, { backgroundColor: '#050505', scale: 2 });
-    const img = canvas.toDataURL('image/jpeg', 0.8);
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    const imgWidth = 210;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    pdf.addImage(img, 'JPEG', 0, 0, imgWidth, imgHeight);
-    pdf.save(`HH_Audit_${form.biz}.pdf`);
+  const downloadPDF = () => {
+    alert('PDF download coming soon');
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 px-4 pb-20">
-      {(step === 1 || step === 2 || step === 3) && (
-        <AuditForm 
-          step={step} 
-          form={form} 
-          setForm={setForm} 
-          setStep={setStep} 
-          phoneError={phoneError} 
-          handlePhoneChange={handlePhoneChange} 
-          runForensicScan={runForensicScan} 
-          scanProgress={scanProgress} 
-        />
-      )}
+    <div className="min-h-screen bg-black text-white py-20 px-4">
+      <div className="max-w-6xl mx-auto">
+        {step < 4 && (
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
+              Digital Entity <span className="text-yellow-500">Audit</span>
+            </h1>
+            <p className="text-gray-400 font-mono text-sm">Verify your existence in the AI-driven search ecosystem.</p>
+          </div>
+        )}
 
-      {step === 4 && verdict && (
-        <AuditResults 
-          verdict={verdict} 
-          reportRef={reportRef} 
-          downloadPDF={downloadPDF} 
-          bizName={form.biz} 
+        {error && (
+          <div className="max-w-2xl mx-auto mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl text-red-400 text-sm font-mono">
+            ⚠️ {error}
+          </div>
+        )}
+
+        <AuditForm
+          step={step}
+          form={form}
+          setForm={setForm}
+          setStep={setStep}
+          phoneError={phoneError}
+          handlePhoneChange={handlePhoneChange}
+          runForensicScan={runForensicScan}
+          scanProgress={scanProgress}
+          loading={loading}
         />
-      )}
+
+        {step === 4 && result && (
+          <AuditResults 
+            verdict={transformToVerdict(result)}
+            reportRef={reportRef}
+            downloadPDF={downloadPDF}
+            bizName={form.biz}
+          />
+        )}
+      </div>
     </div>
   );
 };
