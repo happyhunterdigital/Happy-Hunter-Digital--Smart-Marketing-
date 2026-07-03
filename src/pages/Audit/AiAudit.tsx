@@ -14,9 +14,9 @@ interface AuditData {
     website: string;
     schema: boolean;
     schemasDetected: string[];
-    mapsName?: string;
-    rating?: number;
-    reviewCount?: number;
+    title?: string;
+    description?: string;
+    viewport?: string;
   };
 }
 

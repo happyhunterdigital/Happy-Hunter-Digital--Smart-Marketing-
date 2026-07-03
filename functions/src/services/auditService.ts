@@ -1,6 +1,6 @@
 // functions/src/services/auditService.ts
 import axios from "axios";
-import * as cheerio from "cheerio";
+import { load } from "cheerio";
 import { callDeepSeek } from "./deepseekService";
 
 export interface ScrapedSiteData {
@@ -31,7 +31,7 @@ export const scrapeWebsiteText = async (url: string): Promise<ScrapedSiteData> =
       throw new Error("Invalid response content type");
     }
 
-    const $ = cheerio.load(html);
+    const $ = load(html);
 
     // 1. Extract Meta elements
     const title = $("title").text() || $("meta[property='og:title']").attr("content") || "";
@@ -82,7 +82,7 @@ export const scrapeWebsiteSchema = async (url: string) => {
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" },
       maxRedirects: 5
     });
-    const $ = cheerio.load(webRes.data);
+    const $ = load(webRes.data);
     let detected: string[] = [];
     $('script[type="application/ld+json"]').each((_, el) => {
       try {
