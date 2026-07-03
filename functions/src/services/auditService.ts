@@ -1,7 +1,6 @@
 // functions/src/services/auditService.ts
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { EMBEDDING_MODEL } from "../config";
 import { callDeepSeek } from "./deepseekService";
 
 export interface ScrapedSiteData {
