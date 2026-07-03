@@ -115,6 +115,12 @@ jobs:
           printf '%s' "$PLACES_API_KEY" | firebase functions:secrets:set PLACES_API_KEY --project happy-hunter-systems --data-file -
           echo "✓ Firebase runtime secrets updated"
 
+      - name: Refresh Functions Lock File
+        run: |
+          rm -f functions/package-lock.json
+          cd functions && npm install
+          echo "✓ functions/package-lock.json regenerated with axios + cheerio"
+
       - name: Deploy Complete Architecture to Firebase
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
