@@ -1,8 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
+import axios from "axios";
 import { scrapeWebsiteText, callDeepSeekAudit } from "../services/auditService";
-import { sendAdminAlert } from "../services/whatsappService";
-import { AI_MODEL } from "../config";
+import { sendAdminAlert, sendAuditResultToClient } from "../services/whatsappService";
+import { AI_MODEL, PLACES_API_KEY } from "../config";
 import { FieldValue } from "firebase-admin/firestore";
 
 /**
@@ -39,6 +40,34 @@ const isValidDomainOrUrl = (urlStr: string): boolean => {
   return /^(https?:\/\/)?([\.\da-z-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i.test(urlStr);
 };
 
+/**
+ * Queries the Google Places Text Search API to verify real GBP presence.
+ * Returns a human-readable status string for use in prompts and WhatsApp.
+ */
+const lookupGbpStatus = async (businessName: string, city: string): Promise<string> => {
+  if (!PLACES_API_KEY) {
+    console.warn("[lookupGbpStatus] PLACES_API_KEY not set — skipping GBP lookup.");
+    return "Unknown (Places API key not configured)";
+  }
+  try {
+    const query = encodeURIComponent(`${businessName} ${city}`);
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${PLACES_API_KEY}`;
+    const res = await axios.get(url, { timeout: 8000 });
+    const results = res.data?.results;
+    if (!results || results.length === 0) {
+      return "Not Found on Google Business Profile";
+    }
+    const place = results[0];
+    const name = place.name || businessName;
+    const rating = place.rating ? `${place.rating}⭐` : "No rating";
+    const reviews = place.user_ratings_total ? `${place.user_ratings_total} reviews` : "0 reviews";
+    return `✅ Verified — ${name} | ${rating} | ${reviews}`;
+  } catch (err: any) {
+    console.warn("[lookupGbpStatus] Places API call failed:", err.message);
+    return "GBP check unavailable";
+  }
+};
+
 const checkRateLimit = async (
   identifier: string,
   maxRequests: number = 3,
@@ -71,7 +100,7 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: ALLOWED_ORIGINS,
   enforceAppCheck: false, // TEMPORARILY DISABLED: Was causing 401 errors in production
-  secrets: ["DEEPSEEK_API_KEY"], // EXPLICIT RUNTIME SECRET PERMISSION (Google Places Secret Removed)
+  secrets: ["DEEPSEEK_API_KEY", "WHATSAPP_TOKEN", "PLACES_API_KEY"], // Runtime secrets for AI + WhatsApp + GBP lookup
   maxInstances: 10,
   timeoutSeconds: 300
 }, async (request) => {
@@ -130,6 +159,9 @@ export const performAudit = onCall({
     let analysis: { score: number; summary: string; truths: string[] };
     let telemetry: Record<string, any>;
 
+    // Verify real GBP presence via Google Places API (runs in parallel with main audit)
+    const gbpStatusPromise = lookupGbpStatus(safeBizName, safeCity);
+
     // ─────────────────────────────────────────────────────────────────────────
     // PATH A: GBP-ONLY AUDIT (no website provided, or a Google Maps URL given)
     // ─────────────────────────────────────────────────────────────────────────
@@ -137,10 +169,12 @@ export const performAudit = onCall({
       console.log(`[performAudit] GBP-only path activated [TraceId: ${traceId}]`);
 
       const gbpUrl = safeWebsiteUrl || "(not provided)";
+      const gbpStatus = await gbpStatusPromise;
 
       const context = `
 Business Name: ${safeBizName}
 Location/City: ${safeCity}
+Google Business Profile (verified): ${gbpStatus}
 Google Business Profile URL: ${gbpUrl}
 Website: NONE — this business has no standalone website.
 `;
@@ -182,6 +216,7 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
         mapsStatus: safeWebsiteUrl ? "GBP_URL_PROVIDED" : "NO_WEBSITE_NO_GBP",
         gbpOnly: true,
         gbpUrl: String(safeWebsiteUrl || ""),
+        gbpStatus: String(await gbpStatusPromise),
         website: "",
         schema: false,
         schemasDetected: [],
@@ -191,16 +226,21 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
       };
 
     // ─────────────────────────────────────────────────────────────────────────
-    // PATH B: FULL WEBSITE AUDIT (existing flow, unchanged)
+    // PATH B: FULL WEBSITE AUDIT (existing flow, plus live GBP verification)
     // ─────────────────────────────────────────────────────────────────────────
     } else {
-      let scrapedData;
-      try {
-        scrapedData = await scrapeWebsiteText(safeWebsiteUrl);
-      } catch (scrapingError: any) {
-        console.warn(`[performAudit] Website scraping failed [TraceId: ${traceId}]:`, scrapingError.message);
-        throw new HttpsError("invalid-argument", `Website unreachable: ${scrapingError.message}. Please check the URL and try again.`);
+      const [scrapedDataResult, gbpStatus] = await Promise.allSettled([
+        scrapeWebsiteText(safeWebsiteUrl),
+        gbpStatusPromise
+      ]);
+
+      if (scrapedDataResult.status === "rejected") {
+        console.warn(`[performAudit] Website scraping failed [TraceId: ${traceId}]:`, scrapedDataResult.reason?.message);
+        throw new HttpsError("invalid-argument", `Website unreachable: ${scrapedDataResult.reason?.message}. Please check the URL and try again.`);
       }
+
+      const scrapedData = scrapedDataResult.value;
+      const gbpStatusText = gbpStatus.status === "fulfilled" ? gbpStatus.value : "GBP check unavailable";
 
       const schemaString = scrapedData.schemas.length > 0
         ? `Detected JSON-LD Schemas: ${scrapedData.schemas.join(", ")}`
@@ -210,6 +250,7 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
 Business Name: ${safeBizName}
 Location/City: ${safeCity}
 Website URL: ${safeWebsiteUrl}
+Google Business Profile (verified via Places API): ${gbpStatusText}
 Website Meta Title: ${scrapedData.title}
 Website Meta Description: ${scrapedData.description}
 Website Viewport Element: ${scrapedData.viewport}
@@ -259,6 +300,7 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
         mapsStatus: "SCRAPED",
         gbpOnly: false,
         gbpUrl: "",
+        gbpStatus: gbpStatusText,
         website: String(safeWebsiteUrl || ""),
         schema: Boolean(scrapedData.schemas && scrapedData.schemas.length > 0),
         schemasDetected: Array.isArray(scrapedData.schemas) ? scrapedData.schemas.map(String) : [],
@@ -318,6 +360,21 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
     sendAdminAlert(safeBizName, safeEmail, whatsapp, analysis.score).catch((err) => {
       console.error("Admin alert failed:", err.message);
     });
+
+    // Send full audit results to the client's WhatsApp number
+    if (whatsapp) {
+      const gbpStatusForWa = String(telemetry.gbpStatus || (gbpOnly ? "No Website — GBP Only" : "See Truth 1"));
+      sendAuditResultToClient(
+        whatsapp,
+        safeBizName,
+        analysis.score,
+        analysis.summary,
+        analysis.truths,
+        gbpStatusForWa
+      ).catch((err) => {
+        console.error("Client WhatsApp delivery failed:", err.message);
+      });
+    }
 
     console.log(`[performAudit] Completed successfully [TraceId: ${traceId}]`, telemetry);
     return { success: true, ...analysis, telemetry };

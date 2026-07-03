@@ -39,3 +39,44 @@ export const sendAdminAlert = async (businessName: string, email: string, phone:
   const alertText = `🚨*NEW HIGH-INTENT LEAD DETECTED*\n\n*Entity:* ${businessName}\n*Contact:* ${email}\n*WhatsApp:* ${phone || 'Not Provided'}\n*Survival Score:* ${score}/100\n\n*Directive:* Initiate contact protocol immediately.`;
   return sendWhatsAppText(ADMIN_NUMBER, alertText);
 };
+
+/**
+ * Sends the full audit result directly to the client's WhatsApp number.
+ * Called after a successful performAudit run.
+ */
+export const sendAuditResultToClient = async (
+  to: string,
+  businessName: string,
+  score: number,
+  summary: string,
+  truths: string[],
+  gbpStatus: string
+): Promise<void> => {
+  if (!to) return;
+
+  const scoreEmoji = score >= 70 ? "✅" : score >= 40 ? "⚠️" : "🚨";
+  const truthLines = truths.map((t, i) => `*${i + 1}.* ${t}`).join("\n\n");
+
+  const message = [
+    `🎯 *Hunter AI — Digital Audit Report*`,
+    `*Business:* ${businessName}`,
+    `*Google Business Profile:* ${gbpStatus}`,
+    ``,
+    `${scoreEmoji} *Digital Survival Score: ${score}/100*`,
+    ``,
+    `📋 *Intelligence Summary*`,
+    summary,
+    ``,
+    `🔍 *Audit Truths*`,
+    truthLines,
+    ``,
+    `━━━━━━━━━━━━━━━━━━━━━`,
+    `💡 Want to fix these issues? Reply *YES* or visit happyhunterdigital.com`
+  ].join("\n");
+
+  try {
+    await sendWhatsAppText(to, message);
+  } catch (err: any) {
+    console.error("[sendAuditResultToClient] WhatsApp delivery failed:", err.message);
+  }
+};
