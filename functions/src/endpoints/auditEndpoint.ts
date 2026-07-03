@@ -3,7 +3,7 @@ import * as admin from "firebase-admin";
 import axios from "axios";
 import { scrapeWebsiteText, callDeepSeekAudit } from "../services/auditService";
 import { sendAdminAlert, sendAuditResultToClient } from "../services/whatsappService";
-import { AI_MODEL, PLACES_API_KEY } from "../config";
+import { AI_MODEL } from "../config";
 import { FieldValue } from "firebase-admin/firestore";
 
 /**
@@ -41,30 +41,40 @@ const isValidDomainOrUrl = (urlStr: string): boolean => {
 };
 
 /**
- * Queries the Google Places Text Search API to verify real GBP presence.
- * Returns a human-readable status string for use in prompts and WhatsApp.
+ * Detects Google Business Profile presence by scraping a Google search result.
+ * Looks for knowledge panel / GBP signals in the HTML — no API key required.
+ * Falls back gracefully if Google blocks the request.
  */
-const lookupGbpStatus = async (businessName: string, city: string): Promise<string> => {
-  if (!PLACES_API_KEY) {
-    console.warn("[lookupGbpStatus] PLACES_API_KEY not set — skipping GBP lookup.");
-    return "Unknown (Places API key not configured)";
-  }
+const detectGbpViaSearch = async (businessName: string, city: string): Promise<string> => {
   try {
     const query = encodeURIComponent(`${businessName} ${city}`);
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${PLACES_API_KEY}`;
-    const res = await axios.get(url, { timeout: 8000 });
-    const results = res.data?.results;
-    if (!results || results.length === 0) {
-      return "Not Found on Google Business Profile";
+    const searchUrl = `https://www.google.com/search?q=${query}&hl=en&gl=za`;
+    const res = await axios.get(searchUrl, {
+      timeout: 6000,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9"
+      }
+    });
+    const html: string = res.data || "";
+    // GBP knowledge panel indicators present in Google search HTML
+    const hasKnowledgePanel = [
+      "kp-header",        // Knowledge panel header class
+      "business.site",    // Google Business Site link
+      "maps.google.com",  // Maps embed link in panel
+      "lAd6b",            // GBP panel container class
+      "addr-container",   // Address block in knowledge panel
+      "YhemCb"            // Business hours container
+    ].some((signal) => html.includes(signal));
+
+    if (hasKnowledgePanel) {
+      return `✅ Google Business Profile detected in search results`;
     }
-    const place = results[0];
-    const name = place.name || businessName;
-    const rating = place.rating ? `${place.rating}⭐` : "No rating";
-    const reviews = place.user_ratings_total ? `${place.user_ratings_total} reviews` : "0 reviews";
-    return `✅ Verified — ${name} | ${rating} | ${reviews}`;
+    return `⚠️ No GBP knowledge panel found in Google search for "${businessName} ${city}".
+This may indicate a missing or unverified GBP listing.`;
   } catch (err: any) {
-    console.warn("[lookupGbpStatus] Places API call failed:", err.message);
-    return "GBP check unavailable";
+    console.warn("[detectGbpViaSearch] Google search scrape failed:", err.message);
+    return "GBP search check unavailable (rate limited or network error)";
   }
 };
 
@@ -100,7 +110,7 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: ALLOWED_ORIGINS,
   enforceAppCheck: false, // TEMPORARILY DISABLED: Was causing 401 errors in production
-  secrets: ["DEEPSEEK_API_KEY", "WHATSAPP_TOKEN", "PLACES_API_KEY"], // Runtime secrets for AI + WhatsApp + GBP lookup
+  secrets: ["DEEPSEEK_API_KEY"], // Only DEEPSEEK_API_KEY is in Secret Manager; WHATSAPP_TOKEN is a Cloud Run env var
   maxInstances: 10,
   timeoutSeconds: 300
 }, async (request) => {
@@ -159,8 +169,8 @@ export const performAudit = onCall({
     let analysis: { score: number; summary: string; truths: string[] };
     let telemetry: Record<string, any>;
 
-    // Verify real GBP presence via Google Places API (runs in parallel with main audit)
-    const gbpStatusPromise = lookupGbpStatus(safeBizName, safeCity);
+    // Detect GBP presence via zero-cost Google search scrape (runs in parallel with main audit)
+    const gbpStatusPromise = detectGbpViaSearch(safeBizName, safeCity);
 
     // ─────────────────────────────────────────────────────────────────────────
     // PATH A: GBP-ONLY AUDIT (no website provided, or a Google Maps URL given)
@@ -174,7 +184,7 @@ export const performAudit = onCall({
       const context = `
 Business Name: ${safeBizName}
 Location/City: ${safeCity}
-Google Business Profile (verified): ${gbpStatus}
+Google Business Profile (detected via Google search): ${gbpStatus}
 Google Business Profile URL: ${gbpUrl}
 Website: NONE — this business has no standalone website.
 `;
@@ -216,7 +226,7 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
         mapsStatus: safeWebsiteUrl ? "GBP_URL_PROVIDED" : "NO_WEBSITE_NO_GBP",
         gbpOnly: true,
         gbpUrl: String(safeWebsiteUrl || ""),
-        gbpStatus: String(await gbpStatusPromise),
+        gbpStatus: String(gbpStatus),
         website: "",
         schema: false,
         schemasDetected: [],
@@ -250,7 +260,7 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
 Business Name: ${safeBizName}
 Location/City: ${safeCity}
 Website URL: ${safeWebsiteUrl}
-Google Business Profile (verified via Places API): ${gbpStatusText}
+Google Business Profile (detected via Google search): ${gbpStatusText}
 Website Meta Title: ${scrapedData.title}
 Website Meta Description: ${scrapedData.description}
 Website Viewport Element: ${scrapedData.viewport}
