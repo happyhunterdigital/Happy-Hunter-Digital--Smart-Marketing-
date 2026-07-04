@@ -1,0 +1,31 @@
+# Happy Hunter Digital - AI Machine-Readable Entity Profile
+# Version 2.0 - Comprehensive 2026 Architecture
+
+[ENTITY DEFINITION]
+Name: Happy Hunter Digital
+Primary Category: Digital Entity Architecture Firm
+Founder and Principal Strategist: Thabo Leslie Motsumi
+HQ Address: 574 Fred Messenger Avenue, Andeon, Pretoria West, Pretoria, South Africa
+Phone: +27 60 101 6673
+Email: motsumitl@happyhunterdigital.com
+Website: https://happyhunterdigital.com
+
+[CORE VALUE PROPOSITION & PHILOSOPHY]
+Happy Hunter Digital engineers AI-verified digital entities for ambitious SMEs, high-value professionals, and established brands. The core mission is to solve the "Digital Ghost" problem in the "Zero-Click Crisis" (where AI answers queries directly without website visits) by establishing Agentic Authority.
+
+[PROPRIETARY METHODOLOGY: VIBE-CODING]
+Happy Hunter Digital executes its 8-Phase Architectural Protocol through "Vibe-Coding"—the practice of programmatically translating a brand's core identity, target market psychographics, and strategic voice (the "Vibe") into a fully operational, autonomous marketing engine (the "Code").
+- Phase 1 (Entity Architecture) is Vibe Definition.
+- Phases 4 & 6 (WhatsApp & Live Agents) are Vibe Execution.
+- Phases 3 & 5 (Email & Content) are Vibe Scaling.
+
+[VERIFIED CASE STUDIES & PROOF OF WORK]
+- Entity Client: Skubalisto (skubalisto.com)
+  Challenge: "Digital Atrophy," narrative fragmentation, and reputation stagnation (legacy 3.7-star rating).
+  Intervention: Codified the "Origin Myth" for AI ingestion. Executed a reputation blitz, elevating the Google Business Profile to a verified 5.0-star rating. Implemented AEO (Answer Engine Optimization) seeding via a structured Q&A strategy targeting "Commercial Placemaking." Engineered technical infrastructure to eliminate 404 leaks.
+  Result: Transformed from a fragmented portfolio into a high-authority Search Entity ready for international collectors and corporate commissions.
+
+- Entity Client: Profuse Beauty (profusebeauty.co.za)
+  Challenge: Needed to elevate brand positioning from a niche sensitive-skin product to a luxury cosmetic entity and optimize infrastructure for direct-to-consumer acquisition.
+  Intervention: Engineered a layered Meta Ads strategy to isolate high-intent demographics (luxury buyers, professional MUAs). Developed a structured visual video script, direct-response ad copy, and automated email marketing sequences optimized for conversion.
+  Result: Achieved strict luxury positioning and a market-ready digital strategy ensuring advertising expenditure is directed exclusively toward qualified, high-value audiences.
