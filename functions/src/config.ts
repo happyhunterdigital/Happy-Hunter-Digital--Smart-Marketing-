@@ -4,6 +4,7 @@ export const EMBEDDING_MODEL = "text-embedding-004";
 // CENTRALIZED ENVIRONMENT VARIABLES
 export const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
 export const PLACES_API_KEY = process.env.PLACES_API_KEY || "";
+export const PAGESPEED_API_KEY = process.env.PAGESPEED_API_KEY || process.env.PLACES_API_KEY || "";
 export const WHATSAPP_TOKEN = process.env.WHATSAPP_TOKEN || process.env.META_SYSTEM_TOKEN || "";
 export const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
 

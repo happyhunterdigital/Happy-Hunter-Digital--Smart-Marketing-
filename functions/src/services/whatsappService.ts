@@ -41,7 +41,7 @@ export const sendAdminAlert = async (businessName: string, email: string, phone:
 };
 
 /**
- * Sends the full audit result directly to the client's WhatsApp number.
+ * Sends the full 7-pillar audit result directly to the client's WhatsApp number.
  * Called after a successful performAudit run.
  */
 export const sendAuditResultToClient = async (
@@ -55,10 +55,24 @@ export const sendAuditResultToClient = async (
   if (!to) return;
 
   const scoreEmoji = score >= 70 ? "✅" : score >= 40 ? "⚠️" : "🚨";
-  const truthLines = truths.map((t, i) => `*${i + 1}.* ${t}`).join("\n\n");
+
+  const pillarLabels = [
+    "⚡ Performance & CWV",
+    "🔒 SSL & Security",
+    "🔍 SEO Meta & Content",
+    "🤖 Schema & AEO",
+    "📱 Mobile",
+    "📍 Google Business Profile",
+    "🌐 Social Proof & Entity"
+  ];
+
+  const pillarLines = truths.map((t, i) => {
+    const label = pillarLabels[i] || `Pillar ${i + 1}`;
+    return `*${label}*\n${t}`;
+  }).join("\n\n");
 
   const message = [
-    `🎯 *Hunter AI — Digital Audit Report*`,
+    `🎯 *Hunter AI — 7-Pillar Digital Audit*`,
     `*Business:* ${businessName}`,
     `*Google Business Profile:* ${gbpStatus}`,
     ``,
@@ -67,12 +81,13 @@ export const sendAuditResultToClient = async (
     `📋 *Intelligence Summary*`,
     summary,
     ``,
-    `🔍 *Audit Truths*`,
-    truthLines,
+    `━━━━━━━━━━━━━━━━━━━━━`,
+    ``,
+    pillarLines,
     ``,
     `━━━━━━━━━━━━━━━━━━━━━`,
     `💡 *Need an in-depth analysis?*`,
-    `Contact *motsumitl@happyhunterdigital.com* for in-depth analysis.`,
+    `Contact *motsumitl@happyhunterdigital.com*`,
     ``,
     `💡 Want to fix these issues? Reply *YES* or visit happyhunterdigital.com`
   ].join("\n");
