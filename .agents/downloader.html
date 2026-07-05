@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cloudflare Skills Downloader</title>
+</head>
+<body>
+  <h1>Downloading Cloudflare Skills...</h1>
+  <div id="status">Starting...</div>
+  <pre id="log"></pre>
+  <h2>Results JSON:</h2>
+  <textarea id="download-results" rows="30" cols="100" style="width: 100%; max-width: 1000px; font-family: monospace;"></textarea>
+
+  <script>
+    const logEl = document.getElementById('log');
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('download-results');
+
+    function log(msg) {
+      logEl.textContent += msg + '\n';
+      console.log(msg);
+    }
+
+    const skills = [
+      'agents-sdk',
+      'cloudflare-email-service',
+      'cloudflare-one-migrations',
+      'cloudflare-one',
+      'cloudflare',
+      'durable-objects',
+      'sandbox-sdk',
+      'turnstile-spin',
+      'web-perf',
+      'workers-best-practices',
+      'wrangler'
+    ];
+
+    const results = {};
+
+    function decodeBase64Utf8(str) {
+      try {
+        return decodeURIComponent(escape(atob(str.replace(/\s/g, ''))));
+      } catch (e) {
+        log('Error decoding UTF-8 base64, falling back to standard atob: ' + e.message);
+        return atob(str.replace(/\s/g, ''));
+      }
+    }
+
+    async function downloadAll() {
+      for (const skill of skills) {
+        const url = `https://api.github.com/repos/cloudflare/skills/contents/skills/${skill}/SKILL.md`;
+        log(`Fetching metadata for skill: ${skill}`);
+        try {
+          const res = await fetch(url);
+          if (!res.ok) {
+            throw new Error(`HTTP error ${res.status}`);
+          }
+          const json = await res.json();
+          if (!json.content) {
+            throw new Error('No content field in JSON response');
+          }
+          log(`Decoding SKILL.md for ${skill}`);
+          const decoded = decodeBase64Utf8(json.content);
+          results[`skills/${skill}/SKILL.md`] = decoded;
+          log(`Successfully processed ${skill}`);
+        } catch (err) {
+          log(`Error processing ${skill}: ${err.message}`);
+        }
+      }
+
+      // Also let's try to get rules/workers.mdc
+      try {
+        log('Fetching rules/workers.mdc');
+        const res = await fetch('https://api.github.com/repos/cloudflare/skills/contents/rules/workers.mdc');
+        if (res.ok) {
+          const json = await res.json();
+          results['rules/workers.mdc'] = decodeBase64Utf8(json.content);
+          log('Successfully processed rules/workers.mdc');
+        }
+      } catch (err) {
+        log(`Error processing rules/workers.mdc: ${err.message}`);
+      }
+
+      resultsEl.value = JSON.stringify(results);
+      statusEl.textContent = 'Done';
+      log('All downloads completed!');
+    }
+
+    downloadAll();
+  </script>
+</body>
+</html>
