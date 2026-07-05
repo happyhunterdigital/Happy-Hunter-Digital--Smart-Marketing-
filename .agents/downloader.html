@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cloudflare Skills Downloader</title>
+  <title>Cloudflare Skills JSONP Downloader</title>
 </head>
 <body>
-  <h1>Downloading Cloudflare Skills...</h1>
+  <h1>Downloading Cloudflare Skills via JSONP...</h1>
   <div id="status">Starting...</div>
   <pre id="log"></pre>
   <h2>Results JSON:</h2>
@@ -35,6 +35,7 @@
     ];
 
     const results = {};
+    let currentIndex = 0;
 
     function decodeBase64Utf8(str) {
       try {
@@ -45,47 +46,53 @@
       }
     }
 
-    async function downloadAll() {
-      for (const skill of skills) {
-        const url = `https://api.github.com/repos/cloudflare/skills/contents/skills/${skill}/SKILL.md`;
-        log(`Fetching metadata for skill: ${skill}`);
-        try {
-          const res = await fetch(url);
-          if (!res.ok) {
-            throw new Error(`HTTP error ${res.status}`);
-          }
-          const json = await res.json();
-          if (!json.content) {
-            throw new Error('No content field in JSON response');
-          }
-          log(`Decoding SKILL.md for ${skill}`);
-          const decoded = decodeBase64Utf8(json.content);
-          results[`skills/${skill}/SKILL.md`] = decoded;
-          log(`Successfully processed ${skill}`);
-        } catch (err) {
-          log(`Error processing ${skill}: ${err.message}`);
-        }
+    window.handleGitHubResponse = function(response) {
+      if (response.meta && response.meta.status !== 200) {
+        log(`API error: status ${response.meta.status}`);
+        next();
+        return;
       }
-
-      // Also let's try to get rules/workers.mdc
-      try {
-        log('Fetching rules/workers.mdc');
-        const res = await fetch('https://api.github.com/repos/cloudflare/skills/contents/rules/workers.mdc');
-        if (res.ok) {
-          const json = await res.json();
-          results['rules/workers.mdc'] = decodeBase64Utf8(json.content);
-          log('Successfully processed rules/workers.mdc');
-        }
-      } catch (err) {
-        log(`Error processing rules/workers.mdc: ${err.message}`);
+      
+      const data = response.data;
+      if (data && data.path && data.content) {
+        log(`Successfully fetched and decoded ${data.path}`);
+        const decoded = decodeBase64Utf8(data.content);
+        results[data.path] = decoded;
+      } else {
+        log(`Invalid response structure for index ${currentIndex}`);
       }
+      
+      next();
+    };
 
-      resultsEl.value = JSON.stringify(results);
-      statusEl.textContent = 'Done';
-      log('All downloads completed!');
+    function fetchNext() {
+      if (currentIndex < skills.length) {
+        const skill = skills[currentIndex];
+        log(`Fetching ${skill}...`);
+        const script = document.createElement('script');
+        script.src = `https://api.github.com/repos/cloudflare/skills/contents/skills/${skill}/SKILL.md?callback=handleGitHubResponse`;
+        document.body.appendChild(script);
+      } else if (currentIndex === skills.length) {
+        // Also fetch rules/workers.mdc
+        log(`Fetching rules/workers.mdc...`);
+        const script = document.createElement('script');
+        script.src = `https://api.github.com/repos/cloudflare/skills/contents/rules/workers.mdc?callback=handleGitHubResponse`;
+        document.body.appendChild(script);
+      } else {
+        // All done!
+        resultsEl.value = JSON.stringify(results);
+        statusEl.textContent = 'Done';
+        log('All downloads completed!');
+      }
     }
 
-    downloadAll();
+    function next() {
+      currentIndex++;
+      fetchNext();
+    }
+
+    // Start
+    fetchNext();
   </script>
 </body>
 </html>
