@@ -1,4 +1,3 @@
-// src/pages/CoreServices/CoreServices.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Database, BrainCircuit, ShieldCheck, Mic, MessageSquareCode, FileText, CalendarCheck, ArrowRight, CheckCircle2, ChevronDown, ChevronUp, ShoppingCart, Sparkles } from 'lucide-react';
@@ -7,7 +6,7 @@ interface SKU {
   id: string;
   title: string;
   desc: string;
-  includes: string;
+  specs: string;
   price: string;
 }
 
@@ -18,7 +17,7 @@ interface Category {
   h1: string;
   quickAnswer: string;
   icon: React.ReactNode;
-  skus: SKU[];
+  services: SKU[];
   faqs: { q: string; a: string }[];
 }
 
@@ -148,7 +147,7 @@ export const CoreServices: React.FC = () => {
             {activeCategory ? activeCategory.h1 : "Services Built to Make Algorithms Notice You"}
           </h1>
           <p className="text-gray-400 text-sm max-w-2xl mx-auto leading-relaxed">
-            {activeCategory ? activeCategory.quickAnswer : "Happy Hunter Digital offers four core service categories for South South African SMEs: Digital Marketing, Web Development, SEO & AI Search Optimisation, and Google Business Profile management. Every service is built to get your business structured and verified."}
+            {activeCategory ? activeCategory.quickAnswer : "Happy Hunter Digital offers four core service categories for South African SMEs: Digital Marketing, Web Development, SEO & AI Search Optimisation, and Google Business Profile management. Every service is built to get your business structured and verified."}
           </p>
 
           {/* Tab Selection Navigation */}
