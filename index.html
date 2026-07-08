@@ -8,7 +8,7 @@
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.googleapis.com;
     connect-src 'self' https://*.firebaseapp.com https://*.firebase.com https://*.googleapis.com https://apis.google.com https://*.cloudfunctions.net https://*.run.app https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://stream.mux.com https://*.litix.io https://api.mux.com https://*.mux.com https://*.fastly.mux.com wss://*.firebaseio.com https://us.i.posthog.com https://eu.i.posthog.com https://us-assets.i.posthog.com https://eu-assets.i.posthog.com;
-    img-src 'self' data: blob: https://res.cloudinary.com/dka0498ns/image/upload/ https://images.unsplash.com https://*.googleusercontent.com https://image.mux.com https://*.mux.com;
+    img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://*.googleusercontent.com https://image.mux.com https://*.mux.com;
     media-src 'self' blob: https://stream.mux.com https://*.mux.com https://*.fastly.mux.com;
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://accounts.google.com https://*.firebaseapp.com https://*.googleapis.com https://www.gstatic.com https://cdnjs.cloudflare.com https://us-assets.i.posthog.com https://eu-assets.i.posthog.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
     script-src-elem 'self' 'unsafe-inline' https://apis.google.com https://accounts.google.com https://*.firebaseapp.com https://*.googleapis.com https://www.gstatic.com https://cdnjs.cloudflare.com https://us-assets.i.posthog.com https://eu-assets.i.posthog.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/;
@@ -81,11 +81,10 @@
     ]
   }
   </script>
-</script>
 </head>
 <body class="bg-[#050505] text-white">
   <div id="root">
-    <!-- Fallback Content for Non-JS Crawlers, Search Engines, and Audits -->
+    <!-- Static Fallback Content to Ensure the Site is Not a Ghost to AI Crawlers and Search Engines -->
     <header style="padding: 20px; text-align: center;">
       <h1>Happy Hunter Digital | Agentic Revenue Systems</h1>
       <p>Stop being a Ghost to algorithms. We build AI-ready digital powerhouses and Agentic Revenue Systems for South African SMEs in Pretoria and Johannesburg.</p>
