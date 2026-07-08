@@ -39,6 +39,7 @@ import { PlaybookChapter1 } from './pages/Playbook/PlaybookChapter1';
 import { PlaybookChapter2 } from './pages/Playbook/PlaybookChapter2';
 import { PlaybookChapter3 } from './pages/Playbook/PlaybookChapter3';
 import { PlaybookChapter4 } from './pages/Playbook/PlaybookChapter4';
+import { PretoriaLanding } from './pages/PretoriaLanding';
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -58,7 +59,6 @@ function App() {
       <CookieConsent />
       
       {/* STATIC YELLOW CONTENT RIBBON HAS BEEN COMPLETELY REMOVED */}
-      
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} isLandingPage={isLandingPage} />
 
       <main className={!isLandingPage ? "pt-32 md:pt-40" : ""}>
@@ -68,6 +68,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/audit" element={<AiAudit />} />
           <Route path="/services" element={<CoreServices />} />
+          <Route path="/services/:category" element={<CoreServices />} />
           <Route path="/earned-media" element={<EarnedMedia />} />
           <Route path="/founders" element={<Founders />} />
           <Route path="/faq" element={<FAQ />} />
@@ -91,6 +92,7 @@ function App() {
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/live" element={<LiveSummit />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/pretoria" element={<PretoriaLanding />} />
         </Routes>
       </main>
 
