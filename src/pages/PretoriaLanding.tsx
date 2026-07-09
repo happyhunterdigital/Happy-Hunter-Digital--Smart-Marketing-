@@ -6,13 +6,11 @@ export const PretoriaLanding: React.FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
-    // 1. Dynamic Meta Title and Description Update
     document.title = "Digital Marketing Agency Pretoria | Entity Authority & AI Visibility | Happy Hunter Digital";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute("content", "Happy Hunter Digital helps Pretoria SMEs build structured, algorithm-visible online identities — so Google, Google Business Profile, and AI search tools like ChatGPT and Gemini can actually find and recommend you. Serving Centurion, Hatfield, Menlyn, Brooklyn and the greater Tshwane metro.");
     }
-    // 2. Dynamic Injection of LocalBusiness & FAQPage Schemas
     const schemas = [
       {
         "@context": "https://schema.org",
@@ -118,7 +116,7 @@ export const PretoriaLanding: React.FC = () => {
           <img
             src="https://res.cloudinary.com/dkyg07qvv/image/upload/v1783543561/Happyhunterdigital_Pretoria_Service_AreA_nonglc.jpg"
             alt="Pretoria Service Area"
-            className="w-full h-full object-cover opacity-40 transition-opacity duration-1000"
+            className="w-full h-full object-cover opacity-80 transition-opacity duration-1000"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent"></div>
         </div>
@@ -133,7 +131,6 @@ export const PretoriaLanding: React.FC = () => {
       </header>
 
       <article className="container mx-auto px-6 max-w-3xl py-16 space-y-12">
-        {/* Quick Answer Block - Must render first in body order */}
         <section className="bg-yellow-500/5 border border-yellow-500/20 rounded-3xl p-8 shadow-neural-glow">
           <p className="text-lg leading-relaxed text-gray-200">
             <strong>Happy Hunter Digital</strong> is a Pretoria-based digital marketing agency that helps small and medium businesses build a structured, verifiable online presence so search engines and AI tools can find, trust, and recommend them. We focus on three things: technical SEO foundations (schema markup, Google Business Profile optimization, site structure), content that answers real customer questions directly, and entity authority — making sure your business is described consistently across Google, directories, and the web so algorithms stop guessing who you are.
