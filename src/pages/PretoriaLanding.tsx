@@ -12,7 +12,6 @@ export const PretoriaLanding: React.FC = () => {
     if (metaDesc) {
       metaDesc.setAttribute("content", "Happy Hunter Digital helps Pretoria SMEs build structured, algorithm-visible online identities — so Google, Google Business Profile, and AI search tools like ChatGPT and Gemini can actually find and recommend you. Serving Centurion, Hatfield, Menlyn, Brooklyn and the greater Tshwane metro.");
     }
-
     // 2. Dynamic Injection of LocalBusiness & FAQPage Schemas
     const schemas = [
       {
@@ -35,7 +34,7 @@ export const PretoriaLanding: React.FC = () => {
           "longitude": "28.0688"
         },
         "areaServed": [
-          "Centurion", "Hatfield", "Menlyn", "Brooklyn", "Sunnyside", 
+          "Centurion", "Hatfield", "Menlyn", "Brooklyn", "Sunnyside",
           "Waterkloof", "Arcadia", "Silverton", "Pretoria CBD", "Wonderboom", "Montana"
         ]
       },
@@ -64,7 +63,7 @@ export const PretoriaLanding: React.FC = () => {
             "name": "Do you only work with Pretoria businesses?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No — we're based in South South Africa and work with SMEs across the country, but we have specific experience with Pretoria's business environment, including government-adjacent and institutional clients."
+              "text": "No — we're based in South Africa and work with SMEs across the country, but we have specific experience with Pretoria's business environment, including government-adjacent and institutional clients."
             }
           },
           {
@@ -115,8 +114,13 @@ export const PretoriaLanding: React.FC = () => {
   return (
     <div className="bg-[#050505] text-white min-h-screen font-sans selection:bg-yellow-500 selection:text-black">
       <header className="relative pt-40 pb-20 border-b border-gray-900 bg-[#0a0a0a] text-center overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(251,191,36,0.08)_0%,transparent_50%)]"></div>
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://res.cloudinary.com/dkyg07qvv/image/upload/v1783543561/Happyhunterdigital_Pretoria_Service_AreA_nonglc.jpg"
+            alt="Pretoria Service Area"
+            className="w-full h-full object-cover opacity-40 transition-opacity duration-1000"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent"></div>
         </div>
         <div className="relative z-10 container mx-auto px-6 max-w-4xl">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-[10px] font-black uppercase tracking-[0.3em] mb-6">
