@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import {
   MessageSquareCode,
   Database,
@@ -8,6 +9,7 @@ import {
   Bot,
   ArrowRight,
   Check,
+  ChevronDown,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -368,11 +370,23 @@ const iconMap: Record<string, LucideIcon> = {
   Bot,
 };
 
+// Absolute, crawlable URLs — real anchors (not just router state) so search
+// engines and AI answer-engine crawlers can see and cite every service page.
+const serviceUrls: Record<string, string> = {
+  "digital-marketing": "https://www.happyhunterdigital.com/services/digital-marketing",
+  "web-development": "https://www.happyhunterdigital.com/services/web-development",
+  "seo-ai-search": "https://www.happyhunterdigital.com/services/seo-ai-search",
+  "google-business-profile": "https://www.happyhunterdigital.com/services/google-business-profile",
+  "whatsapp-marketing": "https://www.happyhunterdigital.com/services/whatsapp-marketing",
+  "automation-chatbots": "https://www.happyhunterdigital.com/services/automation-chatbots",
+};
+
 const overview = {
+  eyebrow: "System Overview",
   intro:
     "Happy Hunter Digital provides five core services for South African SMEs: Digital Marketing, Web Development, SEO & AI Search Optimisation, Google Business Profile Management, and WhatsApp Automation. Every service works toward one goal: making sure algorithms, search engines, and AI assistants can find, verify, and recommend your business.",
   whyTogether:
-    "AI systems like ChatGPT, Gemini, and Google AI Overviews don't just crawl your website. They cross reference your business across your site, your Google Business Profile, and your customer communication channels. A gap in any one of these creates inconsistency, and inconsistency is what makes AI systems distrust or ignore a business. Our five services close every gap at once.",
+    "AI systems like ChatGPT, Gemini, and Google AI Overviews don't just crawl your website. They cross reference your business across your site, your Google Business Profile, and your customer communication channels. A gap in any one of these creates inconsistency, and inconsistency is what makes AI systems distrust or ignore a business. Our six services close every gap at once.",
   services: [
     {
       slug: "digital-marketing",
@@ -404,101 +418,220 @@ const overview = {
       summary:
         "We turn WhatsApp into an automated sales channel that responds instantly, qualifies leads, and keeps your business always on, even when your team isn't.",
     },
+    {
+      slug: "automation-chatbots",
+      title: "Automation & Chatbots",
+      summary:
+        "We deploy AI receptionists and workflow automations that qualify leads and answer questions 24/7, so no opportunity goes cold waiting for a reply.",
+    },
   ],
   closing:
     "The result is a unified digital presence where your website, your search visibility, your Google listing, and your customer messaging all say the same thing. Instead of being a ghost to the algorithms, your business becomes the answer they give.",
 };
 
+/** Four-corner targeting brackets — the page's signature motif.
+ *  A "Hunter" locks onto a target; every clickable panel gets locked
+ *  into view the same way, brackets tightening in on hover/focus. */
+function Reticle({ tone = "signal" }: { tone?: "signal" | "verify" }) {
+  const color = tone === "signal" ? "#F5C518" : "#4DE8C8";
+  const base =
+    "pointer-events-none absolute h-4 w-4 border-white/15 transition-all duration-300 ease-out group-hover:h-5 group-hover:w-5";
+  return (
+    <>
+      <span
+        className={`${base} left-0 top-0 border-l-2 border-t-2 group-hover:border-[var(--tone)]`}
+        style={{ ["--tone" as string]: color }}
+      />
+      <span
+        className={`${base} right-0 top-0 border-r-2 border-t-2 group-hover:border-[var(--tone)]`}
+        style={{ ["--tone" as string]: color }}
+      />
+      <span
+        className={`${base} left-0 bottom-0 border-l-2 border-b-2 group-hover:border-[var(--tone)]`}
+        style={{ ["--tone" as string]: color }}
+      />
+      <span
+        className={`${base} right-0 bottom-0 border-r-2 border-b-2 group-hover:border-[var(--tone)]`}
+        style={{ ["--tone" as string]: color }}
+      />
+    </>
+  );
+}
+
+function channelCode(index: number) {
+  return `CH-0${index + 1}`;
+}
+
 export function CoreServices() {
   const { category: activeSlug } = useParams<{ category?: string }>();
   const activeCategory = categories.find((c) => c.slug === activeSlug) ?? categories[0];
+  const activeIndex = categories.findIndex((c) => c.slug === activeCategory.slug);
+
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  useEffect(() => {
+    setOpenFaq(0);
+  }, [activeCategory.slug]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-8 pb-24">
-      <section className="mb-16 max-w-3xl">
-        <h2 className="text-2xl md:text-3xl font-bold mb-4">What We Do</h2>
-        <p className="text-white/70 mb-4">{overview.intro}</p>
-        <p className="text-white/60 mb-8">{overview.whyTogether}</p>
-        <div className="space-y-4 mb-8">
-          {overview.services.map((s) => (
-            <Link
-              key={s.slug}
-              to={`/services/${s.slug}`}
-              className={`block border rounded-xl p-4 transition-colors ${
-                s.slug === activeCategory.slug
-                  ? 'border-yellow-500 bg-yellow-500/5'
-                  : 'border-white/10 hover:border-yellow-500'
-              }`}
-            >
-              <h3 className="font-semibold mb-1">{s.title}</h3>
-              <p className="text-white/60 text-sm">{s.summary}</p>
-            </Link>
-          ))}
+    <div className="relative max-w-7xl mx-auto px-4 md:px-8 pb-24">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+        .hh-display { font-family: 'Space Grotesk', system-ui, sans-serif; }
+        .hh-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+        @keyframes hh-scan {
+          0% { transform: translateY(-100%); opacity: 0; }
+          15% { opacity: 1; }
+          85% { opacity: 1; }
+          100% { transform: translateY(100%); opacity: 0; }
+        }
+        .hh-scanline { animation: hh-scan 2.4s ease-in-out infinite; }
+        .hh-grid-bg {
+          background-image:
+            linear-gradient(to right, rgba(255,255,255,0.035) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.035) 1px, transparent 1px);
+          background-size: 34px 34px;
+        }
+      `}</style>
+
+      {/* ============ OVERVIEW / SYSTEM MAP ============ */}
+      <section className="mb-20 pt-4">
+        <div className="max-w-3xl">
+          <div className="hh-mono flex items-center gap-2 text-[11px] tracking-[0.25em] text-[#4DE8C8] mb-4">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4DE8C8] opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#4DE8C8]" />
+            </span>
+            {overview.eyebrow.toUpperCase()}
+          </div>
+          <h2 className="hh-display text-3xl md:text-4xl font-bold mb-5 leading-tight">
+            Six Channels. One Verified Signal.
+          </h2>
+          <p className="text-white/70 mb-4 leading-relaxed">{overview.intro}</p>
+          <p className="text-white/55 mb-10 leading-relaxed">{overview.whyTogether}</p>
         </div>
-        <p className="text-white/80 font-medium">{overview.closing}</p>
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+          {overview.services.map((s, i) => {
+            const isActive = s.slug === activeCategory.slug;
+            return (
+              <a
+                key={s.slug}
+                href={serviceUrls[s.slug]}
+                className={`group relative block rounded-lg border p-5 transition-colors duration-300 overflow-hidden ${
+                  isActive
+                    ? "border-yellow-500/60 bg-yellow-500/[0.06]"
+                    : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04]"
+                }`}
+              >
+                <Reticle tone="signal" />
+                <div className="flex items-start justify-between mb-3">
+                  <span className="hh-mono text-[10px] tracking-widest text-white/35">
+                    {channelCode(i)}
+                  </span>
+                  <span className="hh-mono flex items-center gap-1.5 text-[10px] tracking-widest text-white/30 group-hover:text-[#4DE8C8] transition-colors">
+                    <span className="h-1.5 w-1.5 rounded-full bg-white/30 group-hover:bg-[#4DE8C8] transition-colors" />
+                    ACTIVE
+                  </span>
+                </div>
+                <h3 className="hh-display font-semibold mb-1.5 text-[15px]">{s.title}</h3>
+                <p className="text-white/55 text-sm leading-relaxed mb-3">{s.summary}</p>
+                <span className="hh-mono inline-flex items-center gap-1.5 text-[11px] tracking-wide text-yellow-500/90 group-hover:gap-2.5 transition-all">
+                  VIEW CHANNEL <ArrowRight className="w-3 h-3" />
+                </span>
+              </a>
+            );
+          })}
+        </div>
+
+        <div className="max-w-3xl border-l-2 border-yellow-500/60 pl-5">
+          <p className="text-white/85 font-medium leading-relaxed">{overview.closing}</p>
+        </div>
       </section>
 
-      {/* Category nav */}
-      <nav className="flex flex-wrap gap-3 mb-12">
-        {categories.map((cat) => {
-          const Icon = iconMap[cat.iconName] ?? Database;
-          const isActive = cat.slug === activeCategory.slug;
-          return (
-            <Link
-              key={cat.slug}
-              to={`/services/${cat.slug}`}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-colors ${
-                isActive
-                  ? 'bg-yellow-500 text-black border-yellow-500'
-                  : 'border-white/20 text-white/70 hover:border-yellow-500 hover:text-yellow-500'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              {cat.title}
-            </Link>
-          );
-        })}
+      {/* ============ CATEGORY NAV ============ */}
+      <nav className="mb-14 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto">
+        <div className="flex gap-2 w-max md:w-auto md:flex-wrap">
+          {categories.map((cat, i) => {
+            const Icon = iconMap[cat.iconName] ?? Database;
+            const isActive = cat.slug === activeCategory.slug;
+            return (
+              <Link
+                key={cat.slug}
+                to={`/services/${cat.slug}`}
+                className={`group relative flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-md border text-sm transition-all duration-300 whitespace-nowrap ${
+                  isActive
+                    ? "bg-yellow-500 text-black border-yellow-500 font-medium"
+                    : "border-white/12 text-white/65 hover:border-white/30 hover:text-white"
+                }`}
+              >
+                <span className={`hh-mono text-[10px] tracking-wider ${isActive ? "text-black/50" : "text-white/30"}`}>
+                  {channelCode(i)}
+                </span>
+                <Icon className="w-4 h-4" />
+                {cat.title}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
-      {/* Hero */}
-      <header className="mb-12 max-w-3xl">
-        <h1 className="text-3xl md:text-5xl font-bold mb-4">{activeCategory.h1}</h1>
+      {/* ============ HERO ============ */}
+      <header className="relative mb-14 max-w-3xl">
+        <div className="hh-mono flex items-center gap-2 text-[11px] tracking-[0.25em] text-yellow-500/80 mb-4">
+          {channelCode(activeIndex)} // {activeCategory.title.toUpperCase()}
+        </div>
+        <h1 className="hh-display text-3xl md:text-5xl font-bold mb-5 leading-[1.08]">
+          {activeCategory.h1}
+        </h1>
         {activeCategory.subheadline && (
-          <p className="text-lg text-white/70 mb-4">{activeCategory.subheadline}</p>
+          <p className="text-lg text-white/70 mb-5 leading-relaxed">{activeCategory.subheadline}</p>
         )}
-        <p className="text-white/60">{activeCategory.quickAnswer}</p>
+        <div className="relative flex gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-4">
+          <span className="hh-mono shrink-0 text-[#4DE8C8] text-sm mt-0.5">&gt;</span>
+          <p className="text-white/70 text-sm leading-relaxed">{activeCategory.quickAnswer}</p>
+        </div>
       </header>
 
-      {/* Services grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+      {/* ============ SERVICES GRID ============ */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
         {activeCategory.services.map((service) => (
           <div
             key={service.id}
-            className={`relative rounded-2xl border p-6 flex flex-col ${
+            className={`group relative rounded-xl border p-6 flex flex-col overflow-hidden ${
               service.isPopular
-                ? 'border-yellow-500 bg-yellow-500/5'
-                : 'border-white/10 bg-white/[0.02]'
-            }`}
+                ? "border-yellow-500/70 bg-yellow-500/[0.05]"
+                : "border-white/10 bg-white/[0.02] hover:border-white/20"
+            } transition-colors duration-300`}
           >
+            <Reticle tone={service.isPopular ? "signal" : "verify"} />
+
             {service.isPopular && (
-              <span className="absolute -top-3 left-6 bg-yellow-500 text-black text-xs font-semibold px-3 py-1 rounded-full">
-                Most Popular
+              <span className="hh-mono absolute -top-px -right-px rounded-bl-lg rounded-tr-xl bg-yellow-500 text-black text-[10px] font-semibold tracking-wider px-3 py-1.5">
+                MOST POPULAR
               </span>
             )}
-            <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
-            <p className="text-yellow-500 font-bold mb-3">{service.price}</p>
+
+            <span className="hh-mono text-[10px] tracking-widest text-white/30 mb-3">
+              {service.id}
+            </span>
+
+            <h3 className="hh-display text-lg font-semibold mb-2 leading-snug">{service.title}</h3>
+            <p className="hh-mono text-yellow-500 font-semibold mb-3 text-[15px]">{service.price}</p>
+
             {service.desc && (
-              <p className="text-white/60 text-sm mb-4">{service.desc}</p>
+              <p className="text-white/60 text-sm leading-relaxed mb-4">{service.desc}</p>
             )}
             {service.specs && (
-              <p className="text-white/40 text-xs mb-4">{service.specs}</p>
+              <p className="hh-mono text-white/35 text-[11px] leading-relaxed mb-4 border-t border-white/10 pt-3">
+                {service.specs}
+              </p>
             )}
 
             {service.features && (
-              <ul className="space-y-2 mb-4">
+              <ul className="space-y-2.5 mb-4">
                 {service.features.map((f, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-white/70">
-                    <Check className="w-4 h-4 text-yellow-500 mt-0.5 shrink-0" />
+                    <Check className="w-4 h-4 text-[#4DE8C8] mt-0.5 shrink-0" />
                     {f}
                   </li>
                 ))}
@@ -508,14 +641,14 @@ export function CoreServices() {
             {service.packages && (
               <div className="space-y-3 mb-4">
                 {service.packages.map((pkg, i) => (
-                  <div key={i} className="border border-white/10 rounded-lg p-3">
+                  <div key={i} className="rounded-lg border border-white/10 p-3 hover:border-white/20 transition-colors">
                     <div className="flex justify-between items-baseline mb-1">
                       <span className="font-medium text-sm">{pkg.name}</span>
-                      <span className="text-yellow-500 text-sm font-semibold">
+                      <span className="hh-mono text-yellow-500 text-sm font-semibold">
                         {pkg.price}
                       </span>
                     </div>
-                    <p className="text-white/50 text-xs">{pkg.desc}</p>
+                    <p className="text-white/50 text-xs leading-relaxed">{pkg.desc}</p>
                   </div>
                 ))}
               </div>
@@ -523,25 +656,56 @@ export function CoreServices() {
 
             <Link
               to="/audit"
-              className="mt-auto inline-flex items-center justify-center gap-2 bg-yellow-500 text-black font-semibold rounded-full px-5 py-2.5 hover:bg-yellow-400 transition-colors"
+              className="mt-auto inline-flex items-center justify-center gap-2 bg-yellow-500 text-black font-semibold rounded-md px-5 py-2.5 hover:bg-yellow-400 transition-colors"
             >
-              {service.buttonText ?? 'Get Started'}
+              {service.buttonText ?? "Get Started"}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         ))}
       </div>
 
-      {/* FAQs */}
+      {/* ============ FAQ ============ */}
       <section className="max-w-3xl">
-        <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
-        <div className="space-y-4">
-          {activeCategory.faqs.map((faq, i) => (
-            <div key={i} className="border border-white/10 rounded-xl p-5">
-              <h3 className="font-semibold mb-2">{faq.q}</h3>
-              <p className="text-white/60 text-sm">{faq.a}</p>
-            </div>
-          ))}
+        <div className="hh-mono flex items-center gap-2 text-[11px] tracking-[0.25em] text-white/35 mb-4">
+          FAQ // {channelCode(activeIndex)}
+        </div>
+        <h2 className="hh-display text-2xl font-bold mb-6">Frequently Asked Questions</h2>
+        <div className="space-y-3">
+          {activeCategory.faqs.map((faq, i) => {
+            const isOpen = openFaq === i;
+            return (
+              <div
+                key={i}
+                className={`rounded-lg border transition-colors duration-300 ${
+                  isOpen ? "border-yellow-500/40 bg-yellow-500/[0.03]" : "border-white/10"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(isOpen ? null : i)}
+                  aria-expanded={isOpen}
+                  className="w-full flex items-center justify-between gap-4 text-left px-5 py-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-500/60 rounded-lg"
+                >
+                  <span className="font-semibold text-[15px]">{faq.q}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 shrink-0 text-white/50 transition-transform duration-300 ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                <div
+                  className={`grid transition-all duration-300 ease-out ${
+                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="text-white/60 text-sm leading-relaxed px-5 pb-4">{faq.a}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
     </div>
