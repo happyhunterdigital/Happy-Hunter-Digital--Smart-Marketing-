@@ -1,3 +1,16 @@
+import { useParams, Link } from 'react-router-dom';
+import {
+  MessageSquareCode,
+  Database,
+  BrainCircuit,
+  ShieldCheck,
+  Smartphone,
+  Bot,
+  ArrowRight,
+  Check,
+  type LucideIcon,
+} from 'lucide-react';
+
 export interface ServicePackage {
   name: string;
   price: string;
@@ -345,3 +358,128 @@ export const categories: Category[] = [
     ]
   }
 ];
+
+const iconMap: Record<string, LucideIcon> = {
+  MessageSquareCode,
+  Database,
+  BrainCircuit,
+  ShieldCheck,
+  Smartphone,
+  Bot,
+};
+
+export function CoreServices() {
+  const { category: activeSlug } = useParams<{ category?: string }>();
+  const activeCategory = categories.find((c) => c.slug === activeSlug) ?? categories[0];
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 md:px-8 pb-24">
+      {/* Category nav */}
+      <nav className="flex flex-wrap gap-3 mb-12">
+        {categories.map((cat) => {
+          const Icon = iconMap[cat.iconName] ?? Database;
+          const isActive = cat.slug === activeCategory.slug;
+          return (
+            <Link
+              key={cat.slug}
+              to={`/services/${cat.slug}`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm transition-colors ${
+                isActive
+                  ? 'bg-yellow-500 text-black border-yellow-500'
+                  : 'border-white/20 text-white/70 hover:border-yellow-500 hover:text-yellow-500'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {cat.title}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Hero */}
+      <header className="mb-12 max-w-3xl">
+        <h1 className="text-3xl md:text-5xl font-bold mb-4">{activeCategory.h1}</h1>
+        {activeCategory.subheadline && (
+          <p className="text-lg text-white/70 mb-4">{activeCategory.subheadline}</p>
+        )}
+        <p className="text-white/60">{activeCategory.quickAnswer}</p>
+      </header>
+
+      {/* Services grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        {activeCategory.services.map((service) => (
+          <div
+            key={service.id}
+            className={`relative rounded-2xl border p-6 flex flex-col ${
+              service.isPopular
+                ? 'border-yellow-500 bg-yellow-500/5'
+                : 'border-white/10 bg-white/[0.02]'
+            }`}
+          >
+            {service.isPopular && (
+              <span className="absolute -top-3 left-6 bg-yellow-500 text-black text-xs font-semibold px-3 py-1 rounded-full">
+                Most Popular
+              </span>
+            )}
+            <h3 className="text-xl font-semibold mb-2">{service.title}</h3>
+            <p className="text-yellow-500 font-bold mb-3">{service.price}</p>
+            {service.desc && (
+              <p className="text-white/60 text-sm mb-4">{service.desc}</p>
+            )}
+            {service.specs && (
+              <p className="text-white/40 text-xs mb-4">{service.specs}</p>
+            )}
+
+            {service.features && (
+              <ul className="space-y-2 mb-4">
+                {service.features.map((f, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+                    <Check className="w-4 h-4 text-yellow-500 mt-0.5 shrink-0" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {service.packages && (
+              <div className="space-y-3 mb-4">
+                {service.packages.map((pkg, i) => (
+                  <div key={i} className="border border-white/10 rounded-lg p-3">
+                    <div className="flex justify-between items-baseline mb-1">
+                      <span className="font-medium text-sm">{pkg.name}</span>
+                      <span className="text-yellow-500 text-sm font-semibold">
+                        {pkg.price}
+                      </span>
+                    </div>
+                    <p className="text-white/50 text-xs">{pkg.desc}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <Link
+              to="/audit"
+              className="mt-auto inline-flex items-center justify-center gap-2 bg-yellow-500 text-black font-semibold rounded-full px-5 py-2.5 hover:bg-yellow-400 transition-colors"
+            >
+              {service.buttonText ?? 'Get Started'}
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        ))}
+      </div>
+
+      {/* FAQs */}
+      <section className="max-w-3xl">
+        <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
+        <div className="space-y-4">
+          {activeCategory.faqs.map((faq, i) => (
+            <div key={i} className="border border-white/10 rounded-xl p-5">
+              <h3 className="font-semibold mb-2">{faq.q}</h3>
+              <p className="text-white/60 text-sm">{faq.a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
