@@ -415,26 +415,28 @@ export function CoreServices() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 pb-24">
-      {!activeSlug && (
-        <section className="mb-16 max-w-3xl">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">What We Do</h2>
-          <p className="text-white/70 mb-4">{overview.intro}</p>
-          <p className="text-white/60 mb-8">{overview.whyTogether}</p>
-          <div className="space-y-4 mb-8">
-            {overview.services.map((s) => (
-              <Link
-                key={s.slug}
-                to={`/services/${s.slug}`}
-                className="block border border-white/10 rounded-xl p-4 hover:border-yellow-500 transition-colors"
-              >
-                <h3 className="font-semibold mb-1">{s.title}</h3>
-                <p className="text-white/60 text-sm">{s.summary}</p>
-              </Link>
-            ))}
-          </div>
-          <p className="text-white/80 font-medium">{overview.closing}</p>
-        </section>
-      )}
+      <section className="mb-16 max-w-3xl">
+        <h2 className="text-2xl md:text-3xl font-bold mb-4">What We Do</h2>
+        <p className="text-white/70 mb-4">{overview.intro}</p>
+        <p className="text-white/60 mb-8">{overview.whyTogether}</p>
+        <div className="space-y-4 mb-8">
+          {overview.services.map((s) => (
+            <Link
+              key={s.slug}
+              to={`/services/${s.slug}`}
+              className={`block border rounded-xl p-4 transition-colors ${
+                s.slug === activeCategory.slug
+                  ? 'border-yellow-500 bg-yellow-500/5'
+                  : 'border-white/10 hover:border-yellow-500'
+              }`}
+            >
+              <h3 className="font-semibold mb-1">{s.title}</h3>
+              <p className="text-white/60 text-sm">{s.summary}</p>
+            </Link>
+          ))}
+        </div>
+        <p className="text-white/80 font-medium">{overview.closing}</p>
+      </section>
 
       {/* Category nav */}
       <nav className="flex flex-wrap gap-3 mb-12">
