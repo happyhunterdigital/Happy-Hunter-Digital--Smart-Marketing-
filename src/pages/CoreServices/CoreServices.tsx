@@ -368,12 +368,74 @@ const iconMap: Record<string, LucideIcon> = {
   Bot,
 };
 
+const overview = {
+  intro:
+    "Happy Hunter Digital provides five core services for South African SMEs: Digital Marketing, Web Development, SEO & AI Search Optimisation, Google Business Profile Management, and WhatsApp Automation. Every service works toward one goal: making sure algorithms, search engines, and AI assistants can find, verify, and recommend your business.",
+  whyTogether:
+    "AI systems like ChatGPT, Gemini, and Google AI Overviews don't just crawl your website. They cross reference your business across your site, your Google Business Profile, and your customer communication channels. A gap in any one of these creates inconsistency, and inconsistency is what makes AI systems distrust or ignore a business. Our five services close every gap at once.",
+  services: [
+    {
+      slug: "digital-marketing",
+      title: "Digital Marketing",
+      summary:
+        "We build campaigns structured around what AI answer engines and search algorithms actually reward: consistency, clarity, and verifiable authority, not just ad spend.",
+    },
+    {
+      slug: "web-development",
+      title: "Web Development",
+      summary:
+        "We build AI ready websites, structured for AEO and AI SEO so AI assistants can read, understand, and cite your business, not just rank it in search results.",
+    },
+    {
+      slug: "seo-ai-search",
+      title: "SEO & AI Search Optimisation",
+      summary:
+        "Traditional SEO gets you found by Google. AI Search Optimisation gets you recommended by AI. We build for both, structuring content so it answers real customer questions in the exact format AI systems extract from.",
+    },
+    {
+      slug: "google-business-profile",
+      title: "GBP Management",
+      summary:
+        "Your Google Business Profile is one of the first places AI systems check to verify a business is real, active, and trustworthy. We keep it accurate, complete, and continuously updated.",
+    },
+    {
+      slug: "whatsapp-marketing",
+      title: "WhatsApp Automation",
+      summary:
+        "We turn WhatsApp into an automated sales channel that responds instantly, qualifies leads, and keeps your business always on, even when your team isn't.",
+    },
+  ],
+  closing:
+    "The result is a unified digital presence where your website, your search visibility, your Google listing, and your customer messaging all say the same thing. Instead of being a ghost to the algorithms, your business becomes the answer they give.",
+};
+
 export function CoreServices() {
   const { category: activeSlug } = useParams<{ category?: string }>();
   const activeCategory = categories.find((c) => c.slug === activeSlug) ?? categories[0];
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 pb-24">
+      {!activeSlug && (
+        <section className="mb-16 max-w-3xl">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">What We Do</h2>
+          <p className="text-white/70 mb-4">{overview.intro}</p>
+          <p className="text-white/60 mb-8">{overview.whyTogether}</p>
+          <div className="space-y-4 mb-8">
+            {overview.services.map((s) => (
+              <Link
+                key={s.slug}
+                to={`/services/${s.slug}`}
+                className="block border border-white/10 rounded-xl p-4 hover:border-yellow-500 transition-colors"
+              >
+                <h3 className="font-semibold mb-1">{s.title}</h3>
+                <p className="text-white/60 text-sm">{s.summary}</p>
+              </Link>
+            ))}
+          </div>
+          <p className="text-white/80 font-medium">{overview.closing}</p>
+        </section>
+      )}
+
       {/* Category nav */}
       <nav className="flex flex-wrap gap-3 mb-12">
         {categories.map((cat) => {
