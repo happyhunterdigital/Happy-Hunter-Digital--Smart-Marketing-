@@ -22,7 +22,7 @@ export const isValidEmail = (email: string): boolean => {
 };
 
 export const isValidDomainOrUrl = (urlStr: string): boolean => {
-  return /^(https?:\/\/)?([\.\da-z-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i.test(urlStr);
+  return /^(https?:\/\/)?([\da-z-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/i.test(urlStr);
 };
 
 export const detectGbpViaSearch = async (businessName: string, city: string): Promise<string> => {
