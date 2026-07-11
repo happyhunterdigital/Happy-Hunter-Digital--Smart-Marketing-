@@ -45,17 +45,17 @@ jobs:
         run: |
           echo "Checking for secrets in dist/ ..."
           if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|sk_live_\|pk_live_" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
-            echo "❌ ERROR: Secrets detected in build artifacts"
+            echo "ERROR: Secrets detected in build artifacts"
             exit 1
           fi
           
           echo "Checking for sourcemaps ..."
           if find dist -name "*.map" | grep -q .; then
-            echo "❌ ERROR: Sourcemaps found in dist/"
+            echo "ERROR: Sourcemaps found in dist/"
             exit 1
           fi
           
-          echo "✓ Build artifacts verified - no secrets or sourcemaps"
+          echo "Build artifacts verified - no secrets or sourcemaps"
 
       - name: Install Backend Dependencies
         run: |
@@ -80,18 +80,17 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
           if [ -z "$FIREBASE_SERVICE_ACCOUNT_KEY" ]; then
-            echo "❌ CRITICAL: FIREBASE_SERVICE_ACCOUNT_KEY secret is missing"
+            echo "CRITICAL: FIREBASE_SERVICE_ACCOUNT_KEY secret is missing"
             exit 1
           fi
           
-          # Validate JSON structure
           echo "$FIREBASE_SERVICE_ACCOUNT_KEY" | jq . > /dev/null || {
-            echo "❌ ERROR: Invalid Firebase service account JSON"
+            echo "ERROR: Invalid Firebase service account JSON"
             exit 1
           }
           
           echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > /tmp/firebase-sa.json
-          echo "✓ Firebase credentials validated"
+          echo "Firebase credentials validated"
 
       - name: Validate Firestore Rules Syntax
         env:
@@ -107,19 +106,17 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PLACES_API_KEY: ${{ secrets.PLACES_API_KEY }}
         run: |
           printf '%s' "$DEEPSEEK_API_KEY" | firebase functions:secrets:set DEEPSEEK_API_KEY --project happy-hunter-systems --data-file -
-          printf '%s' "$GEMINI_API_KEY" | firebase functions:secrets:set GEMINI_API_KEY --project happy-hunter-systems --data-file -
           printf '%s' "$PLACES_API_KEY" | firebase functions:secrets:set PLACES_API_KEY --project happy-hunter-systems --data-file -
-          echo "✓ Firebase runtime secrets updated"
+          echo "Firebase runtime secrets updated"
 
       - name: Refresh Functions Lock File
         run: |
           rm -f functions/package-lock.json
           cd functions && npm install
-          echo "✓ functions/package-lock.json regenerated with axios + cheerio"
+          echo "functions/package-lock.json regenerated with axios + cheerio"
 
       - name: Create Functions .env File
         env:
@@ -128,7 +125,7 @@ jobs:
         run: |
           echo "WHATSAPP_TOKEN=$WHATSAPP_TOKEN" >> functions/.env
           echo "PHONE_NUMBER_ID=$PHONE_NUMBER_ID" >> functions/.env
-          echo "✓ functions/.env file generated dynamically"
+          echo "functions/.env file generated dynamically"
 
       - name: Deploy Complete Architecture to Firebase
         env:
@@ -143,7 +140,7 @@ jobs:
             --non-interactive \
             --force
           
-          echo "✓ Deployment completed"
+          echo "Deployment completed"
 
       - name: Verify Firebase Deployment
         env:
@@ -153,21 +150,21 @@ jobs:
           firebase hosting:channel:list --project happy-hunter-systems || exit 1
           
           echo "Checking live site..."
-          sleep 5 # Allow propagation
+          sleep 5 
           curl -f -s -I https://happyhunterdigital.com/index.html | head -1 || {
-            echo "⚠ Live site check failed - may need additional time to propagate"
+            echo "Live site check failed - may need additional time to propagate"
           }
           
-          echo "✓ Deployment verified"
+          echo "Deployment verified"
 
       - name: Post-Deployment Security Check
         run: |
           echo "Verifying security headers..."
           HEADERS=$(curl -s -I https://happyhunterdigital.com/ | grep -i "Strict-Transport-Security\|Content-Security-Policy\|X-Content-Type-Options" | wc -l)
           if [ $HEADERS -lt 3 ]; then
-            echo "⚠ WARNING: Some security headers may not be configured"
+            echo "WARNING: Some security headers may not be configured"
           else
-            echo "✓ Security headers verified"
+            echo "Security headers verified"
           fi
 
       - name: Upload Build Artifacts
@@ -181,7 +178,7 @@ jobs:
       - name: Deployment Notification
         if: success()
         run: |
-          echo "✅ Deployment successful"
+          echo "Deployment successful"
           echo "Project: happy-hunter-systems"
           echo "URL: https://happyhunterdigital.com"
           echo "Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
@@ -189,6 +186,6 @@ jobs:
       - name: Deployment Failure Notification
         if: failure()
         run: |
-          echo "❌ Deployment failed"
+          echo "Deployment failed"
           echo "Check logs for details"
           exit 1
