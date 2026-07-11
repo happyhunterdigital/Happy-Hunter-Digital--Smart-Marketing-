@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import OpenAI from "openai";
-import { scrapeWebsiteText, checkSecurityHeaders, getPerformanceSignals, checkLlmsTxt, SecuritySignals, PerformanceSignals, ScrapedSiteData } from "../services/auditService";
+import { scrapeWebsiteText, checkSecurityHeaders, getPerformanceSignals, checkLlmsTxt, SecuritySignals, PerformanceSignals } from "../services/auditService";
 import { sendAdminAlert, sendAuditResultToClient } from "../services/whatsappService";
 import { FieldValue } from "firebase-admin/firestore";
 import { isGbpUrl, ALLOWED_ORIGINS, sanitizeInput, isValidEmail, isValidDomainOrUrl, detectGbpViaSearch, checkRateLimit, formatPerformanceEvidence, formatSecurityEvidence, formatSeoEvidence } from "../utils/auditHelpers";
