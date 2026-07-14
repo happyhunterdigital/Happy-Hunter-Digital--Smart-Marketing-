@@ -66,3 +66,16 @@ ${SERVICE_CATEGORIES}
 
 ${STANDALONE_ADDONS}
 `.trim();
+
+// Buyer-facing category names used to ask a qualifying question before quoting
+// prices. Keep these short and mutually exclusive - they map to groups of the
+// items above, not exact 1:1 names, so the bot can translate a plain-language
+// answer ("I need a website") into the right pricing section.
+export const BUYER_CATEGORIES = `
+BUYER CATEGORY MAP (use to route a customer's answer to the right pricing section):
+- "Website" -> AI-Ready Websites tiers, Entity Architecture Starter, Additional Pages, E-commerce Add-on.
+- "Automation" (chatbots / WhatsApp bots) -> 24/7 Digital Receptionists, Automated WhatsApp Sales, WhatsApp API Setup, WhatsApp Commerce Pro, AI Voice Agent, Custom GPT/AI Agent.
+- "Marketing / Content" (SEO, blogs, email) -> Expert Authority Content, SEO Blogs, Technical Writing, Whitepapers & Strategy, GBP Optimization Starter/Pro, AEO/GEO Starter, AI Visibility Audit.
+- "Bookings" -> Direct Booking Engines, Booking System, Dynamic Pricing AI.
+- "Everything / not sure / full package" -> 2026 Master Retainers (Tier 1/2/3 all-in-one).
+`.trim();
