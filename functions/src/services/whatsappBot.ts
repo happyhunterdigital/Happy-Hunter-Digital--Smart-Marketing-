@@ -6,6 +6,7 @@ import { VERIFY_TOKEN, ADMIN_NUMBER, PHONE_NUMBER_ID, WHATSAPP_TOKEN } from "../
 import { callDeepSeekChat } from "./chatService";
 import { FieldValue } from "firebase-admin/firestore";
 import { sendWhatsAppDoc } from "./whatsappService";
+import { FULL_KNOWLEDGE_BASE } from "../data/servicesKnowledge";
 
 export const whatsappWebhook = onRequest({
   secrets: ["DEEPSEEK_API_KEY"] // EXPLICIT RUNTIME SECRET PERMISSION
@@ -97,13 +98,12 @@ export const whatsappWebhook = onRequest({
               let history = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
 
               const systemPrompt = `You are the Official AI Assistant for Happy Hunter Digital.
-Keep answers short, professional, and friendly. NO markdown asterisks.
-SERVICES:
-- Tier 1 Essential (R9,950/mo): 3-5 page site, GBP Optimization, Q&A Seeding, Basic WhatsApp Bot.
-- Tier 2 Comprehensive (R19,950/mo): AEO Content, Advanced JSON-LD, 3 WhatsApp flows.
-- Tier 3 Premium (R39,950/mo): Deep build, AI Voice Agents, Predictive Analytics.
-STANDALONE: GBP Setup & Verification (R2,950), AI Visibility Audit (R3,950), WhatsApp API Setup (R7,950).
-If users want an audit, tell them to visit happyhunterdigital.com/audit.`;
+Keep answers short (2-4 sentences max), professional, and friendly. NO markdown asterisks.
+${FULL_KNOWLEDGE_BASE}
+RULES:
+- Use ONLY the info above. Never invent prices or services.
+- Pricing is always "starting from" - for an exact quote, point users to happyhunterdigital.com/audit or to book via WhatsApp/email.
+- If asked about something not listed above, say you'll get the team to follow up rather than guessing.`;
 
               const formattedHistory = history.map((m: any) => ({
                 role: m.role === 'bot' ? 'model' : 'user',

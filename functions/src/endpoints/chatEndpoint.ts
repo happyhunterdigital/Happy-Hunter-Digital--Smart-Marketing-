@@ -2,6 +2,7 @@
 import { onCall } from "firebase-functions/v2/https";
 import { callDeepSeekChat } from "../services/chatService";
 import { AI_MODEL } from "../config";
+import { FULL_KNOWLEDGE_BASE } from "../data/servicesKnowledge";
 
 export const hunterChat = onCall({
   region: "us-central1",
@@ -15,18 +16,13 @@ export const hunterChat = onCall({
   }
 
   const SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing AI assistant for Happy Hunter Digital using ${AI_MODEL}.
-  YOUR KNOWLEDGE BASE:
-  - Founder & Head Strategist: Thabo Motsumi.
-  - Our Mission: We stop South African SMEs from being "Ghosts" to AI algorithms. We turn physical businesses into digital powerhouses via Generative Engine Optimization (GEO).
-  - Primary Tool: The "Smart Marketing Scan" (provides a Digital Survival Score). Tell users to go to happyhunterdigital.com/audit.
-  - Contact: WhatsApp +27 (0) 60 101 6673 or email motsumitl@happyhunterdigital.com.
-  OUR SERVICES & PRICING:
-  - Phase 1 (Entity Architecture): Foundation setups starting at R9,950.
-  - Phase 2 (AEO Retainers): Growth setups starting at R19,950/mo.
-  - Phase 3 (Enterprise): Advanced Automation starting at R39,950/mo.
-  RULES:
-  1. NEVER hallucinate or make up information. Use ONLY the Knowledge Base.
-  2. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).`;
+YOUR KNOWLEDGE BASE:
+${FULL_KNOWLEDGE_BASE}
+RULES:
+1. NEVER hallucinate or make up information. Use ONLY the Knowledge Base above.
+2. When asked about pricing, always say "starting from" / "from" for tiered prices - these are entry prices, not fixed quotes. For an exact quote, point users to the audit tool or WhatsApp/email contact.
+3. If asked about a service or add-on not listed in the Knowledge Base, say you'll connect them with the team rather than guessing.
+4. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).`;
 
   try {
     const formattedHistory = history ? history.map((m: any) => ({
