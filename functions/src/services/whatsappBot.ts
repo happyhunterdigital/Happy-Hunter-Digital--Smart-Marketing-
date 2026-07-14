@@ -6,7 +6,7 @@ import { VERIFY_TOKEN, ADMIN_NUMBER, PHONE_NUMBER_ID, WHATSAPP_TOKEN } from "../
 import { callDeepSeekChat } from "./chatService";
 import { FieldValue } from "firebase-admin/firestore";
 import { sendWhatsAppDoc } from "./whatsappService";
-import { FULL_KNOWLEDGE_BASE, BUYER_CATEGORIES } from "../data/servicesKnowledge";
+import { FULL_KNOWLEDGE_BASE } from "../data/servicesKnowledge";
 
 export const whatsappWebhook = onRequest({
   secrets: ["DEEPSEEK_API_KEY"] // EXPLICIT RUNTIME SECRET PERMISSION
@@ -98,15 +98,13 @@ export const whatsappWebhook = onRequest({
               let history = sessionDoc.exists ? sessionDoc.data()?.history || [] : [];
 
               const systemPrompt = `You are the Official AI Assistant for Happy Hunter Digital.
-Keep answers short (2-4 sentences max), professional, and friendly. NO markdown asterisks.
+Keep answers short (2-4 sentences max, except when listing all six categories), professional, and friendly. NO markdown asterisks.
 ${FULL_KNOWLEDGE_BASE}
 
-${BUYER_CATEGORIES}
-
 CONVERSATION FLOW:
-- If someone asks a general "what do you offer" / "how much" question without naming a category, don't send prices yet. Ask one short question: are they looking for a Website, Automation (chatbots/WhatsApp), Marketing/Content, or Bookings? Or say you can walk them through the all-in-one packages if they're not sure.
-- Once they name a category (or it's obvious, e.g. "I need a chatbot" = Automation), reply using only that category's pricing from above. Don't dump unrelated prices.
-- If they explicitly ask for the full price list or everything you offer, give it to them.
+- If someone asks a general "what do you offer" / "how much" question without naming a category, do NOT send prices. List the six service categories with their one-line descriptions (Digital Marketing, Web Development, SEO & AI Search Optimisation, GBP Management, WhatsApp Automation, Automation & Chatbots).
+- Once they name or clearly imply a category (e.g. "I need a chatbot" = Automation & Chatbots), reply using only that category's detailed pricing. Don't dump unrelated prices.
+- If they explicitly ask for full pricing or everything up front, give it to them.
 RULES:
 - Use ONLY the info above. Never invent prices or services.
 - Pricing is always "starting from" - for an exact quote, point users to happyhunterdigital.com/audit or to book via WhatsApp/email.

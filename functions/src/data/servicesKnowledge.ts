@@ -3,12 +3,19 @@
 // Single source of truth for what the chatbots (hunterChat + WhatsApp bot) know
 // about Happy Hunter Digital's services and pricing.
 //
-// IMPORTANT: This is a mirror of src/data/servicesData.ts (the frontend data
-// that actually renders the Services pages). The `functions/` project has its
-// own tsconfig with `include: ["src"]`, so it cannot import directly from the
-// frontend's `src/` directory. Whenever servicesData.ts changes (new tiers,
-// new prices, new add-ons), update the strings below to match, or the bots
-// will quote stale prices to customers.
+// IMPORTANT: This is a mirror of src/pages/CoreServices/CoreServices.tsx (the
+// `categories` array), which is what actually renders the live /services/*
+// pages. The `functions/` project has its own tsconfig with `include: ["src"]`,
+// so it cannot import directly from the frontend's `src/` directory. Whenever
+// CoreServices.tsx changes (new SKUs, new prices, new categories), update the
+// strings below to match, or the bots will quote stale info to customers.
+//
+// NOTE: src/data/servicesData.ts is an OLDER, separate pricing model (5 phases
+// + master retainer tiers) that is now superseded by CoreServices.tsx for the
+// main services pages. It's still wired into CoreServicesForm.tsx and
+// MegaphoneLanding.tsx as of this writing - if those pages are still live and
+// customer-facing, they may be quoting different prices than the chatbots
+// below. Worth reconciling separately.
 
 export const COMPANY_INFO = `
 - Company: Happy Hunter Digital (happyhunterdigital.com), a South African digital marketing agency based in Pretoria.
@@ -18,64 +25,65 @@ export const COMPANY_INFO = `
 - Contact: WhatsApp +27 60 101 6673 or email motsumitl@happyhunterdigital.com.
 `.trim();
 
-export const MASTER_RETAINERS = `
-2026 MASTER RETAINERS (all-in-one monthly packages, starting prices):
-- Tier 1 - Essential: R9,950/mo+. For businesses under R5M revenue. Includes: 3-5 page SSR website, Google Business Profile optimization, 2x SEO blog articles/mo, basic WhatsApp API setup, basic email sequence (up to 5k contacts).
-- Tier 2 - Comprehensive (most popular): R19,950/mo+. For businesses R5M-R50M revenue. Includes: 5-10 page SSR website + JSON-LD schema, advanced AEO/GEO citation work, 4x SEO articles + 1 whitepaper/mo, 3 automated WhatsApp flows, AI live chat widget.
-- Tier 3 - Premium: R39,950/mo+. For businesses R50M+ revenue. Includes: 10-20 page deep build, cross-platform AI citation dominance, 8x articles + 2 whitepapers/mo, AI NLP WhatsApp bot, AI voice agents.
+// STEP 1 CONTENT: the six service categories with a one-line description each
+// and their live page link, but NO prices. This is what the bot should lead
+// with when a visitor asks a general "what do you offer" question - list the
+// categories and a bit of context, same as the /services overview page does.
+export const SERVICE_CATALOG_OVERVIEW = `
+OUR SIX SERVICE CATEGORIES (list these with their one-line description when a visitor asks generally what you offer - do NOT include prices at this stage):
+1. Digital Marketing - We build campaigns structured around what AI answer engines and search algorithms actually reward: consistency, clarity, and verifiable authority, not just ad spend. (happyhunterdigital.com/services/digital-marketing)
+2. Web Development - We build AI-ready websites, structured for AEO and AI SEO, so AI assistants can read, understand, and cite your business, not just rank it in search results. (happyhunterdigital.com/services/web-development)
+3. SEO & AI Search Optimisation - Traditional SEO gets you found by Google. AI Search Optimisation gets you recommended by AI. We build for both. (happyhunterdigital.com/services/seo-ai-search)
+4. GBP Management - Your Google Business Profile is one of the first places AI systems check to verify a business is real, active, and trustworthy. We keep it accurate and updated. (happyhunterdigital.com/services/google-business-profile)
+5. WhatsApp Automation - We turn WhatsApp into an automated sales channel that responds instantly, qualifies leads, and keeps your business always on. (happyhunterdigital.com/services/whatsapp-marketing)
+6. Automation & Chatbots - We deploy AI receptionists and workflow automations that qualify leads and answer questions 24/7, so no opportunity goes cold. (happyhunterdigital.com/services/automation-chatbots)
 `.trim();
 
-export const SERVICE_CATEGORIES = `
-INDIVIDUAL SERVICE CATEGORIES (each has Essential / Comprehensive / Premium tiers, starting prices):
-1. AI-Ready Websites - Essential R3,950-R6,500 (1-3 pages) | Comprehensive R12,500-R18,500 (5-10 pages + blog, most popular) | Premium R35,000-R55,000+ (unlimited pages, omnichannel AI sync).
-2. 24/7 Digital Receptionists (AI chatbots) - Starter from R450 (basic FAQ web chat) | Business from R1,800 (AI sales chatbot + lead qualification, most popular) | Enterprise R15,000+ (Web + WhatsApp + Social + phone receptionist).
-3. Automated WhatsApp Sales - Essential from R4,500 (official API setup) | Comprehensive from R12,500 (interactive catalogs, most popular) | Premium R35,000+ (in-chat payments).
-4. Expert Authority Content - Essential from R1.50/word (SEO articles) | Comprehensive from R4,500 (automated email marketing, most popular) | Premium R12,500+ (strategic whitepapers).
-5. Direct Booking Engines - Essential from R950 (booking integration) | Comprehensive from R1,500+ (multi-platform channel manager, most popular) | Premium R12,980+ (dynamic AI pricing).
+// STEP 2 CONTENT: detailed SKUs and prices per category. Only pull from the
+// section matching the category the visitor asked about.
+export const SERVICE_CATALOG_DETAIL = `
+DETAILED PRICING BY CATEGORY (only share the relevant section once the visitor has told you which category they want, or explicitly asks for full pricing):
+
+[Digital Marketing]
+- Social Media Starter: R1,500/month - 8 posts or reels/mo across Facebook & Instagram, community management, monthly reporting, 3-month setup phase.
+- Social Media Growth (most popular): R2,800/month - 12 posts or reels/mo across Facebook, Instagram, TikTok, plus retargeting setup.
+- Content Marketing: R3,500/month - 4 deep-research SEO/GEO blog articles per month.
+- Paid Search & Social Ads: From R2,500/month - Google Ads & Meta Ads campaign setup and management.
+- Email Marketing: R1,950/month - automation setup + 4 strategic campaign sends per month.
+
+[Web Development]
+- Business / Corporate Website: from R1,850 - packages: 1-Page Starter R1,850 / Business Pack R2,750 / CMS Business Pack R6,500.
+- E-Commerce Website (most popular): Starting from R8,500 - full online store, PayFast/Yoco payment integration, real-time inventory.
+- Landing Page: Starting from R1,850 - high-conversion single page for campaigns.
+- Portfolio / Personal Website: R3,450 once-off.
+
+[SEO & AI Search Optimisation]
+- SEO & AI Visibility Audit: R3,950 once-off - full index, schema, and AI-citation health check.
+- Technical SEO Management: R2,450/month - ongoing crawlability, speed, and indexing maintenance.
+- Entity Authority Building: R3,450/month - verified entity/profile alignment across reference sources.
+- GEO & AI Citation Optimisation (most popular): R4,950/month - structuring content for AI citation and direct machine recommendations.
+
+[GBP Management]
+- Essential GBP Package: R1,180/month - 2 profile updates/mo, 2 Q&A entries/mo.
+- Growth GBP Package (most popular): R2,730/month - 4 updates/mo, 4 Q&A entries/mo, review pipeline, 2 local landing pages.
+- Premium GBP Package: R3,950/month - 6 updates/mo, 6 Q&A entries/mo, up to 3 geographic zones, review sentiment audits.
+
+[WhatsApp Automation]
+- WhatsApp Ad Campaigns: From R2,500/month - Meta ad campaigns driving traffic into WhatsApp.
+- WhatsApp Bot Setup: R4,950 once-off - official Meta Cloud API bot with automated flows.
+- WhatsApp Marketing Full Package (most popular): From R6,500/month - ads + automation flows + catalog + tracking combined.
+
+[Automation & Chatbots]
+- Website AI Chatbot: From R4,950 once-off - custom chatbot trained on your business documentation.
+- CRM & Workflow Automation (most popular): Custom Quote - automated pipelines linking lead capture to your CRM/database.
+- AI Voice Agents: From R12,000 once-off - AI phone agent that answers calls, captures details, books appointments.
 `.trim();
 
-export const STANDALONE_ADDONS = `
-STANDALONE ADD-ONS (once-off unless noted /mo):
-- Additional Pages: from R750/page
-- E-commerce Add-on: from R4,500
-- Booking System: from R2,500
-- SEO Blogs: from R1.50/word
-- Technical Writing: from R3.00/word
-- Whitepapers & Strategy: from R5,500
-- Custom GPT / AI Agent: from R9,950
-- AI Visibility Audit: from R3,950
-- GBP Setup & Verification: from R2,950
-- Entity Architecture Starter: from R9,950
-- WhatsApp API Setup: from R7,950
-- Interactive Lead Magnet: from R9,950
-- GBP Optimization Starter: from R1,950/mo
-- GBP Optimization Pro: from R3,950/mo
-- AEO/GEO Starter: from R5,950/mo
-- WhatsApp Commerce Pro: from R5,950/mo
-- AI Voice Agent: from R9,950/mo
-- Dynamic Pricing AI: from R14,950/mo
-`.trim();
-
-/** Full knowledge base, for prompts that can afford more length (e.g. website chat). */
+/** Full knowledge base: category overview + detailed pricing. */
 export const FULL_KNOWLEDGE_BASE = `
 ${COMPANY_INFO}
 
-${MASTER_RETAINERS}
+${SERVICE_CATALOG_OVERVIEW}
 
-${SERVICE_CATEGORIES}
-
-${STANDALONE_ADDONS}
-`.trim();
-
-// Buyer-facing category names used to ask a qualifying question before quoting
-// prices. Keep these short and mutually exclusive - they map to groups of the
-// items above, not exact 1:1 names, so the bot can translate a plain-language
-// answer ("I need a website") into the right pricing section.
-export const BUYER_CATEGORIES = `
-BUYER CATEGORY MAP (use to route a customer's answer to the right pricing section):
-- "Website" -> AI-Ready Websites tiers, Entity Architecture Starter, Additional Pages, E-commerce Add-on.
-- "Automation" (chatbots / WhatsApp bots) -> 24/7 Digital Receptionists, Automated WhatsApp Sales, WhatsApp API Setup, WhatsApp Commerce Pro, AI Voice Agent, Custom GPT/AI Agent.
-- "Marketing / Content" (SEO, blogs, email) -> Expert Authority Content, SEO Blogs, Technical Writing, Whitepapers & Strategy, GBP Optimization Starter/Pro, AEO/GEO Starter, AI Visibility Audit.
-- "Bookings" -> Direct Booking Engines, Booking System, Dynamic Pricing AI.
-- "Everything / not sure / full package" -> 2026 Master Retainers (Tier 1/2/3 all-in-one).
+${SERVICE_CATALOG_DETAIL}
 `.trim();

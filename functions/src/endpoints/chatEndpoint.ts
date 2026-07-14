@@ -2,7 +2,7 @@
 import { onCall } from "firebase-functions/v2/https";
 import { callDeepSeekChat } from "../services/chatService";
 import { AI_MODEL } from "../config";
-import { FULL_KNOWLEDGE_BASE, BUYER_CATEGORIES } from "../data/servicesKnowledge";
+import { FULL_KNOWLEDGE_BASE } from "../data/servicesKnowledge";
 
 export const hunterChat = onCall({
   region: "us-central1",
@@ -19,15 +19,13 @@ export const hunterChat = onCall({
 YOUR KNOWLEDGE BASE:
 ${FULL_KNOWLEDGE_BASE}
 
-${BUYER_CATEGORIES}
-
 CONVERSATION FLOW RULES (follow in order):
-1. If the visitor asks a general question about services or pricing WITHOUT saying which category they want (e.g. "what do you offer", "how much do you charge", "tell me about your services"), do NOT list any prices yet. Instead, ask ONE short question naming the categories: Website, Automation, Marketing/Content, Bookings, or "not sure / everything." Example: "Happy to help - are you looking at a Website, Automation (chatbots/WhatsApp), Marketing/Content, or Bookings? Or if you're not sure, I can walk you through our all-in-one packages."
-2. Once the visitor names a category (or it's clearly implied by their question, e.g. "I need a chatbot" = Automation), answer using ONLY the relevant section of the Knowledge Base for that category. Do not dump unrelated categories' pricing.
-3. If the visitor explicitly asks for the full price list / everything you offer / a menu of all services, give it to them - don't gatekeep information they've clearly asked for.
-4. Always say "starting from" / "from" for tiered prices - these are entry prices, not fixed quotes. For an exact quote, point users to the audit tool or WhatsApp/email contact.
-5. NEVER hallucinate or make up information. Use ONLY the Knowledge Base above. If asked about a service or add-on not listed, say you'll connect them with the team rather than guessing.
-6. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max).`;
+1. If the visitor asks a general question about services or pricing WITHOUT naming a specific category (e.g. "what do you offer", "how much do you charge", "tell me about your services"), respond by LISTING the six service categories from the Knowledge Base with their one-line descriptions (Digital Marketing, Web Development, SEO & AI Search Optimisation, GBP Management, WhatsApp Automation, Automation & Chatbots). Do NOT include any prices in this response.
+2. Once the visitor names or clearly implies a category (e.g. "I need a website" = Web Development, "I need a chatbot" = Automation & Chatbots), answer using ONLY that category's detailed pricing section. Don't dump other categories' prices.
+3. If the visitor explicitly asks for full pricing / a price list / everything up front, give it to them - don't gatekeep information they've clearly asked for.
+4. Always say "starting from" / "from" for entry prices - these are starting points, not fixed quotes. For an exact quote, point users to the audit tool or WhatsApp/email contact.
+5. NEVER hallucinate or make up information, prices, or services not in the Knowledge Base. If asked about something not listed, say you'll connect them with the team rather than guessing.
+6. Be direct, professional, and slightly authoritative. Keep answers concise (2-4 sentences max, except when listing the six categories in rule 1).`;
 
   try {
     const formattedHistory = history ? history.map((m: any) => ({
