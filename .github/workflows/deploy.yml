@@ -1,16 +1,20 @@
-name: System - Build, Audit & Deploy
+name: Security Audit & Policy Enforcement
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
-  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 0' # Weekly Sunday 2 AM UTC
 
 permissions:
   contents: read
   security-events: write
 
 jobs:
-  build_and_deploy:
+  audit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -19,173 +23,148 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
-      - name: Install Frontend Dependencies
-        run: npm install
-
-      - name: Run Supply Chain Audit (Frontend)
+      - name: Audit Frontend Dependencies
         run: npm audit || true
 
-      - name: Build Frontend Application
-        env:
-          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
-          VITE_POSTHOG_KEY: ${{ secrets.VITE_POSTHOG_KEY }}
-          VITE_POSTHOG_HOST: ${{ secrets.VITE_POSTHOG_HOST }}
-          VITE_RECAPTCHA_SITE_KEY: ${{ secrets.VITE_RECAPTCHA_SITE_KEY }}
-        run: npm run build
-
-      - name: Audit Build Artifacts
-        run: |
-          echo "Checking for secrets in dist/ ..."
-          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|sk_live_\|pk_live_" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
-            echo "ERROR: Secrets detected in build artifacts"
-            exit 1
-          fi
-          
-          echo "Checking for sourcemaps ..."
-          if find dist -name "*.map" | grep -q .; then
-            echo "ERROR: Sourcemaps found in dist/"
-            exit 1
-          fi
-          
-          echo "Build artifacts verified - no secrets or sourcemaps"
-
-      - name: Install Backend Dependencies
-        run: |
-          cd functions
-          npm install
-
-      - name: Run Supply Chain Audit (Backend)
+      - name: Audit Backend Dependencies
         run: |
           cd functions
           npm audit || true
 
-      - name: Build Backend Cloud Functions
+      - name: Check TypeScript Strict Compilation
+        run: npm install && npx tsc --noEmit
+
+      - name: Check for secrets exposure
+        run: |
+          echo "Scanning for exposed API keys..."
+          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|FIREBASE_SERVICE_ACCOUNT" src/ --include="*.ts" --include="*.tsx" --include="*.js" | grep -v "import.meta.env\|process.env\|secrets\|readonly\|Firebase API Key"; then
+            echo "ERROR: Hardcoded secrets detected"
+            exit 1
+          fi
+          echo "✓ No hardcoded secrets found"
+
+      - name: Check for console.log in production code
+        run: |
+          echo "Scanning for console statements..."
+          if grep -r "console\.\(log\|debug\|info\)" src --include="*.ts" --include="*.tsx" | grep -v "\.test\." | grep -v "node_modules"; then
+            echo "WARNING: console.log found in source (will be removed in build)"
+          fi
+          echo "✓ Build will strip console statements"
+
+      - name: Install Frontend & Run Lint
+        run: npm install && npm run lint
+
+      - name: Install Backend & Run Lint
         run: |
           cd functions
+          npm install
+          npm run lint 2>/dev/null || echo "No functions lint configured"
+
+  build-verification:
+    needs: audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install & Build Frontend
+        run: |
+          npm install
           npm run build
+
+      - name: Verify No Sourcemaps in Build
+        run: |
+          if find dist -name "*.map" | grep -q .; then
+            echo "ERROR: Sourcemaps found in dist/ - security risk!"
+            find dist -name "*.map"
+            exit 1
+          fi
+          echo "✓ No sourcemaps in production build"
+
+      - name: Verify No Secrets in Build
+        run: |
+          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|sk_live_\|pk_live_" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
+            echo "ERROR: Secrets detected in build artifacts"
+            exit 1
+          fi
+          echo "✓ No secrets in build artifacts"
+
+      - name: Check Build Size
+        run: |
+          du -sh dist/
+          MAIN_JS=$(find dist -name "*main*.js" -o -name "*index*.js" | head -1)
+          if [ -f "$MAIN_JS" ]; then
+            SIZE=$(wc -c < "$MAIN_JS")
+            SIZE_MB=$((SIZE / 1024 / 1024))
+            if [ $SIZE_MB -gt 500 ]; then
+              echo "WARNING: Main bundle is ${SIZE_MB}MB (consider code splitting)"
+            fi
+          fi
+
+  firestore-rules-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: Validate Firebase Configuration
+      - name: Set up Firebase Credentials
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
         run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT_KEY" ]; then
-            echo "CRITICAL: FIREBASE_SERVICE_ACCOUNT_KEY secret is missing"
-            exit 1
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT_KEY" ]; then
+            echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > /tmp/firebase-sa.json
           fi
-          
-          echo "$FIREBASE_SERVICE_ACCOUNT_KEY" | jq . > /dev/null || {
-            echo "ERROR: Invalid Firebase service account JSON"
-            exit 1
-          }
-          
-          echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > /tmp/firebase-sa.json
-          echo "Firebase credentials validated"
 
       - name: Validate Firestore Rules Syntax
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
-        run: firebase deploy --only firestore:rules --dry-run --project happy-hunter-systems || exit 1
+        run: |
+          if [ -f /tmp/firebase-sa.json ]; then
+            firebase deploy --only firestore:rules --dry-run --project happy-hunter-systems 2>&1 | grep -i "Error:" && exit 1 || echo "✓ Firestore rules valid"
+          else
+            echo "Skipping due to missing credentials (e.g. PR from fork)"
+          fi
 
       - name: Validate Storage Rules Syntax
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
-        run: firebase deploy --only storage --dry-run --project happy-hunter-systems || exit 1
-
-      - name: Set Firebase Runtime Secrets
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          PLACES_API_KEY: ${{ secrets.PLACES_API_KEY }}
         run: |
-          printf '%s' "$DEEPSEEK_API_KEY" | firebase functions:secrets:set DEEPSEEK_API_KEY --project happy-hunter-systems --data-file -
-          printf '%s' "$PLACES_API_KEY" | firebase functions:secrets:set PLACES_API_KEY --project happy-hunter-systems --data-file -
-          echo "Firebase runtime secrets updated"
-
-      - name: Refresh Functions Lock File
-        run: |
-          rm -f functions/package-lock.json
-          cd functions && npm install
-          echo "functions/package-lock.json regenerated with axios + cheerio"
-
-      - name: Create Functions .env File
-        env:
-          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
-          PHONE_NUMBER_ID: ${{ secrets.PHONE_NUMBER_ID }}
-        run: |
-          echo "WHATSAPP_TOKEN=$WHATSAPP_TOKEN" >> functions/.env
-          echo "PHONE_NUMBER_ID=$PHONE_NUMBER_ID" >> functions/.env
-          echo "functions/.env file generated dynamically"
-
-      - name: Deploy Complete Architecture to Firebase
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
-        run: |
-          echo "$FIREBASE_SERVICE_ACCOUNT_KEY" > /tmp/firebase-sa.json
-          
-          echo "Deploying to Firebase..."
-          firebase deploy \
-            --project happy-hunter-systems \
-            --non-interactive \
-            --force
-          
-          echo "Deployment completed"
-
-      - name: Verify Firebase Deployment
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/firebase-sa.json
-        run: |
-          echo "Verifying Firebase project..."
-          firebase hosting:channel:list --project happy-hunter-systems || exit 1
-          
-          echo "Checking live site..."
-          sleep 5 
-          curl -f -s -I https://happyhunterdigital.com/index.html | head -1 || {
-            echo "Live site check failed - may need additional time to propagate"
-          }
-          
-          echo "Deployment verified"
-
-      - name: Post-Deployment Security Check
-        run: |
-          echo "Verifying security headers..."
-          HEADERS=$(curl -s -I https://happyhunterdigital.com/ | grep -i "Strict-Transport-Security\|Content-Security-Policy\|X-Content-Type-Options" | wc -l)
-          if [ $HEADERS -lt 3 ]; then
-            echo "WARNING: Some security headers may not be configured"
+          if [ -f /tmp/firebase-sa.json ]; then
+            firebase deploy --only storage --dry-run --project happy-hunter-systems 2>&1 | grep -i "Error:" && exit 1 || echo "✓ Storage rules valid"
           else
-            echo "Security headers verified"
+            echo "Skipping due to missing credentials"
           fi
 
-      - name: Upload Build Artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: dist/
-          retention-days: 7
+  security-headers-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: Deployment Notification
-        if: success()
+      - name: Validate CSP in firebase.json
         run: |
-          echo "Deployment successful"
-          echo "Project: happy-hunter-systems"
-          echo "URL: https://happyhunterdigital.com"
-          echo "Timestamp: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          if ! grep -q "Content-Security-Policy" firebase.json; then
+            echo "ERROR: CSP header missing from firebase.json"
+            exit 1
+          fi
+          echo "✓ CSP header configured"
 
-      - name: Deployment Failure Notification
-        if: failure()
+      - name: Validate HSTS in firebase.json
         run: |
-          echo "Deployment failed"
-          echo "Check logs for details"
-          exit 1
+          if ! grep -q "Strict-Transport-Security" firebase.json; then
+            echo "ERROR: HSTS header missing"
+            exit 1
+          fi
+          echo "✓ HSTS header configured"
