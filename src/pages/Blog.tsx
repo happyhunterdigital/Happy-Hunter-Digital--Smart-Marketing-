@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, ArrowRight, BrainCircuit, Globe, Target, Database, Search, ShieldCheck, Zap } from 'lucide-react';
+import { PageMeta } from '../components/PageMeta';
 
 export const blogPosts = [
   {
@@ -80,15 +81,20 @@ export const blogPosts = [
 export const Blog = () => {
   return (
     <div className="container mx-auto px-6 py-12 animate-fade-in min-h-screen">
+      <PageMeta
+        title="Smart News | Happy Hunter Digital"
+        description="Practical guides on getting found online, AI search visibility, and growing a South African small business — no jargon."
+        path="/smart-news"
+      />
       <div className="max-w-4xl mx-auto mb-20 text-center">
         <span className="text-yellow-500 font-black uppercase tracking-[0.3em] text-[10px] mb-4 block">
-          Strategic Intel
+          Smart News
         </span>
         <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 text-white leading-none">
           Smart <span className="text-yellow-500">News</span>
         </h1>
         <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
-          The tactical blueprints, linguistic calibrations, and structural alignments required to dominate digital discoverability in 2026. Stop guessing. Start synthesizing.
+          Practical guides on getting found online and growing your business — no jargon, just what actually works.
         </p>
       </div>
 
