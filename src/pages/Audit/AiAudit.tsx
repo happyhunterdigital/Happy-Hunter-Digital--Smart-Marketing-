@@ -3,6 +3,7 @@ import { AuditForm } from './AuditForm';
 import { AuditResults } from './AuditResults';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../firebaseConfig';
+import { PageMeta } from '../../components/PageMeta';
 
 interface AuditData {
   success: boolean;
@@ -101,6 +102,11 @@ export const AiAudit: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white py-20 px-4">
+      <PageMeta
+        title="Free Online Health Check | Happy Hunter Digital"
+        description="See exactly why customers can't find your business online. A free check of your website, Google listing, and search visibility — no jargon, no hard sell."
+        path="/audit"
+      />
       <div className="max-w-6xl mx-auto">
         {step < 4 && (
           <div className="text-center mb-12">
