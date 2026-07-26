@@ -1,8 +1,14 @@
 import React from 'react';
 import { Linkedin, Mail, Code2, Database, Network } from 'lucide-react';
+import { PageMeta } from '../components/PageMeta';
 
 export const Founders = () => (
   <div className="container mx-auto px-6 py-20 min-h-[85vh] flex items-center animate-fade-in">
+    <PageMeta
+      title="About Thabo Motsumi | Happy Hunter Digital"
+      description="Meet the person behind Happy Hunter Digital. Thabo Leslie Motsumi helps South African small businesses get found online — websites, chatbots, and WhatsApp sales, no jargon."
+      path="/founders"
+    />
     <div className="max-w-6xl mx-auto grid md:grid-cols-12 gap-16 items-center">
       
       <div className="md:col-span-7 space-y-8">
