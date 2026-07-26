@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowUpRight, CheckCircle2, Globe } from 'lucide-react';
+import { PageMeta } from '../components/PageMeta';
 
 const CASE_STUDIES = [
   {
@@ -36,6 +37,11 @@ const CASE_STUDIES = [
 
 export const EarnedMedia = () => (
   <div className="container mx-auto px-6 py-20 animate-fade-in">
+    <PageMeta
+      title="Client Results | Happy Hunter Digital"
+      description="Real results for real South African businesses — websites, chatbots, and WhatsApp sales that got clients found online and got them more customers."
+      path="/earned-media"
+    />
     <div className="max-w-4xl mx-auto mb-16 text-center">
       <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 text-white leading-none">
         Verified <span className="text-yellow-500 italic">Success</span>
