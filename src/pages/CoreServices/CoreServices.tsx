@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { PageMeta } from '../../components/PageMeta';
 import {
   MessageSquareCode,
   Database,
@@ -472,8 +473,48 @@ export function CoreServices() {
     setOpenFaq(0);
   }, [activeCategory.slug]);
 
+  // Built from the same data rendered on the page, so pricing/answers shown to
+  // AI crawlers and search engines always match what a visitor actually sees.
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": activeCategory.title,
+    "description": activeCategory.metaDesc,
+    "provider": { "@type": "ProfessionalService", "name": "Happy Hunter Digital" },
+    "areaServed": [
+      { "@type": "City", "name": "Pretoria" },
+      { "@type": "City", "name": "Johannesburg" },
+    ],
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": activeCategory.title,
+      "itemListElement": activeCategory.services.map((s) => ({
+        "@type": "Offer",
+        "itemOffered": { "@type": "Service", "name": s.title, "description": s.desc || activeCategory.metaDesc },
+        "price": s.price,
+        "priceCurrency": "ZAR",
+      })),
+    },
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": activeCategory.faqs.map((f) => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": { "@type": "Answer", "text": f.a },
+    })),
+  };
+
   return (
     <div className="relative max-w-7xl mx-auto px-4 md:px-8 pb-24">
+      <PageMeta
+        title={`${activeCategory.title} | Happy Hunter Digital`}
+        description={activeCategory.metaDesc}
+        path={activeSlug ? `/services/${activeSlug}` : '/services'}
+        jsonLd={[serviceSchema, faqSchema]}
+      />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
         .hh-display { font-family: 'Space Grotesk', system-ui, sans-serif; }
