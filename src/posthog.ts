@@ -1,14 +1,20 @@
 import posthog from 'posthog-js';
 
-// Initialize PostHog
-posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
-  api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com',
-  loaded: (ph) => {
-    if (import.meta.env.DEV) ph.debug(); // Helps with debugging locally
-  },
-  autocapture: true, // Automatically tracks button clicks and page views
-  capture_pageview: false // We will handle this manually in React Router
-});
+// Skip analytics entirely when running under a headless/automated browser
+// (this is what the build-time prerender step uses) so every CI build
+// doesn't register as synthetic traffic in real analytics.
+const isAutomatedBrowser = typeof navigator !== 'undefined' && navigator.webdriver === true;
+
+if (!isAutomatedBrowser) {
+  posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
+    api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com',
+    loaded: (ph) => {
+      if (import.meta.env.DEV) ph.debug(); // Helps with debugging locally
+    },
+    autocapture: true, // Automatically tracks button clicks and page views
+    capture_pageview: false // We will handle this manually in React Router
+  });
+}
 
 export const Telemetry = {
   // Bind Firebase Auth to PostHog
