@@ -1,10 +1,16 @@
 import React from 'react';
 import { Calendar, MapPin, Clock, ArrowRight, CheckCircle2, ShieldCheck, Search, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { PageMeta } from '../components/PageMeta';
 
 export const SummitPage = () => {
   return (
     <div className="min-h-screen bg-[#050505] animate-fade-in pt-20">
+      <PageMeta
+        title="Smart Marketing Summit 2026 | Happy Hunter Digital"
+        description="Join Happy Hunter Digital's Smart Marketing Summit 2026 — practical sessions on getting found online for South African small businesses."
+        path="/summit-2026"
+      />
       
       {/* Hero Poster Section */}
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
