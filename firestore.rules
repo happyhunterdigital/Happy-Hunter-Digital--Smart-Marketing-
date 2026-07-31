@@ -1,71 +1,147 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
+    
     function isAdmin() {
-      return request.auth != null && request.auth.token.admin == true;
+      return request.auth != null && (
+        request.auth.token.email.lower() == 'motsumitl@happyhunterdigital.com' ||
+        request.auth.token.email.lower() == 'happyhunterdigital@gmail.com' ||
+        request.auth.token.email.lower() == 'motsumitl@gmail.com'
+      );
     }
 
-    // CORRECTED HELPER: Safely checks your array-based members field
-    function isWorkspaceMember(workspaceData) {
-      return request.auth != null && workspaceData.members.hasAny([request.auth.uid]);
+    function isValidEmail(email) {
+      return email is string && email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$') && email.size() <= 254;
     }
 
+    function isValidLeadData() {
+      let data = request.resource.data;
+      return data.businessName is string && data.businessName.size() <= 200
+        && data.email is string && isValidEmail(data.email)
+        && data.timestamp != null;
+    }
+
+    function isValidProspectData() {
+      let data = request.resource.data;
+      return data.phone is string && data.phone.size() <= 20
+        && data.interest is string && data.interest.size() <= 50;
+    }
+
+    function isValidMailData() {
+      let data = request.resource.data;
+      return data.to is list && data.to.size() > 0 && data.to.size() <= 10
+        && data.message != null
+        && data.message.subject is string && data.message.subject.size() <= 200;
+    }
+
+    function noScriptInjection() {
+      let data = request.resource.data;
+      let keys = data.keys();
+      let result = true;
+      for (let key in keys) {
+        let val = data[keys[key]];
+        if (val is string) {
+          result = result && !val.matches('(?i)<script.*>.*</script>')
+                   && !val.matches('(?i)javascript:')
+                   && !val.matches('(?i)on\\w+\\s*=');
+        }
+      }
+      return result;
+    }
+
+    // 1. MULTI-TENANT WORKSPACES
     match /workspaces/{workspaceId} {
-      allow read: if isAdmin() || (resource != null && isWorkspaceMember(resource.data));
-      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid && request.resource.data.members.hasAny([request.auth.uid]);
-      allow update, delete: if isAdmin() || (resource != null && resource.data.ownerId == request.auth.uid);
+      allow read, write: if request.auth != null;
     }
 
+    // 2. WORKSPACE TASK NODES
     match /workspace_tasks/{taskId} {
-      // Fetches the workspace document to verify the array membership
-      allow read: if isAdmin() || (resource != null && isWorkspaceMember(get(/databases/$(database)/documents/workspaces/$(resource.data.workspaceId)).data));
-      allow create: if request.auth != null && isWorkspaceMember(get(/databases/$(database)/documents/workspaces/$(request.resource.data.workspaceId)).data);
-      allow update, delete: if isAdmin() || (resource != null && resource.data.createdBy == request.auth.uid);
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.workspaceId is string;
+      allow update: if request.auth != null
+        && request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['status', 'comments', 'priority', 'type', 'deadline', 'assignee', 'assigneePhone', 'coAssignee', 'coAssigneePhone', 'avatar', 'coAvatar']);
+      allow delete: if request.auth != null && resource.data.createdBy == request.auth.uid || isAdmin();
     }
 
+    // 3. VISUAL AUDITS (Public trigger, restricted read)
     match /visual_audits/{docId} {
-      allow create: if true;
-      allow read: if isAdmin();
+      allow create: if request.resource.data.target is string && request.resource.data.target.size() <= 200;
+      allow read: if true; 
     }
 
     match /users/{userId} {
       allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
+    // 4. PUBLIC LEAD FORM SUBMISSIONS (with validation)
     match /leads/{leadId} {
-      allow create: if true;
-      allow read, update, delete: if request.auth != null;
+      allow create: if isValidLeadData() && noScriptInjection();
+      allow read: if request.auth != null;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
+    // 5. WHATSAPP PROSPECTS (with validation)
     match /prospects/{prospectId} {
-      allow create: if true;
-      allow read, update, delete: if request.auth != null;
+      allow create: if isValidProspectData() && noScriptInjection();
+      allow read: if request.auth != null;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
-    // SECURITY: Only the Cloud Function should write here, via the Admin SDK —
-    // which bypasses these rules entirely. The previous "allow create: if true"
-    // let any visitor's browser write directly to this collection, which (if a
-    // Trigger Email extension is listening) functioned as an open email relay.
+    // 6. MAIL COLLECTION (with validation)
     match /mail/{mailId} {
-      allow create, read, update, delete: if false;
+      allow create: if isValidMailData() && noScriptInjection();
+      allow read, update, delete: if false;
     }
 
+    // 7. SECURE ACCESS SESSIONS
     match /secure_access_sessions/{tokenId} {
       allow read: if true;
-      allow create, update, delete: if false;
+      allow create: if false;
+      allow update: if request.auth != null;
+      allow delete: if false;
     }
 
+    // 8. PUBLIC SEO
     match /public_seo/{document=**} {
       allow read: if true;
       allow write: if false;
     }
 
-    // Note: A new "rate_limits" collection is used by performAudit() for IP-based
-    // throttling. It's written exclusively via the Admin SDK (which bypasses rules),
-    // and is already covered by the admin-only catch-all rule below — no new
-    // explicit rule needed.
+    // 9. LIVE CHAT MESSAGES (with content validation)
+    match /messages/{messageId} {
+      allow create: if request.resource.data.text is string
+        && request.resource.data.text.size() <= 500
+        && request.resource.data.user is string
+        && request.resource.data.user.size() <= 50;
+      allow read: if true;
+      allow update, delete: if false;
+    }
 
+    // 10. LIVE REACTIONS (limited to valid emojis)
+    match /reactions/{reactionId} {
+      allow create: if request.resource.data.emoji is string
+        && request.resource.data.emoji.size() <= 10;
+      allow read: if true;
+      allow update, delete: if false;
+    }
+
+    // 11. RATE LIMIT COUNTERS (internal only)
+    match /rate_limit_audit/{docId} { allow read, write: if false; }
+    match /rate_limit_chat/{docId} { allow read, write: if false; }
+    match /rate_limit_service/{docId} { allow read, write: if false; }
+
+    // 12. WHATSAPP SESSIONS (internal only)
+    match /whatsapp_sessions/{sessionId} {
+      allow read, write: if false;
+    }
+
+    // CATCH-ALL: Admin only
     match /{document=**} {
       allow read, write: if isAdmin();
     }

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, limitToLast } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { Send, Users, Heart, Flame, ThumbsUp } from 'lucide-react';
+import { moderateContent, sanitizeChatInput } from '../utils/moderate';
 
 // ==========================================
 // 1. FLOATING REACTION COMPONENT
@@ -66,9 +67,13 @@ export const LiveSummit: React.FC = () => {
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || !hasJoined) return;
+    const sanitized = sanitizeChatInput(input);
+    if (!sanitized) return;
+    const moderation = moderateContent(sanitized);
+    if (!moderation.clean) return;
     try {
       await addDoc(collection(db, "messages"), {
-        text: input,
+        text: sanitized,
         user: viewerName,
         createdAt: serverTimestamp(),
       });
@@ -93,7 +98,12 @@ export const LiveSummit: React.FC = () => {
   // Gatekeeper for Chat
   const handleJoinChat = (e: React.FormEvent) => {
     e.preventDefault();
-    if (viewerName.trim()) setHasJoined(true);
+    const sanitized = sanitizeChatInput(viewerName);
+    if (sanitized && !moderateContent(sanitized).clean) return;
+    if (sanitized) {
+      setViewerName(sanitized);
+      setHasJoined(true);
+    }
   };
 
   return (

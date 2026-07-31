@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { auth, db } from '../firebaseConfig';
 import { onAuthStateChanged, signInWithPopup, signInWithRedirect, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { isAdminEmail } from '../utils/admin';
 
 const PDFJS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
 const PDFJS_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -237,8 +238,6 @@ export default function ViewGuide() {
   const pagesContainerRef = useRef(null);
   const isMounted = useRef(true);
 
-  const ADMIN_EMAILS = ['motsumitl@happyhunterdigital.com', 'happyhunterdigital@gmail.com'];
-
   const getSecurePath = () => {
     if (docType === "gbp") return "/assets/hhd-gbp-zero-clicks.pdf";
     return "/assets/hhd-service-guide.pdf";
@@ -267,7 +266,7 @@ export default function ViewGuide() {
             return;
         }
 
-        if (ADMIN_EMAILS.includes(u.email)) {
+        if (isAdminEmail(u.email)) {
             runPipeline();
             return;
         }

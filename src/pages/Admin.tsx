@@ -3,6 +3,7 @@ import { collection, query, orderBy, getDocs, limit } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 import { signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, getRedirectResult } from 'firebase/auth';
 import { Terminal, Search, X, Crosshair, Calendar, Mail, Globe, Activity, Database, ShieldAlert, Lock, ArrowRight, MessageCircle, BarChart3, Smartphone, ShieldCheck, LogOut, Layers } from 'lucide-react';
+import { isAdminEmail } from '../utils/admin';
 
 export const Admin: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -17,13 +18,6 @@ export const Admin: React.FC = () => {
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [metrics, setMetrics] = useState({ total: 0, service: 0, price: 0 });
 
-  const ADMIN_EMAILS = [
-    'motsumitl@happyhunterdigital.com',
-    'happyhunterdigital@gmail.com',
-    'motsumitl@gmail.com',
-    'Motsumitl@gmail.com'
-  ];
-
   useEffect(() => {
     // 1. Capture Redirect Result
     getRedirectResult(auth).then((result) => {
@@ -33,7 +27,7 @@ export const Admin: React.FC = () => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
-      if (currentUser && ADMIN_EMAILS.includes(currentUser.email || '')) {
+      if (currentUser && isAdminEmail(currentUser.email || '')) {
         fetchAllData();
       }
     });
@@ -125,7 +119,7 @@ export const Admin: React.FC = () => {
     );
   }
 
-  if (!ADMIN_EMAILS.includes(user.email || '')) {
+  if (!isAdminEmail(user.email || '')) {
     return (
       <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center p-6 text-center">
         <h1 className="text-4xl font-black text-red-500 uppercase tracking-tighter mb-4">Access Denied</h1>
