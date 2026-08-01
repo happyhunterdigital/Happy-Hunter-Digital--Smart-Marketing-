@@ -34,19 +34,13 @@ service cloud.firestore {
         && data.message.subject is string && data.message.subject.size() <= 200;
     }
 
-    function noScriptInjection() {
-      let data = request.resource.data;
-      let keys = data.keys();
-      let result = true;
-      for (let key in keys) {
-        let val = data[keys[key]];
-        if (val is string) {
-          result = result && !val.matches('(?i)<script.*>.*</script>')
-                   && !val.matches('(?i)javascript:')
-                   && !val.matches('(?i)on\\w+\\s*=');
-        }
-      }
-      return result;
+    // Generic XSS guard — matches ?<>script;javascript:on= strings in key text fields.
+    function noPoliticallyScript(text) {
+      return !text.lowercase().matches('.*<script.*')
+        && !text.lowercase().matches('.*javascript:.*')
+        && !text.lowercase().matches('.*onerror.*=.*')
+        && !text.lowercase().matches('.*onload.*=.*')
+        && !text.lowercase().matches('.*<iframe.*');
     }
 
     // 1. MULTI-TENANT WORKSPACES
@@ -79,7 +73,9 @@ service cloud.firestore {
 
     // 4. PUBLIC LEAD FORM SUBMISSIONS (with validation)
     match /leads/{leadId} {
-      allow create: if isValidLeadData() && noScriptInjection();
+      allow create: if isValidLeadData()
+        && noPoliticallyScript(request.resource.data.businessName)
+        && noPoliticallyScript(request.resource.data.email);
       allow read: if request.auth != null;
       allow update: if isAdmin();
       allow delete: if isAdmin();
@@ -87,7 +83,9 @@ service cloud.firestore {
 
     // 5. WHATSAPP PROSPECTS (with validation)
     match /prospects/{prospectId} {
-      allow create: if isValidProspectData() && noScriptInjection();
+      allow create: if isValidProspectData()
+        && noPoliticallyScript(request.resource.data.phone)
+        && noPoliticallyScript(request.resource.data.interest);
       allow read: if request.auth != null;
       allow update: if isAdmin();
       allow delete: if isAdmin();
@@ -95,7 +93,9 @@ service cloud.firestore {
 
     // 6. MAIL COLLECTION (with validation)
     match /mail/{mailId} {
-      allow create: if isValidMailData() && noScriptInjection();
+      allow create: if isValidMailData()
+        && noPoliticallyScript(request.resource.data.message.subject)
+        && noPoliticallyScript(request.resource.data.message.html);
       allow read, update, delete: if false;
     }
 
