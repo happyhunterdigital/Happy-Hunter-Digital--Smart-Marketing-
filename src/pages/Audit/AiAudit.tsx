@@ -25,7 +25,7 @@ interface AuditData {
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ biz: '', loc: '', web: '', name: '', mail: '', wa: '' });
+  const [form, setForm] = useState({ biz: '', loc: '', web: '', name: '', mail: '', wa: '', countryCode: '+27' });
   const [phoneError, setPhoneError] = useState('');
   const [scanProgress, setScanProgress] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -33,10 +33,24 @@ export const AiAudit: React.FC = () => {
   const [error, setError] = useState('');
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+    const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 15);
     setForm({ ...form, wa: val });
-    const phoneRegex = /^[+]?[\d\s-]{10,}$/;
-    setPhoneError(val && !phoneRegex.test(val.replace(/\s/g, '')) ? 'Invalid phone format. Use +27601016673 format.' : '');
+    if (val) {
+      const fullNumber = form.countryCode + val.replace(/^0+/, '');
+      const phoneRegex = /^\+[1-9]\d{8,14}$/;
+      setPhoneError(!phoneRegex.test(fullNumber.replace(/^\+/, '+')) ? 'Invalid phone format.' : '');
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const handleCountryCodeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm({ ...form, countryCode: e.target.value });
+    if (form.wa) {
+      const fullNumber = e.target.value + form.wa.replace(/^0+/, '');
+      const phoneRegex = /^\+[1-9]\d{8,14}$/;
+      setPhoneError(!phoneRegex.test(fullNumber.replace(/^\+/, '+')) ? 'Invalid phone format.' : '');
+    }
   };
 
   const runForensicScan = async () => {
@@ -65,7 +79,7 @@ export const AiAudit: React.FC = () => {
         city: form.loc,
         websiteUrl: form.web || "",
         clientEmail: form.mail,
-        whatsapp: form.wa
+        whatsapp: form.countryCode + form.wa.replace(/^0+/, '')
       });
       clearInterval(progressInterval);
       setScanProgress(100);
@@ -130,6 +144,7 @@ export const AiAudit: React.FC = () => {
           setStep={setStep}
           phoneError={phoneError}
           handlePhoneChange={handlePhoneChange}
+          handleCountryCodeChange={handleCountryCodeChange}
           runForensicScan={runForensicScan}
           scanProgress={scanProgress}
           loading={loading}
@@ -141,7 +156,7 @@ export const AiAudit: React.FC = () => {
             onReset={() => {
               setResult(null);
               setStep(1);
-              setForm({ biz: '', loc: '', web: '', name: '', mail: '', wa: '' });
+              setForm({ biz: '', loc: '', web: '', name: '', mail: '', wa: '', countryCode: '+27' });
               setError('');
             }}
           />

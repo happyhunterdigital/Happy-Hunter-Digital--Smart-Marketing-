@@ -1,5 +1,23 @@
 import React, { useState } from 'react';
-import { Search, Zap, Terminal, Code, Loader2 } from 'lucide-react';
+import { Search, Zap, Terminal, Code, Loader2, ChevronDown } from 'lucide-react';
+
+const COUNTRY_CODES = [
+  { code: '+27', country: 'ZA', name: 'South Africa', digits: 9 },
+  { code: '+1', country: 'US', name: 'United States', digits: 10 },
+  { code: '+44', country: 'UK', name: 'United Kingdom', digits: 10 },
+  { code: '+61', country: 'AU', name: 'Australia', digits: 9 },
+  { code: '+353', country: 'IE', name: 'Ireland', digits: 9 },
+  { code: '+33', country: 'FR', name: 'France', digits: 9 },
+  { code: '+49', country: 'DE', name: 'Germany', digits: 11 },
+  { code: '+31', country: 'NL', name: 'Netherlands', digits: 9 },
+  { code: '+7', country: 'RU', name: 'Russia', digits: 10 },
+  { code: '+86', country: 'CN', name: 'China', digits: 11 },
+  { code: '+91', country: 'IN', name: 'India', digits: 10 },
+  { code: '+234', country: 'NG', name: 'Nigeria', digits: 10 },
+  { code: '+254', country: 'KE', name: 'Kenya', digits: 10 },
+  { code: '+255', country: 'TZ', name: 'Tanzania', digits: 10 },
+  { code: '+256', country: 'UG', name: 'Uganda', digits: 9 },
+];
 
 interface AuditFormProps {
   step: number;
@@ -10,18 +28,20 @@ interface AuditFormProps {
     name: string;
     mail: string;
     wa: string;
+    countryCode: string;
   };
   setForm: (form: any) => void;
   setStep: (step: number) => void;
   phoneError: string;
   handlePhoneChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleCountryCodeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   runForensicScan: () => void;
   scanProgress: number;
   loading: boolean;
 }
 
 export const AuditForm: React.FC<AuditFormProps> = ({ 
-  step, form, setForm, setStep, phoneError, handlePhoneChange, runForensicScan, scanProgress, loading 
+  step, form, setForm, setStep, phoneError, handlePhoneChange, handleCountryCodeChange, runForensicScan, scanProgress, loading 
 }) => {
   const [terminalFocus, setTerminalFocus] = useState(false);
 
@@ -126,11 +146,41 @@ export const AuditForm: React.FC<AuditFormProps> = ({
                  onChange={e => setForm({...form, mail: e.target.value})} value={form.mail} required />
             </div>
 
-            <div className={`p-4 bg-gray-900 rounded-xl border transition-all ${phoneError ? 'border-red-500' : form.wa ? 'border-green-500' : 'border-gray-800 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)]'}`}>
-              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-1 block"><b>WHATSAPP_NODE (For Live Briefing)</b></label>
-              <input className="w-full bg-transparent text-white outline-none font-mono" placeholder="+27601016673" type="tel" 
-                value={form.wa} onChange={handlePhoneChange} required />
-              {phoneError && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase">{phoneError}</p>}
+            <div className={`p-4 bg-gray-900 rounded-xl border transition-all ${
+              phoneError ? 'border-red-500' : (form.wa && !phoneError) ? 'border-green-500' : 'border-gray-800 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)]'
+            }`}>
+              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 block">
+                <b>WHATSAPP_NODE (For Live Briefing)</b>
+              </label>
+              <div className="flex gap-2 mb-2">
+                <div className="relative">
+                  <select
+                    value={form.countryCode}
+                    onChange={handleCountryCodeChange}
+                    className="bg-gray-800 text-white text-sm font-mono p-2 pr-8 rounded-lg border border-gray-700 outline-none appearance-none cursor-pointer min-w-[80px]"
+                  >
+                    {COUNTRY_CODES.map(c => (
+                      <option key={c.code} value={c.code}>{c.code} {c.country}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                </div>
+                <input
+                  className="flex-1 bg-transparent text-white outline-none font-mono text-lg placeholder:text-gray-700"
+                  placeholder="e.g. 601016673"
+                  type="tel"
+                  inputMode="numeric"
+                  value={form.wa}
+                  onChange={handlePhoneChange}
+                  required
+                />
+              </div>
+              {phoneError && <p className="text-red-500 text-[10px] font-bold uppercase">{phoneError}</p>}
+              {!phoneError && form.wa && (
+                <p className="text-green-500 text-[10px] font-mono uppercase mt-1">
+                  Full number: {form.countryCode}{form.wa.replace(/^0+/, '')}
+                </p>
+              )}
             </div>
           </div>
 
