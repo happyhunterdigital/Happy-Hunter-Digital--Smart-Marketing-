@@ -12,6 +12,9 @@ interface AuditData {
   truths: string[];
   telemetry: {
     mapsStatus: string;
+    mapsName?: string;
+    rating?: number;
+    reviewCount?: number;
     gbpOnly: boolean;
     gbpUrl: string;
     website: string;

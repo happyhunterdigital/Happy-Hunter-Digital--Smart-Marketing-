@@ -81,7 +81,7 @@ export const performAudit = onCall({
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": P_KEY,
-          "X-Goog-FieldMask": "places.displayName,places.rating,places.userRatingCount,places.websiteUri"
+          "X-Goog-FieldMask": "places.id,places.displayName,places.rating,places.userRatingCount,places.websiteUri,places.formattedAddress,places.internationalPhoneNumber",
         },
         body: JSON.stringify({ textQuery: query })
       });
@@ -186,6 +186,11 @@ export const performAudit = onCall({
 
     const telemetry = {
       mapsStatus: !biz ? "GHOST (NOT FOUND)" : isHijacked ? "HIJACKED (COMPETITOR FOUND)" : "VERIFIED",
+      mapsName: biz?.displayName?.text || null,
+      rating: biz?.rating || null,
+      reviewCount: biz?.userRatingCount || null,
+      gbpOnly: !websiteUrl,
+      gbpUrl: biz ? `https://search.google.com/local/reviews?placeid=${biz.place_id || ''}` : '',
       website: websiteUrl || "None Linked",
       schema: hasSchema,
       schemasDetected: detectedSchemas
