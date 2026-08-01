@@ -28,7 +28,7 @@ interface AuditData {
 
 export const AiAudit: React.FC = () => {
   const [step, setStep] = useState(1);
-  const [form, setForm] = useState({ biz: '', loc: '', web: '', name: '', mail: '', wa: '', countryCode: '+27' });
+  const [form, setForm] = useState({ name: '', designation: '', biz: '', mail: '', web: '', loc: '', wa: '', countryCode: '+27' });
   const [phoneError, setPhoneError] = useState('');
   const [scanProgress, setScanProgress] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -41,7 +41,7 @@ export const AiAudit: React.FC = () => {
     if (val) {
       const fullNumber = form.countryCode + val.replace(/^0+/, '');
       const phoneRegex = /^\+[1-9]\d{8,14}$/;
-      setPhoneError(!phoneRegex.test(fullNumber.replace(/^\+/, '+')) ? 'Invalid phone format.' : '');
+      setPhoneError(!phoneRegex.test(fullNumber) ? 'Invalid phone format.' : '');
     } else {
       setPhoneError('');
     }
@@ -52,14 +52,13 @@ export const AiAudit: React.FC = () => {
     if (form.wa) {
       const fullNumber = e.target.value + form.wa.replace(/^0+/, '');
       const phoneRegex = /^\+[1-9]\d{8,14}$/;
-      setPhoneError(!phoneRegex.test(fullNumber.replace(/^\+/, '+')) ? 'Invalid phone format.' : '');
+      setPhoneError(!phoneRegex.test(fullNumber) ? 'Invalid phone format.' : '');
     }
   };
 
   const runForensicScan = async () => {
     if (phoneError || !form.wa) return;
 
-    // LocalStorage limit check
     const currentCount = parseInt(localStorage.getItem('hhd_audit_count') || '0', 10);
     if (currentCount >= 3) {
       setError('You have exhausted your limit of 3 audits per computer.');
@@ -69,7 +68,7 @@ export const AiAudit: React.FC = () => {
     setLoading(true);
     setError('');
     setScanProgress(0);
-    setStep(3);
+    setStep(2);
 
     const progressInterval = setInterval(() => {
       setScanProgress(prev => Math.min(prev + 18, 90));
@@ -82,22 +81,22 @@ export const AiAudit: React.FC = () => {
         city: form.loc,
         websiteUrl: form.web || "",
         clientEmail: form.mail,
-        whatsapp: form.countryCode + form.wa.replace(/^0+/, '')
+        whatsapp: form.countryCode + form.wa.replace(/^0+/, ''),
+        requesterName: form.name,
+        requesterDesignation: form.designation
       });
       clearInterval(progressInterval);
       setScanProgress(100);
 
-      // Increment scan count on success
       localStorage.setItem('hhd_audit_count', String(currentCount + 1));
 
       setResult(response.data as AuditData);
-      setStep(4);
+      setStep(3);
     } catch (err: any) {
       clearInterval(progressInterval);
       const msg = err?.message || '';
       if (msg.includes('resource-exhausted') || msg.includes('exhausted')) {
         setError('You have exhausted your limit of 3 audits per computer.');
-        // Securely write to localStorage to prevent bypass
         localStorage.setItem('hhd_audit_count', '3');
       }
       else if (msg.includes('not-found') || msg.includes('Business not found')) setError('Business not found. Please verify the name and city.');
@@ -110,12 +109,11 @@ export const AiAudit: React.FC = () => {
       }
       else if (msg.includes('failed-precondition')) setError('System configuration error. Please contact support.');
       else setError('Neural Handshake Interrupted. Please try again shortly.');
-      setStep(2);
+      setStep(1);
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-black text-white py-20 px-4">
@@ -125,7 +123,7 @@ export const AiAudit: React.FC = () => {
         path="/audit"
       />
       <div className="max-w-6xl mx-auto">
-        {step < 4 && (
+        {step !== 3 && (
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
               Digital Entity <span className="text-yellow-500">Audit</span>
@@ -144,7 +142,6 @@ export const AiAudit: React.FC = () => {
           step={step}
           form={form}
           setForm={setForm}
-          setStep={setStep}
           phoneError={phoneError}
           handlePhoneChange={handlePhoneChange}
           handleCountryCodeChange={handleCountryCodeChange}
@@ -153,13 +150,13 @@ export const AiAudit: React.FC = () => {
           loading={loading}
         />
 
-        {step === 4 && result && (
+        {step === 3 && result && (
           <AuditResults 
             result={result}
             onReset={() => {
               setResult(null);
               setStep(1);
-              setForm({ biz: '', loc: '', web: '', name: '', mail: '', wa: '', countryCode: '+27' });
+              setForm({ name: '', designation: '', biz: '', mail: '', web: '', loc: '', wa: '', countryCode: '+27' });
               setError('');
             }}
           />
