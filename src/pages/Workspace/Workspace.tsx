@@ -46,6 +46,7 @@ export const Workspace: React.FC = () => {
         return () => unsubscribeWS();
       } else {
         setLoading(false);
+        return () => {};
       }
     });
     return () => unsubscribeAuth();
@@ -59,6 +60,7 @@ export const Workspace: React.FC = () => {
       });
       return () => unsubscribeTasks();
     }
+    return () => {};
   }, [user, activeWorkspace]);
 
   const createWorkspace = async () => {

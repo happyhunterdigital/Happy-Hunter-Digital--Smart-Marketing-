@@ -136,7 +136,7 @@ function sanitizeAttributes(tagName: string, attrStr: string): string {
       i++;
     }
 
-    const endQuote = quote ? attrStr.indexOf(quote, i) : attrStr.indexOf(/\s|$/, i);
+    const endQuote = quote ? attrStr.indexOf(quote, i) : (() => { const m = /\s|$/.exec(attrStr.slice(i)); return m ? i + m.index : -1; })();
     const attrValue = endQuote !== -1 ? attrStr.slice(i, endQuote) : attrStr.slice(i);
 
     if (allowedAttrs && allowedAttrs.has(attrName)) {

@@ -34,7 +34,6 @@ const app = initializeApp(firebaseConfig);
 const recaptchaKey = clean(import.meta.env.VITE_RECAPTCHA_ENTERPRISE_KEY);
 
 if (recaptchaKey) {
-  // @ts-ignore — self.__FIREBASE_APP_CHECK_DEBUG_TOKEN__ is a magic global for local dev
   if (import.meta.env.DEV) {
     (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN =
       (import.meta.env.VITE_APP_CHECK_DEBUG_TOKEN as string) || true;

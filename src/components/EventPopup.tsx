@@ -12,6 +12,7 @@ export const EventPopup = () => {
       const timer = setTimeout(() => setShow(true), 2500);
       return () => clearTimeout(timer);
     }
+    return () => {};
   }, []);
 
   const close = () => {

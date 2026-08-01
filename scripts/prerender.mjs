@@ -96,9 +96,15 @@ function writeRenderedHtml(routePath, html) {
   writeFileSync(join(outDir, 'index.html'), html);
 }
 
-async function prerenderRoute(page, routePath) {
+async function prerenderRoute(page, routePath, isRoot = false) {
   const url = `http://localhost:${PORT}${routePath}`;
-  await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+  const timeout = isRoot ? 60000 : 30000;
+  await page.goto(url, { waitUntil: 'networkidle0', timeout });
+
+  // Give React an extra beat after networkidle to settle, especially on /.
+  if (isRoot) {
+    await new Promise((r) => setTimeout(r, 2000));
+  }
   // react-helmet-async and framer-motion mount synchronously with React,
   // but give a short grace period for any late-microtask head updates.
   await new Promise((r) => setTimeout(r, 300));
