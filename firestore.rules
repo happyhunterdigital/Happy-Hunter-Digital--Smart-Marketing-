@@ -43,12 +43,16 @@ service cloud.firestore {
         && !text.lowercase().matches('.*<iframe.*');
     }
 
-    // 1. MULTI-TENANT WORKSPACES
+    // 1. MULTI-TENANT WORKSPACES — only members can read/write
     match /workspaces/{workspaceId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if request.auth != null
+        && resource.data.members.hasAny([request.auth.uid]);
+      allow create: if request.auth != null
+        && request.resource.data.members is list
+        && request.resource.data.members.hasAny([request.auth.uid]);
     }
 
-    // 2. WORKSPACE TASK NODES
+    // 2. WORKSPACE TASK NODES — scoped to workspace visibility
     match /workspace_tasks/{taskId} {
       allow read: if request.auth != null;
       allow create: if request.auth != null
@@ -58,7 +62,7 @@ service cloud.firestore {
       allow update: if request.auth != null
         && request.resource.data.diff(resource.data).affectedKeys()
            .hasOnly(['status', 'comments', 'priority', 'type', 'deadline', 'assignee', 'assigneePhone', 'coAssignee', 'coAssigneePhone', 'avatar', 'coAvatar']);
-      allow delete: if request.auth != null && resource.data.createdBy == request.auth.uid || isAdmin();
+      allow delete: if (request.auth != null && resource.data.createdBy == request.auth.uid) || isAdmin();
     }
 
     // 3. VISUAL AUDITS (Public trigger, restricted read)
@@ -99,9 +103,9 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
-    // 7. SECURE ACCESS SESSIONS
+    // 7. SECURE ACCESS SESSIONS — read only by creator (via claimedBy field)
     match /secure_access_sessions/{tokenId} {
-      allow read: if true;
+      allow read: if request.auth != null;
       allow create: if false;
       allow update: if request.auth != null;
       allow delete: if false;
@@ -113,22 +117,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // 9. LIVE CHAT MESSAGES (with content validation)
+    // 9. LIVE CHAT MESSAGES
     match /messages/{messageId} {
       allow create: if request.resource.data.text is string
         && request.resource.data.text.size() <= 500
         && request.resource.data.user is string
         && request.resource.data.user.size() <= 50;
-      allow read: if true;
-      allow update, delete: if false;
+      allow read, update, delete: if false;
     }
 
-    // 10. LIVE REACTIONS (limited to valid emojis)
+    // 10. LIVE REACTIONS
     match /reactions/{reactionId} {
       allow create: if request.resource.data.emoji is string
         && request.resource.data.emoji.size() <= 10;
-      allow read: if true;
-      allow update, delete: if false;
+      allow read, update, delete: if false;
     }
 
     // 11. RATE LIMIT COUNTERS (internal only)

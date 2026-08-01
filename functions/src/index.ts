@@ -28,11 +28,29 @@ const BASE_URL = "https://happyhunterdigital.com";
 const VIEWER_PATH = "/view/guide";
 
 const SAFETY_SETTINGS = [
-  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-  { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-  { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-  { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
+  { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
+  { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
+  { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
 ];
+
+// Validate URLs for SSRF protection — blocks internal/metadata IPs
+function isValidFetchUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return false;
+    if (host.startsWith('169.254.') || host.startsWith('10.') || host.startsWith('192.168.') || host.startsWith('172.')) return false;
+    if (host.endsWith('.local') || host.endsWith('.internal') || host === 'metadata.google.internal') return false;
+    return /^[a-zA-Z0-9.-]+\.[a-z]{2,}$/.test(host);
+  } catch { return false; }
+}
+
+// HTML-escape user input before injecting into email templates
+function htmlescape(str: string): string {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+}
 
 function generateViewerToken(): string {
   const timestamp = Date.now().toString(36);
@@ -86,8 +104,11 @@ export const performAudit = onCall({
     let hasSchema = false;
 
     if (websiteUrl) {
-      try {
-        const webRes = await axios.get(websiteUrl, {
+      if (!isValidFetchUrl(websiteUrl)) {
+        console.warn("SSRF blocked: invalid or internal URL", websiteUrl);
+      } else {
+        try {
+          const webRes = await axios.get(websiteUrl, {
           timeout: 6000,
           headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
         });
@@ -117,6 +138,7 @@ export const performAudit = onCall({
 
       } catch (err) {
         console.log("Web scrape failed or timed out for:", websiteUrl);
+      }
       }
     }
 
@@ -194,8 +216,8 @@ export const performAudit = onCall({
 
     const isGoodScore = analysis.score >= 70;
     const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
- <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'}; margin-bottom: 20px;">Digital Survival Score: ${analysis.score}/100</h1>
- <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: left;">${analysis.summary}</p>
+ <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'}; margin-bottom: 20px;">Digital Survival Score: ${Number(analysis.score)}/100</h1>
+ <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; text-align: left;">${htmlescape(analysis.summary)}</p>
  <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
  <h3 style="color: #eab308; margin-top: 0;">What's Next?</h3>
  <p style="color: #d1d5db; margin-bottom: 25px;">Stop losing revenue to invisible algorithms. Let's map out your custom Recovery Protocol.</p>
@@ -203,7 +225,7 @@ export const performAudit = onCall({
  </div>
  </div>`;
 
-    await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml } });
+    await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${htmlescape(String(businessName))}`, html: emailHtml } });
 
     return { success: true, ...analysis, telemetry };
 
@@ -310,12 +332,12 @@ export const submitServiceRequest = onCall({
       dynamicProblem = "You have digital assets, but they aren't working together as a cohesive ecosystem to attract, convert, and retain high-value clients.";
     }
 
-    const firstName = name.split(' ')[0] || 'there';
+    const firstName = htmlescape(name.split(' ')[0] || '');
     const emailHtml = `
 <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; line-height: 1.6; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
-  <p style="font-size: 16px;">Hi ${firstName},</p>
+  <p style="font-size: 16px;">Hi ${firstName || 'there'},</p>
   <p style="font-size: 16px;">Welcome to the hunt for smarter growth.</p>
-  <p style="font-size: 16px;">I noticed you were looking into <strong>${service}</strong>. Most businesses come to us because they realize that simply "ranking" on page one isn't enough anymore. In 2026, if you aren't being synthesized into the answers provided by AI assistants, you're effectively invisible.</p>
+  <p style="font-size: 16px;">I noticed you were looking into <strong>${htmlescape(service)}</strong>. Most businesses come to us because they realize that simply "ranking" on page one isn't enough anymore. In 2026, if you aren't being synthesized into the answers provided by AI assistants, you're effectively invisible.</p>
 
   <h3 style="color: #000; margin-top: 30px;">The Problem We Identified:</h3>
   <p style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #eab308; margin-bottom: 20px; font-size: 16px; border-radius: 0 8px 8px 0;">
@@ -342,7 +364,7 @@ export const submitServiceRequest = onCall({
     await db.collection("mail").add({
       to: [email],
       message: {
-        subject: `Regarding your interest in ${service} – Let's solve the "Invisibility" problem.`,
+        subject: `Regarding your interest in ${htmlescape(service)} – Let's solve the "Invisibility" problem.`,
         html: emailHtml
       }
     });
@@ -646,8 +668,11 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
 // 6. VECTOR EMBEDDER (Firestore Trigger)
 // ============================================================================
 export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async (event) => {
-  const doc = event.data?.after.data();
-  if (!doc || !doc.content) return;
+  const before = event.data?.before.data();
+  const after = event.data?.after.data();
+  if (!after || !after.content) return;
+  // Guard against infinite loop: skip if content hasn't changed and embedding already exists
+  if (after.embedding_vector && (!before || before.content === after.content)) return;
   const G_KEY = process.env.GEMINI_API_KEY;
   if (!G_KEY) return;
   try {
@@ -656,7 +681,7 @@ export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: `models/${EMBEDDING_MODEL}`,
-        content: { parts: [{ text: doc.content }] }
+        content: { parts: [{ text: after.content }] }
       })
     });
     const data = await aiRes.json() as any;

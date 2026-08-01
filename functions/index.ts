@@ -43,6 +43,29 @@ async function checkRateLimit(collection: string, identifier: string, maxRequest
   await ref.set({ count: count + 1, lastAccess: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
 }
 
+const SAFETY_SETTINGS = [
+  { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_LOW_AND_ABOVE" },
+  { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_LOW_AND_ABOVE" },
+  { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_LOW_AND_ABOVE" },
+  { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
+];
+
+function isValidFetchUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return false;
+    if (host.startsWith('169.254.') || host.startsWith('10.') || host.startsWith('192.168.') || host.startsWith('172.')) return false;
+    if (host.endsWith('.local') || host.endsWith('.internal') || host === 'metadata.google.internal') return false;
+    return /^[a-zA-Z0-9.-]+\.[a-z]{2,}$/.test(host);
+  } catch { return false; }
+}
+
+function htmlescape(str: string): string {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+}
+
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
 // ============================================================================
@@ -102,8 +125,11 @@ export const performAudit = onCall({
     let hasSchema = false;
 
     if (websiteUrl) {
-      try {
-        const webRes = await axios.get(websiteUrl, {
+      if (!isValidFetchUrl(websiteUrl)) {
+        console.warn("SSRF blocked: invalid or internal URL", websiteUrl);
+      } else {
+        try {
+          const webRes = await axios.get(websiteUrl, {
           timeout: 6000,
           headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" }
         });
@@ -133,6 +159,7 @@ export const performAudit = onCall({
 
       } catch (err) {
         console.log("Web scrape failed or timed out for:", websiteUrl);
+      }
       }
     }
 
@@ -175,7 +202,8 @@ export const performAudit = onCall({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts:[{ text: `You are Hunter AI. Audit: ${businessName}. Data Context: ${context}. ${RUBRIC} Format JSON: { "score": number, "summary": "string", "truths":["string", "string", "string"] }` }] }],
-        generationConfig: { responseMimeType: "application/json" }
+        generationConfig: { responseMimeType: "application/json" },
+        safetySettings: SAFETY_SETTINGS
       })
     });
 
@@ -200,11 +228,11 @@ export const performAudit = onCall({
 
     const isGoodScore = analysis.score >= 70;
     const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
- <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'};">Digital Survival Score: ${analysis.score}/100</h1>
- <p>${analysis.summary}</p>
+ <h1 style="color: ${isGoodScore ? '#22c55e' : '#eab308'};">Digital Survival Score: ${Number(analysis.score)}/100</h1>
+ <p>${htmlescape(analysis.summary)}</p>
  </div>`;
 
-    await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${businessName}`, html: emailHtml } });
+    await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${htmlescape(String(businessName))}`, html: emailHtml } });
 
     return { success: true, ...analysis, telemetry };
 
@@ -262,7 +290,8 @@ export const hunterChat = onCall({
       body: JSON.stringify({
         systemInstruction: { parts:[{ text: SYSTEM_PROMPT }] },
         contents: [{ role: "user", parts: [{ text: sanitizedMessage }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 500 }
+        generationConfig: { temperature: 0.1, maxOutputTokens: 500 },
+        safetySettings: SAFETY_SETTINGS
       })
     });
 
@@ -317,12 +346,12 @@ export const submitServiceRequest = onCall({
       dynamicProblem = "You have digital assets, but they aren't working together as a cohesive ecosystem to attract, convert, and retain high-value clients.";
     }
 
-    const firstName = sanitizedName.split(' ')[0] || 'there';
+    const firstName = htmlescape(sanitizedName.split(' ')[0] || '');
     const emailHtml = `
  <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; line-height: 1.6; padding: 20px; border: 1px solid #eee; border-radius: 12px;">
- <p style="font-size: 16px;">Hi ${firstName},</p>
+ <p style="font-size: 16px;">Hi ${firstName || 'there'},</p>
  <p style="font-size: 16px;">Welcome to the hunt for smarter growth.</p>
- <p style="font-size: 16px;">I noticed you were looking into <strong>${sanitizedService}</strong>. Most businesses come to us because they realize that simply "ranking" on page one isn't enough anymore. In 2026, if you aren't being synthesized into the answers provided by AI assistants, you're effectively invisible.</p>
+ <p style="font-size: 16px;">I noticed you were looking into <strong>${htmlescape(sanitizedService)}</strong>. Most businesses come to us because they realize that simply "ranking" on page one isn't enough anymore. In 2026, if you aren't being synthesized into the answers provided by AI assistants, you're effectively invisible.</p>
 
  <h3 style="color: #000; margin-top: 30px;">The Problem We Identified:</h3>
  <p style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #eab308; margin-bottom: 20px; font-size: 16px; border-radius: 0 8px 8px 0;">
@@ -348,7 +377,7 @@ export const submitServiceRequest = onCall({
 
     await db.collection("mail").add({
       to:[sanitizedEmail],
-      message: { subject: `Regarding your interest in ${sanitizedService} – Let's solve the "Invisibility" problem.`, html: emailHtml }
+      message: { subject: `Regarding your interest in ${htmlescape(sanitizedService)}  Let's solve the "Invisibility" problem.`, html: emailHtml }
     });
 
     return { success: true };

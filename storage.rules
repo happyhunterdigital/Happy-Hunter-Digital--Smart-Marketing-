@@ -9,9 +9,16 @@ service firebase.storage {
                    && fileName.matches('^[0-9]+_[A-Za-z0-9._-]+$');
     }
     
-    match /{allPaths=**} {
-      allow read, write: if request.auth != null
+    // User-scoped storage: each user can only access their own files
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId
         && request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    // Admin catch-all
+    match /{allPaths=**} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email.toLowerCase() == 'motsumitl@happyhunterdigital.com';
     }
   }
 }
