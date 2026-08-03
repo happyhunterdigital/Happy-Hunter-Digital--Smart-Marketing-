@@ -71,7 +71,7 @@ export const Chatbot: React.FC = () => {
           <X size={24} className="m-4" />
         ) : (
           <img
-            src="https://res.cloudinary.com/dkyg07qvv/image/upload/v1785770376/Happyhunterdigital_smart_marketing_chatbot_xnvd5c.jpg"
+            src="https://res.cloudinary.com/dkyg07qvv/image/upload/v1785773436/Happyhunterdigital_smart_marketing_chatbot_rpaty4.png"
             alt="Open chatbot"
             className="w-10 h-10 object-contain m-2"
           />
