@@ -65,9 +65,17 @@ export const Chatbot: React.FC = () => {
     <>
       <button 
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-[150] bg-yellow-500 text-black p-4 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:scale-110 transition-transform"
+        className="fixed bottom-6 right-6 z-[150] bg-yellow-500 text-black p-0 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.3)] hover:scale-110 transition-transform w-14 h-14 overflow-hidden"
       >
-        {open ? <X size={24} /> : <MessageSquare size={24} />}
+        {open ? (
+          <X size={24} className="m-4" />
+        ) : (
+          <img
+            src="https://res.cloudinary.com/dkyg07qvv/image/upload/v1785770376/Happyhunterdigital_smart_marketing_chatbot_xnvd5c.jpg"
+            alt="Open chatbot"
+            className="w-10 h-10 object-contain m-2"
+          />
+        )}
       </button>
 
       {open && (
