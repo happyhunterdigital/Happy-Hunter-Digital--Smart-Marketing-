@@ -100,7 +100,7 @@ if (hasCoreConfig) {
     functions = null;
   }
 } else {
-  console.warn("[Firebase] Missing VITE_FIREBASE_API_KEY or VITE_FIREBASE_PROJECT_ID — running in static mode.");
+  console.warn("[Firebase] Missing client credentials — running in static mode.");
 }
 
 // ---------------------------------------------------------------
