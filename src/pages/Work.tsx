@@ -17,7 +17,7 @@ const CASE_STUDIES = [
       { metric: "Organic Traffic", value: "+320%", icon: <TrendingUp size={16} /> },
     ],
     testimonial: "I was famous on the streets but invisible online. Thabo made the internet know who I am.",
-    testimonialAuthor: "Thabiso Molefe, Founder"
+    testimonialAuthor: "Skumbuzo 'Skubalisto' Salman, Founder"
   },
   {
     client: "Integrated Wellth Solutions",
