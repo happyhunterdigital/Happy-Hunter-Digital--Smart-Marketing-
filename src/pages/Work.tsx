@@ -50,9 +50,9 @@ const CASE_STUDIES = [
     testimonialAuthor: "Dr. Khongoloti, Director"
   },
   {
-    client: "Pomelli",
-    logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1780147988/pomelli_photoshoot-4_na38o8.jpg",
-    website: "https://pomelli.co.za",
+    client: "Profuse Beauty Cosmetics",
+    logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1762929115/Black_Gold_Elegant_Floral_Gala_Night_Invitation_Square_-_1_xpngal.png",
+    website: "https://profusebeauty.co.za",
     industry: "Luxury Beauty",
     challenge: "Premium brand with no digital authority. Competitors dominated AI search results. Website existed but wasn't formatted for modern discovery.",
     solution: "Full entity architecture build: SSR website with comprehensive JSON-LD, AEO content strategy, AI chatbot for shade matching, and automated WhatsApp catalog integration.",
@@ -61,8 +61,8 @@ const CASE_STUDIES = [
       { metric: "Online Sales", value: "+250%", icon: <TrendingUp size={16} /> },
       { metric: "Chat Conversions", value: "42%", icon: <BarChart3 size={16} /> },
     ],
-    testimonial: "People now ask ChatGPT 'best South African beauty brand' and Pomelli comes up.",
-    testimonialAuthor: "Pomelli Team"
+    testimonial: "People now ask ChatGPT 'best South African beauty brand' and Profuse Beauty comes up.",
+    testimonialAuthor: "Profuse Beauty Team"
   }
 ];
 
