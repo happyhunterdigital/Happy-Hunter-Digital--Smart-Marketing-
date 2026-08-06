@@ -6,12 +6,15 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { Header } from './components/Layout/Header';
 import { Footer } from './components/Layout/Footer';
 import { Chatbot } from './components/Chatbot';
+import { WhatsAppButton } from './components/WhatsAppButton';
 import { CookieConsent } from './components/CookieConsent';
+import { ExitIntentModal } from './components/ExitIntentModal';
 import { AIEntityEngine } from './components/AIEntityEngine';
 import { OrganizationSchema } from './components/OrganizationSchema';
 
 // Pages
 import { Home } from './pages/Home';
+import { Work } from './pages/Work';
 import { AiAudit } from './pages/Audit/AiAudit';
 import { Founders } from './pages/Founders';
 import { CoreServices } from './pages/CoreServices/CoreServices';
@@ -53,19 +56,23 @@ function App() {
   const isLandingPage = location.pathname === '/the-ai-megaphone' || location.pathname === '/view/guide';
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-yellow-500 selection:text-black">
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-amber-500 selection:text-black">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[300] focus:bg-amber-500 focus:text-black focus:px-4 focus:py-2 focus:rounded-lg focus:font-bold focus:text-sm">
+        Skip to main content
+      </a>
       <AIEntityEngine />
       <OrganizationSchema />
       <CookieConsent />
+      <ExitIntentModal />
       
-      {/* STATIC YELLOW CONTENT RIBBON HAS BEEN COMPLETELY REMOVED */}
       <Header menuOpen={menuOpen} setMenuOpen={setMenuOpen} isLandingPage={isLandingPage} />
 
-      <main className={!isLandingPage ? "pt-32 md:pt-40" : ""}>
+      <main id="main-content" className={!isLandingPage ? "pt-32 md:pt-40" : ""}>
         <Routes>
           <Route path="/the-ai-megaphone" element={<MegaphoneLanding />} />
           <Route path="/view/guide" element={<ViewGuide />} />
           <Route path="/" element={<Home />} />
+          <Route path="/work" element={<Work />} />
           <Route path="/audit" element={<AiAudit />} />
           <Route path="/services" element={<CoreServices />} />
           <Route path="/services/:category" element={<CoreServices />} />
@@ -97,7 +104,12 @@ function App() {
       </main>
 
       <Footer isLandingPage={isLandingPage} />
-      {!isLandingPage && <Chatbot />}
+      {!isLandingPage && (
+        <>
+          <Chatbot />
+          <WhatsAppButton />
+        </>
+      )}
     </div>
   );
 }

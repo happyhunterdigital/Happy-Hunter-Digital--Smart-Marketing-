@@ -2,6 +2,7 @@
 import { HeroSection } from '../components/HeroSection';
 import { ServicesSection } from '../components/ServicesSection';
 import { ProcessSection } from '../components/ProcessSection';
+import { SeoVsAiComparison } from '../components/SeoVsAiComparison';
 import { PageMeta } from '../components/PageMeta';
 
 export const Home = () => {
@@ -15,6 +16,7 @@ export const Home = () => {
       <HeroSection />
       <ServicesSection />
       <ProcessSection />
+      <SeoVsAiComparison />
     </div>
   );
 };

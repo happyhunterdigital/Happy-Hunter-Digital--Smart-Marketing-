@@ -29,7 +29,7 @@ export const CookieConsent = () => {
             <ShieldCheck size={28} />
           </div>
           <p className="text-gray-300 text-xs md:text-sm leading-relaxed">
-            This entity uses protocol-cookies for analytics and security. By continuing, you agree to our data processing standards under the <strong className="text-white font-black">POPI Act (South Africa)</strong> and <strong className="text-white font-black">GDPR</strong> regulations. Review our <Link to="/faq" className="text-yellow-500 underline font-bold hover:text-white transition-colors">Privacy Policy</Link>.
+            We use cookies to improve your experience and measure how our site performs. By continuing, you agree to our use of cookies. Read our <Link to="/privacy-policy" className="text-amber-400 underline font-bold hover:text-white transition-colors">Privacy Policy</Link> for full details under <strong className="text-white font-black">POPIA</strong> and <strong className="text-white font-black">GDPR</strong>.
           </p>
         </div>
         <div className="flex items-center gap-4 shrink-0 w-full md:w-auto">

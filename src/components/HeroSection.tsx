@@ -140,14 +140,14 @@ export const HeroSection: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="flex -space-x-2">
               {[1,2,3,4].map(i => (
-                <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[#0a0a0f]" />
+                <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[#0a0a0f]" role="img" aria-label={`Client ${i}`} />
               ))}
             </div>
             <span className="text-xs">500+ Entities Verified</span>
           </div>
-          <div className="h-4 w-px bg-gray-800" />
+          <div className="h-4 w-px bg-gray-800" aria-hidden="true" />
           <span className="text-xs">Pretoria, South Africa</span>
-          <div className="h-4 w-px bg-gray-800" />
+          <div className="h-4 w-px bg-gray-800" aria-hidden="true" />
           <span className="text-xs">POPIA & GDPR Compliant</span>
         </div>
       </div>

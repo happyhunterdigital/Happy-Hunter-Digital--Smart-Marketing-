@@ -53,7 +53,7 @@ export const EarnedMedia = () => (
         <div key={i} className="bg-[#0a0a0a] border border-white/5 rounded-3xl p-8 md:p-12 hover:border-yellow-500/30 transition-all group">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6 border-b border-white/5 pb-8">
             <div className="flex items-center gap-6">
-              <img src={study.logo} alt={study.client} className="h-16 w-auto object-contain grayscale group-hover:grayscale-0 transition-all rounded-lg bg-white/5 p-2" />
+              <img src={study.logo} alt={`${study.client} logo`} className="h-16 w-auto object-contain grayscale group-hover:grayscale-0 transition-all rounded-lg bg-white/5 p-2" loading="lazy" />
               <div>
                 <h2 className="text-3xl font-black text-white">{study.client}</h2>
                 <p className="text-yellow-500 font-bold uppercase tracking-widest text-[10px] mt-1">{study.industry}</p>

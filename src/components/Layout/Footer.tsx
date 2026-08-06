@@ -17,7 +17,7 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
       <div className="container mx-auto grid md:grid-cols-2 lg:grid-cols-5 gap-16">
         <div className="space-y-6">
           <div className="flex items-center gap-3">
-            <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" className="w-12 h-12 rounded-full border border-yellow-500/30 object-cover" alt="Logo" />
+            <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765280886/Happy_Hunter_-Smart_Marketing-_Logo._Digital_Marketing_uupsop.jpg" className="w-12 h-12 rounded-full border border-yellow-500/30 object-cover" alt="Happy Hunter Digital logo" />
             <span className="font-handwriting text-3xl lowercase">
               <span className="text-white">happy</span><span className="text-yellow-500">hunter</span><span className="text-gray-400">digital</span>
             </span>
@@ -41,20 +41,21 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
         <div className="space-y-6">
           <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Internal Hubs</h3>
           <div className="flex flex-col gap-4 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <Link to="/work" className="text-white hover:text-yellow-500 transition-colors">Our Work</Link>
             <Link to="/architecture" className="text-yellow-500">Master Architecture</Link>
-            <Link to="/services" className="text-white">The Protocol</Link>
-            <Link to="/earned-media" className="text-white">Success Nodes</Link>
+            <Link to="/services" className="text-white hover:text-yellow-500 transition-colors">The Protocol</Link>
+            <Link to="/earned-media" className="text-white hover:text-yellow-500 transition-colors">Success Nodes</Link>
           </div>
         </div>
 
         <div className="space-y-6">
           <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Social Signals</h3>
           <div className="flex flex-wrap gap-4">
-            <a href="https://za.linkedin.com/in/thabomotsumi" target="_blank" rel="noreferrer" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><Linkedin size={20}/></a>
-            <a href="https://x.com/HappyHunter35" target="_blank" rel="noreferrer" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><XIcon/></a>
-            <a href="https://www.instagram.com/happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><Instagram size={20}/></a>
-            <a href="https://www.tiktok.com/@happyhunterdigital" target="_blank" rel="noreferrer" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><TikTokIcon/></a>
-            <a href="https://www.facebook.com/Happyhunterdigital/" target="_blank" rel="noreferrer" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><Facebook size={20}/></a>
+            <a href="https://za.linkedin.com/in/thabomotsumi" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><Linkedin size={20}/></a>
+            <a href="https://x.com/HappyHunter35" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><XIcon/></a>
+            <a href="https://www.instagram.com/happyhunterdigital/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><Instagram size={20}/></a>
+            <a href="https://www.tiktok.com/@happyhunterdigital" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><TikTokIcon/></a>
+            <a href="https://www.facebook.com/Happyhunterdigital/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><Facebook size={20}/></a>
           </div>
         </div>
       </div>
