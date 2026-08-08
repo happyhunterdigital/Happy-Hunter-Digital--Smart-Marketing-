@@ -49,7 +49,7 @@ export const EventPopup = () => {
           </h2>
           
           <p className="text-gray-300 text-sm font-medium mb-6 leading-relaxed px-4">
-            Join Thabo Leslie Motsumi at the Integrated Wellth Summit. Learn how to align your financial clarity with AI-driven digital visibility.
+            Join Thabo Leslie Motsumi at the IntegratedWellth Summit. Learn how to align your financial clarity with AI-driven digital visibility.
           </p>
 
           <div className="bg-black/50 border border-gray-800 rounded-xl p-4 mb-8">

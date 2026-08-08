@@ -20,7 +20,7 @@ const CASE_STUDIES = [
     testimonialAuthor: "Skumbuzo 'Skubalisto' Salman, Founder"
   },
   {
-    client: "Integrated Wellth Solutions",
+    client: "IntegratedWellth Solutions",
     logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1765747667/Integrated_Wellth_Solutions_Logo_bodmyc1_iiervl.png",
     website: "https://www.integratedwellth.co.za",
     industry: "Financial Intelligence",
@@ -29,10 +29,10 @@ const CASE_STUDIES = [
     results: [
       { metric: "Qualified Leads", value: "+300%", icon: <Users size={16} /> },
       { metric: "Conversion Rate", value: "+180%", icon: <BarChart3 size={16} /> },
-      { metric: "Revenue Impact", value: "R2.4M", icon: <TrendingUp size={16} /> },
+
     ],
     testimonial: "The AI acts as a 24/7 receptionist. I only speak to pre-convinced leads now.",
-    testimonialAuthor: "CEO, Integrated Wellth"
+    testimonialAuthor: "CEO, IntegratedWellth"
   },
   {
     client: "Khongoloti Academy",
@@ -47,7 +47,37 @@ const CASE_STUDIES = [
       { metric: "Enrollment Rate", value: "+85%", icon: <TrendingUp size={16} /> },
     ],
     testimonial: "Our enquiries went through the roof. Students find us before they even know they need us.",
-    testimonialAuthor: "Dr. Khongoloti, Director"
+    testimonialAuthor: "Director, Rose Mageza"
+  },
+  {
+    client: "Ludo League South Africa",
+    logo: "https://res.cloudinary.com/dkyg07qvv/image/upload/v1776949471/The_Ludo_League_Logo_p2pzvn.jpg",
+    website: "https://ludoleague.co.za",
+    industry: "Gaming & Entertainment",
+    challenge: "No digital presence. Needed end-to-end system build from scratch — social media, content, web, automation, and community engagement.",
+    solution: "Built every system from the ground up: hand-coded websites (ludoleague.co.za + academy.ludoleague.co.za), social media management, content marketing, WhatsApp bot automation, and full digital footprint architecture.",
+    results: [
+      { metric: "Systems Built", value: "Full Stack", icon: <Globe size={16} /> },
+      { metric: "WhatsApp Bot", value: "Live", icon: <Users size={16} /> },
+      { metric: "Hand-Coded Web", value: "Custom", icon: <TrendingUp size={16} /> },
+    ],
+    testimonial: "Everything was built from nothing. Social, web, automation, chatbots — the full digital engine.",
+    testimonialAuthor: "Joe Setladi, Founder"
+  },
+  {
+    client: "MyMental Health Consultancy",
+    logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1785274897/MyMental_Health_Consultancy_Logo_oeubfx.png",
+    website: "https://www.mmhfsp.co.za/",
+    industry: "Mental Health Services",
+    challenge: "Stuck on a WordPress template that looked generic and performed poorly. No Google Business Profile optimization. Invisible to AI search engines.",
+    solution: "Redesigned from WordPress template to a fully hand-coded website. Built and optimized Google Business Profile. Implemented GEO, AEO, and SEO strategies for maximum AI visibility.",
+    results: [
+      { metric: "Custom Coded", value: "100%", icon: <TrendingUp size={16} /> },
+      { metric: "GBP Optimized", value: "Live", icon: <Globe size={16} /> },
+      { metric: "GEO + AEO", value: "Active", icon: <CheckCircle2 size={16} /> },
+    ],
+    testimonial: "They turned our invisible website into something that actually works for our patients.",
+    testimonialAuthor: "Dr Chris, Founder"
   },
   {
     client: "Profuse Beauty Cosmetics",
@@ -80,7 +110,7 @@ export const Work = () => (
   <div className="min-h-screen bg-[#050505]">
     <PageMeta
       title="Our Work & Client Results | Happy Hunter Digital"
-      description="Real results for real South African businesses. See how we helped Skubalisto, Integrated Wellth, Khongoloti Academy, and more get found online and grow revenue."
+      description="Real results for real South African businesses. See how we helped Skubalisto, IntegratedWellth, Khongoloti Academy, and more get found online and grow revenue."
       path="/work"
       jsonLd={jsonLdCases}
     />

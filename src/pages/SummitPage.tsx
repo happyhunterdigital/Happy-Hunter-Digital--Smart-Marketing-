@@ -25,7 +25,7 @@ export const SummitPage = () => {
 
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto mt-10">
           <div className="flex justify-center mb-6">
-            <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765747667/Integrated_Wellth_Solutions_Logo_bodmyc1_iiervl.png" alt="Integrated Wellth" className="h-16 object-contain filter brightness-0 invert opacity-80" />
+            <img src="https://res.cloudinary.com/dka0498ns/image/upload/v1765747667/Integrated_Wellth_Solutions_Logo_bodmyc1_iiervl.png" alt="IntegratedWellth" className="h-16 object-contain filter brightness-0 invert opacity-80" />
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter leading-none mb-6">
             The Digital <br/><span className="text-yellow-500">Bridge</span>
