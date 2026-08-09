@@ -418,7 +418,7 @@ export const submitPlaybookRequest = onCall({
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    const PDF_URL = `${BASE_URL}/assets/happyhunterdigital%20AI-Driven%20Social%20Media%20Strategy.pdf`;
+    const PDF_URL = "https://github.com/happyhunterdigital/Happy-Hunter-Digital--Smart-Marketing-/blob/main/public/assets/happyhunterdigital%20The%202026%20AI%20Marketing%20playbook.pdf";
 
     const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
   <h1 style="color: #eab308; margin-bottom: 20px;">Your 2026 AI Marketing Playbook</h1>
@@ -449,7 +449,7 @@ export const submitPlaybookRequest = onCall({
     if (whatsapp) {
       try {
         const cleanPhone = whatsapp.replace(/[^0-9+]/g, '');
-        const docUrl = `${BASE_URL}/assets/happyhunterdigital%20AI-Driven%20Social%20Media%20Strategy.pdf`;
+        const docUrl = "https://github.com/happyhunterdigital/Happy-Hunter-Digital--Smart-Marketing-/blob/main/public/assets/happyhunterdigital%20The%202026%20AI%20Marketing%20playbook.pdf";
         
         await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
           messaging_product: "whatsapp",
