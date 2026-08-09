@@ -399,6 +399,95 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 });
 
 // ============================================================================
+// 3b. PLAYBOOK DOWNLOAD (Email + WhatsApp Delivery)
+// ============================================================================
+export const submitPlaybookRequest = onCall({
+  region: "us-central1",
+  cors: true,
+  maxInstances: 10,
+  enforceAppCheck: true
+}, async (request) => {
+  const { email, whatsapp } = request.data;
+  if (!email) throw new HttpsError("invalid-argument", "Email is required.");
+
+  try {
+    await db.collection("leads").add({
+      email,
+      whatsapp: whatsapp || null,
+      source: "Playbook Download",
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    const PDF_URL = `${BASE_URL}/assets/happyhunterdigital%20AI-Driven%20Social%20Media%20Strategy.pdf`;
+
+    const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
+  <h1 style="color: #eab308; margin-bottom: 20px;">Your 2026 AI Marketing Playbook</h1>
+  <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #d1d5db;">Here's your free playbook with GEO templates, schema checklists, WhatsApp automation flows, and AI visibility testing prompts.</p>
+  <a href="${PDF_URL}" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Download Playbook (PDF)</a>
+  <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
+    <h3 style="color: #eab308; margin-top: 0;">What's Inside?</h3>
+    <ul style="color: #d1d5db; text-align: left; max-width: 400px; margin: 0 auto; line-height: 2;">
+      <li>GEO Templates (copy + paste)</li>
+      <li>Schema Markup Checklists</li>
+      <li>WhatsApp Automation Blueprint</li>
+      <li>AI Visibility Testing Prompts</li>
+      <li>Local SEO vs AI-Ready Comparison</li>
+    </ul>
+  </div>
+  <p style="margin-top: 40px; font-size: 14px; color: #666;">Need help implementing? Reply to this email or book a free discovery call.</p>
+  <a href="https://calendly.com/motsumitl/30min" style="background-color: transparent; color: #eab308; padding: 12px 24px; text-decoration: none; font-weight: bold; border: 1px solid #eab308; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin-top: 20px;">Book a Free Call</a>
+</div>`;
+
+    await db.collection("mail").add({
+      to: [email],
+      message: {
+        subject: "Your 2026 AI Marketing Playbook — Free Download",
+        html: emailHtml
+      }
+    });
+
+    if (whatsapp) {
+      try {
+        const cleanPhone = whatsapp.replace(/[^0-9+]/g, '');
+        const docUrl = `${BASE_URL}/assets/happyhunterdigital%20AI-Driven%20Social%20Media%20Strategy.pdf`;
+        
+        await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: cleanPhone,
+          type: "interactive",
+          interactive: {
+            type: "cta_url",
+            header: { type: "text", text: "2026 AI Marketing Playbook" },
+            body: { text: "Here's your free playbook. Tap below to download." },
+            footer: { text: "happyhunterdigital.com" },
+            action: {
+              name: "cta_url",
+              parameters: { display_text: "Download Playbook", url: docUrl }
+            }
+          }
+        }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+      } catch (waErr: any) {
+        console.error("WhatsApp playbook delivery failed:", waErr.message);
+      }
+    }
+
+    try {
+      const adminMsg = `📥 *NEW PLAYBOOK DOWNLOAD*\n\n*Email:* ${email}\n*WhatsApp:* ${whatsapp || 'Not provided'}`;
+      await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+        messaging_product: "whatsapp",
+        to: ADMIN_NUMBER,
+        text: { body: adminMsg }
+      }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+    } catch (err) { console.error("Admin notification failed:", err); }
+
+    return { success: true };
+  } catch (e: any) {
+    throw new HttpsError("internal", `Playbook delivery failed. ${e.message}`);
+  }
+});
+
+// ============================================================================
 // 4. WHATSAPP WEBHOOK
 // ============================================================================
 export const whatsappWebhook = onRequest(async (req, res) => {

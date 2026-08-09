@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Download, Mail, CheckCircle2 } from 'lucide-react';
+import { X, Download, Mail, Phone, CheckCircle2 } from 'lucide-react';
+import { functions } from '../../firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
+
+const submitPlaybookRequest = httpsCallable(functions, 'submitPlaybookRequest');
 
 export const ExitIntentModal: React.FC = () => {
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleMouseLeave = useCallback((e: MouseEvent) => {
     if (e.clientY <= 0 && !sessionStorage.getItem('exit_modal_seen')) {
@@ -27,10 +33,16 @@ export const ExitIntentModal: React.FC = () => {
     e.preventDefault();
     if (!email.trim()) return;
     setLoading(true);
-    // Simulate submission
-    await new Promise(r => setTimeout(r, 1000));
-    setSubmitted(true);
-    setLoading(false);
+    setError('');
+    try {
+      await submitPlaybookRequest({ email: email.trim(), whatsapp: whatsapp.trim() || null });
+      setSubmitted(true);
+    } catch (err: any) {
+      console.error("Playbook request failed:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!show) return null;
@@ -93,6 +105,19 @@ export const ExitIntentModal: React.FC = () => {
                     className="w-full bg-white/5 text-white text-sm pl-11 pr-4 py-3.5 rounded-xl border border-white/10 focus:border-amber-500 outline-none transition-colors"
                   />
                 </div>
+                <div className="relative">
+                  <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input
+                    type="tel"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder="WhatsApp number (optional, for PDF delivery)"
+                    className="w-full bg-white/5 text-white text-sm pl-11 pr-4 py-3.5 rounded-xl border border-white/10 focus:border-amber-500 outline-none transition-colors"
+                  />
+                </div>
+                {error && (
+                  <p className="text-red-400 text-xs text-center">{error}</p>
+                )}
                 <button
                   type="submit"
                   disabled={loading}
@@ -112,8 +137,16 @@ export const ExitIntentModal: React.FC = () => {
                 <CheckCircle2 className="text-green-500" size={48} />
               </div>
               <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Check Your Inbox</h3>
-              <p className="text-gray-400 text-sm mb-6">
-                Your 2026 AI Marketing Playbook is on its way. Check your spam folder if you don't see it within 2 minutes.
+              <p className="text-gray-400 text-sm mb-2">
+                Your 2026 AI Marketing Playbook has been sent to <strong className="text-white">{email}</strong>.
+              </p>
+              {whatsapp && (
+                <p className="text-gray-400 text-sm mb-2">
+                  A download link has also been sent to your WhatsApp at <strong className="text-white">{whatsapp}</strong>.
+                </p>
+              )}
+              <p className="text-gray-500 text-xs mb-6">
+                Check your spam folder if you don't see it within 2 minutes.
               </p>
               <button
                 onClick={close}
