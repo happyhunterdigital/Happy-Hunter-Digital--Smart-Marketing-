@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Download, Mail, Phone, CheckCircle2 } from 'lucide-react';
-import { functions } from '../../firebaseConfig';
+import { functions } from '../firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
 
 const submitPlaybookRequest = httpsCallable(functions, 'submitPlaybookRequest');
