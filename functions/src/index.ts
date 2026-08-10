@@ -66,8 +66,7 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
-  timeoutSeconds: 300,
-  enforceAppCheck: true
+  timeoutSeconds: 300
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   
@@ -240,8 +239,7 @@ export const performAudit = onCall({
 // ============================================================================
 export const hunterChat = onCall({
   region: "us-central1",
-  cors: true,
-  enforceAppCheck: true
+  cors: true
 }, async (request) => {
   const { message } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
@@ -306,8 +304,7 @@ export const hunterChat = onCall({
 // ==========================================
 export const submitServiceRequest = onCall({
   region: "us-central1",
-  cors: true,
-  enforceAppCheck: true
+  cors: true
 }, async (request) => {
   const { name, website, service, email } = request.data;
   if (!name || !email || !service) throw new HttpsError("invalid-argument", "Missing required fields.");
@@ -405,8 +402,7 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 export const submitPlaybookRequest = onCall({
   region: "us-central1",
   cors: true,
-  maxInstances: 10,
-  enforceAppCheck: true
+  maxInstances: 10
 }, async (request) => {
   const { email, whatsapp } = request.data;
   if (!email) throw new HttpsError("invalid-argument", "Email is required.");
