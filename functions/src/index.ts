@@ -22,6 +22,7 @@ const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOK
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const WHATSAPP_APP_SECRET = process.env.WHATSAPP_APP_SECRET || "";
+void WHATSAPP_APP_SECRET;
 const ADMIN_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER || "27601016673";
 
 const TOKEN_PREFIX = "hhd_secure_";
