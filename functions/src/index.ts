@@ -7,6 +7,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import * as crypto from "crypto";
+import { relayToCrm } from "./services/crmRelay";
 
 admin.initializeApp();
 const db = getFirestore();
@@ -525,7 +526,19 @@ export const whatsappWebhook = onRequest(async (req, res) => {
       } else if (message && message.type === 'text') {
         const userText: string = message.text.body;
         const from: string = message.from;
+        const pushName: string | null = value?.contacts?.[0]?.profile?.name ?? null;
+        const messageId = message.id ?? null;
+        const timestamp = message.timestamp ?? null;
         const G_KEY = process.env.GEMINI_API_KEY;
+
+        void relayToCrm({
+          phone: from,
+          name: pushName,
+          text: userText,
+          direction: "inbound",
+          externalMessageId: messageId,
+          timestamp: timestamp ? Number(timestamp) : null,
+        });
 
         let botResponse = "System updating. Please contact our strategist: https://wa.me/27601016673";
         let matchedData: any = null;
@@ -588,12 +601,14 @@ export const whatsappWebhook = onRequest(async (req, res) => {
 
           if (data.media_url) {
             try {
-              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                messaging_product: "whatsapp",
-                to: from,
-                type: "image",
-                image: { link: data.media_url, caption: botResponse }
-              }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+            await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+              messaging_product: "whatsapp",
+              to: from,
+              type: "image",
+              image: { link: data.media_url, caption: botResponse }
+            }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+
+            void relayToCrm({ phone: from, text: botResponse, direction: "outbound" });
 
               chatHistory.push({ role: "user", text: userText });
               chatHistory.push({ role: "model", text: botResponse });
@@ -677,6 +692,8 @@ RULES:
               to: from,
               text: { body: botResponse }
             }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+
+            void relayToCrm({ phone: from, text: botResponse, direction: "outbound" });
           } catch (sendError: any) { console.error("WhatsApp Text Error:", sendError.message); }
         }
 
@@ -888,3 +905,56 @@ export const chronologicalAIManager = onSchedule("every day 08:00", async () => 
 
    await Promise.all(messagesToSend);
 });
+
+// ============================================================================
+// 8. CRM SEND — Smart Marketing CRM → WhatsApp
+// ============================================================================
+// The CRM calls this to reply from a contact's record. Guard it with the shared
+// CRM_BOT_SECRET; when it is unset this refuses everything (fail closed).
+export const sendFromCrm = onRequest(async (req, res) => {
+  if (req.method !== 'POST') {
+    res.status(405).send('Method not allowed');
+    return;
+  }
+
+  const secret = process.env.CRM_BOT_SECRET || "";
+  const presented = String(req.headers['x-crm-bot-secret'] ?? "");
+  if (!secret || presented.length !== secret.length ||
+      Buffer.from(presented).equals(Buffer.from(secret)) === false) {
+    res.status(403).send('Forbidden');
+    return;
+  }
+
+  const to: string = typeof req.body?.to === 'string' ? req.body.to : "";
+  const text: string = typeof req.body?.text === 'string' ? req.body.text.trim() : "";
+
+  if (!to || !text) {
+    res.status(400).send('Missing to or text.');
+    return;
+  }
+
+  try {
+    const metaRes = await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+      messaging_product: "whatsapp",
+      to,
+      text: { body: text }
+    }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+
+    const messageId = metaRes.data?.messages?.[0]?.id ?? null;
+
+    void relayToCrm({
+      phone: to,
+      text,
+      direction: "outbound",
+      externalMessageId: messageId,
+      timestamp: Date.now(),
+    });
+
+    res.status(200).json({ ok: true, messageId });
+  } catch (err: any) {
+    console.error("[sendFromCrm] WhatsApp send failed:", err.response?.data || err.message);
+    const detail = err.response?.data?.error?.message ?? "WhatsApp send failed";
+    res.status(502).json({ ok: false, error: detail });
+  }
+});
+
