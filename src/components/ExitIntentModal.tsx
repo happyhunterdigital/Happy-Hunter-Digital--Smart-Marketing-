@@ -31,11 +31,11 @@ export const ExitIntentModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || !whatsapp.trim()) return;
     setLoading(true);
     setError('');
     try {
-      await submitPlaybookRequest({ email: email.trim(), whatsapp: whatsapp.trim() || null });
+      await submitPlaybookRequest({ email: email.trim(), whatsapp: whatsapp.trim() });
       setSubmitted(true);
     } catch (err: any) {
       console.error("Playbook request failed:", err);
@@ -111,7 +111,8 @@ export const ExitIntentModal: React.FC = () => {
                     type="tel"
                     value={whatsapp}
                     onChange={(e) => setWhatsapp(e.target.value)}
-                    placeholder="WhatsApp number (optional, for PDF delivery)"
+                    placeholder="WhatsApp number (e.g. +27601016673)"
+                    required
                     className="w-full bg-white/5 text-white text-sm pl-11 pr-4 py-3.5 rounded-xl border border-white/10 focus:border-amber-500 outline-none transition-colors"
                   />
                 </div>
