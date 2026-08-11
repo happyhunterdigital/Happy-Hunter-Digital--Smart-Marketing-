@@ -416,12 +416,16 @@ export const submitPlaybookRequest = onCall({
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    const PDF_URL = "https://github.com/happyhunterdigital/Happy-Hunter-Digital--Smart-Marketing-/blob/main/public/assets/happyhunterdigital%20The%202026%20AI%20Marketing%20playbook.pdf";
+    // Use GitHub raw content URL for direct download (no GitHub UI)
+    const PDF_URL = "https://github.com/happyhunterdigital/Happy-Hunter-Digital--Smart-Marketing-/raw/main/public/assets/happyhunterdigital%20The%202026%20AI%20Marketing%20playbook.pdf";
+    // Fallback: Google Drive if GitHub fails
+    const GDRIVE_URL = "https://drive.google.com/uc?export=download&id=1Z1ertjwHPoxx-0UROVAKhlzKHvTDqme7";
 
     const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
   <h1 style="color: #eab308; margin-bottom: 20px;">Your 2026 AI Marketing Playbook</h1>
   <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #d1d5db;">Here's your free playbook with GEO templates, schema checklists, WhatsApp automation flows, and AI visibility testing prompts.</p>
-  <a href="${PDF_URL}" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Download Playbook (PDF)</a>
+  <a href="${PDF_URL}" download style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Download Playbook (PDF)</a>
+  <p style="margin-top: 20px; font-size: 12px; color: #666;">Having trouble? <a href="${GDRIVE_URL}" style="color: #eab308; text-decoration: underline;">Download from Google Drive instead</a></p>
   <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
     <h3 style="color: #eab308; margin-top: 0;">What's Inside?</h3>
     <ul style="color: #d1d5db; text-align: left; max-width: 400px; margin: 0 auto; line-height: 2;">
@@ -447,7 +451,7 @@ export const submitPlaybookRequest = onCall({
     if (whatsapp) {
       try {
         const cleanPhone = whatsapp.replace(/[^0-9+]/g, '');
-        const docUrl = "https://github.com/happyhunterdigital/Happy-Hunter-Digital--Smart-Marketing-/blob/main/public/assets/happyhunterdigital%20The%202026%20AI%20Marketing%20playbook.pdf";
+        const docUrl = PDF_URL;
         
         await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
           messaging_product: "whatsapp",
@@ -457,7 +461,7 @@ export const submitPlaybookRequest = onCall({
           interactive: {
             type: "cta_url",
             header: { type: "text", text: "2026 AI Marketing Playbook" },
-            body: { text: "Here's your free playbook. Tap below to download." },
+            body: { text: "Here's your free playbook. Tap below to download.\n\nIf link doesn't work: https://drive.google.com/uc?export=download&id=1Z1ertjwHPoxx-0UROVAKhlzKHvTDqme7" },
             footer: { text: "happyhunterdigital.com" },
             action: {
               name: "cta_url",
