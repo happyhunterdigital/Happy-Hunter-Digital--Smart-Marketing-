@@ -67,7 +67,8 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
-  timeoutSeconds: 300
+  timeoutSeconds: 300,
+  secrets: ["GEMINI_API_KEY", "PLACES_API_KEY"]
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   
@@ -240,7 +241,8 @@ export const performAudit = onCall({
 // ============================================================================
 export const hunterChat = onCall({
   region: "us-central1",
-  cors: true
+  cors: true,
+  secrets: ["GEMINI_API_KEY"]
 }, async (request) => {
   const { message } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
@@ -305,7 +307,8 @@ export const hunterChat = onCall({
 // ==========================================
 export const submitServiceRequest = onCall({
   region: "us-central1",
-  cors: true
+  cors: true,
+  secrets: ["GEMINI_API_KEY"]
 }, async (request) => {
   const { name, website, service, email } = request.data;
   if (!name || !email || !service) throw new HttpsError("invalid-argument", "Missing required fields.");
@@ -403,7 +406,8 @@ export const compileEntitySchema = onDocumentWritten("brand_identity/{docId}", a
 export const submitPlaybookRequest = onCall({
   region: "us-central1",
   cors: true,
-  maxInstances: 10
+  maxInstances: 10,
+  secrets: ["GEMINI_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID"]
 }, async (request) => {
   const { email, whatsapp } = request.data;
   if (!email) throw new HttpsError("invalid-argument", "Email is required.");
@@ -492,7 +496,7 @@ export const submitPlaybookRequest = onCall({
 // ============================================================================
 // 4. WHATSAPP WEBHOOK
 // ============================================================================
-export const whatsappWebhook = onRequest(async (req, res) => {
+export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN", "GEMINI_API_KEY"] }, async (req, res) => {
   if (req.method === 'GET') {
     if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
       res.status(200).send(req.query['hub.challenge']);
@@ -753,7 +757,7 @@ RULES:
 // ============================================================================
 // 5. DAILY REVENUE REPORT (Scheduled)
 // ============================================================================
-export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
+export const dailyRevenueReport = onSchedule({ schedule: "every day 08:00", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"] }, async () => {
   const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
   if (snapshot.size > 0) {
@@ -800,7 +804,7 @@ export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async
   } catch (error) { console.error("Vectorization Failed:", error); }
 });
 
-export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskId}", async (event) => {
+export const notifyNewTaskAssignment = onDocumentCreated({ document: "workspace_tasks/{taskId}", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID"] }, async (event) => {
   const snap = event.data;
   if (!snap) return;
   const task = snap.data();
@@ -832,7 +836,7 @@ export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskI
   await Promise.all(messagesToSend);
 });
 
-export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", async (event) => {
+export const notifyTaskUpdate = onDocumentUpdated({ document: "workspace_tasks/{taskId}", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID"] }, async (event) => {
   const newValue = event.data?.after.data();
   const previousValue = event.data?.before.data();
   
@@ -867,7 +871,7 @@ export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", as
   }
 });
 
-export const chronologicalAIManager = onSchedule("every day 08:00", async () => {
+export const chronologicalAIManager = onSchedule({ schedule: "every day 08:00", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"] }, async () => {
    const today = new Date().toISOString().split('T')[0];
    
    const tasksRef = db.collection("workspace_tasks");
