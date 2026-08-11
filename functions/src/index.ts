@@ -15,7 +15,7 @@ const db = getFirestore();
 // ============================================================================
 // SYSTEM CONSTANTS & UTILITIES
 // ============================================================================
-const AI_MODEL = "gemini-3.1-flash-lite"; 
+const AI_MODEL = "gemini-3.6-flash";
 const EMBEDDING_MODEL = "gemini-embedding-preview-0409";
 
 const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || "";
