@@ -15,13 +15,14 @@ const db = getFirestore();
 // ============================================================================
 // SYSTEM CONSTANTS & UTILITIES
 // ============================================================================
-const AI_MODEL = "gemini-3.1-flash-lite"; 
+const AI_MODEL = "gemini-3.6-flash";
 const EMBEDDING_MODEL = "gemini-embedding-preview-0409";
 
 const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || "";
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const WHATSAPP_APP_SECRET = process.env.WHATSAPP_APP_SECRET || "";
+void WHATSAPP_APP_SECRET;
 const ADMIN_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER || "27601016673";
 
 const TOKEN_PREFIX = "hhd_secure_";
@@ -67,7 +68,7 @@ export const performAudit = onCall({
   cors: true,
   maxInstances: 10,
   timeoutSeconds: 300,
-  enforceAppCheck: true
+  secrets: ["GEMINI_API_KEY", "PLACES_API_KEY"]
 }, async (request) => {
   const { businessName, location, clientEmail, whatsapp } = request.data;
   
@@ -241,7 +242,7 @@ export const performAudit = onCall({
 export const hunterChat = onCall({
   region: "us-central1",
   cors: true,
-  enforceAppCheck: true
+  secrets: ["GEMINI_API_KEY"]
 }, async (request) => {
   const { message } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
@@ -307,7 +308,7 @@ export const hunterChat = onCall({
 export const submitServiceRequest = onCall({
   region: "us-central1",
   cors: true,
-  enforceAppCheck: true
+  secrets: ["GEMINI_API_KEY"]
 }, async (request) => {
   const { name, website, service, email } = request.data;
   if (!name || !email || !service) throw new HttpsError("invalid-argument", "Missing required fields.");
@@ -406,7 +407,7 @@ export const submitPlaybookRequest = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
-  enforceAppCheck: true
+  secrets: ["GEMINI_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID"]
 }, async (request) => {
   const { email, whatsapp } = request.data;
   if (!email) throw new HttpsError("invalid-argument", "Email is required.");
@@ -419,12 +420,16 @@ export const submitPlaybookRequest = onCall({
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    const PDF_URL = "https://github.com/happyhunterdigital/Happy-Hunter-Digital--Smart-Marketing-/blob/main/public/assets/happyhunterdigital%20The%202026%20AI%20Marketing%20playbook.pdf";
+    // Use GitHub raw content URL for direct download (no GitHub UI)
+    const PDF_URL = "https://github.com/happyhunterdigital/Happy-Hunter-Digital--Smart-Marketing-/raw/main/public/assets/happyhunterdigital%20The%202026%20AI%20Marketing%20playbook.pdf";
+    // Fallback: Google Drive if GitHub fails
+    const GDRIVE_URL = "https://drive.google.com/uc?export=download&id=1Z1ertjwHPoxx-0UROVAKhlzKHvTDqme7";
 
     const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
   <h1 style="color: #eab308; margin-bottom: 20px;">Your 2026 AI Marketing Playbook</h1>
   <p style="font-size: 16px; line-height: 1.6; margin-bottom: 30px; color: #d1d5db;">Here's your free playbook with GEO templates, schema checklists, WhatsApp automation flows, and AI visibility testing prompts.</p>
-  <a href="${PDF_URL}" style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Download Playbook (PDF)</a>
+  <a href="${PDF_URL}" download style="background-color: #eab308; color: #000; padding: 16px 32px; text-decoration: none; font-weight: bold; border-radius: 8px; display: inline-block; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">Download Playbook (PDF)</a>
+  <p style="margin-top: 20px; font-size: 12px; color: #666;">Having trouble? <a href="${GDRIVE_URL}" style="color: #eab308; text-decoration: underline;">Download from Google Drive instead</a></p>
   <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
     <h3 style="color: #eab308; margin-top: 0;">What's Inside?</h3>
     <ul style="color: #d1d5db; text-align: left; max-width: 400px; margin: 0 auto; line-height: 2;">
@@ -450,7 +455,7 @@ export const submitPlaybookRequest = onCall({
     if (whatsapp) {
       try {
         const cleanPhone = whatsapp.replace(/[^0-9+]/g, '');
-        const docUrl = "https://github.com/happyhunterdigital/Happy-Hunter-Digital--Smart-Marketing-/blob/main/public/assets/happyhunterdigital%20The%202026%20AI%20Marketing%20playbook.pdf";
+        const docUrl = PDF_URL;
         
         await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
           messaging_product: "whatsapp",
@@ -460,7 +465,7 @@ export const submitPlaybookRequest = onCall({
           interactive: {
             type: "cta_url",
             header: { type: "text", text: "2026 AI Marketing Playbook" },
-            body: { text: "Here's your free playbook. Tap below to download." },
+            body: { text: "Here's your free playbook. Tap below to download.\n\nIf link doesn't work: https://drive.google.com/uc?export=download&id=1Z1ertjwHPoxx-0UROVAKhlzKHvTDqme7" },
             footer: { text: "happyhunterdigital.com" },
             action: {
               name: "cta_url",
@@ -491,7 +496,7 @@ export const submitPlaybookRequest = onCall({
 // ============================================================================
 // 4. WHATSAPP WEBHOOK
 // ============================================================================
-export const whatsappWebhook = onRequest(async (req, res) => {
+export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN", "GEMINI_API_KEY"] }, async (req, res) => {
   if (req.method === 'GET') {
     if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
       res.status(200).send(req.query['hub.challenge']);
@@ -752,7 +757,7 @@ RULES:
 // ============================================================================
 // 5. DAILY REVENUE REPORT (Scheduled)
 // ============================================================================
-export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
+export const dailyRevenueReport = onSchedule({ schedule: "every day 08:00", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"] }, async () => {
   const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
   if (snapshot.size > 0) {
@@ -799,7 +804,7 @@ export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async
   } catch (error) { console.error("Vectorization Failed:", error); }
 });
 
-export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskId}", async (event) => {
+export const notifyNewTaskAssignment = onDocumentCreated({ document: "workspace_tasks/{taskId}", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID"] }, async (event) => {
   const snap = event.data;
   if (!snap) return;
   const task = snap.data();
@@ -831,7 +836,7 @@ export const notifyNewTaskAssignment = onDocumentCreated("workspace_tasks/{taskI
   await Promise.all(messagesToSend);
 });
 
-export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", async (event) => {
+export const notifyTaskUpdate = onDocumentUpdated({ document: "workspace_tasks/{taskId}", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID"] }, async (event) => {
   const newValue = event.data?.after.data();
   const previousValue = event.data?.before.data();
   
@@ -866,7 +871,7 @@ export const notifyTaskUpdate = onDocumentUpdated("workspace_tasks/{taskId}", as
   }
 });
 
-export const chronologicalAIManager = onSchedule("every day 08:00", async () => {
+export const chronologicalAIManager = onSchedule({ schedule: "every day 08:00", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"] }, async () => {
    const today = new Date().toISOString().split('T')[0];
    
    const tasksRef = db.collection("workspace_tasks");
