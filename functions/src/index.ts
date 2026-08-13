@@ -8,6 +8,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import * as crypto from "crypto";
 import { relayToCrm } from "./services/crmRelay";
+import { handleFlowMessage } from "./services/whatsappFlow";
 
 admin.initializeApp();
 const db = getFirestore();
@@ -413,6 +414,22 @@ export const submitPlaybookRequest = onCall({
   if (!email) throw new HttpsError("invalid-argument", "Email is required.");
 
   try {
+    // Backstop limit: the same email may only request the playbook twice.
+    // (The frontend also enforces a per-computer counter in localStorage;
+    // this guards against storage being cleared.)
+    const PLAYBOOK_MAX_PER_EMAIL = 2;
+    const existing = await db.collection("leads")
+      .where("source", "==", "Playbook Download")
+      .where("email", "==", email)
+      .count()
+      .get();
+    if (existing.data().count >= PLAYBOOK_MAX_PER_EMAIL) {
+      throw new HttpsError(
+        "resource-exhausted",
+        "This email has already received the playbook twice. Check your inbox or WhatsApp for the link."
+      );
+    }
+
     await db.collection("leads").add({
       email,
       whatsapp: whatsapp || null,
@@ -494,6 +511,47 @@ export const submitPlaybookRequest = onCall({
 });
 
 // ============================================================================
+// 3c. WEBSITE CHATBOT LEAD (Conversational multi-step form capture)
+// ============================================================================
+export const submitChatbotLead = onCall({
+  region: "us-central1",
+  cors: true,
+  maxInstances: 10,
+}, async (request) => {
+  const { name, whatsapp, email, service, business, timeline, budget } = request.data ?? {};
+  if (!name || (!whatsapp && !email) || !service) {
+    throw new HttpsError("invalid-argument", "Missing contact details or service selection.");
+  }
+
+  try {
+    await db.collection("leads").add({
+      name,
+      whatsapp: whatsapp || null,
+      email: email || null,
+      service,
+      business: business || null,
+      timeline: timeline || null,
+      budget: budget || null,
+      source: "Website Chatbot",
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    const alertText = `NEW CHATBOT LEAD\n\nFROM: ${name}\nSERVICE: ${service}\nBUSINESS: ${business || "n/a"}\nTIMELINE: ${timeline || "n/a"}\nBUDGET: ${budget || "n/a"}\nCONTACT: ${whatsapp || email}\n\nFollow up now!`;
+    try {
+      await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+        messaging_product: "whatsapp",
+        to: ADMIN_NUMBER,
+        text: { body: alertText }
+      }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+    } catch (err) { console.error("Chatbot lead alert failed:", err); }
+
+    return { success: true };
+  } catch (e: any) {
+    throw new HttpsError("internal", `Chatbot lead capture failed. ${e.message}`);
+  }
+});
+
+// ============================================================================
 // 4. WHATSAPP WEBHOOK
 // ============================================================================
 export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN", "GEMINI_API_KEY"] }, async (req, res) => {
@@ -512,6 +570,24 @@ export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NU
       const change = entry?.changes?.[0];
       const value = change?.value;
       const message = value?.messages?.[0];
+
+      // Guided conversational multi-step form (progressive disclosure survey)
+      {
+        const flowText: string | null =
+          message?.type === "text" ? message.text.body :
+          message?.type === "interactive" && message.interactive?.button_reply ? message.interactive.button_reply.title : null;
+        const flowButtonId: string | null =
+          message?.type === "interactive" && message.interactive?.button_reply ? message.interactive.button_reply.id : null;
+
+        if (message?.type === "text" || message?.type === "interactive") {
+          const flowResult = await handleFlowMessage({ from: message.from, text: flowText, buttonId: flowButtonId });
+          if (flowResult.handled) {
+            void relayToCrm({ phone: message.from, text: flowText || "(button tap)", direction: "inbound" });
+            res.status(200).send('EVENT_RECEIVED');
+            return;
+          }
+        }
+      }
 
       if (message?.type === "system" && message.system?.type === "group_membership_change") {
         const newUser = message.from;
