@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { PageMeta } from '../components/PageMeta';
 
 const FAQS = [
-  { q: "How much does a website cost?", a: "It depends on what you need — a simple business site, an online store, or something custom. Check our Services page for exact pricing, or get a free online health check and we'll tell you what's right for your business." },
+  { q: "How much does a website cost?", a: "It depends on what you need — a simple business site, an online store, or something custom. Check our Services page for exact pricing, or get a free online business health check and we'll tell you what's right for your business." },
   { q: "How do I get my business to show up on Google?", a: "We check your website, your Google Business Profile, and your online listings, then fix whatever is stopping you from showing up. Usually it's things like missing information, a slow website, or an unverified Google listing." },
   { q: "How do I get my business mentioned by ChatGPT and AI search?", a: "AI tools like ChatGPT pull information from your website, your Google listing, and your reviews. We make sure that information is accurate, consistent, and easy for AI to read, so when someone asks \"who's the best plumber in Pretoria,\" your business comes up." },
   { q: "What is a smart chatbot?", a: "It's a chat assistant on your website that answers customer questions and books appointments automatically, 24 hours a day, so you never miss a lead after hours." },
@@ -70,8 +70,8 @@ export const FAQ = () => {
         <div className="mt-20 p-10 bg-black border border-yellow-500/30 rounded-[2rem] text-center shadow-neural-glow">
           <Sparkles className="mx-auto text-yellow-500 mb-6" size={40} />
           <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">Still have questions?</h2>
-          <p className="text-gray-400 mb-8 text-sm max-w-md mx-auto leading-relaxed">Get a free online health check and we'll tell you exactly what's stopping customers from finding you.</p>
-          <Link to="/audit" className="bg-yellow-500 text-black px-10 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-white transition-all text-xs inline-block">Get My Free Health Check</Link>
+          <p className="text-gray-400 mb-8 text-sm max-w-md mx-auto leading-relaxed">Get a free online business health check and we'll tell you exactly what's stopping customers from finding you.</p>
+          <Link to="/audit" className="bg-yellow-500 text-black px-10 py-4 rounded-xl font-black uppercase tracking-widest hover:bg-white transition-all text-xs inline-block">Get My Free Online Business Health Check</Link>
         </div>
       </div>
     </div>

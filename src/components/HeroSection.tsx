@@ -120,7 +120,7 @@ export const HeroSection: React.FC = () => {
           <Link to="/audit" className="group relative px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black uppercase tracking-widest text-sm rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,191,36,0.3)]">
             <span className="relative z-10 flex items-center gap-2">
               <Search size={18} />
-              Free Online Health Check
+              Free Online Business Health Check
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </span>
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />

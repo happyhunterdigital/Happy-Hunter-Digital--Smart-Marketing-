@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 const STEPS = [
   {
     number: "1",
-    title: "Free Health Check",
+    title: "Free Online Business Health Check",
     description: "We scan where your business appears online — your website, Google, Facebook, and directories. We find where your business information is wrong, missing, or inconsistent so you know exactly what to fix. Free, no strings attached.",
     icon: <Search size={24} />,
     color: "from-blue-500 to-cyan-500"
@@ -88,7 +88,7 @@ export const ProcessSection: React.FC = () => {
 
         <div className={`text-center mt-20 transition-all duration-1000 delay-700 ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <Link to="/audit" className="inline-flex items-center gap-2 px-8 py-4 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-2xl transition-all hover:scale-[1.02] hover:shadow-glow">
-            Start Free Health Check
+            Start Free Online Business Health Check
             <ArrowRight size={18} />
           </Link>
         </div>

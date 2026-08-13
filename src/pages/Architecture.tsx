@@ -148,9 +148,9 @@ export const Architecture = () => {
           <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
           <Cpu className="mx-auto text-yellow-500 mb-6" size={48} />
           <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">Start Your Free Check</h2>
-          <p className="text-gray-400 mb-8 text-base max-w-lg mx-auto leading-relaxed">See exactly what's missing from your online presence. Our free health check shows you where customers can't find you — no sales call required.</p>
+          <p className="text-gray-400 mb-8 text-base max-w-lg mx-auto leading-relaxed">See exactly what's missing from your online presence. Our free online business health check shows you where customers can't find you — no sales call required.</p>
           <Link to="/audit" className="inline-block bg-yellow-500 text-black px-12 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(234,179,8,0.2)]">
-            Run Free Health Check
+            Run Free Online Business Health Check
           </Link>
         </div>
 
