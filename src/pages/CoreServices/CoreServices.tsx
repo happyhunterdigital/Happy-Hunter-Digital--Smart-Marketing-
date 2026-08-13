@@ -48,327 +48,364 @@ export interface Category {
 export const categories: Category[] = [
   {
     slug: "digital-marketing",
-    title: "Digital Marketing",
-    metaDesc: "Content marketing, social media management, Google Ads, and email marketing for South African SMEs. Built on data, priced transparently.",
-    h1: "Digital Marketing That Builds an Audience, Not Just Reach",
-    quickAnswer: "We build campaigns structured around what AI answer engines and search algorithms actually reward: consistency, clarity, and verifiable authority, not just ad spend.",
+    title: "Content & Social Media",
+    metaDesc: "Content marketing, social media management, and campaigns that bring real customers. Built on results, priced transparently for SA businesses.",
+    h1: "Content & Social Media That Brings Real Customers",
+    quickAnswer: "We create content and posts that attract your actual customers — not just likes and impressions. We focus on real people in South Africa who need what you offer.",
     iconName: "MessageSquareCode",
     services: [
       {
         id: "DM-SOC-01",
         title: "Social Media Starter",
-        desc: "Consistent posting and community management across Facebook and Instagram. Built to grow followers who actually match your customer profile.",
+        desc: "Regular posts and community management on Facebook and Instagram. Designed to grow followers who actually match your customer profile.",
         price: "R1,500/month",
-        specs: "8 posts or reels per month, page setup, monitoring, response, and monthly reporting with a 3-month setup phase"
+        specs: "8 posts or reels per month, page setup, monitoring, response, and monthly reporting. 3-month minimum."
       },
       {
         id: "DM-SOC-02",
         title: "Social Media Growth",
         price: "R2,800/month",
-        desc: "Expanded content volume across Facebook, Instagram, and TikTok with strategic audience retargeting vectors to actively convert engagement signals into warm pipeline leads.",
-        specs: "12 posts or reels per month, full retargeting setup, active profile monitoring, audience response, and comprehensive monthly performance reports",
+        desc: "More content across Facebook, Instagram, and TikTok with targeted ads that turn engagement into real leads.",
+        specs: "12 posts or reels per month, ad retargeting setup, profile monitoring, audience response, and monthly reports",
         isPopular: true
       },
       {
         id: "DM-CON-01",
-        title: "Content Marketing",
+        title: "Content That Answers Questions",
         price: "R3,500/month",
-        desc: "Blog and authority web content written specifically to resolve real customer query pathways. Structured deliberately for high search engine indexing and consistent generative engine citations.",
-        specs: "4 deep research articles per month, keyword intent mapping, semantic topic grouping, and on-page technical SEO schema integration"
+        desc: "Blog posts and articles written to answer the exact questions your customers ask — so Google and AI tools like ChatGPT recommend you when people search.",
+        specs: "4 in-depth articles per month, keyword research, topic grouping, and on-page SEO setup"
       },
       {
         id: "DM-ADS-01",
-        title: "Paid Search & Social Ads",
+        title: "Google & Social Media Ads",
         price: "From R2,500/month",
-        desc: "Hyper-targeted Google Ads and Meta Ads campaign configuration and execution. Built around clear, trackable metrics and actual cost-per-lead optimization rather than vanity impressions.",
-        specs: "Account architecture setup, audience profiling, continuous dynamic asset testing, search intent optimization, and performance transparency reviews"
+        desc: "Targeted ads on Google and Meta (Facebook/Instagram) designed to bring in real leads, not just clicks. We focus on clear, trackable results.",
+        specs: "Ad account setup, audience targeting, continuous ad testing, and performance reports"
       },
       {
         id: "DM-EML-01",
         title: "Email Marketing",
         price: "R1,950/month",
-        desc: "Automated behavioral sequences and tactical campaign messaging engineered to convert one-time traffic nodes into high-value repeat clients and sustained customer lifecycles.",
-        specs: "Marketing automation platform setup, 4 strategic broadcast sends per month, advanced list partitioning, copy generation, and metric tracking"
+        desc: "Automated email sequences that turn website visitors into repeat customers. Messages that actually get read and acted on.",
+        specs: "Email platform setup, 4 campaigns per month, customer list segmentation, copywriting, and tracking"
       }
     ],
     faqs: [
       {
         q: "Do I need social media and SEO, or just one?",
-        a: "They work best together. Social channels build active interest and direct brand validation signals across the web, while SEO and structured articles build the indexable, machine-readable authority foundation that search engines and AI engines query."
+        a: "They work best together. Social media builds relationships and shows you're active. SEO and well-structured articles help you get found when customers search online. We recommend both, but you can start with whichever is most important for your business."
       },
       {
         q: "Is there a minimum contract period?",
-        a: "Digital marketing services carry a standard three-month setup phase to allow sufficient performance signals to compound across target algorithms, ensuring verifiable growth metrics."
+        a: "Digital marketing services have a 3-month minimum. This gives us enough time to see what works, make adjustments, and show you real results."
       }
     ]
   },
   {
     slug: "web-development",
-    title: "Web Development",
-    metaDesc: "Business websites, e-commerce stores, and landing pages built on structured, fast, AI and search-crawlable foundations for South African SMEs.",
-    h1: "Your Website Isn't Just for Humans Anymore.",
-    subheadline: "We build AI-Ready Websites structured for AEO (Answer Engine Optimization) and AI SEO so ChatGPT, Gemini, and Google AI Overviews can find, understand, and recommend your business. Not just rank it.",
-    quickAnswer: "Stop being a ghost to the algorithms. Get found by the AI tools your customers already use.",
+    title: "Websites",
+    metaDesc: "Business websites and online stores built fast and mobile-friendly for South African SMEs. Built so Google and AI can find and recommend them.",
+    h1: "Your Website Is Your 24/7 Salesperson",
+    subheadline: "We build fast, mobile-friendly websites that rank higher on Google and get found by AI tools like ChatGPT and Gemini. Not just pretty designs — websites built to bring you customers.",
+    quickAnswer: "A website that loads fast, works on phones, and gets found by Google and ChatGPT. We build websites that actually bring you customers.",
     iconName: "Database",
     services: [
       {
         id: "WEB-BUS-01",
-        title: "Business / Corporate Website",
+        title: "Business Website",
         price: "R1,850",
-        desc: "Fully optimized, fast, and structured business platform featuring clear semantic structures and clean component trees.",
-        specs: "Select a package scale below. For complex corporate integrations, get in touch with our engineering team directly.",
+        desc: "A fast, mobile-friendly website built for your business. Clear, easy to navigate, and structured so Google and AI tools can understand what you do.",
+        specs: "Choose a package below. For complex requirements, contact us directly.",
         packages: [
           {
-            name: "1 Page Starter Pack",
+            name: "1 Page Starter",
             price: "R1,850",
-            desc: "This is a clean, single-page foundational structure designed to establish your digital footprint, which you can easily build onto as your business scale expands."
+            desc: "A clean, single-page website to establish your online presence. Easy to upgrade as your business grows."
           },
           {
             name: "Business Pack",
             price: "R2,750",
-            desc: "Designed specifically for growing small businesses requiring dedicated service pages, custom trust anchors, and clear lead generation workflows."
+            desc: "Perfect for growing businesses. Includes dedicated service pages, clear contact info, and lead capture forms."
           },
           {
-            name: "CMS Business Pack",
+            name: "CMS Business",
             price: "R6,500",
-            desc: "A powerful platform designed for larger operations requiring dynamic layout controls, unified content hubs, and automated backend inputs."
+            desc: "A powerful website with a content management system. Update your own pages, manage blog posts, and handle backend tasks yourself."
           }
         ]
       },
       {
         id: "WEB-ECOM-01",
-        title: "E-Commerce Website",
+        title: "Online Store",
         price: "Starting from R8,500",
-        desc: "A fully unified online storefront optimized for South African payment gateways, featuring instant indexation architectures and highly responsive product layouts.",
-        specs: "Product inventory taxonomy setup, payment portal integration including PayFast or Yoco, real-time inventory hooks, and conversion flow tuning",
-        isPopular: true
+        desc: "A complete online shop that works with South African payment systems. Built so customers can easily browse and buy, and Google can find your products.",
+        specs: "Product catalog setup, payment integration (PayFast or Yoco), inventory management, and sales optimization"
       },
       {
         id: "WEB-LAND-01",
         title: "Landing Page",
         price: "Starting from R1,850",
-        desc: "A high-performance single-page sales machine engineered for high-intent traffic conversions, featuring streamlined script sizing and rapid response times.",
-        specs: "Campaign alignment, structural fast-loading configurations, clear semantic focus, and persuasive copy blocks aimed at target actions"
+        desc: "A single, high-impact page designed to turn visitors into leads. Fast loading, clear message, focused call-to-action.",
+        specs: "Campaign alignment, fast loading, clear structure, and conversion-focused copy"
       },
       {
         id: "WEB-PORT-01",
-        title: "Portfolio / Personal Website",
+        title: "Portfolio / Professional Website",
         price: "R3,450 once-off",
-        desc: "Elegant digital showcase systems tailored for professional practitioners, consultants, and creative directors needing clean visibility across search indexes.",
-        specs: "Visual media grids, quick inquiry routing, simple layout design, foundational schema setup, and responsive view verification"
+        desc: "A professional website for consultants, practitioners, and creative professionals. Clean, visible, and easy for potential clients to contact you.",
+        specs: "Media showcase, contact forms, basic SEO setup, and mobile optimization"
       }
     ],
     faqs: [
       {
         q: "Will my website actually be found by Google when it launches?",
-        a: "Yes. Every system we build incorporates exact JSON-LD microdata, proper directory structures, clean routing tables, and optimized loading signals from day one, ensuring immediate and clean platform crawlability."
+        a: "Yes. Every website we build includes proper SEO setup from day one — correct page titles, descriptions, and structured data that Google can read and index."
       },
       {
         q: "Can AI tools like ChatGPT find and recommend my site?",
-        a: "AI agents rely on clean, semantic, server-rendered structures to extract database signals. We explicitly configure your metadata, headers, and semantic blocks so LLM scrapers can index and attribute your services."
+        a: "AI tools read websites differently than humans. We set up your website's code so that ChatGPT, Gemini, and other AI assistants can understand what you do and recommend you when customers ask."
       }
     ]
   },
   {
     slug: "seo-ai-search",
-    title: "SEO & AI Search",
-    metaDesc: "Technical SEO, entity authority, and Generative/Answer Engine Optimisation for South African businesses.",
-    h1: "Get Ranked on Google. Get Cited by AI.",
-    quickAnswer: "Traditional SEO gets you found by Google. AI Search Optimisation gets you recommended by AI. We build for both, structuring content so it answers real customer questions in the exact format AI systems extract from.",
+    title: "SEO & AI Visibility",
+    metaDesc: "Technical SEO and Google Business Profile management to get your business found on Google and recommended by AI.",
+    h1: "Get Found on Google. Get Recommended by AI.",
+    quickAnswer: "SEO helps you rank higher on Google. AI Search Optimization helps you get recommended by ChatGPT and Gemini. We do both — so you get found everywhere your customers are looking.",
     iconName: "BrainCircuit",
     services: [
       {
         id: "SEO-AUD-01",
-        title: "SEO & AI Visibility Audit",
+        title: "SEO & AI Visibility Check",
         price: "R3,950 once-off",
-        desc: "A comprehensive investigation analyzing index health, platform accessibility, schema structure, and present generative search visibility indices.",
-        specs: "Complete data check, semantic audit, structural code diagnostic, live LLM query simulation across models, and a concrete action plan"
+        desc: "A thorough check of why customers can't find your business online. We look at your website, your Google listing, and where you're missing opportunities to show up in search and AI answers.",
+        specs: "Complete website check, technical review, live AI search simulation, and a clear action plan"
       },
       {
         id: "SEO-TECH-01",
         title: "Technical SEO Management",
         price: "R2,450/month",
-        desc: "Sustained optimization covering core platform crawlability, search visibility, render path tuning, and clean indexing across major databases.",
-        specs: "Continuous crawl tracking, loading speed tuning, code error corrections, site configuration updates, and regular schema maintenance scans"
+        desc: "Ongoing work to keep your website healthy and findable on Google. We fix issues, improve speed, and keep everything running smoothly.",
+        specs: "Regular site monitoring, speed optimization, error fixes, and monthly reports"
       },
       {
         id: "SEO-ENT-01",
-        title: "Entity Authority Building",
+        title: "Google Business Profile Management",
         price: "R3,450/month",
-        desc: "We establish your business profile as a verified entity within reference architectures, securing cross-platform validation and data alignment.",
-        specs: "Company mapping alignment, local profile corrections, metadata optimization, entity reference builds, and review generation tactics"
+        desc: "We make sure your business shows up accurately everywhere online — Google Maps, directories, and review sites — so customers can always find your correct details.",
+        specs: "Business listing setup and management, local keyword targeting, review collection, and accuracy monitoring"
       },
       {
         id: "SEO-GEO-01",
-        title: "GEO & AI Citation Optimisation",
+        title: "AI Answers Optimization",
         price: "R4,950/month",
-        desc: "Targeted content structuring and metadata deployments optimized for citation extraction, structured Q&A indexing, and direct machine recommendations.",
-        specs: "Retrieval-ready layouts, public schema injections, system catalog profiling, and active tracking across LLM platforms",
+        desc: "We write and structure your content so that when someone asks ChatGPT, Gemini, or Perplexity a question about your service, your business is the answer they get.",
+        specs: "AI-optimized content creation, structured FAQ pages, monitoring across AI tools, and monthly reporting",
         isPopular: true
       }
     ],
     faqs: [
       {
-        q: "What is the exact difference between SEO and GEO?",
-        a: "SEO is designed to get your link index-ranked on search engine result pages. GEO is designed to get your direct factual data and specific brand name cited as a trustworthy answer inside AI conversational responses."
+        q: "What's the difference between SEO and optimizing for AI?",
+        a: "SEO helps you appear in Google search results with links. Optimizing for AI helps you get directly recommended by ChatGPT, Gemini, and Perplexity when customers ask questions. We do both."
       },
       {
-        q: "How do you measure AI visibility?",
-        a: "We systematically query models like ChatGPT, Claude, and Gemini with standard user prompt vectors to monitor citation share, contextual sentiment, and direct recommendation frequency."
+        q: "How do you measure success with AI visibility?",
+        a: "We regularly ask AI tools (like ChatGPT and Gemini) questions about your industry and check whether and how your business comes up. We track how often you're mentioned and recommended."
       }
     ]
   },
   {
     slug: "google-business-profile",
-    title: "GBP Management",
-    metaDesc: "Google Business Profile setup, verification, and ongoing management to win local searches and local trust signals.",
-    h1: "Own Your 'Near Me' Search Results",
-    quickAnswer: "Your Google Business Profile is one of the first places AI systems check to verify a business is real, active, and trustworthy. We keep it accurate, complete, and continuously updated.",
+    title: "Google Business Profile",
+    metaDesc: "Google Business Profile setup, verification, and management to win local searches and map pack results.",
+    h1: "Own Your Local Search Results",
+    quickAnswer: "Your Google Business Profile is one of the main places customers check before deciding to visit. We make sure it's complete, accurate, and shows up when local customers search for you.",
     iconName: "ShieldCheck",
     services: [
       {
         id: "GBP-ESSENTIAL",
-        title: "Essential GBP Package",
+        title: "Essential Google Business Package",
         price: "R1,180/month",
-        desc: "The foundational profile management structure for businesses wanting a clean, verified presence in local search listings and map packs.",
+        desc: "Complete management of your Google Business Profile to ensure you show up in local search and on Google Maps.",
         features: [
-          "2 optimized Google Business Profile update posts monthly",
-          "2 keyword-targeted Q&A profile updates monthly",
-          "A clean, direct inquiry landing page to capture map pack conversions",
-          "Consistent verification of physical coordinates, operating hours, and location categories"
+          "2 monthly Google post updates",
+          "2 keyword-targeted Q&A responses monthly",
+          "A clear contact page to convert map views to calls",
+          "Consistent business name, address, phone number across all platforms"
         ]
       },
       {
         id: "GBP-GROWTH",
-        title: "Growth GBP Package",
+        title: "Growth Google Business Package",
         price: "R2,730/month",
-        desc: "Designed for competitive local operations requiring active optimization, signal generation, and localized visibility amplification.",
+        desc: "For competitive local businesses that need active management and local search optimization.",
         features: [
-          "4 verified Google Business Profile updates monthly",
-          "4 keyword-rich Q&A profile entries monthly",
-          "Setup of automated review collection pipelines and share links",
-          "2 customized local landing pages optimized for targeting adjacent suburbs",
-          "Regular analysis of local search behavior and profile performance metrics"
+          "4 monthly Google post updates",
+          "4 keyword-rich Q&A responses monthly",
+          "Automated review collection system",
+          "2 local landing pages for nearby suburbs",
+          "Monthly local search performance reporting"
         ],
         isPopular: true
       },
       {
         id: "GBP-PREMIUM",
-        title: "Premium GBP Package",
+        title: "Premium Google Business Package",
         price: "R3,950/month",
-        desc: "The ultimate local validation tier built to dominate search parameters across multiple geographic vectors and surrounding metros.",
+        desc: "Complete local search domination across multiple areas and suburbs.",
         features: [
-          "6 high-impact Business Profile update posts monthly",
-          "6 highly relevant local Q&A profile updates monthly",
-          "Advanced local landing pages targeting up to 3 distinct geographic service zones",
-          "Active monitoring of local map pack changes, review sentiment audits, and ongoing image assets"
+          "6 monthly Google post updates",
+          "6 highly relevant Q&A responses monthly",
+          "Advanced local landing pages for up to 3 service areas",
+          "Local map pack monitoring, review tracking, and image updates"
         ]
       }
     ],
     faqs: [
       {
-        q: "Why does my Google Business Profile matter for AI visibility?",
-        a: "Search algorithms and AI systems cross-reference location datasets against your domain directory to evaluate legitimacy. Mismatched location details or duplicate listings create conflict signals that cause AI systems to ignore your business."
+        q: "Why does my Google Business Profile matter for online visibility?",
+        a: "When people search for what you do on Google Maps or in local search, your Google Business Profile is often the first thing they see. Google cross-checks this information with your website to decide if you're trustworthy. Inaccurate or inconsistent details cause Google to show your competitors instead."
       },
       {
         q: "How long does verification take?",
-        a: "Verification varies depending on the specific method mandated by Google (video, phone, or postcard). Postcard methods generally take between one and two weeks in South Africa."
+        a: "Verification depends on Google's method (video, phone, or postcard). Postcard verification typically takes 1-2 weeks in South Africa."
       }
     ]
   },
   {
     slug: "whatsapp-marketing",
     title: "WhatsApp Marketing",
-    metaDesc: "Turn Facebook, Instagram, and Google ads into direct WhatsApp conversations with automated flow setups.",
-    h1: "Turn Ad Clicks Into WhatsApp Conversations",
-    quickAnswer: "We turn WhatsApp into an automated sales channel: one that responds instantly, qualifies leads, and keeps your business always on, even when your team is not.",
+    metaDesc: "Turn your Facebook, Instagram, and Google ads into direct WhatsApp conversations with automated flow setups.",
+    h1: "Turn Clicks Into WhatsApp Conversations",
+    quickAnswer: "We turn WhatsApp into an automated sales channel — one that responds instantly, qualifies leads, and keeps your business always on, even when your team isn't.",
     iconName: "Smartphone",
     services: [
       {
         id: "WA-CAMP-01",
         title: "WhatsApp Ad Campaigns",
         price: "From R2,500/month",
-        desc: "End-to-end setup and management of targeted ad structures sending high-intent traffic directly into a customized WhatsApp workspace.",
-        specs: "Campaign configuration, profile matching, creation of targeted ad units, click-to-chat optimizations, and monthly metric tracking"
+        desc: "Setup and management of targeted ad campaigns that send interested customers directly into your WhatsApp for instant conversation.",
+        specs: "Campaign setup, target audience matching, ad creative creation, click-to-WhatsApp optimization, and monthly tracking"
       },
       {
         id: "WA-BOT-01",
         title: "WhatsApp Bot Setup",
         price: "R4,950 once-off",
-        desc: "Custom interactive flow bots built using the official Meta Cloud API to automatically welcome, verify, and filter user inquiries in real time.",
-        specs: "API setup and registration, logical block configuration, automated answers, lead routing mechanics, and team notifications"
+        desc: "Custom automated chat flows built on the official Meta Cloud API. Answers FAQs, qualifies leads, and routes to your team automatically.",
+        specs: "API setup, conversation flow design, automated responses, lead routing, and team notifications"
       },
       {
         id: "WA-MGT-01",
         title: "WhatsApp Marketing (Full Package)",
         price: "From R6,500/month",
-        desc: "The complete, optimized ecosystem syncing ad investments directly with intelligent automation flows to maximize lead conversions.",
-        specs: "Comprehensive ad optimization, continuous flow testing, catalog updates, detailed tracking dash, and manual handover configurations",
+        desc: "Complete WhatsApp sales system including ads, automation, product catalogs, and tracking — all working together to bring in more sales.",
+        specs: "Full ad management, continuous flow optimization, catalog updates, tracking dashboard, and manual handover setup",
         isPopular: true
       }
     ],
     faqs: [
       {
         q: "How is this different from just adding a WhatsApp button to my website?",
-        a: "A basic site button relies on traffic already reaching your domain. Our campaigns target active social users on their feeds, driving them directly into an automated chat workspace in one step."
+        a: "A website button only works if customers already visit your site. Our WhatsApp campaigns actively find your customers on Facebook and Instagram, then send them straight to a WhatsApp conversation with you."
       },
       {
         q: "Will a bot make my business feel impersonal?",
-        a: "Not if it is built properly. Our flows quickly handle standard details, check lists, and basic FAQs, then smoothly pass complex or high-intent clients to a human agent when personal interaction is required."
+        a: "Not if it's built well. Our bots handle common questions and basic details first, then smoothly pass more complex inquiries to a human. The customer gets fast answers, and you only step in when it matters."
       }
     ]
   },
   {
     slug: "automation-chatbots",
-    title: "Automation & Chatbots",
-    metaDesc: "Deploy intelligent, 24/7 AI agents and business automations that qualify leads and automate repetitive tasks.",
-    h1: "Autonomous Business Systems & AI Chatbots",
-    quickAnswer: "We deploy AI-powered digital receptionists that answer questions, qualify leads, and book appointments 24/7 across your website and messaging channels so you never miss an opportunity.",
+    title: "AI Chatbots & Automation",
+    metaDesc: "Deploy AI chatbots and automation that answer questions, qualify leads, and book appointments 24/7 for your business.",
+    h1: "24/7 AI Receptionists & Sales Automation",
+    quickAnswer: "We deploy AI-powered chatbots and automation that answer customer questions, qualify leads, and book appointments 24/7 — so you never miss an opportunity, even when you're not at your desk.",
     iconName: "Bot",
     services: [
       {
         id: "AUTO-CHAT-01",
-        title: "Website AI Chatbot",
+        title: "Website Chatbot",
         price: "From R4,950 once-off",
-        desc: "Bespoke semantic chatbot deployed directly on your website, trained on your custom documentation to resolve user questions instantly.",
-        specs: "Document intake, custom system instruction config, layout integration, fallback logic parameters, and inquiry routing hooks"
+        desc: "An AI chatbot placed on your website, trained on your business information to answer customer questions instantly, 24 hours a day.",
+        specs: "Training data setup, custom conversation design, website integration, fallback to human support, and notification setup"
       },
       {
         id: "AUTO-CRM-01",
-        title: "CRM & Workflow Automation",
+        title: "CRM & Sales Automation",
         price: "Custom Quote",
-        desc: "We build automated pipelines that link your lead capture channels directly with your active database, CRM, and system triggers.",
-        specs: "Multi-app integration, pipeline design, automated alerts, automated contract and invoice creation, and platform sync protocols",
-        isPopular: true
+        desc: "We connect your lead capture tools directly to your CRM and sales processes, automating follow-ups and appointment booking.",
+        specs: "Integration with 3rd-party apps, sales pipeline setup, automated follow-ups, contract/invoice automation, and sync protocols"
       },
       {
         id: "AUTO-VOICE-01",
         title: "AI Voice Agents",
         price: "From R12,000 once-off",
-        desc: "Next-generation vocal models customized to handle incoming calls, resolve queries, capture client details, and schedule appointments.",
-        specs: "Voice profile configuration, call flow design, system database links, calendar synchronization, and live handoff setups"
+        desc: "AI phone agents that handle incoming calls, answer questions, capture caller details, and schedule appointments automatically.",
+        specs: "Voice setup, call flow design, system integrations, calendar sync, and live handoff to human agents"
       }
     ],
     faqs: [
       {
-        q: "Will the AI hallucinate or make up facts about my business?",
-        a: "No. Our automated agents use strict RAG parameter controls. They are securely locked to retrieve facts only from the specific reference library, pricing sheets, and system documents you authorize."
+        q: "Will the AI make up facts about my business?",
+        a: "No. Our AI agents are locked to pull information only from the materials you provide — your service descriptions, pricing, and FAQs. They cannot answer questions they don't have the right information for."
       },
       {
         q: "Does the automation integrate with my current CRM?",
-        a: "Yes. We build robust API connections to sync data across HubSpot, Salesforce, Zoho, Monday, Slack, Google Workspace, and other typical corporate tools."
+        a: "Yes. We build connections to HubSpot, Salesforce, Zoho, Monday.com, Slack, Google Workspace, and other common business tools to sync your data automatically."
       }
     ]
   }
 ];
 
-const iconMap: Record<string, LucideIcon> = {
-  MessageSquareCode,
-  Database,
-  BrainCircuit,
-  ShieldCheck,
-  Smartphone,
-  Bot,
+const overview = {
+  eyebrow: "Our Services",
+  intro:
+    "Happy Hunter Digital offers six core services for South African SMEs: Content & Social Media, Websites, SEO & AI Visibility, Google Business Profile Management, WhatsApp Marketing, and AI Chatbots & Automation. Every service works toward one goal: making sure Google, AI assistants, and your next customer can find, trust, and choose your business.",
+  whyTogether:
+    "AI tools like ChatGPT, Gemini, and Google AI Overviews don't just look at your website. They check your Google Business Profile, your online reviews, and your overall consistency. If your business info is wrong or inconsistent anywhere, AI and search may ignore you. We fix everything at once.",
+  services: [
+    {
+      slug: "digital-marketing",
+      title: "Content & Social Media",
+      summary:
+        "We create content and social media posts that attract real customers — not just likes. We focus on real people who need what you offer.",
+    },
+    {
+      slug: "web-development",
+      title: "Websites",
+      summary:
+        "We build fast, mobile-friendly websites that rank on Google and get recommended by ChatGPT and Gemini. Websites that bring you customers, not just visitors.",
+    },
+    {
+      slug: "seo-ai-search",
+      title: "SEO & AI Visibility",
+      summary:
+        "SEO helps you rank on Google. AI visibility helps you get recommended by ChatGPT and Gemini. We do both — so you get found everywhere your customers look.",
+    },
+    {
+      slug: "google-business-profile",
+      title: "Google Business Profile",
+      summary:
+        "Your Google Business Profile is often the first thing customers check. We make sure it's complete, accurate, and shows up when local customers search for you.",
+    },
+    {
+      slug: "whatsapp-marketing",
+      title: "WhatsApp Marketing",
+      summary:
+        "We turn WhatsApp into an automated sales channel that responds instantly and qualifies leads, so you stay on even when your team isn't.",
+    },
+    {
+      slug: "automation-chatbots",
+      title: "AI Chatbots & Automation",
+      summary:
+        "We deploy AI chatbots that answer questions and book appointments 24/7, so you never miss an opportunity — even when you're not at your desk.",
+    },
+  ],
+  closing:
+    "The result is a unified online presence where your website, your search visibility, your Google listing, and your customer messages all work together. Instead of being invisible to algorithms, your business becomes the answer your customers get.",
 };
 
 // Absolute, crawlable URLs — real anchors (not just router state) so search
@@ -380,54 +417,6 @@ const serviceUrls: Record<string, string> = {
   "google-business-profile": "https://www.happyhunterdigital.com/services/google-business-profile",
   "whatsapp-marketing": "https://www.happyhunterdigital.com/services/whatsapp-marketing",
   "automation-chatbots": "https://www.happyhunterdigital.com/services/automation-chatbots",
-};
-
-const overview = {
-  eyebrow: "System Overview",
-  intro:
-    "Happy Hunter Digital provides five core services for South African SMEs: Digital Marketing, Web Development, SEO & AI Search Optimisation, Google Business Profile Management, and WhatsApp Automation. Every service works toward one goal: making sure algorithms, search engines, and AI assistants can find, verify, and recommend your business.",
-  whyTogether:
-    "AI systems like ChatGPT, Gemini, and Google AI Overviews don't just crawl your website. They cross reference your business across your site, your Google Business Profile, and your customer communication channels. A gap in any one of these creates inconsistency, and inconsistency is what makes AI systems distrust or ignore a business. Our six services close every gap at once.",
-  services: [
-    {
-      slug: "digital-marketing",
-      title: "Digital Marketing",
-      summary:
-        "We build campaigns structured around what AI answer engines and search algorithms actually reward: consistency, clarity, and verifiable authority, not just ad spend.",
-    },
-    {
-      slug: "web-development",
-      title: "Web Development",
-      summary:
-        "We build AI ready websites, structured for AEO and AI SEO so AI assistants can read, understand, and cite your business, not just rank it in search results.",
-    },
-    {
-      slug: "seo-ai-search",
-      title: "SEO & AI Search Optimisation",
-      summary:
-        "Traditional SEO gets you found by Google. AI Search Optimisation gets you recommended by AI. We build for both, structuring content so it answers real customer questions in the exact format AI systems extract from.",
-    },
-    {
-      slug: "google-business-profile",
-      title: "GBP Management",
-      summary:
-        "Your Google Business Profile is one of the first places AI systems check to verify a business is real, active, and trustworthy. We keep it accurate, complete, and continuously updated.",
-    },
-    {
-      slug: "whatsapp-marketing",
-      title: "WhatsApp Automation",
-      summary:
-        "We turn WhatsApp into an automated sales channel that responds instantly, qualifies leads, and keeps your business always on, even when your team isn't.",
-    },
-    {
-      slug: "automation-chatbots",
-      title: "Automation & Chatbots",
-      summary:
-        "We deploy AI receptionists and workflow automations that qualify leads and answer questions 24/7, so no opportunity goes cold waiting for a reply.",
-    },
-  ],
-  closing:
-    "The result is a unified digital presence where your website, your search visibility, your Google listing, and your customer messaging all say the same thing. Instead of being a ghost to the algorithms, your business becomes the answer they give.",
 };
 
 /** Four-corner targeting brackets — the page's signature motif.
@@ -462,6 +451,15 @@ function Reticle({ tone = "signal" }: { tone?: "signal" | "verify" }) {
 function channelCode(index: number) {
   return `CH-0${index + 1}`;
 }
+
+const iconMap: Record<string, LucideIcon> = {
+  MessageSquareCode,
+  Database,
+  BrainCircuit,
+  ShieldCheck,
+  Smartphone,
+  Bot,
+};
 
 export function CoreServices() {
   const { category: activeSlug } = useParams<{ category?: string }>();
@@ -544,9 +542,9 @@ export function CoreServices() {
             </span>
             {overview.eyebrow.toUpperCase()}
           </div>
-          <h2 className="hh-display text-3xl md:text-4xl font-bold mb-5 leading-tight">
-            Six Channels. One Verified Signal.
-          </h2>
+           <h2 className="hh-display text-3xl md:text-4xl font-bold mb-5 leading-tight">
+             Six Services. One Goal: Get You Found.
+           </h2>
           <p className="text-white/70 mb-4 leading-relaxed">{overview.intro}</p>
           <p className="text-white/55 mb-10 leading-relaxed">{overview.whyTogether}</p>
         </div>
@@ -566,9 +564,9 @@ export function CoreServices() {
               >
                 <Reticle tone="signal" />
                 <div className="flex items-start justify-between mb-3">
-                  <span className="hh-mono text-[10px] tracking-widest text-white/35">
-                    {channelCode(i)}
-                  </span>
+          <span className="hh-mono text-[10px] tracking-widest text-white/35">
+            SERVICE 0{i+1}
+          </span>
                   <span className="hh-mono flex items-center gap-1.5 text-[10px] tracking-widest text-white/30 group-hover:text-[#4DE8C8] transition-colors">
                     <span className="h-1.5 w-1.5 rounded-full bg-white/30 group-hover:bg-[#4DE8C8] transition-colors" />
                     ACTIVE
@@ -577,7 +575,7 @@ export function CoreServices() {
                 <h3 className="hh-display font-semibold mb-1.5 text-[15px]">{s.title}</h3>
                 <p className="text-white/55 text-sm leading-relaxed mb-3">{s.summary}</p>
                 <span className="hh-mono inline-flex items-center gap-1.5 text-[11px] tracking-wide text-yellow-500/90 group-hover:gap-2.5 transition-all">
-                  VIEW CHANNEL <ArrowRight className="w-3 h-3" />
+                  VIEW SERVICE <ArrowRight className="w-3 h-3" />
                 </span>
               </a>
             );
@@ -618,19 +616,19 @@ export function CoreServices() {
 
       {/* ============ HERO ============ */}
       <header className="relative mb-14 max-w-3xl">
-        <div className="hh-mono flex items-center gap-2 text-[11px] tracking-[0.25em] text-yellow-500/80 mb-4">
-          {channelCode(activeIndex)} // {activeCategory.title.toUpperCase()}
-        </div>
-        <h1 className="hh-display text-3xl md:text-5xl font-bold mb-5 leading-[1.08]">
-          {activeCategory.h1}
-        </h1>
-        {activeCategory.subheadline && (
-          <p className="text-lg text-white/70 mb-5 leading-relaxed">{activeCategory.subheadline}</p>
-        )}
-        <div className="relative flex gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-4">
-          <span className="hh-mono shrink-0 text-[#4DE8C8] text-sm mt-0.5">&gt;</span>
-          <p className="text-white/70 text-sm leading-relaxed">{activeCategory.quickAnswer}</p>
-        </div>
+          <div className="hh-mono flex items-center gap-2 text-[11px] tracking-[0.25em] text-yellow-500/80 mb-4">
+            {channelCode(activeIndex)} // {activeCategory.title.toUpperCase()}
+          </div>
+          <h1 className="hh-display text-3xl md:text-5xl font-bold mb-5 leading-[1.08]">
+            {activeCategory.h1}
+          </h1>
+          {activeCategory.subheadline && (
+            <p className="text-lg text-white/70 mb-5 leading-relaxed">{activeCategory.subheadline}</p>
+          )}
+          <div className="relative flex gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-4">
+            <span className="hh-mono shrink-0 text-[#4DE8C8] text-sm mt-0.5">GOOD TO KNOW</span>
+            <p className="text-white/70 text-sm leading-relaxed">{activeCategory.quickAnswer}</p>
+          </div>
       </header>
 
       {/* ============ SERVICES GRID ============ */}

@@ -22,11 +22,11 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
               <span className="text-white">happy</span><span className="text-yellow-500">hunter</span><span className="text-gray-400">digital</span>
             </span>
           </div>
-          <p className="text-gray-500 text-sm leading-relaxed max-w-xs">Architecting digital dominance for ambitious South African entities.</p>
+          <p className="text-gray-500 text-sm leading-relaxed max-w-xs">We help South African businesses get found on Google, chats like ChatGPT, and WhatsApp. Based in Pretoria.</p>
         </div>
 
         <div className="space-y-6">
-          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Direct Lines</h3>
+          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Contact</h3>
           <div className="space-y-4 text-xs font-medium">
             <a href="mailto:motsumitl@happyhunterdigital.com" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all"><Mail size={16} className="text-yellow-500"/> motsumitl@happyhunterdigital.com</a>
             <a href="https://wa.me/27601016673" className="flex items-center gap-3 text-gray-300 hover:text-yellow-500 transition-all"><Phone size={16} className="text-yellow-500"/> +27 (0) 60 101 6673</a>
@@ -34,22 +34,22 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
         </div>
 
         <div className="space-y-6">
-          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Agency Headquarters</h3>
+          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Location</h3>
           <p className="text-gray-400 text-[10px] leading-relaxed">574 Fred Messenger Avenue, Andeon<br />Pretoria West, Pretoria<br />South Africa</p>
         </div>
 
         <div className="space-y-6">
-          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Internal Hubs</h3>
+          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Quick Links</h3>
           <div className="flex flex-col gap-4 text-xs font-bold uppercase tracking-widest text-gray-400">
             <Link to="/work" className="text-white hover:text-yellow-500 transition-colors">Our Work</Link>
-            <Link to="/architecture" className="text-yellow-500">Master Architecture</Link>
-            <Link to="/services" className="text-white hover:text-yellow-500 transition-colors">The Protocol</Link>
-            <Link to="/earned-media" className="text-white hover:text-yellow-500 transition-colors">Success Nodes</Link>
+            <Link to="/services" className="text-white hover:text-yellow-500 transition-colors">Services</Link>
+            <Link to="/faq" className="text-white hover:text-yellow-500 transition-colors">FAQ</Link>
+            <Link to="/founders" className="text-white hover:text-yellow-500 transition-colors">About</Link>
           </div>
         </div>
 
         <div className="space-y-6">
-          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Social Signals</h3>
+          <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500 border-b border-gray-900 pb-4">Follow Us</h3>
           <div className="flex flex-wrap gap-4">
             <a href="https://za.linkedin.com/in/thabomotsumi" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><Linkedin size={20}/></a>
             <a href="https://x.com/HappyHunter35" target="_blank" rel="noopener noreferrer" aria-label="X (formerly Twitter)" className="p-3 bg-black rounded-xl text-gray-400 border border-gray-800 hover:text-yellow-500 hover:shadow-neural-glow transition-all"><XIcon/></a>
@@ -62,14 +62,10 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
 
       <div className="container mx-auto mt-24 border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 gap-6">
         <div className="flex flex-col md:flex-row items-center gap-4">
-          <p className="text-gray-700 text-[9px] font-black uppercase tracking-[0.5em]">&copy; 2026 // HAPPYHUNTERDIGITAL SYSTEMS</p>
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full text-green-500 text-[9px] font-bold uppercase tracking-widest">
-            <Leaf size={10} />
-            <span>0.01g CO₂/visit — SSR Optimized</span>
-          </div>
+          <p className="text-gray-700 text-[9px] font-black uppercase tracking-[0.5em]">&copy; 2026 Happy Hunter Digital</p>
         </div>
         <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest">
-          <Link to="/privacy-policy" className="hover:text-yellow-500 transition-colors">Privacy & API Compliance Protocol</Link>
+          <Link to="/privacy-policy" className="hover:text-yellow-500 transition-colors">Privacy Policy</Link>
         </div>
       </div>
     </footer>

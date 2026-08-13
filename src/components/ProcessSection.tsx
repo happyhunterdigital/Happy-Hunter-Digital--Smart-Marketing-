@@ -6,30 +6,30 @@ import { Link } from 'react-router-dom';
 
 const STEPS = [
   {
-    number: "01",
-    title: "Entity Audit",
-    description: "We scan your entire digital footprint to identify fragmentation, ghost signals, and trust gaps.",
+    number: "1",
+    title: "Free Health Check",
+    description: "We scan where your business appears online — your website, Google, Facebook, and directories. We find where your business information is wrong, missing, or inconsistent so you know exactly what to fix. Free, no strings attached.",
     icon: <Search size={24} />,
     color: "from-blue-500 to-cyan-500"
   },
   {
-    number: "02",
-    title: "Trust Anchor",
-    description: "Unify your NAP data, verify profiles, and inject structured schema markup across all touchpoints.",
+    number: "2",
+    title: "Fix Your Foundation",
+    description: "We make sure your business name, address, phone number, and services are identical everywhere. Then we add structured code to your website so Google and AI assistants know exactly what you do.",
     icon: <Shield size={24} />,
     color: "from-emerald-500 to-teal-500"
   },
   {
-    number: "03",
-    title: "AI Megaphone",
-    description: "Format your content for RAG retrieval so ChatGPT, Gemini, and Perplexity cite you as the authority.",
+    number: "3",
+    title: "Create AI-Friendly Content",
+    description: "We write articles, service pages, and FAQs that AI tools like ChatGPT, Gemini, and Perplexity can easily find and quote as the answer. This helps you get recommended, not just ranked.",
     icon: <Megaphone size={24} />,
     color: "from-amber-500 to-orange-500"
   },
   {
-    number: "04",
-    title: "Revenue Brain",
-    description: "Deploy autonomous AI agents that qualify leads, book appointments, and close sales 24/7.",
+    number: "4",
+    title: "Automate Your Sales",
+    description: "We set up smart chatbots and WhatsApp automation that answer questions, qualify leads, and book appointments 24/7 — so you never miss an opportunity, even when you're not at your desk.",
     icon: <Zap size={24} />,
     color: "from-red-500 to-pink-500"
   }
@@ -44,13 +44,13 @@ export const ProcessSection: React.FC = () => {
       <div className="container mx-auto px-6">
         <div className={`text-center max-w-2xl mx-auto mb-20 transition-all duration-1000 ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <span className="inline-block px-4 py-1.5 rounded-full bg-white/5 text-gray-400 text-xs font-bold uppercase tracking-[0.2em] mb-6">
-            Our Method
+            How It Works
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
-            The <span className="gradient-text">Tripartite Protocol</span>
+            Our <span className="gradient-text">4-Step Process</span>
           </h2>
           <p className="text-gray-400 text-lg">
-            A proven 4-step system to transform your business from invisible to unmissable.
+            A proven, simple system to transform your business from invisible to unmissable online.
           </p>
         </div>
 
@@ -88,7 +88,7 @@ export const ProcessSection: React.FC = () => {
 
         <div className={`text-center mt-20 transition-all duration-1000 delay-700 ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <Link to="/audit" className="inline-flex items-center gap-2 px-8 py-4 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-2xl transition-all hover:scale-[1.02] hover:shadow-glow">
-            Start Your Audit
+            Start Free Health Check
             <ArrowRight size={18} />
           </Link>
         </div>

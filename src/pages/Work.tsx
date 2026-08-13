@@ -9,12 +9,12 @@ const CASE_STUDIES = [
     logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1770623694/IMG-20260209-WA0025_zgpgf7.jpg",
     website: "https://skubalisto.com",
     industry: "Art & Muralism",
-    challenge: "Global physical fame but invisible online. Technical blocks prevented Knowledge Graph generation. No structured data meant AI tools couldn't identify or recommend them.",
-    solution: "Entity Resolution protocol: Injected Person and LocalBusiness schema to align physical murals with digital data. Implemented AEO-first content strategy with Speakable markup.",
+    challenge: "Famous on the streets but invisible online. No structured data meant AI tools like ChatGPT couldn't find or recommend them.",
+    solution: "We added special data tags to the website and optimized the Google Business Profile so AI tools can find and recommend Skubalisto when people search for local artists.",
     results: [
-      { metric: "AI Citations", value: "47+", icon: <Globe size={16} /> },
-      { metric: "Knowledge Panel", value: "Verified", icon: <CheckCircle2 size={16} /> },
-      { metric: "Organic Traffic", value: "+320%", icon: <TrendingUp size={16} /> },
+      { metric: "AI Mentions", value: "47+", icon: <Globe size={16} /> },
+      { metric: "Google Verified", value: "Yes", icon: <CheckCircle2 size={16} /> },
+      { metric: "Website Traffic", value: "+320%", icon: <TrendingUp size={16} /> },
     ],
     testimonial: "I was famous on the streets but invisible online. Thabo made the internet know who I am.",
     testimonialAuthor: "Skumbuzo 'Skubalisto' Salman, Founder"
@@ -24,14 +24,14 @@ const CASE_STUDIES = [
     logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1765747667/Integrated_Wellth_Solutions_Logo_bodmyc1_iiervl.png",
     website: "https://www.integratedwellth.co.za",
     industry: "Financial Intelligence",
-    challenge: "High traffic resulting in zero sales. Generic template-based positioning created ambiguity. Website visitors couldn't understand what the company actually does.",
-    solution: "Rebranded as a 'Financial Intelligence Unit'. Deployed automated inbound triage with AI chatbot for high-LTV qualification. Implemented conversion-focused schema markup.",
+    challenge: "High traffic but zero sales. Visitors couldn't understand what the company actually does.",
+    solution: "We clarified their messaging and deployed an AI chatbot that qualifies leads automatically, plus added structured data to their website.",
     results: [
       { metric: "Qualified Leads", value: "+300%", icon: <Users size={16} /> },
-      { metric: "Conversion Rate", value: "+180%", icon: <BarChart3 size={16} /> },
+      { metric: "Sales Conversion", value: "+180%", icon: <BarChart3 size={16} /> },
 
     ],
-    testimonial: "The AI acts as a 24/7 receptionist. I only speak to pre-convinced leads now.",
+    testimonial: "The AI chatbot acts as a 24/7 receptionist. I only speak to pre-qualified leads now.",
     testimonialAuthor: "CEO, IntegratedWellth"
   },
   {
@@ -39,11 +39,11 @@ const CASE_STUDIES = [
     logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1762927791/logo_Khongoloti_1_e4k887.png",
     website: "https://khongoloti.co.za",
     industry: "B2B Education",
-    challenge: "Fragmented messaging causing high-friction user journeys. Potential students dropped off between inquiry and certification. Google Business Profile was underoptimized.",
-    solution: "Implemented AEO-First approach. Restructured digital assets to create a 'Business Success Loop'. Added FAQ schema, automated WhatsApp qualification, and GBP optimization.",
+    challenge: "Confusing messaging caused potential students to drop off. Google Business Profile was under-optimized.",
+    solution: "We restructured their online presence with clear content, FAQ sections, WhatsApp automation for lead capture, and Google Business Profile optimization.",
     results: [
       { metric: "Student Enquiries", value: "+215%", icon: <Users size={16} /> },
-      { metric: "GBP Views", value: "+400%", icon: <Globe size={16} /> },
+      { metric: "Google Views", value: "+400%", icon: <Globe size={16} /> },
       { metric: "Enrollment Rate", value: "+85%", icon: <TrendingUp size={16} /> },
     ],
     testimonial: "Our enquiries went through the roof. Students find us before they even know they need us.",
@@ -54,12 +54,12 @@ const CASE_STUDIES = [
     logo: "https://res.cloudinary.com/dkyg07qvv/image/upload/v1776949471/The_Ludo_League_Logo_p2pzvn.jpg",
     website: "https://ludoleague.co.za",
     industry: "Gaming & Entertainment",
-    challenge: "No digital presence. Needed end-to-end system build from scratch — social media, content, web, automation, and community engagement.",
-    solution: "Built every system from the ground up: hand-coded websites (ludoleague.co.za + academy.ludoleague.co.za), social media management, content marketing, WhatsApp bot automation, and full digital footprint architecture.",
+    challenge: "No digital presence at all. Needed a complete online system built from scratch.",
+    solution: "Built everything from the ground up: custom websites, social media, content, WhatsApp automation, and full online presence.",
     results: [
-      { metric: "Systems Built", value: "Full Stack", icon: <Globe size={16} /> },
+      { metric: "Systems Built", value: "Complete", icon: <Globe size={16} /> },
       { metric: "WhatsApp Bot", value: "Live", icon: <Users size={16} /> },
-      { metric: "Hand-Coded Web", value: "Custom", icon: <TrendingUp size={16} /> },
+      { metric: "Custom Website", value: "Hand-built", icon: <TrendingUp size={16} /> },
     ],
     testimonial: "Everything was built from nothing. Social, web, automation, chatbots — the full digital engine.",
     testimonialAuthor: "Joe Setladi, Founder"
@@ -69,12 +69,12 @@ const CASE_STUDIES = [
     logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1785274897/MyMental_Health_Consultancy_Logo_oeubfx.png",
     website: "https://www.mmhfsp.co.za/",
     industry: "Mental Health Services",
-    challenge: "Stuck on a WordPress template that looked generic and performed poorly. No Google Business Profile optimization. Invisible to AI search engines.",
-    solution: "Redesigned from WordPress template to a fully hand-coded website. Built and optimized Google Business Profile. Implemented GEO, AEO, and SEO strategies for maximum AI visibility.",
+    challenge: "Stuck on a generic WordPress template that looked basic and didn't show up on Google or AI tools.",
+    solution: "We redesigned from scratch with a custom-built website, optimized their Google Business Profile, and implemented SEO and AI optimization strategies.",
     results: [
-      { metric: "Custom Coded", value: "100%", icon: <TrendingUp size={16} /> },
-      { metric: "GBP Optimized", value: "Live", icon: <Globe size={16} /> },
-      { metric: "GEO + AEO", value: "Active", icon: <CheckCircle2 size={16} /> },
+      { metric: "Custom Website", value: "100%", icon: <TrendingUp size={16} /> },
+      { metric: "Google Profile", value: "Optimized", icon: <Globe size={16} /> },
+      { metric: "AI Ready", value: "Yes", icon: <CheckCircle2 size={16} /> },
     ],
     testimonial: "They turned our invisible website into something that actually works for our patients.",
     testimonialAuthor: "Dr Chris, Founder"
@@ -84,8 +84,8 @@ const CASE_STUDIES = [
     logo: "https://res.cloudinary.com/dka0498ns/image/upload/v1762929115/Black_Gold_Elegant_Floral_Gala_Night_Invitation_Square_-_1_xpngal.png",
     website: "https://profusebeauty.co.za",
     industry: "Luxury Beauty",
-    challenge: "Premium brand with no digital authority. Competitors dominated AI search results. Website existed but wasn't formatted for modern discovery.",
-    solution: "Full entity architecture build: SSR website with comprehensive JSON-LD, AEO content strategy, AI chatbot for shade matching, and automated WhatsApp catalog integration.",
+    challenge: "Premium brand with no digital presence. Competitors were appearing in AI search results but Profuse Beauty wasn't. Website existed but wasn't set up for modern customers.",
+    solution: "We rebuilt their online presence: a custom-built website with proper SEO data, content written to answer customer questions, an AI chatbot for shade matching, and WhatsApp integration for product inquiries.",
     results: [
       { metric: "AI Search Ranking", value: "#1-3", icon: <Globe size={16} /> },
       { metric: "Online Sales", value: "+250%", icon: <TrendingUp size={16} /> },
@@ -123,9 +123,9 @@ export const Work = () => (
         <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-6 text-white leading-none">
           Verified <span className="text-amber-500 italic">Results</span>
         </h1>
-        <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
-          Every project follows the same protocol: diagnose the vulnerability, architect the solution, and deploy measurable digital authority.
-        </p>
+          <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto">
+          Every project follows the same process: find what's broken, fix it, and prove it works with real results.
+          </p>
       </div>
 
       <div className="grid gap-16 max-w-6xl mx-auto">

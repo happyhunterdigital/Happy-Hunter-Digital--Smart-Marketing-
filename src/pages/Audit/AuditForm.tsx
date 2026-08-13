@@ -48,29 +48,29 @@ interface AuditFormProps {
   phoneError: string;
   handlePhoneChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleCountryCodeChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  runForensicScan: () => void;
+  runHealthCheck: () => void;
   scanProgress: number;
   loading: boolean;
 }
 
 export const AuditForm: React.FC<AuditFormProps> = ({ 
-  step, form, setForm, phoneError, handlePhoneChange, handleCountryCodeChange, runForensicScan, scanProgress, loading 
+  step, form, setForm, phoneError, handlePhoneChange, handleCountryCodeChange, runHealthCheck, scanProgress, loading 
 }) => {
   const [terminalFocus, setTerminalFocus] = useState(false);
   const [designationOpen, setDesignationOpen] = useState(false);
 
   const scanSteps = [
-    "Establishing Neural Link to Google Maps API...",
-    "Extracting schema architecture and node health...",
-    "Cross-referencing AEO guidelines...",
-    "Calculating Entity Visibility Index...",
-    "Generating actionable payload..."
+    "Checking your Google Business Profile...",
+    "Looking at your website...",
+    "Checking your listings across the web...",
+    "Checking if AI tools can find you...",
+    "Creating your report..."
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.designation || !form.biz || !form.mail || phoneError || !form.wa) return;
-    runForensicScan();
+    runHealthCheck();
   };
 
   return (
@@ -80,35 +80,35 @@ export const AuditForm: React.FC<AuditFormProps> = ({
           className="max-w-2xl mx-auto space-y-5 bg-black p-8 md:p-12 rounded-[2rem] border border-gray-800 shadow-2xl relative overflow-hidden group transition-all hover:border-yellow-500/50">
           <div className="absolute top-0 left-0 w-full h-1 bg-yellow-500"></div>
           
-          <div className="text-left mb-6 border-b border-gray-900 pb-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
-              <Terminal size={12} /> Ghost Interface Active
+            <div className="text-left mb-6 border-b border-gray-900 pb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-[10px] font-black uppercase tracking-[0.2em] mb-4">
+                <Terminal size={12} /> Online Visibility Check
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter leading-none">
+                Free Online Business<br/>Health Check
+              </h2>
+              <p className="text-gray-500 text-xs font-mono mt-2">Complete the fields below to see where your business stands online. This is completely free with no obligation.</p>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter leading-none">
-              Digital Entity<br/>Audit Request
-            </h2>
-            <p className="text-gray-500 text-xs font-mono mt-2">Complete the fields below to initialize your forensic scan.</p>
-          </div>
 
-          {/* 1. YOUR NAME */}
-          <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-all">
-            <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <User size={12} className="text-gray-600" /> <b>YOUR_FULL_NAME</b>
-            </label>
-            <input 
-              className="w-full bg-transparent text-white font-mono text-base outline-none placeholder:text-gray-700" 
-              placeholder="e.g. Thabo Motsumi" 
-              onChange={e => setForm({...form, name: e.target.value})} 
-              value={form.name}
-              required 
-            />
-          </div>
+            {/* 1. YOUR NAME */}
+            <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-all">
+              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <User size={12} className="text-gray-600" /> Your Name
+              </label>
+              <input 
+                className="w-full bg-transparent text-white font-mono text-base outline-none placeholder:text-gray-700" 
+                placeholder="e.g. Thabo Motsumi" 
+                onChange={e => setForm({...form, name: e.target.value})} 
+                value={form.name}
+                required 
+              />
+            </div>
 
-          {/* 2. DESIGNATION */}
-          <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 transition-all">
-            <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <Briefcase size={12} className="text-gray-600" /> <b>YOUR_DESIGNATION</b>
-            </label>
+            {/* 2. DESIGNATION */}
+            <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 transition-all">
+              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <Briefcase size={12} className="text-gray-600" /> Your Role
+              </label>
             <div className="relative">
               <button
                 type="button"
@@ -135,58 +135,58 @@ export const AuditForm: React.FC<AuditFormProps> = ({
             </div>
           </div>
 
-          {/* 3. BUSINESS NAME */}
-          <div className={`p-4 rounded-xl border transition-all ${terminalFocus ? 'border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.3)] bg-black' : 'border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)]'}`}>
-            <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <Building2 size={12} className="text-gray-600" /> <b>TARGET_BUSINESS_NAME</b>
-            </label>
-            <input 
-              className="w-full bg-transparent text-white font-mono text-base outline-none placeholder:text-gray-700" 
-              placeholder="e.g. Happy Hunter Digital" 
-              onFocus={() => setTerminalFocus(true)}
-              onBlur={() => setTerminalFocus(false)}
-              onChange={e => setForm({...form, biz: e.target.value})} 
-              value={form.biz}
-              required 
-            />
-          </div>
+            {/* 3. BUSINESS NAME */}
+            <div className={`p-4 rounded-xl border transition-all ${terminalFocus ? 'border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.3)] bg-black' : 'border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)]'}`}>
+              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <Building2 size={12} className="text-gray-600" /> Business Name
+              </label>
+              <input 
+                className="w-full bg-transparent text-white font-mono text-base outline-none placeholder:text-gray-700" 
+                placeholder="e.g. Happy Hunter Digital" 
+                onFocus={() => setTerminalFocus(true)}
+                onBlur={() => setTerminalFocus(false)}
+                onChange={e => setForm({...form, biz: e.target.value})} 
+                value={form.biz}
+                required 
+              />
+            </div>
 
-          {/* 4. EMAIL */}
-          <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-all">
-            <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <Mail size={12} className="text-gray-600" /> <b>EMAIL_ADDRESS</b>
-            </label>
-            <input 
-              className="w-full bg-transparent text-white outline-none font-mono text-base placeholder:text-gray-700" 
-              placeholder="you@company.com" 
-              type="email" 
-              onChange={e => setForm({...form, mail: e.target.value})} 
-              value={form.mail} 
-              required 
-            />
-          </div>
+            {/* 4. EMAIL */}
+            <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-all">
+              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <Mail size={12} className="text-gray-600" /> Email Address
+              </label>
+              <input 
+                className="w-full bg-transparent text-white outline-none font-mono text-base placeholder:text-gray-700" 
+                placeholder="you@company.com" 
+                type="email" 
+                onChange={e => setForm({...form, mail: e.target.value})} 
+                value={form.mail} 
+                required 
+              />
+            </div>
 
-          {/* 5. WEBSITE (optional) */}
-          <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-all">
-            <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <Globe size={12} className="text-gray-600" /> <b>WEBSITE_URL</b> <span className="text-gray-700 normal-case font-normal">— optional</span>
-            </label>
-            <input 
-              className="w-full bg-transparent text-white font-mono text-base outline-none placeholder:text-gray-700" 
-              placeholder="e.g. https://happyhunterdigital.com" 
-              type="text"
-              onChange={e => setForm({...form, web: e.target.value})} 
-              value={form.web}
-            />
-          </div>
+            {/* 5. WEBSITE (optional) */}
+            <div className="p-4 rounded-xl border border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)] transition-all">
+              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <Globe size={12} className="text-gray-600" /> Website URL <span className="text-gray-700 normal-case font-normal">— optional</span>
+              </label>
+              <input 
+                className="w-full bg-transparent text-white font-mono text-base outline-none placeholder:text-gray-700" 
+                placeholder="e.g. https://happyhunterdigital.com" 
+                type="text"
+                onChange={e => setForm({...form, web: e.target.value})} 
+                value={form.web}
+              />
+            </div>
 
-          {/* 6. WHATSAPP NUMBER */}
-          <div className={`p-4 rounded-xl border transition-all ${
-            phoneError ? 'border-red-500' : (form.wa && !phoneError) ? 'border-green-500' : 'border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)]'
-          }`}>
-            <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <Phone size={12} className="text-gray-600" /> <b>WHATSAPP_NUMBER</b>
-            </label>
+            {/* 6. WHATSAPP NUMBER */}
+            <div className={`p-4 rounded-xl border transition-all ${
+              phoneError ? 'border-red-500' : (form.wa && !phoneError) ? 'border-green-500' : 'border-gray-800 bg-gray-900/50 focus-within:border-yellow-500 focus-within:shadow-[0_0_15px_rgba(234,179,8,0.2)]'
+            }`}>
+              <label className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <Phone size={12} className="text-gray-600" /> WhatsApp Number
+              </label>
             <div className="flex gap-2 mb-2">
               <div className="relative">
                 <select
@@ -222,10 +222,10 @@ export const AuditForm: React.FC<AuditFormProps> = ({
             className="w-full bg-yellow-500 p-5 rounded-xl font-black uppercase text-black flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {loading ? (
               <>
-                <Loader2 size={18} className="animate-spin" /> Deploying Forensic Scan...
+                <Loader2 size={18} className="animate-spin" /> Checking your business...
               </>
             ) : (
-              <>Deploy Forensic Scan <Code size={18}/></>
+              <>Run Free Health Check <Code size={18}/></>
             )}
           </button>
         </form>
@@ -240,7 +240,7 @@ export const AuditForm: React.FC<AuditFormProps> = ({
               <div className="absolute inset-0 border-4 border-t-yellow-500 rounded-full animate-spin"></div>
               <Search className="absolute inset-0 m-auto text-yellow-500" size={32} />
             </div>
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Neural Handshake In Progress</h2>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-2">Checking Your Business Online</h2>
             <p className="text-yellow-500 font-mono text-sm mb-8">{scanSteps[Math.min(Math.floor(scanProgress / 20), scanSteps.length - 1)]}</p>
             <div className="w-64 h-2 bg-gray-900 rounded-full mx-auto overflow-hidden">
               <div className="h-full bg-yellow-500 rounded-full transition-all duration-500" style={{ width: `${scanProgress}%` }}></div>

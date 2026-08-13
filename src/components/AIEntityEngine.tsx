@@ -6,12 +6,22 @@ export const AIEntityEngine = () => {
   const [jsonLd, setJsonLd] = useState('');
 
   useEffect(() => {
-    // Listen to the compiled output from your Cloud Function
-    const unsubscribe = onSnapshot(doc(db, "public_seo", "master_schema"), (snapshot) => {
-      if (snapshot.exists()) {
-        setJsonLd(snapshot.data().compiled_json_ld);
-      }
-    });
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = onSnapshot(
+        doc(db, "public_seo", "master_schema"),
+        (snapshot) => {
+          if (snapshot.exists()) {
+            setJsonLd(snapshot.data().compiled_json_ld);
+          }
+        },
+        (error) => {
+          console.warn("AIEntityEngine master schema listener notice:", error.message);
+        }
+      );
+    } catch (err) {
+      console.warn("AIEntityEngine subscription failed:", err);
+    }
     return () => unsubscribe();
   }, []);
 

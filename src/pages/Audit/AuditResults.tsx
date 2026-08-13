@@ -38,17 +38,17 @@ export const AuditResults: React.FC<AuditResultsProps> = ({ result, onReset }) =
 
           <h2 className="text-5xl md:text-7xl font-black text-white mb-2">{result.score}<span className="text-2xl text-gray-600">/100</span></h2>
           <p className={`text-lg font-mono ${isGood ? 'text-green-400' : 'text-yellow-400'}`}>
-            {isGhost ? 'GHOST ENTITY DETECTED' : isHijacked ? 'TRAFFIC HIJACK RISK' : 'ENTITY VERIFIED'}
+            {isGhost ? 'Business Not Found Online' : isHijacked ? 'Profile Needs Attention' : 'Business Verified — Good Start'}
           </p>
         </div>
 
         <div className="p-8 md:p-12 border-b border-gray-900">
-          <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-4">Intelligence Summary</h3>
+          <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-4">What We Found</h3>
           <p className="text-gray-300 leading-relaxed text-lg">{result.summary}</p>
         </div>
 
         <div className="p-8 md:p-12 border-b border-gray-900">
-          <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-6">Audit Truths</h3>
+          <h3 className="text-sm font-mono text-gray-500 uppercase tracking-widest mb-6">Key Findings</h3>
           <div className="space-y-4">
             {result.truths.map((truth, i) => (
               <div key={i} className="flex items-start gap-4 p-4 bg-gray-900/50 rounded-xl border border-gray-800">
@@ -65,7 +65,7 @@ export const AuditResults: React.FC<AuditResultsProps> = ({ result, onReset }) =
           <div className="p-6 bg-gray-900/30 rounded-xl border border-gray-800">
             <div className="flex items-center gap-3 mb-3">
               <Shield size={18} className={isGhost ? 'text-gray-600' : 'text-green-500'} />
-              <span className="text-xs font-mono text-gray-500 uppercase">Google Maps Status</span>
+              <span className="text-xs font-mono text-gray-500 uppercase">Google Maps Listing</span>
             </div>
             <p className="text-white font-mono text-sm">{result.telemetry.mapsStatus}</p>
             {result.telemetry.mapsName && (
@@ -87,10 +87,10 @@ export const AuditResults: React.FC<AuditResultsProps> = ({ result, onReset }) =
           <div className="p-6 bg-gray-900/30 rounded-xl border border-gray-800 md:col-span-2">
             <div className="flex items-center gap-3 mb-3">
               <Code2 size={18} className={result.telemetry.schema ? 'text-purple-500' : 'text-gray-600'} />
-              <span className="text-xs font-mono text-gray-500 uppercase">Schema Markup</span>
+              <span className="text-xs font-mono text-gray-500 uppercase">Website Code</span>
             </div>
             <p className="text-white font-mono text-sm mb-2">
-              {result.telemetry.schema ? `${result.telemetry.schemasDetected.length} schema(s) detected` : 'No Schema Markup detected'}
+              {result.telemetry.schema ? `Found ${result.telemetry.schemasDetected.length} pieces of structured data` : 'Needs structured data'}
             </p>
             {result.telemetry.schema && (
               <div className="flex flex-wrap gap-2">
@@ -107,9 +107,9 @@ export const AuditResults: React.FC<AuditResultsProps> = ({ result, onReset }) =
         <div className="p-8 md:p-12 border-t border-gray-900 text-center">
           <button onClick={onReset} 
             className="inline-flex items-center gap-3 px-8 py-4 bg-yellow-500 rounded-xl font-black uppercase text-black hover:bg-white transition-all">
-            <RotateCcw size={18} /> Run Another Audit
+            <RotateCcw size={18} /> Run Another Check
           </button>
-          <p className="text-gray-600 text-xs font-mono mt-4">Report sent to your email. Check your inbox.</p>
+          <p className="text-gray-600 text-xs font-mono mt-4">Your report will be sent to your email. Check your inbox.</p>
         </div>
       </div>
     </div>

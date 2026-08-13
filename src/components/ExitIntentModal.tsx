@@ -14,9 +14,11 @@ export const ExitIntentModal: React.FC = () => {
   const [error, setError] = useState('');
 
   const handleMouseLeave = useCallback((e: MouseEvent) => {
-    if (e.clientY <= 0 && !sessionStorage.getItem('exit_modal_seen')) {
-      setShow(true);
-    }
+    try {
+      if (e.clientY <= 0 && !sessionStorage.getItem('exit_modal_seen')) {
+        setShow(true);
+      }
+    } catch (e) { void e; }
   }, []);
 
   useEffect(() => {
@@ -26,7 +28,9 @@ export const ExitIntentModal: React.FC = () => {
 
   const close = () => {
     setShow(false);
-    sessionStorage.setItem('exit_modal_seen', 'true');
+    try {
+      sessionStorage.setItem('exit_modal_seen', 'true');
+    } catch (e) { void e; }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

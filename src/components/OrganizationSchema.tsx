@@ -37,7 +37,7 @@ export const OrganizationSchema = () => (
           "@type": "Person",
           "name": "Thabo Leslie Motsumi",
           "url": "https://www.happyhunterdigital.com/founders",
-          "jobTitle": "Principal Strategist & Entity Architect",
+          "jobTitle": "Founder",
           "sameAs": [
             "https://www.linkedin.com/in/thabomotsumi",
             "https://x.com/HappyHunter35"
@@ -46,15 +46,15 @@ export const OrganizationSchema = () => (
         "description": "Digital marketing agency in Pretoria and Johannesburg building AI-ready websites, smart chat assistants, and WhatsApp sales tools for South African small businesses.",
         "foundingDate": "2024",
         "servesCuisine": null,
-        "hasOfferCatalog": {
+         "hasOfferCatalog": {
           "@type": "OfferCatalog",
-          "name": "Digital Marketing Services",
+          "name": "Marketing Services",
           "itemListElement": [
-            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "AI-Ready Websites" } },
-            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "24/7 Digital Receptionists" } },
-            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Automated WhatsApp Sales" } },
-            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Expert Authority Content" } },
-            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Direct Booking Engines" } }
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Modern Websites" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "24/7 Chatbots" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "WhatsApp Sales" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Content Writing" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Booking Systems" } }
           ]
         },
         "sameAs": [

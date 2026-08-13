@@ -7,8 +7,14 @@ export const EventPopup = () => {
 
   useEffect(() => {
     // Show popup after 2.5 seconds if not seen in this session
-    const hasSeen = sessionStorage.getItem('summit_popup_seen_v2');
-    if (!hasSeen) {
+    try {
+      const hasSeen = sessionStorage.getItem('summit_popup_seen_v2');
+      if (!hasSeen) {
+        const timer = setTimeout(() => setShow(true), 2500);
+        return () => clearTimeout(timer);
+      }
+    } catch (e) {
+      void e;
       const timer = setTimeout(() => setShow(true), 2500);
       return () => clearTimeout(timer);
     }
@@ -17,7 +23,9 @@ export const EventPopup = () => {
 
   const close = () => {
     setShow(false);
-    sessionStorage.setItem('summit_popup_seen_v2', 'true');
+    try {
+      sessionStorage.setItem('summit_popup_seen_v2', 'true');
+    } catch (e) { void e; }
   };
 
   if (!show) return null;

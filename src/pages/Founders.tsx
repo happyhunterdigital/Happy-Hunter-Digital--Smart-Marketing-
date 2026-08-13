@@ -1,26 +1,26 @@
 import React from 'react';
-import { Linkedin, Mail, Code2, Database, Network, Target, CheckCircle2 } from 'lucide-react';
+import { Linkedin, Mail, Target, CheckCircle2 } from 'lucide-react';
 import { PageMeta } from '../components/PageMeta';
 
 const ICP_ITEMS = [
-  "South African businesses with R1M-R50M revenue",
+  "South African businesses with R1M-R50M annual revenue",
   "Service-based businesses (legal, medical, financial, trades)",
-  "Businesses with physical locations needing local visibility",
-  "Companies frustrated with agencies that deliver activity, not results",
-  "Businesses ready to invest in AI-era digital infrastructure",
+  "Businesses with physical locations needing local customers",
+  "Companies frustrated with agencies that look busy but don't deliver results",
+  "Businesses ready to invest in a digital presence that actually works",
 ];
 
 export const Founders = () => (
   <div className="container mx-auto px-6 py-20 min-h-[85vh] animate-fade-in">
     <PageMeta
       title="About Thabo Motsumi | Happy Hunter Digital"
-      description="Meet Thabo Leslie Motsumi, founder of Happy Hunter Digital. A digital marketing strategist helping South African businesses get found by AI, Google, and new customers."
+      description="Meet Thabo Leslie Motsumi, founder of Happy Hunter Digital. A digital marketing strategist helping South African businesses get found by Google, AI, and new customers."
       path="/founders"
       jsonLd={{
         "@context": "https://schema.org",
         "@type": "Person",
         "name": "Thabo Leslie Motsumi",
-        "jobTitle": "Principal Strategist & Entity Architect",
+        "jobTitle": "Growth Strategist",
         "worksFor": { "@type": "Organization", "name": "Happy Hunter Digital" },
         "url": "https://www.happyhunterdigital.com/founders",
         "sameAs": [
@@ -37,18 +37,21 @@ export const Founders = () => (
             <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-white mb-2 leading-[0.9]">
               Thabo Leslie <br/><span className="text-yellow-500">Motsumi</span>
             </h1>
-            <p className="text-gray-500 uppercase tracking-widest font-bold text-xs mt-4">Principal Strategist & Entity Architect</p>
+            <p className="text-gray-500 uppercase tracking-widest font-bold text-xs mt-4">Growth Strategist & Founder</p>
           </div>
 
           <div className="space-y-6 text-gray-300 leading-relaxed text-lg border-l-2 border-gray-800 pl-6">
             <p>
-              I founded <span className="font-handwriting text-2xl lowercase text-white">happyhunterdigital</span> because traditional digital agencies in South Africa were failing their clients. They focused on <em>activity</em> — posts, emails, "SEO" — rather than <em>architecture</em>.
+              I founded <span className="font-handwriting text-2xl lowercase text-white">happyhunterdigital</span> because most digital marketing agencies in South Africa were failing their clients. They measured success by activity — how many posts they published, how many reports they sent — not by whether you actually got more customers.
             </p>
             <p>
-              In 2026, the game changed. ChatGPT, Gemini, and Google AI Overviews don't care about your Instagram posts. They care about your data structure, your entity verification, and whether your business information is formatted for machine consumption. That's what we build.
+              In 2026, the rules changed. ChatGPT, Gemini, and Google AI Overviews don't care about your Instagram posts. They care about whether your business information is correct, consistent, and easy for them to find and understand. That's what we focus on now.
             </p>
             <p>
-              We execute focused sprints that systematize your intellectual property into highly scalable, AI-ready digital assets. We align incentives and share operational risk — if your digital footprint isn't mathematically sound and strictly formatted for LLM ingestion, you are handing market share directly to your competitors.
+              We help your business show up everywhere your customers are looking — Google search, Google Maps, AI chatbots, and WhatsApp. When someone in Johannesburg or Pretoria asks "who's the best plumber near me," or asks ChatGPT for a recommendation, we make sure your business is the answer.
+            </p>
+            <p>
+              Unlike other agencies, we don't just publish content and hope for the best. We fix the foundation: your website, your Google listing, your reviews, and your customer communication — all working together so nothing gets lost in the gaps.
             </p>
           </div>
 
@@ -71,16 +74,8 @@ export const Founders = () => (
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
             <div className="absolute bottom-0 right-0 bg-[#0a0a0a]/90 backdrop-blur-md border-t border-l border-gray-800 p-5 rounded-tl-3xl text-right">
-              <p className="font-black uppercase tracking-widest text-yellow-500 text-lg leading-none">Thabo Leslie Motsumi</p>
-              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">Principal Strategist</p>
-            </div>
-            <div className="absolute top-6 left-6 space-y-3 opacity-70">
-              <div className="flex items-center gap-2 text-white bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-bold uppercase tracking-widest">
-                <Database size={12} className="text-yellow-500"/> Data Synthesis
-              </div>
-              <div className="flex items-center gap-2 text-white bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-bold uppercase tracking-widest">
-                <Code2 size={12} className="text-yellow-500"/> Schema Arch
-              </div>
+              <p className="font-black uppercase tracking-wider text-yellow-500 text-lg leading-none">Thabo Leslie Motsumi</p>
+              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">Founder</p>
             </div>
           </div>
         </div>
@@ -94,8 +89,8 @@ export const Founders = () => (
               <Target className="text-amber-500" size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-white uppercase tracking-tighter">Ideal Client Profile</h2>
-              <p className="text-gray-500 text-xs uppercase tracking-widest font-bold">Who we work best with</p>
+              <h2 className="text-xl font-black text-white uppercase tracking-tight">Who We Help</h2>
+              <p className="text-gray-500 text-xs uppercase tracking-widest font-bold">The businesses that benefit most from our work</p>
             </div>
           </div>
           <ul className="space-y-3">

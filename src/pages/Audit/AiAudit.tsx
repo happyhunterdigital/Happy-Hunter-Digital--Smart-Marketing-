@@ -56,12 +56,12 @@ export const AiAudit: React.FC = () => {
     }
   };
 
-  const runForensicScan = async () => {
+  const runHealthCheck = async () => {
     if (phoneError || !form.wa) return;
 
     const currentCount = parseInt(localStorage.getItem('hhd_audit_count') || '0', 10);
     if (currentCount >= 3) {
-      setError('You have exhausted your limit of 3 audits per computer.');
+      setError('You have already used your 3 free checks. Contact us if you need another.');
       return;
     }
 
@@ -96,19 +96,19 @@ export const AiAudit: React.FC = () => {
       clearInterval(progressInterval);
       const msg = err?.message || '';
       if (msg.includes('resource-exhausted') || msg.includes('exhausted')) {
-        setError('You have exhausted your limit of 3 audits per computer.');
+        setError('You have already used your 3 free checks. Contact us if you need another.');
         localStorage.setItem('hhd_audit_count', '3');
       }
-      else if (msg.includes('not-found') || msg.includes('Business not found')) setError('Business not found. Please verify the name and city.');
+      else if (msg.includes('not-found') || msg.includes('Business not found')) setError('We couldn\'t find that business. Please double-check the name and city.');
       else if (msg.includes('invalid-argument')) {
         if (msg.toLowerCase().includes('url') || msg.toLowerCase().includes('domain')) {
-          setError('Invalid website URL. Please enter a full domain like happyhunterdigital.com or https://happyhunterdigital.com.');
+          setError('Please enter a valid website URL like www.yourbusiness.com');
         } else {
           setError('Please check your inputs and try again.');
         }
       }
-      else if (msg.includes('failed-precondition')) setError('System configuration error. Please contact support.');
-      else setError('Neural Handshake Interrupted. Please try again shortly.');
+      else if (msg.includes('failed-precondition')) setError('Something went wrong on our end. Please try again.');
+      else setError('Something went wrong. Please try again.');
       setStep(1);
     } finally {
       setLoading(false);
@@ -124,11 +124,11 @@ export const AiAudit: React.FC = () => {
       />
       <div className="max-w-6xl mx-auto">
         {step !== 3 && (
-          <div className="text-center mb-12">
+        <div className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
-              Digital Entity <span className="text-yellow-500">Audit</span>
+              Free Online Business <span className="text-yellow-500">Health Check</span>
             </h1>
-            <p className="text-gray-400 font-mono text-sm">Verify your existence in the AI-driven search ecosystem.</p>
+            <p className="text-gray-400 font-mono text-sm">Check if customers can find you on Google, ChatGPT, and WhatsApp. No jargon, no obligation.</p>
           </div>
         )}
 
@@ -145,7 +145,7 @@ export const AiAudit: React.FC = () => {
           phoneError={phoneError}
           handlePhoneChange={handlePhoneChange}
           handleCountryCodeChange={handleCountryCodeChange}
-          runForensicScan={runForensicScan}
+          runHealthCheck={runHealthCheck}
           scanProgress={scanProgress}
           loading={loading}
         />

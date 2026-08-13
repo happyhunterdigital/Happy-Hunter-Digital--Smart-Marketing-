@@ -38,15 +38,15 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
         }`}
       >
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-black h-8 overflow-hidden flex items-center relative z-20 shadow-md" role="marquee" aria-label="Latest updates">
-          <div className="flex animate-marquee whitespace-nowrap items-center font-sans text-[10px] font-black uppercase tracking-[0.2em] w-full">
-            <span className="mx-8">System Update: DeepSeek Hybrid Migration Complete - 90% Cost Savings Realized</span>
-            <span className="mx-8 text-black/30" aria-hidden="true">/</span>
-            <span className="mx-8">Intelligence Alert: Google Local Map Pack now prioritizes Owner-Shot Video</span>
-            <span className="mx-8 text-black/30" aria-hidden="true">/</span>
-            <span className="mx-8">AEO Strategy Guide: Beyond the Blue Link is live on Smart News</span>
-            <span className="mx-8 text-black/30" aria-hidden="true">/</span>
-            <span className="mx-8">System Update: DeepSeek Hybrid Migration Complete - 90% Cost Savings Realized</span>
-          </div>
+           <div className="flex animate-marquee whitespace-nowrap items-center font-sans text-[10px] font-black uppercase tracking-[0.2em] w-full">
+             <span className="mx-8">New: Google now shows AI Overviews above regular search results</span>
+             <span className="mx-8 text-black/30" aria-hidden="true">/</span>
+             <span className="mx-8">Google Maps now shows owner-shot videos first</span>
+             <span className="mx-8 text-black/30" aria-hidden="true">/</span>
+             <span className="mx-8">ChatGPT and Gemini are answering local service questions — are you showing up?</span>
+             <span className="mx-8 text-black/30" aria-hidden="true">/</span>
+             <span className="mx-8">New: Google now shows AI Overviews above regular search results</span>
+           </div>
         </div>
 
         <div className={`container mx-auto px-6 flex items-center justify-between transition-all duration-500 ${scrolled ? 'py-3' : 'py-6'}`}>
@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
               className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all hover:scale-[1.02]"
             >
               <Search size={16} />
-              Free Audit
+              Free Health Check
             </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}

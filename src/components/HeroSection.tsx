@@ -96,10 +96,9 @@ export const HeroSection: React.FC = () => {
         </div>
 
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter leading-[0.9] mb-8 text-white">
-          Is Your Business a{' '}
-          <span className="relative inline-block">
+          Can Customers Find Your Business on <span className="relative inline-block">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-red-400">
-              Ghost to AI?
+              Google, ChatGPT, and WhatsApp?
             </span>
             <svg className="absolute -bottom-2 left-0 w-full h-4" viewBox="0 0 300 12" preserveAspectRatio="none">
               <path d="M0,6 Q75,0 150,6 T300,6" stroke="url(#amber-gradient)" strokeWidth="3" fill="none" strokeLinecap="round" className="animate-draw" />
@@ -114,15 +113,14 @@ export const HeroSection: React.FC = () => {
         </h1>
 
         <p className="max-w-2xl mx-auto text-lg md:text-xl text-gray-400 leading-relaxed mb-12 font-light">
-          We build <strong className="text-white font-semibold">AI-ready digital entities</strong> that ChatGPT, Gemini, and AI Overviews 
-          <span className="text-amber-400"> trust, cite, and recommend</span>.
+          We help South African businesses show up everywhere their customers are searching — Google search, AI chatbots like ChatGPT and Gemini, Google Maps, and WhatsApp. Based in Pretoria, serving SMEs across Johannesburg and South Africa.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link to="/audit" className="group relative px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-black uppercase tracking-widest text-sm rounded-2xl overflow-hidden transition-all hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(251,191,36,0.3)]">
             <span className="relative z-10 flex items-center gap-2">
               <Search size={18} />
-              Initialize Survival Scan
+              Free Online Health Check
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </span>
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -143,7 +141,7 @@ export const HeroSection: React.FC = () => {
                 <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[#0a0a0f]" role="img" aria-label={`Client ${i}`} />
               ))}
             </div>
-            <span className="text-xs">500+ Entities Verified</span>
+            <span className="text-xs">500+ Businesses Verified</span>
           </div>
           <div className="h-4 w-px bg-gray-800" aria-hidden="true" />
           <span className="text-xs">Pretoria, South Africa</span>
