@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Globe, Code2, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
+import { Shield, Globe, Code2, Fingerprint, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
 
 interface AuditResultsProps {
   result: {
@@ -15,6 +15,8 @@ interface AuditResultsProps {
       mapsName?: string;
       rating?: number;
       reviewCount?: number;
+      kgmid?: string | null;
+      kgmidName?: string | null;
     };
   };
   onReset: () => void;
@@ -84,6 +86,23 @@ export const AuditResults: React.FC<AuditResultsProps> = ({ result, onReset }) =
             <p className="text-white font-mono text-sm truncate">{result.telemetry.website}</p>
           </div>
 
+          <div className="p-6 bg-gray-900/30 rounded-xl border border-gray-800">
+            <div className="flex items-center gap-3 mb-3">
+              <Fingerprint size={18} className={result.telemetry.kgmid ? 'text-yellow-500' : 'text-gray-600'} />
+              <span className="text-xs font-mono text-gray-500 uppercase">Knowledge Graph ID (KGMID)</span>
+            </div>
+            {result.telemetry.kgmid ? (
+              <>
+                <p className="text-white font-mono text-sm break-all">/g/{result.telemetry.kgmid}</p>
+                {result.telemetry.kgmidName && (
+                  <p className="text-gray-500 text-xs mt-1">Trust anchor: {result.telemetry.kgmidName}</p>
+                )}
+              </>
+            ) : (
+              <p className="text-gray-500 font-mono text-sm">Not resolved</p>
+            )}
+          </div>
+
           <div className="p-6 bg-gray-900/30 rounded-xl border border-gray-800 md:col-span-2">
             <div className="flex items-center gap-3 mb-3">
               <Code2 size={18} className={result.telemetry.schema ? 'text-purple-500' : 'text-gray-600'} />
@@ -109,7 +128,7 @@ export const AuditResults: React.FC<AuditResultsProps> = ({ result, onReset }) =
             className="inline-flex items-center gap-3 px-8 py-4 bg-yellow-500 rounded-xl font-black uppercase text-black hover:bg-white transition-all">
             <RotateCcw size={18} /> Run Another Check
           </button>
-          <p className="text-gray-600 text-xs font-mono mt-4">Your report will be sent to your email. Check your inbox.</p>
+          <p className="text-gray-600 text-xs font-mono mt-4">Your report and your 2026 AI Marketing Playbook are on their way — check your inbox and WhatsApp.</p>
         </div>
       </div>
     </div>

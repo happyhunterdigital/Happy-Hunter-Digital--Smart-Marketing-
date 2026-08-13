@@ -5,6 +5,10 @@ import { httpsCallable } from 'firebase/functions';
 import { functions } from '../../firebaseConfig';
 import { PageMeta } from '../../components/PageMeta';
 
+// Completion of the Free Online Business Health Check triggers the playbook
+// lead capture — the free 2026 AI Marketing Playbook is sent to the lead.
+const submitPlaybookRequest = httpsCallable(functions, 'submitPlaybookRequest');
+
 interface AuditData {
   success: boolean;
   score: number;
@@ -20,6 +24,9 @@ interface AuditData {
     website: string;
     schema: boolean;
     schemasDetected: string[];
+    kgmid?: string | null;
+    kgmidName?: string | null;
+    kgmidSource?: string | null;
     title?: string;
     description?: string;
     viewport?: string;
@@ -92,6 +99,18 @@ export const AiAudit: React.FC = () => {
 
       setResult(response.data as AuditData);
       setStep(3);
+
+      // Combine lead gen with the audit: completing the health check earns the
+      // free playbook, so deliver it automatically to the same contact.
+      try {
+        await submitPlaybookRequest({
+          email: form.mail,
+          whatsapp: form.countryCode + form.wa.replace(/^0+/, '')
+        });
+      } catch (playbookErr) {
+        // Playbook delivery is best-effort — never fail the audit report over it.
+        console.error("Playbook auto-send failed:", playbookErr);
+      }
     } catch (err: any) {
       clearInterval(progressInterval);
       const msg = err?.message || '';
@@ -118,7 +137,7 @@ export const AiAudit: React.FC = () => {
   return (
     <div className="min-h-screen bg-black text-white py-20 px-4">
       <PageMeta
-        title="Free Online Health Check | Happy Hunter Digital"
+        title="Free Online Business Health Check | Happy Hunter Digital"
         description="See exactly why customers can't find your business online. A free check of your website, Google listing, and search visibility — no jargon, no hard sell."
         path="/audit"
       />

@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
               className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-xl transition-all hover:scale-[1.02]"
             >
               <Search size={16} />
-              Free Health Check
+              Free Online Business Health Check
             </Link>
             <button
               onClick={() => setMenuOpen(!menuOpen)}

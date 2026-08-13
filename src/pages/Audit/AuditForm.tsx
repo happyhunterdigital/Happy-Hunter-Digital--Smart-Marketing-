@@ -225,7 +225,7 @@ export const AuditForm: React.FC<AuditFormProps> = ({
                 <Loader2 size={18} className="animate-spin" /> Checking your business...
               </>
             ) : (
-              <>Run Free Health Check <Code size={18}/></>
+              <>Run Free Online Business Health Check <Code size={18}/></>
             )}
           </button>
         </form>

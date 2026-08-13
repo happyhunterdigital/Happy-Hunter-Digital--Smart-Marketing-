@@ -309,7 +309,7 @@ export const Chatbot: React.FC = () => {
                   onClick={() => { setOpen(false); setTimeout(() => window.location.assign('/audit'), 0); }}
                   className="text-xs font-bold text-yellow-500 hover:text-white transition-colors uppercase tracking-widest"
                 >
-                  Run the free online health check →
+                  Run the free online business health check →
                 </button>
                 <button
                   onClick={resetFlow}

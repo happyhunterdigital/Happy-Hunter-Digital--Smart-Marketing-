@@ -9,6 +9,7 @@ import * as cheerio from "cheerio";
 import * as crypto from "crypto";
 import { relayToCrm } from "./services/crmRelay";
 import { handleFlowMessage } from "./services/whatsappFlow";
+import { resolveKgmid } from "./services/kgmidService";
 
 admin.initializeApp();
 const db = getFirestore();
@@ -71,12 +72,14 @@ export const performAudit = onCall({
   timeoutSeconds: 300,
   secrets: ["GEMINI_API_KEY", "PLACES_API_KEY"]
 }, async (request) => {
-  const { businessName, location, clientEmail, whatsapp } = request.data;
+  const { businessName, location, city, clientEmail, whatsapp } = request.data;
   
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
+  const safeBizName = String(businessName || "").trim();
+  const tableCity = String(city || location || "").trim();
 
-  if (!businessName || !location || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
+  if (!safeBizName || !tableCity || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
   if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
 
   try {
@@ -93,11 +96,14 @@ export const performAudit = onCall({
       return res.json() as any;
     };
 
-    let pData = await getPlaces(`${businessName} in ${location}`);
+    const kgmidPromise = resolveKgmid(safeBizName, tableCity, P_KEY);
+    const kgmidResult = await kgmidPromise;
+
+    let pData = await getPlaces(`${safeBizName} in ${tableCity}`);
     let biz = pData?.places?.[0] || null;
 
     if (!biz) {
-      pData = await getPlaces(businessName);
+      pData = await getPlaces(safeBizName);
       biz = pData?.places?.[0] || null;
     }
 
@@ -150,14 +156,15 @@ export const performAudit = onCall({
 
     let context = "";
     if (!biz) {
-      context = `GHOST ENTITY: No Google Maps data found for "${businessName}". No Website verified. ${schemaString}`;
+      context = `GHOST ENTITY: No Google Maps data found for "${safeBizName}". No Website verified. ${schemaString}`;
     } else {
       context = `
- - User Searched For: "${businessName}"
+ - User Searched For: "${safeBizName}"
  - Google Maps Returned: "${bizNameStr}"
  - Maps Rating: ${biz.rating || 0} (${biz.userRatingCount || 0} reviews)
  - Website Linked in Maps: ${websiteUrl || 'NONE LINKED'}
  - ${schemaString}
+ - ${kgmidResult?.kgmid ? `KGMID (Knowledge Graph Machine ID): ${kgmidResult.kgmid}` : 'KGMID: not resolvable'}
  `;
     }
 
@@ -212,7 +219,10 @@ export const performAudit = onCall({
       gbpUrl: biz ? `https://search.google.com/local/reviews?placeid=${biz.place_id || ''}` : '',
       website: websiteUrl || "None Linked",
       schema: hasSchema,
-      schemasDetected: detectedSchemas
+      schemasDetected: detectedSchemas,
+      kgmid: kgmidResult?.kgmid ?? null,
+      kgmidName: kgmidResult?.name ?? null,
+      kgmidSource: kgmidResult?.source ?? null
     };
 
     await db.collection("leads").add({ businessName, email: clientEmail, whatsapp: whatsapp || null, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });

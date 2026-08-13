@@ -36,6 +36,13 @@ export const Telemetry = {
     } catch (e) { void e; }
   },
 
+  // Custom Event: Lead started the health check from the exit-intent popup
+  healthCheckStarted: () => {
+    try {
+      if (posthogKey) posthog.capture('health_check_started');
+    } catch (e) { void e; }
+  },
+
   // Custom Event: When someone uploads an image for the Gemini Extension
   visualAuditTriggered: (targetBusiness: string) => {
     try {
