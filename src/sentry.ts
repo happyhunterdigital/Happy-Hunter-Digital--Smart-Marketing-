@@ -11,10 +11,16 @@ if (!isAutomatedBrowser && sentryDsn) {
     Sentry.init({
       dsn: sentryDsn,
       environment: import.meta.env.PROD ? 'production' : 'development',
-      // Keep the bundle lean — core crash + error capture only.
+      integrations: [
+        Sentry.browserTracingIntegration(),
+        Sentry.replayIntegration(),
+      ],
+      // Tracing + Session Replay. Sample rates are tuned to control Sentry
+      // volume/cost on a high-traffic lead site — raise them if you want more data.
       tracesSampleRate: 0.1,
-      replaysSessionSampleRate: 0,
-      replaysOnErrorSampleRate: 0,
+      tracePropagationTargets: ['localhost'],
+      replaysSessionSampleRate: 0.1,
+      replaysOnErrorSampleRate: 1.0,
       sendDefaultPii: false,
     });
   } catch (err) {
