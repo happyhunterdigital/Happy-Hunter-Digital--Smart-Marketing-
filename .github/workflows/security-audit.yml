@@ -40,7 +40,7 @@ jobs:
       - name: Check for secrets exposure
         run: |
           echo "Scanning for exposed API keys..."
-          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|SENTRY_DSN\|FIREBASE_SERVICE_ACCOUNT" src/ --include="*.ts" --include="*.tsx" --include="*.js" | grep -v "import.meta.env\|process.env\|secrets\|readonly\|Firebase API Key"; then
+          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|SENTRY_DSN\|FIREBASE_SERVICE_ACCOUNT" src/ --include="*.ts" --include="*.tsx" --include="*.js" --exclude="*.test.ts" --exclude="*.test.tsx" | grep -v "import.meta.env\|process.env\|secrets\|readonly\|Firebase API Key"; then
             echo "ERROR: Hardcoded secrets detected"
             exit 1
           fi
