@@ -14,7 +14,7 @@
   "dependencies": {
     "@mux/mux-player-react": "^2.9.0",
     "@sentry/react": "^10.70.0",
-    "firebase": "^10.8.0",
+    "firebase": "^12.17.1",
     "framer-motion": "^11.18.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
