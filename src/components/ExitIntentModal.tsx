@@ -5,6 +5,28 @@ import { httpsCallable } from 'firebase/functions';
 
 const submitPlaybookRequest = httpsCallable(functions, 'submitPlaybookRequest');
 
+// Each computer can download the playbook twice. Counters are stored on the
+// device itself (same approach as the free audit limit).
+const PLAYBOOK_LIMIT = 2;
+const PLAYBOOK_COUNT_KEY = 'hhd_playbook_count';
+
+const getPlaybookCount = (): number => {
+  try {
+    return parseInt(localStorage.getItem(PLAYBOOK_COUNT_KEY) || '0', 10) || 0;
+  } catch (e) {
+    void e;
+    return 0;
+  }
+};
+
+const setPlaybookCount = (count: number) => {
+  try {
+    localStorage.setItem(PLAYBOOK_COUNT_KEY, String(count));
+  } catch (e) {
+    void e;
+  }
+};
+
 export const ExitIntentModal: React.FC = () => {
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState('');
@@ -36,14 +58,28 @@ export const ExitIntentModal: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !whatsapp.trim()) return;
+
+    const usedCount = getPlaybookCount();
+    if (usedCount >= PLAYBOOK_LIMIT) {
+      setError(`You've already downloaded the playbook ${PLAYBOOK_LIMIT} times on this computer. Check your inbox or WhatsApp for the link.`);
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
       await submitPlaybookRequest({ email: email.trim(), whatsapp: whatsapp.trim() });
+      setPlaybookCount(usedCount + 1);
       setSubmitted(true);
     } catch (err: any) {
       console.error("Playbook request failed:", err);
-      setError("Something went wrong. Please try again.");
+      const msg = String(err?.message || '');
+      if (msg.includes('resource-exhausted') || msg.includes('already received')) {
+        setPlaybookCount(PLAYBOOK_LIMIT);
+        setError(`You've already downloaded the playbook ${PLAYBOOK_LIMIT} times. Check your inbox or WhatsApp for the link.`);
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

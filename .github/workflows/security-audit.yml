@@ -40,7 +40,7 @@ jobs:
       - name: Check for secrets exposure
         run: |
           echo "Scanning for exposed API keys..."
-          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|FIREBASE_SERVICE_ACCOUNT" src/ --include="*.ts" --include="*.tsx" --include="*.js" | grep -v "import.meta.env\|process.env\|secrets\|readonly\|Firebase API Key"; then
+          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|SENTRY_DSN\|FIREBASE_SERVICE_ACCOUNT" src/ --include="*.ts" --include="*.tsx" --include="*.js" | grep -v "import.meta.env\|process.env\|secrets\|readonly\|Firebase API Key"; then
             echo "ERROR: Hardcoded secrets detected"
             exit 1
           fi
@@ -56,6 +56,9 @@ jobs:
 
       - name: Install Frontend & Run Lint
         run: npm install && npm run lint
+
+      - name: Run Frontend Unit Tests
+        run: npm test
 
       - name: Install Backend & Run Lint
         run: |
@@ -92,7 +95,7 @@ jobs:
 
       - name: Verify No Secrets in Build
         run: |
-          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|sk_live_\|pk_live_" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
+          if grep -r "FIREBASE_API_KEY\|POSTHOG_KEY\|SENTRY_DSN\|sk_live_\|pk_live_" dist/ --include="*.js" --include="*.json" 2>/dev/null | grep -v "firebaseapp\|firebase.google"; then
             echo "ERROR: Secrets detected in build artifacts"
             exit 1
           fi
