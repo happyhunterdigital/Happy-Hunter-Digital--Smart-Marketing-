@@ -5,9 +5,6 @@
   "targets": {
     "happy-hunter-systems": {
       "hosting": {
-        "smart-marketing": [
-          "smart-marketing"
-        ],
         "happy-hunter-systems": [
           "happy-hunter-systems"
         ]
