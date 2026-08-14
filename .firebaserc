@@ -1,5 +1,18 @@
 {
-   "projects": {
+  "projects": {
     "default": "happy-hunter-systems"
-  }
+  },
+  "targets": {
+    "happy-hunter-systems": {
+      "hosting": {
+        "smart-marketing": [
+          "smart-marketing"
+        ],
+        "happy-hunter-systems": [
+          "happy-hunter-systems"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
