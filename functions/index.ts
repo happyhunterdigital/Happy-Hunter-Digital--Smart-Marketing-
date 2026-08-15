@@ -11,7 +11,7 @@ import * as crypto from "crypto";
 admin.initializeApp();
 const db = getFirestore();
 
-const AI_MODEL = "gemini-1.5-flash";
+const AI_MODEL = "gemini-3.7-flash";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SAFE_PHONE_REGEX = /^\+[1-9]\d{6,14}$/;

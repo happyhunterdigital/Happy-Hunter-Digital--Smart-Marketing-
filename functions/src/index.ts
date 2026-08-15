@@ -17,7 +17,7 @@ const db = getFirestore();
 // ============================================================================
 // SYSTEM CONSTANTS & UTILITIES
 // ============================================================================
-const AI_MODEL = "gemini-3.6-flash";
+const AI_MODEL = "gemini-3.7-flash";
 const EMBEDDING_MODEL = "gemini-embedding-preview-0409";
 
 const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOKEN || "";
@@ -712,7 +712,7 @@ export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NU
           }
 
         } else if (G_KEY) {
-          const WA_SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Gemini 3.1 Flash-Lite.
+          const WA_SYSTEM_PROMPT = `You are Smart Marketing Chat, the official digital marketing assistant for Happy Hunter Digital, powered by Smart-Marketing.
 
 YOUR KNOWLEDGE BASE & IDENTITY:
 - Founder & Head Strategist: Thabo Motsumi. Direct Link: https://wa.me/27601016673

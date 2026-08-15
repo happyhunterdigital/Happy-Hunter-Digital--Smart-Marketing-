@@ -3,6 +3,7 @@ import * as admin from "firebase-admin";
 import OpenAI from "openai";
 import { scrapeWebsiteText, checkSecurityHeaders, getPerformanceSignals, checkLlmsTxt, SecuritySignals, PerformanceSignals } from "../services/auditService";
 import { sendAdminAlert, sendAuditResultToClient } from "../services/whatsappService";
+import { relayAuditToCrm } from "../services/crmRelay";
 import { FieldValue } from "firebase-admin/firestore";
 import { isGbpUrl, ALLOWED_ORIGINS, sanitizeInput, isValidEmail, isValidDomainOrUrl, detectGbpViaSearch, checkRateLimit, formatPerformanceEvidence, formatSecurityEvidence, formatSeoEvidence } from "../utils/auditHelpers";
 
@@ -111,6 +112,16 @@ Format JSON ONLY: {"score": number, "summary": "string", "truths": ["string", "s
     sendAdminAlert(safeBizName, safeEmail, whatsapp, analysis.score).catch(() => {});
     if (whatsapp) {
       sendAuditResultToClient(whatsapp, safeBizName, analysis.score, analysis.summary, analysis.truths, String(telemetry.gbpStatus || "No Website")).catch(() => {});
+    }
+
+    if (!gbpOnly && safeWebsiteUrl) {
+      relayAuditToCrm({
+        domain: safeWebsiteUrl,
+        companyName: safeBizName,
+        contactName: typeof request.data.requesterName === "string" ? request.data.requesterName : null,
+        contactEmail: safeEmail,
+        contactPhone: whatsapp ?? null,
+      }).catch(() => {});
     }
 
     return { success: true, ...analysis, telemetry };
