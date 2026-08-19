@@ -43,6 +43,7 @@ export default {
         'glass': '0 8px 32px rgba(0, 0, 0, 0.3)',
       },
       animation: {
+        'marquee': 'marquee 30s linear infinite',
         'draw': 'draw 1s ease-out forwards',
         'float': 'float 6s ease-in-out infinite',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -50,6 +51,10 @@ export default {
         'pop': 'pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
       },
       keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
         draw: {
           '0%': { strokeDasharray: '300', strokeDashoffset: '300' },
           '100%': { strokeDashoffset: '0' },

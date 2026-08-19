@@ -38,14 +38,17 @@ export const Header: React.FC<HeaderProps> = ({ menuOpen, setMenuOpen, isLanding
         }`}
       >
         <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-black h-8 overflow-hidden flex items-center relative z-20 shadow-md" role="marquee" aria-label="Latest updates">
-           <div className="flex animate-marquee whitespace-nowrap items-center font-sans text-[10px] font-black uppercase tracking-[0.2em] w-full">
-             <span className="mx-8">New: Google now shows AI Overviews above regular search results</span>
-             <span className="mx-8 text-black/30" aria-hidden="true">/</span>
-             <span className="mx-8">Google Maps now shows owner-shot videos first</span>
-             <span className="mx-8 text-black/30" aria-hidden="true">/</span>
-             <span className="mx-8">ChatGPT and Gemini are answering local service questions — are you showing up?</span>
-             <span className="mx-8 text-black/30" aria-hidden="true">/</span>
-             <span className="mx-8">New: Google now shows AI Overviews above regular search results</span>
+           <div className="flex animate-marquee whitespace-nowrap items-center font-sans text-[10px] font-black uppercase tracking-[0.2em]">
+             {[...Array(6)].map((_, i) => (
+               <React.Fragment key={i}>
+                 <span className="mx-8">New: Google now shows AI Overviews above regular search results</span>
+                 <span className="mx-8 text-black/30" aria-hidden="true">/</span>
+                 <span className="mx-8">Google Maps now shows owner-shot videos first</span>
+                 <span className="mx-8 text-black/30" aria-hidden="true">/</span>
+                 <span className="mx-8">ChatGPT and Gemini are answering local service questions — are you showing up?</span>
+                 <span className="mx-8 text-black/30" aria-hidden="true">/</span>
+               </React.Fragment>
+             ))}
            </div>
         </div>
 
