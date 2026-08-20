@@ -74,7 +74,6 @@ export const performAudit = onCall({
   cors: true,
   maxInstances: 10,
   timeoutSeconds: 300,
-  enforceAppCheck: true
 }, async (request) => {
   const rawBusinessName = request.data?.businessName;
   const rawLocation = request.data?.location;
