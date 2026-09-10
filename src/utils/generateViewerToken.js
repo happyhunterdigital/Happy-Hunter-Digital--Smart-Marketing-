@@ -122,7 +122,7 @@ export function buildWhatsAppPayload(recipientNumber, viewerUrl) {
 // Deploy this as a Firebase HTTPS callable function to validate tokens
 // server-side before serving the PDF. This is the production-grade approach.
 //
-// In functions/index.js:
+// In functions/src/index.ts (the live functions entry point):
 //
 // const { onCall } = require("firebase-functions/v2/https");
 // const { isTokenExpired } = require("./utils/generateViewerToken");

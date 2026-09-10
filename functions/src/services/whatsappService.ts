@@ -35,7 +35,11 @@ export const sendWhatsAppDoc = async (to: string, type: 'gbp' | 'services') => {
   });
 };
 
-export const sendAdminAlert = async (businessName: string, email: string, phone: string, score: number) => {
+export const sendAdminAlert = async (businessName: string, email: string, phone: string, score: number): Promise<unknown> => {
+  if (!ADMIN_NUMBER) {
+    console.warn("[sendAdminAlert] ADMIN_WHATSAPP_NUMBER is not set — skipping admin alert.");
+    return undefined;
+  }
   const alertText = `🚨*NEW HIGH-INTENT LEAD DETECTED*\n\n*Entity:* ${businessName}\n*Contact:* ${email}\n*WhatsApp:* ${phone || 'Not Provided'}\n*Survival Score:* ${score}/100\n\n*Directive:* Initiate contact protocol immediately.`;
   return sendWhatsAppText(ADMIN_NUMBER, alertText);
 };

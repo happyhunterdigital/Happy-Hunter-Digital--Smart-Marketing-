@@ -109,6 +109,10 @@ async function saveLead(from: string, answers: Record<string, string>, name: str
   });
 
   const alertText = `NEW WHATSAPP LEAD\n\nFROM: ${name}\nSERVICE: ${SERVICE_LABELS[answers.service] || "General enquiry"}\nBUSINESS: ${answers.business || "n/a"}\nTIMELINE: ${answers.timeline || "n/a"}\nBUDGET: ${BUDGET_LABELS[answers.budget] || "n/a"}\nCONTACT: ${reach}\n\nFollow up now!`;
+  if (!ADMIN_NUMBER) {
+    console.warn("[whatsappFlow] ADMIN_WHATSAPP_NUMBER is not set — skipping admin alert.");
+    return;
+  }
   try {
     await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
       messaging_product: "whatsapp",
