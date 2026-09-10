@@ -24,8 +24,48 @@ const WHATSAPP_TOKEN = process.env.META_SYSTEM_TOKEN || process.env.WHATSAPP_TOK
 const PHONE_NUMBER_ID = process.env.PHONE_NUMBER_ID || "";
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const WHATSAPP_APP_SECRET = process.env.WHATSAPP_APP_SECRET || "";
-void WHATSAPP_APP_SECRET;
-const ADMIN_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER || "27601016673";
+
+function verifyWhatsAppSignature(req: {
+  rawBody?: Buffer;
+  headers: Record<string, string | string[] | undefined>;
+  body?: unknown;
+}): boolean {
+  if (!WHATSAPP_APP_SECRET) return true;
+  const header = req.headers["x-hub-signature-256"];
+  if (typeof header !== "string" || !header.startsWith("sha256=")) return false;
+  const presented = Buffer.from(header.slice("sha256=".length), "hex");
+  const raw = req.rawBody ?? Buffer.from(JSON.stringify(req.body ?? {}));
+  const expected = crypto
+    .createHmac("sha256", WHATSAPP_APP_SECRET)
+    .update(raw)
+    .digest();
+  return (
+    presented.length === expected.length &&
+    crypto.timingSafeEqual(presented, expected)
+  );
+}
+// Admin WhatsApp number for lead alerts. Env-only — never hardcode PII in
+// source. Set via: firebase functions:secrets:set ADMIN_WHATSAPP_NUMBER
+const ADMIN_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER || "";
+
+// Central admin-alert sender. No-ops (with a warning) when
+// ADMIN_WHATSAPP_NUMBER is unset so deploys without the secret fail safe
+// instead of throwing inside lead-capture paths.
+async function notifyAdmin(text: string, tag: string): Promise<void> {
+  if (!ADMIN_NUMBER) {
+    console.warn(`[${tag}] ADMIN_WHATSAPP_NUMBER is not set — skipping admin alert.`);
+    return;
+  }
+  try {
+    await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
+      messaging_product: "whatsapp",
+      to: ADMIN_NUMBER,
+      text: { body: text }
+    }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
+  } catch (err) {
+    console.error(`[${tag}] Admin alert failed:`, err);
+  }
+}
 
 const TOKEN_PREFIX = "hhd_secure_";
 const BASE_URL = "https://happyhunterdigital.com";
@@ -38,15 +78,46 @@ const SAFETY_SETTINGS = [
   { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_LOW_AND_ABOVE" }
 ];
 
-// Validate URLs for SSRF protection — blocks internal/metadata IPs
+// Validate URLs for SSRF protection — blocks internal/metadata IPs.
+// Covers IPv4 private ranges precisely (10/8, 172.16/12, 192.168/16,
+// link-local 169.254/16), IPv6 private/loopback literals (fc00::/7,
+// fe80::/10, ::1), and IPv4-mapped IPv6 forms (::ffff:10.x etc.).
+function isPrivateIPv4(host: string): boolean {
+  if (host.startsWith('10.')) return true;
+  if (host.startsWith('192.168.')) return true;
+  if (host.startsWith('169.254.')) return true;
+  const m172 = /^172\.(\d{1,3})\./.exec(host);
+  if (m172) {
+    const second = parseInt(m172[1], 10);
+    if (second >= 16 && second <= 31) return true;
+  }
+  if (host === '0.0.0.0') return true;
+  return false;
+}
+
+function isPrivateIPv6(host: string): boolean {
+  const h = host.toLowerCase().replace(/^\[|\]$/g, '');
+  if (h === '::1' || h === '::') return true;
+  // IPv4-mapped IPv6, e.g. ::ffff:10.0.0.1 — check the embedded IPv4 part
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(h);
+  if (mapped) return isPrivateIPv4(mapped[1]) || mapped[1] === '127.0.0.1';
+  // Unique-local fc00::/7, link-local fe80::/10
+  if (/^(fc|fd)[0-9a-f]{0,2}:/.test(h)) return true;
+  if (/^fe[89ab][0-9a-f]?:/i.test(h)) return true;
+  return false;
+}
+
 function isValidFetchUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
     if (!['http:', 'https:'].includes(parsed.protocol)) return false;
     const host = parsed.hostname.toLowerCase();
-    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return false;
-    if (host.startsWith('169.254.') || host.startsWith('10.') || host.startsWith('192.168.') || host.startsWith('172.')) return false;
+    if (host === 'localhost' || host === '127.0.0.1') return false;
+    if (isPrivateIPv4(host) || isPrivateIPv6(host)) return false;
     if (host.endsWith('.local') || host.endsWith('.internal') || host === 'metadata.google.internal') return false;
+    // Hostnames must contain a dot (no bare intranet names); IPv6 literals
+    // that reach this point are non-private but still not valid fetch targets.
+    if (host.includes(':')) return false;
     return /^[a-zA-Z0-9.-]+\.[a-z]{2,}$/.test(host);
   } catch { return false; }
 }
@@ -62,9 +133,39 @@ function generateViewerToken(): string {
   return `${TOKEN_PREFIX}${timestamp}_${randomPart}`;
 }
 
+// Firestore-backed rate limiter for callable billing endpoints.
+// Uses a transaction so concurrent calls can't all slip under the cap.
+// NOTE: maxInstances throttles concurrency but does NOT cap total billable
+// invocations — this per-IP/per-email cap is the actual billing guard.
+async function checkBillingRateLimit(
+  key: string, maxRequests: number, windowMs: number
+): Promise<boolean> {
+  const ref = db.collection("rate_limits").doc(key);
+  const now = Date.now();
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    const data = snap.data();
+    if (!data || now - (data.windowStart ?? 0) > windowMs) {
+      tx.set(ref, { windowStart: now, count: 1 });
+      return true;
+    }
+    if ((data.count ?? 0) >= maxRequests) return false;
+    tx.update(ref, { count: admin.firestore.FieldValue.increment(1) });
+    return true;
+  });
+}
+
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 // ============================================================================
 // 1. SMART MARKETING AUDIT (DEEP SCHEMA SCRAPER + HIJACK DETECTION)
 // ============================================================================
+// SECURITY TRADEOFF (see hygiene review): enforceAppCheck stays OFF until the
+// reCAPTCHA v3 web integration is fixed (enabling it broke the dashboard).
+// Interim billing-spam mitigations: per-IP + per-email Firestore rate limits
+// below, strict input validation, and SSRF-guarded website fetching.
+// Follow-up: configure App Check with reCAPTCHA v3 on the web app, then set
+// enforceAppCheck: true here and verify the dashboard end-to-end.
 export const performAudit = onCall({
   region: "us-central1",
   cors: true,
@@ -73,14 +174,28 @@ export const performAudit = onCall({
   secrets: ["GEMINI_API_KEY", "PLACES_API_KEY"]
 }, async (request) => {
   const { businessName, location, city, clientEmail, whatsapp } = request.data;
-  
+
   const G_KEY = process.env.GEMINI_API_KEY;
   const P_KEY = process.env.PLACES_API_KEY;
-  const safeBizName = String(businessName || "").trim();
-  const tableCity = String(city || location || "").trim();
+  const safeBizName = String(businessName || "").trim().slice(0, 200);
+  const tableCity = String(city || location || "").trim().slice(0, 200);
+  const safeEmail = String(clientEmail || "").trim().toLowerCase();
 
-  if (!safeBizName || !tableCity || !clientEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
+  if (!safeBizName || !tableCity || !safeEmail) throw new HttpsError("invalid-argument", "Missing required fields.");
+  if (!EMAIL_REGEX.test(safeEmail) || safeEmail.length > 254) throw new HttpsError("invalid-argument", "Invalid email format.");
   if (!G_KEY || !P_KEY) throw new HttpsError("failed-precondition", "AI Core Offline.");
+
+  // Billing guard: 5 audits / IP / hour + 3 audits / email / day.
+  const raw = request.rawRequest;
+  const fwd = raw?.headers?.["x-forwarded-for"];
+  const callerIp = (typeof fwd === "string" ? fwd.split(",")[0]?.trim() : undefined) || raw?.ip || "unknown";
+  const hourWindow = 60 * 60 * 1000;
+  const dayWindow = 24 * 60 * 60 * 1000;
+  const [ipOk, emailOk] = await Promise.all([
+    checkBillingRateLimit(`audit_ip_${callerIp}_${Math.floor(Date.now() / hourWindow)}`, 5, hourWindow),
+    checkBillingRateLimit(`audit_email_${safeEmail}_${Math.floor(Date.now() / dayWindow)}`, 3, dayWindow),
+  ]);
+  if (!ipOk || !emailOk) throw new HttpsError("resource-exhausted", "Audit limit reached. Try again later.");
 
   try {
     const getPlaces = async (query: string) => {
@@ -225,7 +340,7 @@ export const performAudit = onCall({
       kgmidSource: kgmidResult?.source ?? null
     };
 
-    await db.collection("leads").add({ businessName, email: clientEmail, whatsapp: whatsapp || null, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
+    await db.collection("leads").add({ businessName: safeBizName, email: safeEmail, whatsapp: whatsapp || null, score: analysis.score, timestamp: admin.firestore.FieldValue.serverTimestamp() });
 
     const isGoodScore = analysis.score >= 70;
     const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
@@ -238,7 +353,7 @@ export const performAudit = onCall({
  </div>
  </div>`;
 
-    await db.collection("mail").add({ to: [clientEmail], message: { subject: `[Intelligence Report] Status: ${htmlescape(String(businessName))}`, html: emailHtml } });
+    await db.collection("mail").add({ to: [safeEmail], message: { subject: `[Intelligence Report] Status: ${htmlescape(safeBizName)}`, html: emailHtml } });
 
     return { success: true, ...analysis, telemetry };
 
@@ -418,7 +533,7 @@ export const submitPlaybookRequest = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
-  secrets: ["GEMINI_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID"]
+  secrets: ["GEMINI_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"]
 }, async (request) => {
   const { email, whatsapp } = request.data;
   if (!email) throw new HttpsError("invalid-argument", "Email is required.");
@@ -447,10 +562,15 @@ export const submitPlaybookRequest = onCall({
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
-    // Use GitHub raw content URL for direct download (no GitHub UI)
-    const PDF_URL = "https://github.com/happyhunterdigital/Happy-Hunter-Digital--Smart-Marketing-/raw/main/public/assets/happyhunterdigital%20The%202026%20AI%20Marketing%20playbook.pdf";
-    // Fallback: Google Drive if GitHub fails
+    // Serve the playbook from the live site (same origin as the frontend).
+    // Do NOT hardcode raw.githubusercontent.com URLs here: they embed the
+    // repo name (which has a trailing dash) and break on renames. If the
+    // PDFs move to Firebase Storage / GitHub Releases later, update
+    // PLAYBOOK_PDF_URL in one place.
+    const PLAYBOOK_PDF_URL = "https://happyhunterdigital.com/assets/happyhunterdigital-the-2026-ai-marketing-playbook.pdf";
+    // Fallback: Google Drive if site hosting fails
     const GDRIVE_URL = "https://drive.google.com/uc?export=download&id=1Z1ertjwHPoxx-0UROVAKhlzKHvTDqme7";
+    const PDF_URL = PLAYBOOK_PDF_URL;
 
     const emailHtml = `<div style="font-family: Arial, sans-serif; background-color: #050505; color: #fff; padding: 40px; text-align: center;">
   <h1 style="color: #eab308; margin-bottom: 20px;">Your 2026 AI Marketing Playbook</h1>
@@ -505,14 +625,10 @@ export const submitPlaybookRequest = onCall({
       }
     }
 
-    try {
-      const adminMsg = `📥 *NEW PLAYBOOK DOWNLOAD*\n\n*Email:* ${email}\n*WhatsApp:* ${whatsapp || 'Not provided'}`;
-      await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-        messaging_product: "whatsapp",
-        to: ADMIN_NUMBER,
-        text: { body: adminMsg }
-      }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
-    } catch (err) { console.error("Admin notification failed:", err); }
+    await notifyAdmin(
+      `📥 *NEW PLAYBOOK DOWNLOAD*\n\n*Email:* ${email}\n*WhatsApp:* ${whatsapp || 'Not provided'}`,
+      "Playbook"
+    );
 
     return { success: true };
   } catch (e: any) {
@@ -527,6 +643,7 @@ export const submitChatbotLead = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
+  secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"],
 }, async (request) => {
   const { name, whatsapp, email, service, business, timeline, budget } = request.data ?? {};
   if (!name || (!whatsapp && !email) || !service) {
@@ -547,13 +664,7 @@ export const submitChatbotLead = onCall({
     });
 
     const alertText = `NEW CHATBOT LEAD\n\nFROM: ${name}\nSERVICE: ${service}\nBUSINESS: ${business || "n/a"}\nTIMELINE: ${timeline || "n/a"}\nBUDGET: ${budget || "n/a"}\nCONTACT: ${whatsapp || email}\n\nFollow up now!`;
-    try {
-      await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-        messaging_product: "whatsapp",
-        to: ADMIN_NUMBER,
-        text: { body: alertText }
-      }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
-    } catch (err) { console.error("Chatbot lead alert failed:", err); }
+    await notifyAdmin(alertText, "Chatbot lead");
 
     return { success: true };
   } catch (e: any) {
@@ -564,7 +675,7 @@ export const submitChatbotLead = onCall({
 // ============================================================================
 // 4. WHATSAPP WEBHOOK
 // ============================================================================
-export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN", "GEMINI_API_KEY"] }, async (req, res) => {
+export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN", "GEMINI_API_KEY", "WHATSAPP_APP_SECRET", "CRM_INGEST_URL", "CRM_INGEST_SECRET", "ADMIN_WHATSAPP_NUMBER"] }, async (req, res) => {
   if (req.method === 'GET') {
     if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
       res.status(200).send(req.query['hub.challenge']);
@@ -575,6 +686,11 @@ export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NU
   }
 
   if (req.method === 'POST') {
+    if (!verifyWhatsAppSignature(req)) {
+      res.status(401).send('Invalid signature');
+      return;
+    }
+
     if (req.body?.object === 'whatsapp_business_account') {
       const entry = req.body.entry?.[0];
       const change = entry?.changes?.[0];
@@ -673,13 +789,7 @@ export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NU
             }, { merge: true });
 
             const alertText = `NEW HIGH-VALUE LEAD\n\nFROM: ${from}\nINTERESTED IN: ${data.category}\nMESSAGE: "${userText}"\n\nCheck Firestore now to follow up!`;
-            try {
-              await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-                messaging_product: "whatsapp",
-                to: ADMIN_NUMBER,
-                text: { body: alertText }
-              }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
-            } catch (err) { console.error("Admin Alert Failed", err); }
+            await notifyAdmin(alertText, "Webhook lead");
           }
 
           if (data.category === "onboarding") {
@@ -848,15 +958,9 @@ export const dailyRevenueReport = onSchedule({ schedule: "every day 08:00", secr
   const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
   if (snapshot.size > 0) {
     const reportText = `DAILY REVENUE REPORT\n\nTotal New Leads: ${snapshot.size}`;
-    try {
-      if (WHATSAPP_TOKEN && PHONE_NUMBER_ID) {
-        await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
-          messaging_product: "whatsapp",
-          to: ADMIN_NUMBER,
-          text: { body: reportText }
-        }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });
-      }
-    } catch (err) { console.error("Report Failed", err); }
+    if (WHATSAPP_TOKEN && PHONE_NUMBER_ID) {
+      await notifyAdmin(reportText, "Daily report");
+    }
   }
 });
 
@@ -1002,7 +1106,9 @@ export const chronologicalAIManager = onSchedule({ schedule: "every day 08:00", 
 // ============================================================================
 // The CRM calls this to reply from a contact's record. Guard it with the shared
 // CRM_BOT_SECRET; when it is unset this refuses everything (fail closed).
-export const sendFromCrm = onRequest(async (req, res) => {
+export const sendFromCrm = onRequest({
+  secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "CRM_BOT_SECRET", "CRM_INGEST_URL", "CRM_INGEST_SECRET"],
+}, async (req, res) => {
   if (req.method !== 'POST') {
     res.status(405).send('Method not allowed');
     return;

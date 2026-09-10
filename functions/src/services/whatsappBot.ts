@@ -67,8 +67,10 @@ export const whatsappWebhook = onRequest({
             }, { merge: true });
 
             const alertText = `🚨 *NEW HIGH-VALUE LEAD* 🚨\n\n*From:* ${from}\n*Interested in:* ${data.category}\n*Message:* "${userText}"\n\nCheck Firestore now to follow up!`;
-            
-            try {
+
+            if (!ADMIN_NUMBER) {
+              console.warn("[whatsappBot] ADMIN_WHATSAPP_NUMBER is not set — skipping admin alert.");
+            } else try {
               await axios.post(`https://graph.facebook.com/v21.0/${PHONE_NUMBER_ID}/messages`, {
                 messaging_product: "whatsapp", to: ADMIN_NUMBER, text: { body: alertText }
               }, { headers: { 'Authorization': `Bearer ${WHATSAPP_TOKEN}` } });

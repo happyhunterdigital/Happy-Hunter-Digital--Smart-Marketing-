@@ -1,7 +1,24 @@
 node_modules/
 dist/
+.firebase/
 .env
 .env.local
 .env.*.local
 *.log
 .DS_Store
+
+# Local Firebase / emulator artefacts (never commit cache)
+.firebase/hosting.*.cache
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Build output is produced in CI (see .github/workflows/deploy.yml).
+# Never commit dist/ — stale committed bundles caused the
+# "mismatched asset hashes causing site crash" incident.
+
+# NOTE (PDF hygiene follow-up): public/assets/*.pdf currently totals ~50 MB
+# and is tracked as a *source* asset so `vite build` can copy it to dist/.
+# Long-term, move these PDFs to Firebase Storage (or GitHub Releases) and
+# serve/link from there, then uncomment the line below:
+# public/assets/*.pdf

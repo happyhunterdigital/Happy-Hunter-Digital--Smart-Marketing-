@@ -12,6 +12,10 @@ export const dailyRevenueReport = onSchedule("every day 08:00", async () => {
   const snapshot = await db.collection("leads").where("timestamp", ">", yesterday).get();
   
   if (snapshot.size > 0) {
+    if (!ADMIN_NUMBER) {
+      console.warn("[dailyRevenueReport] ADMIN_WHATSAPP_NUMBER is not set — skipping admin report.");
+      return;
+    }
     await sendWhatsAppText(ADMIN_NUMBER, `DAILY REVENUE REPORT\n\nTotal New Leads: ${snapshot.size}`);
   }
 });

@@ -1,6 +1,10 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import OpenAI from "openai";
+// NOTE: this modular endpoint is currently NOT wired into the deploy entry
+// point (functions/src/index.ts is the live monolith — see hygiene review).
+// Keep in sync or delete once the modular migration lands. Do NOT assume
+// edits here affect production until it is imported by src/index.ts.
 import { scrapeWebsiteText, checkSecurityHeaders, getPerformanceSignals, checkLlmsTxt, SecuritySignals, PerformanceSignals } from "../services/auditService";
 import { sendAdminAlert, sendAuditResultToClient } from "../services/whatsappService";
 import { relayAuditToCrm } from "../services/crmRelay";

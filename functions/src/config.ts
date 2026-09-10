@@ -22,7 +22,9 @@ export const CRM_INGEST_SECRET = process.env.CRM_INGEST_SECRET || "";
 export const CRM_BOT_SECRET = process.env.CRM_BOT_SECRET || "";
 
 export const META_PAGE_ACCESS_TOKEN = process.env.META_PAGE_ACCESS_TOKEN || "";
-export const ADMIN_NUMBER = "27601016673";
+// Admin WhatsApp number for lead alerts. Read from env — never hardcode PII
+// in source. Set via: firebase functions:secrets:set ADMIN_WHATSAPP_NUMBER
+export const ADMIN_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER || "";
 export const BASE_URL = "https://happyhunterdigital.com";
 
 // Fail loudly at cold start if critical webhook secrets are missing, rather than
