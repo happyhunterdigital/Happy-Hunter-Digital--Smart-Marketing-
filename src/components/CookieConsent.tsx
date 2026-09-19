@@ -6,16 +6,30 @@ export const CookieConsent = () => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('hh_compliance_active');
-    if (!consent) {
+    try {
+      const consent = localStorage.getItem('hh_compliance_active');
+      if (!consent) {
+        const timer = setTimeout(() => setShow(true), 3000);
+        return () => clearTimeout(timer);
+      }
+    } catch (e) {
+      void e;
       const timer = setTimeout(() => setShow(true), 3000);
       return () => clearTimeout(timer);
     }
     return () => {};
   }, []);
 
+  useEffect(() => {
+    const reopen = () => setShow(true);
+    window.addEventListener('hh:open-cookie-settings', reopen);
+    return () => window.removeEventListener('hh:open-cookie-settings', reopen);
+  }, []);
+
   const accept = () => {
-    localStorage.setItem('hh_compliance_active', 'true');
+    try {
+      localStorage.setItem('hh_compliance_active', 'true');
+    } catch (e) { void e; }
     setShow(false);
   };
 
