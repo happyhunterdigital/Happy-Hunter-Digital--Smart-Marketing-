@@ -64,8 +64,11 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
         <div className="flex flex-col md:flex-row items-center gap-4">
           <p className="text-gray-700 text-[9px] font-black uppercase tracking-[0.5em]">&copy; 2026 Happy Hunter Digital</p>
         </div>
-        <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest">
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[10px] font-bold uppercase tracking-widest">
           <Link to="/privacy-policy" className="hover:text-yellow-500 transition-colors">Privacy Policy</Link>
+          <Link to="/terms-and-conditions" className="hover:text-yellow-500 transition-colors">Terms & Conditions</Link>
+          <a href="/sitemap.xml" className="hover:text-yellow-500 transition-colors">Sitemap</a>
+          <button type="button" onClick={() => window.dispatchEvent(new Event('hh:open-cookie-settings'))} className="hover:text-yellow-500 transition-colors uppercase tracking-widest">Cookie Settings</button>
         </div>
       </div>
     </footer>

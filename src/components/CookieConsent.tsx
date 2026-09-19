@@ -20,6 +20,12 @@ export const CookieConsent = () => {
     return () => {};
   }, []);
 
+  useEffect(() => {
+    const reopen = () => setShow(true);
+    window.addEventListener('hh:open-cookie-settings', reopen);
+    return () => window.removeEventListener('hh:open-cookie-settings', reopen);
+  }, []);
+
   const accept = () => {
     try {
       localStorage.setItem('hh_compliance_active', 'true');

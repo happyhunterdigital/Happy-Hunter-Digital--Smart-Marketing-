@@ -35,6 +35,8 @@ import { SummitPoster } from './pages/SummitPoster';
 import { MegaphoneLanding } from './pages/MegaphoneLanding';
 import { LiveSummit } from './pages/LiveSummit';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { TermsAndConditions } from './pages/TermsAndConditions';
+import { NotFound } from './pages/NotFound';
 import ViewGuide from './pages/ViewGuide';
 import { Workspace } from './pages/Workspace/Workspace';
 import { PlaybookAnchor } from './pages/Playbook/PlaybookAnchor';
@@ -99,7 +101,9 @@ function App() {
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/live" element={<LiveSummit />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
           <Route path="/pretoria" element={<PretoriaLanding />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 
