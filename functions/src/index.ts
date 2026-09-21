@@ -10,9 +10,21 @@ import * as crypto from "crypto";
 import { relayToCrm } from "./services/crmRelay";
 import { handleFlowMessage } from "./services/whatsappFlow";
 import { resolveKgmid } from "./services/kgmidService";
+import { queueMorningBrief } from "./endpoints/briefingRelay";
+export { queueMorningBrief };
 
 admin.initializeApp();
 const db = getFirestore();
+
+// ENV CONTRACT (cost + security):
+// - Plain env vars (deployed free via functions/.env, see functions/.env.example):
+//   GEMINI_API_KEY, PLACES_API_KEY, WHATSAPP_TOKEN, PHONE_NUMBER_ID, CRM_INGEST_URL.
+//   Read at every cold start; a leak is rotatable with limited blast radius.
+// - Secret Manager (billed per version + per access — mount sparingly):
+//   VERIFY_TOKEN, WHATSAPP_APP_SECRET (webhook integrity), CRM_BOT_SECRET,
+//   CRM_INGEST_SECRET, ADMIN_WHATSAPP_NUMBER (PII).
+// Do NOT add the .env keys back into `secrets: [...]` — each mounted secret
+// is re-read on every cold start and billed as an access operation.
 
 // ============================================================================
 // SYSTEM CONSTANTS & UTILITIES
@@ -170,8 +182,7 @@ export const performAudit = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
-  timeoutSeconds: 300,
-  secrets: ["GEMINI_API_KEY", "PLACES_API_KEY"]
+  timeoutSeconds: 300
 }, async (request) => {
   const { businessName, location, city, clientEmail, whatsapp } = request.data;
 
@@ -367,8 +378,7 @@ export const performAudit = onCall({
 // ============================================================================
 export const hunterChat = onCall({
   region: "us-central1",
-  cors: true,
-  secrets: ["GEMINI_API_KEY"]
+  cors: true
 }, async (request) => {
   const { message } = request.data;
   const G_KEY = process.env.GEMINI_API_KEY;
@@ -433,8 +443,7 @@ export const hunterChat = onCall({
 // ==========================================
 export const submitServiceRequest = onCall({
   region: "us-central1",
-  cors: true,
-  secrets: ["GEMINI_API_KEY"]
+  cors: true
 }, async (request) => {
   const { name, website, service, email } = request.data;
   if (!name || !email || !service) throw new HttpsError("invalid-argument", "Missing required fields.");
@@ -533,7 +542,7 @@ export const submitPlaybookRequest = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
-  secrets: ["GEMINI_API_KEY", "WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"]
+  secrets: ["ADMIN_WHATSAPP_NUMBER"]
 }, async (request) => {
   const { email, whatsapp } = request.data;
   if (!email) throw new HttpsError("invalid-argument", "Email is required.");
@@ -643,7 +652,7 @@ export const submitChatbotLead = onCall({
   region: "us-central1",
   cors: true,
   maxInstances: 10,
-  secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"],
+  secrets: ["ADMIN_WHATSAPP_NUMBER"],
 }, async (request) => {
   const { name, whatsapp, email, service, business, timeline, budget } = request.data ?? {};
   if (!name || (!whatsapp && !email) || !service) {
@@ -675,7 +684,7 @@ export const submitChatbotLead = onCall({
 // ============================================================================
 // 4. WHATSAPP WEBHOOK
 // ============================================================================
-export const whatsappWebhook = onRequest({ secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "VERIFY_TOKEN", "GEMINI_API_KEY", "WHATSAPP_APP_SECRET", "CRM_INGEST_URL", "CRM_INGEST_SECRET", "ADMIN_WHATSAPP_NUMBER"] }, async (req, res) => {
+export const whatsappWebhook = onRequest({ secrets: ["VERIFY_TOKEN", "WHATSAPP_APP_SECRET", "CRM_INGEST_SECRET", "ADMIN_WHATSAPP_NUMBER"] }, async (req, res) => {
   if (req.method === 'GET') {
     if (req.query['hub.verify_token'] === VERIFY_TOKEN) {
       res.status(200).send(req.query['hub.challenge']);
@@ -953,7 +962,7 @@ RULES:
 // ============================================================================
 // 5. DAILY REVENUE REPORT (Scheduled)
 // ============================================================================
-export const dailyRevenueReport = onSchedule({ schedule: "every day 08:00", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"] }, async () => {
+export const dailyRevenueReport = onSchedule({ schedule: "every day 08:00", secrets: ["ADMIN_WHATSAPP_NUMBER"] }, async () => {
   const yesterday = admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000);
   const snapshot = await db.collection("prospects").where("timestamp", ">", yesterday).get();
   if (snapshot.size > 0) {
@@ -994,7 +1003,7 @@ export const vectorizeClaim = onDocumentWritten("verified_claims/{docId}", async
   } catch (error) { console.error("Vectorization Failed:", error); }
 });
 
-export const notifyNewTaskAssignment = onDocumentCreated({ document: "workspace_tasks/{taskId}", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID"] }, async (event) => {
+export const notifyNewTaskAssignment = onDocumentCreated({ document: "workspace_tasks/{taskId}" }, async (event) => {
   const snap = event.data;
   if (!snap) return;
   const task = snap.data();
@@ -1026,7 +1035,7 @@ export const notifyNewTaskAssignment = onDocumentCreated({ document: "workspace_
   await Promise.all(messagesToSend);
 });
 
-export const notifyTaskUpdate = onDocumentUpdated({ document: "workspace_tasks/{taskId}", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID"] }, async (event) => {
+export const notifyTaskUpdate = onDocumentUpdated({ document: "workspace_tasks/{taskId}" }, async (event) => {
   const newValue = event.data?.after.data();
   const previousValue = event.data?.before.data();
   
@@ -1061,7 +1070,7 @@ export const notifyTaskUpdate = onDocumentUpdated({ document: "workspace_tasks/{
   }
 });
 
-export const chronologicalAIManager = onSchedule({ schedule: "every day 08:00", secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "ADMIN_WHATSAPP_NUMBER"] }, async () => {
+export const chronologicalAIManager = onSchedule({ schedule: "every day 08:00", secrets: ["ADMIN_WHATSAPP_NUMBER"] }, async () => {
    const today = new Date().toISOString().split('T')[0];
    
    const tasksRef = db.collection("workspace_tasks");
@@ -1107,7 +1116,7 @@ export const chronologicalAIManager = onSchedule({ schedule: "every day 08:00", 
 // The CRM calls this to reply from a contact's record. Guard it with the shared
 // CRM_BOT_SECRET; when it is unset this refuses everything (fail closed).
 export const sendFromCrm = onRequest({
-  secrets: ["WHATSAPP_TOKEN", "PHONE_NUMBER_ID", "CRM_BOT_SECRET", "CRM_INGEST_URL", "CRM_INGEST_SECRET"],
+  secrets: ["CRM_BOT_SECRET", "CRM_INGEST_SECRET"],
 }, async (req, res) => {
   if (req.method !== 'POST') {
     res.status(405).send('Method not allowed');

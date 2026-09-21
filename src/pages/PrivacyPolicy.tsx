@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { PageMeta } from '../components/PageMeta';
 import { ShieldCheck, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -9,6 +10,11 @@ export const PrivacyPolicy = () => {
 
   return (
     <div className="bg-[#050505] min-h-screen pb-20 animate-fade-in font-sans selection:bg-yellow-500 selection:text-black">
+      <PageMeta
+        title="Privacy Policy & Data Governance | Happy Hunter Digital"
+        description="How Happy Hunter Digital handles your data — privacy policy, API compliance, and POPIA-aligned practices."
+        path="/privacy"
+      />
       <header className="relative pt-40 pb-20 border-b border-gray-800 bg-[#0a0a0a]">
         <div className="relative z-10 container mx-auto px-6 max-w-4xl text-center">
           <Link to="/" className="inline-flex text-gray-400 hover:text-yellow-500 items-center gap-2 mb-10 uppercase text-[10px] font-black tracking-[0.2em] transition-colors">
