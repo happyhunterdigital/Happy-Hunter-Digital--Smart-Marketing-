@@ -10,6 +10,8 @@ import * as crypto from "crypto";
 import { relayToCrm } from "./services/crmRelay";
 import { handleFlowMessage } from "./services/whatsappFlow";
 import { resolveKgmid } from "./services/kgmidService";
+import { queueMorningBrief } from "./endpoints/briefingRelay";
+export { queueMorningBrief };
 
 admin.initializeApp();
 const db = getFirestore();
