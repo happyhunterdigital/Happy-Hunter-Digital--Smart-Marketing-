@@ -13,7 +13,7 @@ export const TermsAndConditions = () => {
       <PageMeta
         title="Terms & Conditions | Happy Hunter Digital"
         description="Terms & Conditions for Happy Hunter Digital agency services — websites, AI chatbots, WhatsApp automation, retainers, payments and IP. Governed by South African law."
-        path="/terms-and-conditions"
+        path="/terms"
       />
       <header className="relative pt-40 pb-20 border-b border-gray-800 bg-[#0a0a0a]">
         <div className="relative z-10 container mx-auto px-6 max-w-4xl text-center">
@@ -48,7 +48,7 @@ export const TermsAndConditions = () => {
           <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-4 border-l-4 border-yellow-500 pl-4">2. Regulatory Framework</h2>
           <p>Our services are provided in accordance with the laws of the Republic of South Africa, including:</p>
           <ul className="list-disc pl-6 space-y-2 mt-4 text-gray-400">
-            <li><strong className="text-white">Protection of Personal Information Act (POPIA):</strong> how we collect, use, and protect personal information. See our <Link to="/privacy-policy" className="text-yellow-500 underline hover:text-white transition-colors">Privacy Policy</Link>.</li>
+            <li><strong className="text-white">Protection of Personal Information Act (POPIA):</strong> how we collect, use, and protect personal information. See our <Link to="/privacy" className="text-yellow-500 underline hover:text-white transition-colors">Privacy Policy</Link>.</li>
             <li><strong className="text-white">Consumer Protection Act 68 of 2008 (CPA):</strong> your rights as a consumer of our services, including fair marketing and cooling-off rights where applicable.</li>
             <li><strong className="text-white">Electronic Communications and Transactions Act 25 of 2002 (ECT Act):</strong> formation of electronic contracts, electronic communications, and online transactions.</li>
             <li><strong className="text-white">General Data Protection Regulation (GDPR):</strong> applied to the extent we process data of individuals in the European Economic Area.</li>

@@ -100,7 +100,9 @@ function App() {
           <Route path="/hq-command" element={<Admin />} />
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/live" element={<LiveSummit />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
           <Route path="/pretoria" element={<PretoriaLanding />} />
           <Route path="*" element={<NotFound />} />
