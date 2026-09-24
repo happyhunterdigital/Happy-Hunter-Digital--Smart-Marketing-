@@ -104,10 +104,10 @@ export const categories: Category[] = [
   },
   {
     slug: "web-development",
-    title: "Websites",
-    metaDesc: "Business websites and online stores built fast and mobile-friendly for South African SMEs. Built so Google and AI can find and recommend them.",
-    h1: "Your Website Is Your 24/7 Salesperson",
-    subheadline: "We build fast, mobile-friendly websites that rank higher on Google and get found by AI tools like ChatGPT and Gemini. Not just pretty designs — websites built to bring you customers.",
+    title: "Web Development & Engineering",
+    metaDesc: "Web development and marketing engineering for South African SMEs: fast, AI-ready business websites and online stores built so Google and AI can find and recommend them.",
+    h1: "Web Development & Engineering That Sells 24/7",
+    subheadline: "We are a web development and marketing engineering team. We build fast, mobile-friendly websites that rank higher on Google and get found by AI tools like ChatGPT and Gemini. Not just pretty designs — engineered websites built to bring you customers.",
     quickAnswer: "A website that loads fast, works on phones, and gets found by Google and ChatGPT. We build websites that actually bring you customers.",
     iconName: "Database",
     services: [
@@ -357,13 +357,60 @@ export const categories: Category[] = [
         a: "Yes. We build connections to HubSpot, Salesforce, Zoho, Monday.com, Slack, Google Workspace, and other common business tools to sync your data automatically."
       }
     ]
+  },
+  {
+    slug: "marketing-engineering",
+    title: "Marketing Engineering",
+    metaDesc: "Marketing Engineering for SA SMEs: Smart Growth Engine that learns what buyers want, gets you recommended by Google and ChatGPT, and books qualified leads on autopilot.",
+    h1: "The Smart Growth Engine",
+    subheadline: "We don't sell campaigns. We engineer your autonomous growth infrastructure: customer truth, AI visibility, and WhatsApp pipeline working as one system.",
+    quickAnswer: "A 30 to 45-day build plus monthly autopilot: we learn what your buyers actually say, get you recommended by Google and AI, and book qualified calls into your calendar.",
+    iconName: "BrainCircuit",
+    services: [
+      {
+        id: "ME-AUD-01",
+        title: "Growth & Visibility Audit",
+        price: "R3,950 once-off",
+        desc: "Step 1 Diagnosis. Complete review of why marketing is not working and where AI and Google recommendations are missing. Maps messaging gaps and LLM visibility baseline.",
+        specs: "Market signal review, top 10 commercial query test across ChatGPT, Perplexity, Gemini and AI Overviews, entity/schema check, action plan"
+      },
+      {
+        id: "ME-BUILD-01",
+        title: "Smart Growth Engine Setup",
+        price: "Custom Quote",
+        desc: "Step 2 Build. 30 to 45-day rollout: customer messaging from real sales language, AI search presence with schema and corpus, plus automated WhatsApp booking system.",
+        specs: "Growth-OS repo, what-the-market-says build, GEO entity hardening, founder content loop, WhatsApp concierge + CRM relay",
+        isPopular: true
+      },
+      {
+        id: "ME-PILOT-01",
+        title: "Growth on Autopilot",
+        price: "Custom Quote",
+        desc: "Step 3 Pilot. Monthly partnership where we keep the system running, review weekly lead reports, and update campaigns as your market moves.",
+        specs: "Monday Growth Cockpit, prompt-drift prevention, LLM citation monitoring, agent upkeep, monthly iteration"
+      }
+    ],
+    faqs: [
+      {
+        q: "Is Marketing Engineering just another word for marketing?",
+        a: "No. Traditional marketing runs campaigns. Marketing Engineering builds a system that learns what your buyers actually say, gets you recommended by Google and ChatGPT, and books qualified leads automatically. Full method in marketingEng.md."
+      },
+      {
+        q: "What do I get in the 30 to 45 days?",
+        a: "Your Growth-OS memory, AI visibility foundation with schema, content loop from founder expertise, and WhatsApp concierge wired to your CRM. Then Growth on Autopilot keeps it tuned monthly."
+      },
+      {
+        q: "How is pricing worked out?",
+        a: "Start with the Growth and Visibility Audit at R3,950 once-off. Engine build and autopilot are custom quoted after the audit, so you only pay for what your pipeline actually needs."
+      }
+    ]
   }
 ];
 
 const overview = {
-  eyebrow: "Our Services",
+  eyebrow: "Web Development & Marketing Engineering",
   intro:
-    "Happy Hunter Digital offers six core services for South African SMEs: Content & Social Media, Websites, SEO & AI Visibility, Google Business Profile Management, WhatsApp Marketing, and AI Chatbots & Automation. Every service works toward one goal: making sure Google, AI assistants, and your next customer can find, trust, and choose your business.",
+    "Happy Hunter Digital is a web development and marketing engineering team for South African SMEs. Seven core services: Content & Social Media, Web Development & Engineering, SEO & AI Visibility, Google Business Profile Management, WhatsApp Marketing, AI Chatbots & Automation, and Marketing Engineering (Smart Growth Engine). Every service is marketing engineering toward one goal: making sure Google, AI assistants, and your next customer can find, trust, and choose your business.",
   whyTogether:
     "AI tools like ChatGPT, Gemini, and Google AI Overviews don't just look at your website. They check your Google Business Profile, your online reviews, and your overall consistency. If your business info is wrong or inconsistent anywhere, AI and search may ignore you. We fix everything at once.",
   services: [
@@ -375,9 +422,9 @@ const overview = {
     },
     {
       slug: "web-development",
-      title: "Websites",
+      title: "Web Development & Engineering",
       summary:
-        "We build fast, mobile-friendly websites that rank on Google and get recommended by ChatGPT and Gemini. Websites that bring you customers, not just visitors.",
+        "Web development and marketing engineering: fast, mobile-friendly websites that rank on Google and get recommended by ChatGPT and Gemini. Engineered to bring you customers, not just visitors.",
     },
     {
       slug: "seo-ai-search",
@@ -403,6 +450,12 @@ const overview = {
       summary:
         "We deploy AI chatbots that answer questions and book appointments 24/7, so you never miss an opportunity — even when you're not at your desk.",
     },
+    {
+      slug: "marketing-engineering",
+      title: "Marketing Engineering",
+      summary:
+        "The Smart Growth Engine: learns what buyers actually want, gets you recommended by Google and ChatGPT, and books qualified leads on autopilot. See marketingEng.md.",
+    },
   ],
   closing:
     "The result is a unified online presence where your website, your search visibility, your Google listing, and your customer messages all work together. Instead of being invisible to algorithms, your business becomes the answer your customers get.",
@@ -417,6 +470,7 @@ const serviceUrls: Record<string, string> = {
   "google-business-profile": "https://www.happyhunterdigital.com/services/google-business-profile",
   "whatsapp-marketing": "https://www.happyhunterdigital.com/services/whatsapp-marketing",
   "automation-chatbots": "https://www.happyhunterdigital.com/services/automation-chatbots",
+  "marketing-engineering": "https://www.happyhunterdigital.com/services/marketing-engineering",
 };
 
 /** Four-corner targeting brackets — the page's signature motif.
@@ -543,7 +597,7 @@ export function CoreServices() {
             {overview.eyebrow.toUpperCase()}
           </div>
            <h2 className="hh-display text-3xl md:text-4xl font-bold mb-5 leading-tight">
-             Six Services. One Goal: Get You Found.
+              Seven Services. One Goal: Get You Found.
            </h2>
           <p className="text-white/70 mb-4 leading-relaxed">{overview.intro}</p>
           <p className="text-white/55 mb-10 leading-relaxed">{overview.whyTogether}</p>

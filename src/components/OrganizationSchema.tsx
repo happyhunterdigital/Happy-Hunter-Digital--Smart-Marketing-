@@ -43,14 +43,15 @@ export const OrganizationSchema = () => (
             "https://x.com/HappyHunter35"
           ]
         },
-        "description": "Digital marketing agency in Pretoria and Johannesburg building AI-ready websites, smart chat assistants, and WhatsApp sales tools for South African small businesses.",
+        "description": "Web development and marketing engineering team in Pretoria and Johannesburg building AI-ready websites, smart chat assistants, and WhatsApp sales tools for South African small businesses.",
         "foundingDate": "2024",
         "servesCuisine": null,
          "hasOfferCatalog": {
           "@type": "OfferCatalog",
-          "name": "Marketing Services",
+          "name": "Web Development & Marketing Engineering Services",
           "itemListElement": [
-            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Modern Websites" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Web Development & Engineering" } },
+            { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Marketing Engineering - Smart Growth Engine" } },
             { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "24/7 Chatbots" } },
             { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "WhatsApp Sales" } },
             { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Content Writing" } },

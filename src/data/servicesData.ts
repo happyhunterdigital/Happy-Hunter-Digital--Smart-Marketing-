@@ -1,7 +1,7 @@
 export const SERVICES_DATA = [
   {
-    phase: 1, title: "Modern Websites", iconType: "Database",
-    description: "Your website is your 24/7 salesperson. We build fast, mobile-friendly websites that Google recommends and AI tools like ChatGPT can understand.",
+    phase: 1, title: "Web Development & Engineering", iconType: "Database",
+    description: "Web development and marketing engineering for SA SMEs. Your website is your 24/7 salesperson. We engineer fast, mobile-friendly websites that Google recommends and AI tools like ChatGPT can understand.",
     tiers: [
       { subtitle: "Essential", title: "Starter Website", priceStart: "R3,950 - R6,500", target: "Startups & Solo-preneurs.", description: "A clean, fast website that gets you found online.", features: ["1-3 Professional Pages", "Fast Loading", "AI Search Discoverable", "WhatsApp Chat Button"] },
       { subtitle: "Growth", title: "The Growth Hub", priceStart: "R12,500 - R18,500", target: "Growing businesses.", description: "Turn your website into an automated sales machine.", features: ["5-10 Pages + Blog", "AI Search Optimization", "Lead Capture Tools", "WhatsApp Follow-ups"], isPopular: true },

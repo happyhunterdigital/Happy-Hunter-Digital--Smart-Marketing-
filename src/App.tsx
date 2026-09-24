@@ -28,6 +28,7 @@ import { ArticleSynthesis } from './pages/ArticleSynthesis';
 import { ArticleEntity } from './pages/ArticleEntity';
 import { ArticleBlueLink } from './pages/ArticleBlueLink';
 import { ArticleLocalSearch } from './pages/ArticleLocalSearch';
+import { ArticleWebDevelopment } from './pages/ArticleWebDevelopment';
 import { SummitPage } from './pages/SummitPage';
 import { Architecture } from './pages/Architecture';
 import { ClientPortal } from './pages/ClientPortal/ClientPortal';
@@ -86,6 +87,7 @@ function App() {
           <Route path="/blog/entity-architect" element={<ArticleEntity />} />
           <Route path="/blog/beyond-the-blue-link" element={<ArticleBlueLink />} />
           <Route path="/blog/local-search-2026" element={<ArticleLocalSearch />} />
+          <Route path="/blog/web-development-engineering" element={<ArticleWebDevelopment />} />
           <Route path="/smart-news/playbook" element={<PlaybookAnchor />} />
           <Route path="/smart-news/playbook/chapter-1" element={<PlaybookChapter1 />} />
           <Route path="/smart-news/playbook/chapter-2" element={<PlaybookChapter2 />} />
