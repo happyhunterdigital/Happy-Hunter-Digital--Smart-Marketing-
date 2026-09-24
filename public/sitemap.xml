@@ -16,6 +16,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.happyhunterdigital.com/services/marketing-engineering</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.happyhunterdigital.com/services/web-development</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.happyhunterdigital.com/earned-media</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -39,5 +49,10 @@
     <loc>https://www.happyhunterdigital.com/summit-2026</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.happyhunterdigital.com/blog/web-development-engineering</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 </urlset>

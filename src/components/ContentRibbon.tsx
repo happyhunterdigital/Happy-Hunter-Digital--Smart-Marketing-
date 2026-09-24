@@ -4,7 +4,7 @@ import { Zap, ShieldCheck, Database, Globe } from 'lucide-react';
 export const ContentRibbon: React.FC = () => {
   // We pair the technical architecture with the layman's result, and removed the Summit.
   const items = [
-    { text: "Entity Architecture (AI-Optimized Websites)", icon: <Database size={14} /> },
+    { text: "Web Development & Engineering (AI-Optimized Websites)", icon: <Database size={14} /> },
     { text: "AI Visibility (Recommended by ChatGPT & Gemini)", icon: <Globe size={14} /> },
     { text: "Trust Synchronization (Google Maps Verification)", icon: <ShieldCheck size={14} /> },
     { text: "Agentic Revenue (24/7 AI Lead Automation)", icon: <Zap size={14} /> },

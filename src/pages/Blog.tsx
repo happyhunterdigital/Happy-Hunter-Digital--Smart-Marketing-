@@ -6,6 +6,16 @@ import { PageMeta } from '../components/PageMeta';
 
 export const blogPosts = [
   {
+    id: "web-development-engineering",
+    category: "Web Development & Engineering",
+    title: "Web Development & Engineering: Your Owned, AI-Ready Growth Asset",
+    excerpt: "Rented ads cost $5.26 per click while 83% of AI citations come from outside top 10. How engineered SSR sites with JSON-LD get cited by ChatGPT and convert 15.9%.",
+    query: "Why does my business website not bring customers from Google or ChatGPT?",
+    date: "Sep 2026",
+    readTime: "12 min read",
+    icon: <Database size={24} className="text-yellow-500" />
+  },
+  {
     id: "playbook",
     category: "2026 Playbook",
     title: "The 2026 Digital Marketing Playbook",

@@ -82,13 +82,13 @@ export const ServicesSection: React.FC = () => {
       <div className="container mx-auto px-6 relative z-10">
         <div className={`text-center max-w-2xl mx-auto mb-20 transition-all duration-1000 ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <span className="inline-block px-4 py-1.5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold uppercase tracking-[0.2em] mb-6">
-            What Helps You Grow
+            Web Development & Marketing Engineering
           </span>
           <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4 uppercase">
             The <span className="gradient-text">3 Levers</span> That Bring Customers
           </h2>
           <p className="text-gray-400 text-lg leading-relaxed">
-            From fixing your business info to automating your sales. The essential foundation for getting found by Google, AI, and your next customer.
+            Web development and marketing engineering, from fixing your business info to automating your sales. The essential foundation for getting found by Google, AI, and your next customer.
           </p>
         </div>
 

@@ -9,8 +9,8 @@ export const Home = () => {
   return (
     <div className="min-h-screen bg-deep-950">
       <PageMeta
-        title="Happy Hunter Digital | Websites, Google Visibility & WhatsApp Sales for SA Businesses"
-        description="Get found online. Get more customers. We build websites, set up smart chat assistants, and turn WhatsApp into a sales channel for small businesses in Pretoria and Johannesburg."
+        title="Happy Hunter Digital | Web Development & Marketing Engineering for SA Businesses"
+        description="Web development and marketing engineering for SA SMEs. We engineer AI-ready websites, get you found on Google and AI, and turn WhatsApp into a sales channel. Pretoria + Johannesburg."
         path="/"
       />
       <HeroSection />

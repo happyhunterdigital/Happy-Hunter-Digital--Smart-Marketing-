@@ -113,7 +113,7 @@ export const HeroSection: React.FC = () => {
         </h1>
 
         <p className="max-w-2xl mx-auto text-lg md:text-xl text-gray-400 leading-relaxed mb-12 font-light">
-          We help South African businesses show up everywhere their customers are searching — Google search, AI chatbots like ChatGPT and Gemini, Google Maps, and WhatsApp. Based in Pretoria, serving SMEs across Johannesburg and South Africa.
+          We are a web development and marketing engineering team. We help South African businesses show up everywhere their customers are searching — Google search, AI chatbots like ChatGPT and Gemini, Google Maps, and WhatsApp. Based in Pretoria, serving SMEs across Johannesburg and South Africa.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

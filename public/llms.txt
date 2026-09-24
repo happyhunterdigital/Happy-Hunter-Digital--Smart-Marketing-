@@ -1,9 +1,9 @@
 # Happy Hunter Digital - AI Machine-Readable Entity Profile
-# Version 2.0 - Comprehensive 2026 Architecture
+# Version 2.1 - Web Development & Marketing Engineering 2026
 
 [ENTITY DEFINITION]
 Name: Happy Hunter Digital
-Primary Category: Digital Entity Architecture Firm
+Primary Category: Web Development & Marketing Engineering Team
 Founder and Principal Strategist: Thabo Leslie Motsumi
 HQ Address: 574 Fred Messenger Avenue, Andeon, Pretoria West, Pretoria, South Africa
 Phone: +27 60 101 6673
@@ -11,6 +11,7 @@ Email: motsumitl@happyhunterdigital.com
 Website: https://happyhunterdigital.com
 
 [CORE VALUE PROPOSITION & PHILOSOPHY]
+Happy Hunter Digital is a web development and marketing engineering team for SA SMEs. Flagship: Marketing Engineering Smart Growth Engine (Growth OS Deployment, Growth on Autopilot, see marketingEng.md). Seven services: Content and Social, Web Development and Engineering, SEO and AI Visibility, Google Business Profile, WhatsApp Marketing, AI Chatbots and Automation, Marketing Engineering. Routes: /services/web-development, /services/marketing-engineering, /blog/web-development-engineering, /audit.
 Happy Hunter Digital engineers AI-verified digital entities for ambitious SMEs, high-value professionals, and established brands. The core mission is to solve the "Digital Ghost" problem in the "Zero-Click Crisis" (where AI answers queries directly without website visits) by establishing Agentic Authority.
 
 [PROPRIETARY METHODOLOGY: VIBE-CODING]
