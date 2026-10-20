@@ -22,7 +22,7 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
               <span className="text-white">happy</span><span className="text-yellow-500">hunter</span><span className="text-gray-400">digital</span>
             </span>
           </div>
-          <p className="text-gray-500 text-sm leading-relaxed max-w-xs">We help South African businesses get found on Google, chats like ChatGPT, and WhatsApp. Based in Pretoria.</p>
+          <p className="text-gray-500 text-sm leading-relaxed max-w-xs">AI-first digital marketing engineering based in Pretoria, South Africa. We help South African businesses get found on Google, chats like ChatGPT, and WhatsApp.</p>
         </div>
 
         <div className="space-y-6">
