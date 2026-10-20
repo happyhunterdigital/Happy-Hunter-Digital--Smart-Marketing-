@@ -6,17 +6,17 @@ export const PretoriaLanding: React.FC = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
-    document.title = "Digital Marketing Agency Pretoria | Entity Authority & AI Visibility | Happy Hunter Digital";
+    document.title = "AI Marketing Engineering Pretoria | Entity Authority & AI Visibility | Happy Hunter Digital";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute("content", "Happy Hunter Digital helps Pretoria SMEs build structured, algorithm-visible online identities — so Google, Google Business Profile, and AI search tools like ChatGPT and Gemini can actually find and recommend you. Serving Centurion, Hatfield, Menlyn, Brooklyn and the greater Tshwane metro.");
+      metaDesc.setAttribute("content", "AI-first digital marketing engineering based in Pretoria, South Africa. Happy Hunter Digital helps Pretoria SMEs build structured, algorithm-visible online identities — so Google, Google Business Profile, and AI search tools like ChatGPT and Gemini can actually find and recommend you.");
     }
     const schemas = [
       {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         "name": "Happy Hunter Digital - Pretoria Division",
-        "description": "Pretoria digital marketing agency specializing in local SEO, Google Business Profile optimization, schema markup, and entity resolution.",
+        "description": "Pretoria digital marketing engineering team specializing in local SEO, Google Business Profile optimization, schema markup, and entity resolution.",
         "telephone": "+27601016673",
         "email": "motsumitl@happyhunterdigital.com",
         "address": {
@@ -133,7 +133,7 @@ export const PretoriaLanding: React.FC = () => {
       <article className="container mx-auto px-6 max-w-3xl py-16 space-y-12">
         <section className="bg-yellow-500/5 border border-yellow-500/20 rounded-3xl p-8 shadow-neural-glow">
           <p className="text-lg leading-relaxed text-gray-200">
-            <strong>Happy Hunter Digital</strong> is a Pretoria-based digital marketing agency that helps small and medium businesses build a structured, verifiable online presence so search engines and AI tools can find, trust, and recommend them. We focus on three things: technical SEO foundations (schema markup, Google Business Profile optimization, site structure), content that answers real customer questions directly, and entity authority — making sure your business is described consistently across Google, directories, and the web so algorithms stop guessing who you are.
+            <strong>Happy Hunter Digital</strong> is a Pretoria-based digital marketing engineering team that helps small and medium businesses build a structured, verifiable online presence so search engines and AI tools can find, trust, and recommend them. We focus on three things: technical SEO foundations (schema markup, Google Business Profile optimization, site structure), content that answers real customer questions directly, and entity authority — making sure your business is described consistently across Google, directories, and the web so algorithms stop guessing who you are.
           </p>
           <p className="text-sm text-gray-400 mt-4 leading-relaxed">
             We work with Pretoria SMEs across Centurion, Hatfield, Menlyn, Brooklyn, Sunnyside, and the wider Tshwane metro, including businesses serving the government, education, and corporate sectors concentrated in the capital.

@@ -43,7 +43,7 @@ export const OrganizationSchema = () => (
             "https://x.com/HappyHunter35"
           ]
         },
-        "description": "Web development and marketing engineering team in Pretoria and Johannesburg building AI-ready websites, smart chat assistants, and WhatsApp sales tools for South African small businesses.",
+        "description": "AI-first digital marketing engineering based in Pretoria and Johannesburg, South Africa. We engineer AI-ready websites, smart chat assistants, and WhatsApp sales tools so South African SMEs get found on Google and AI chatbots.",
         "foundingDate": "2024",
         "servesCuisine": null,
          "hasOfferCatalog": {

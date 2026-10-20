@@ -9,7 +9,7 @@ const FAQS = [
   { q: "How do I get my business mentioned by ChatGPT and AI search?", a: "AI tools like ChatGPT pull information from your website, your Google listing, and your reviews. We make sure that information is accurate, consistent, and easy for AI to read, so when someone asks \"who's the best plumber in Pretoria,\" your business comes up." },
   { q: "What is a smart chatbot?", a: "It's a chat assistant on your website that answers customer questions and books appointments automatically, 24 hours a day, so you never miss a lead after hours." },
   { q: "Can you help me sell through WhatsApp?", a: "Yes. We set up product catalogues, automatic replies, and order-taking so customers can browse and buy directly in WhatsApp — no app download needed." },
-  { q: "Do you offer legal, medical, or financial advice?", a: "No — we're a digital marketing agency. We build the websites, chatbots, and WhatsApp tools that help legal, medical, and financial professionals get found and booked by more clients." }
+  { q: "Do you offer legal, medical, or financial advice?", a: "No — we're a digital marketing engineering team. We build the websites, chatbots, and WhatsApp tools that help legal, medical, and financial professionals get found and booked by more clients." }
 ];
 
 export const FAQ = () => {
