@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { CONSENT_KEY } from './lib/consent';
 
 const posthogMock = {
   init: vi.fn(),
@@ -7,12 +8,17 @@ const posthogMock = {
   capture: vi.fn(),
   debug: vi.fn(),
   on: vi.fn(),
+  opt_out_capturing: vi.fn(),
 };
 
 vi.mock('posthog-js', () => ({
   __esModule: true,
   default: posthogMock,
 }));
+
+function grantConsent() {
+  window.localStorage.setItem(CONSENT_KEY, JSON.stringify({ value: 'accepted', ts: Date.now() }));
+}
 
 async function loadModule() {
   vi.resetModules();
@@ -22,20 +28,31 @@ async function loadModule() {
 describe('posthog.ts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
   });
 
   it('does not call posthog.init when VITE_POSTHOG_KEY is missing (CI-safe)', async () => {
     vi.stubEnv('VITE_POSTHOG_KEY', '');
+    Object.defineProperty(window.navigator, 'webdriver', { value: undefined, configurable: true });
+    grantConsent();
+
+    await loadModule();
+    expect(posthogMock.init).not.toHaveBeenCalled();
+  });
+
+  it('does not call posthog.init before the visitor accepts', async () => {
+    vi.stubEnv('VITE_POSTHOG_KEY', 'ph_test_key_123');
     Object.defineProperty(window.navigator, 'webdriver', { value: undefined, configurable: true });
 
     await loadModule();
     expect(posthogMock.init).not.toHaveBeenCalled();
   });
 
-  it('calls posthog.init with api_host when a key is present', async () => {
+  it('calls posthog.init with api_host after consent when a key is present', async () => {
     vi.stubEnv('VITE_POSTHOG_KEY', 'ph_test_key_123');
     vi.stubEnv('VITE_POSTHOG_HOST', 'https://custom.posthog.com');
     Object.defineProperty(window.navigator, 'webdriver', { value: undefined, configurable: true });
+    grantConsent();
 
     await loadModule();
     expect(posthogMock.init).toHaveBeenCalledWith(
@@ -44,9 +61,10 @@ describe('posthog.ts', () => {
     );
   });
 
-  it('skips init for automated browsers even when a key is present', async () => {
+  it('skips init for automated browsers even when a key and consent are present', async () => {
     vi.stubEnv('VITE_POSTHOG_KEY', 'ph_test_key_123');
     Object.defineProperty(window.navigator, 'webdriver', { value: true, configurable: true });
+    grantConsent();
 
     await loadModule();
     expect(posthogMock.init).not.toHaveBeenCalled();
@@ -55,6 +73,7 @@ describe('posthog.ts', () => {
   it('Telemetry.identifyEntity identifies the user when a key is present', async () => {
     vi.stubEnv('VITE_POSTHOG_KEY', 'ph_test_key_123');
     Object.defineProperty(window.navigator, 'webdriver', { value: undefined, configurable: true });
+    grantConsent();
 
     const { Telemetry } = await loadModule();
     Telemetry.identifyEntity('uid-1', 'test@test.com', 'Test User');
@@ -65,6 +84,7 @@ describe('posthog.ts', () => {
   it('Telemetry.disconnectEntity calls posthog.reset', async () => {
     vi.stubEnv('VITE_POSTHOG_KEY', 'ph_test_key_123');
     Object.defineProperty(window.navigator, 'webdriver', { value: undefined, configurable: true });
+    grantConsent();
 
     const { Telemetry } = await loadModule();
     Telemetry.disconnectEntity();
@@ -74,6 +94,7 @@ describe('posthog.ts', () => {
   it('Telemetry.capture events fire with correct payloads', async () => {
     vi.stubEnv('VITE_POSTHOG_KEY', 'ph_test_key_123');
     Object.defineProperty(window.navigator, 'webdriver', { value: undefined, configurable: true });
+    grantConsent();
 
     const { Telemetry } = await loadModule();
 
@@ -90,6 +111,7 @@ describe('posthog.ts', () => {
   it('Telemetry methods never throw, even when posthog errors internally', async () => {
     vi.stubEnv('VITE_POSTHOG_KEY', 'ph_test_key_123');
     Object.defineProperty(window.navigator, 'webdriver', { value: undefined, configurable: true });
+    grantConsent();
 
     posthogMock.identify.mockImplementation(() => { throw new Error('boom'); });
     posthogMock.capture.mockImplementation(() => { throw new Error('boom'); });

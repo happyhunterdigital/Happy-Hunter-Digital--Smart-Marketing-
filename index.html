@@ -22,9 +22,10 @@ worker-src 'self' blob:;
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0NLW7DYZ4D"></script>
-<script>
+<!-- Consent gate: no analytics loads before Accept. -->
+<script src="/consent.js"></script>
+<script type="text/plain" data-consent="analytics" data-src="https://www.googletagmanager.com/gtag/js?id=G-0NLW7DYZ4D"></script>
+<script type="text/plain" data-consent="analytics">
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
