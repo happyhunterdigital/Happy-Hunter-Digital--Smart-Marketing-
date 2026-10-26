@@ -66,6 +66,13 @@ export const Footer: React.FC<FooterProps> = ({ isLandingPage }) => {
         </div>
         <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest">
           <Link to="/privacy-policy" className="hover:text-yellow-500 transition-colors">Privacy Policy</Link>
+          <button
+            type="button"
+            onClick={() => document.dispatchEvent(new Event('hh:open-consent'))}
+            className="hover:text-yellow-500 transition-colors uppercase"
+          >
+            Cookie settings
+          </button>
         </div>
       </div>
     </footer>

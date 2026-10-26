@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react';
+import { hasConsent, onConsentChange } from './lib/consent';
 
 // Skip error reporting entirely when running under a headless/automated
 // browser (this is what the build-time prerender step uses) so CI builds
@@ -6,7 +7,14 @@ import * as Sentry from '@sentry/react';
 const isAutomatedBrowser = typeof navigator !== 'undefined' && navigator.webdriver === true;
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
 
-if (!isAutomatedBrowser && sentryDsn) {
+let initialized = false;
+
+/**
+ * Sentry includes tracing and session replay, so it counts as optional
+ * third-party monitoring. It is initialised only after Accept.
+ */
+function initSentry(): void {
+  if (initialized || isAutomatedBrowser || !sentryDsn || !hasConsent()) return;
   try {
     Sentry.init({
       dsn: sentryDsn,
@@ -16,24 +24,34 @@ if (!isAutomatedBrowser && sentryDsn) {
         Sentry.replayIntegration(),
       ],
       // Tracing + Session Replay. Sample rates are tuned to control Sentry
-      // volume/cost on a high-traffic lead site — raise them if you want more data.
+      // volume/cost on a high-traffic lead site - raise them if you want more data.
       tracesSampleRate: 0.1,
       tracePropagationTargets: ['localhost'],
       replaysSessionSampleRate: 0.1,
       replaysOnErrorSampleRate: 1.0,
       sendDefaultPii: false,
     });
+    initialized = true;
   } catch (err) {
     console.warn('Sentry initialization notice:', err);
   }
 }
+
+if (typeof window !== 'undefined') {
+  initSentry();
+  onConsentChange((choice) => {
+    if (choice === 'accepted') initSentry();
+  });
+}
+
+const canReport = () => initialized && hasConsent();
 
 export const isSentryConfigured = Boolean(sentryDsn);
 
 export const ErrorReporter = {
   // Report a captured React error boundary failure to Sentry.
   captureError: (error: Error, info?: { componentStack?: string | null }) => {
-    if (!sentryDsn) return;
+    if (!canReport()) return;
     try {
       if (info?.componentStack) {
         Sentry.captureException(error, { contexts: { react: { componentStack: info.componentStack } } });
@@ -47,7 +65,7 @@ export const ErrorReporter = {
 
   // Report an unexpected exception that didn't reach a boundary.
   captureMessage: (message: string, extra?: Record<string, unknown>) => {
-    if (!sentryDsn) return;
+    if (!canReport()) return;
     try {
       Sentry.captureMessage(message, { extra });
     } catch {
