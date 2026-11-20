@@ -7,38 +7,31 @@
 <link rel="stylesheet" href="system.css">
 <style>
   @page{size:A3;margin:0}
-  .sheet{width:297mm;height:420mm;padding:22mm;overflow:hidden}
-  .sheet .photo{background-image:url('assets/photos/graded/discovery.jpg');opacity:.42}
-  .sheet .bracket.tl{top:9mm;left:9mm}.sheet .bracket.tr{top:9mm;right:9mm}
-  .sheet .bracket.bl{bottom:9mm;left:9mm}.sheet .bracket.br{bottom:9mm;right:9mm}
+  .sheet{width:297mm;height:420mm;display:flex;flex-direction:column;padding:0 24mm;overflow:hidden}
 
-  .top{display:flex;justify-content:space-between;align-items:flex-start}
-  .logo.poster{width:62mm}
-  .top .lab{text-align:right;font-family:'JetBrains Mono',monospace;font-size:8pt;line-height:1.7;color:var(--yellow);letter-spacing:.14em;text-transform:uppercase}
+  .doc-header{padding-top:20mm}
+  .hrow{display:flex;justify-content:space-between;align-items:flex-start;gap:12mm}
+  img.logo{width:22mm}
+  .wm{font-size:13pt;font-weight:800;letter-spacing:-.03em;margin-top:3mm}
+  .lab{text-align:right;font-size:8pt;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--mute);line-height:1.8}
+  .rule{margin-top:9mm}
 
-  .head{font-size:66pt;margin-top:36mm;max-width:235mm}
-  .head .w{color:var(--white)}
-  .rule{height:3mm;width:100%;background:linear-gradient(90deg,#FDE047,#FACC15 55%,#EAB308);margin:24mm 0 12mm}
+  .doc-body{flex:1;padding-top:18mm}
+  h1.h1{font-size:34pt;max-width:225mm;letter-spacing:-.035em}
+  .lead{margin-top:9mm;font-size:12pt;line-height:1.65;max-width:205mm}
+  .sec{margin-top:18mm}
+  .steps-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:16mm;row-gap:9mm;margin-top:7mm}
+  ol.steps li{margin-bottom:0;padding-left:13mm;font-size:11pt;line-height:1.6}
+  ol.steps li::before{font-size:10pt}
+  table.data{margin-top:7mm;font-size:10pt}
+  table.data caption{font-size:8pt;padding-bottom:3mm}
+  table.data th,table.data td{padding:3.5mm 4mm}
 
-  .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:5mm}
-  .step{border-top:.8mm solid var(--yellow);padding-top:5mm}
-  .step .n{font-family:'JetBrains Mono',monospace;font-size:18pt;color:var(--yellow);font-weight:700;line-height:1}
-  .step .l{font-family:'Space Grotesk',sans-serif;font-size:9.5pt;font-weight:700;letter-spacing:-.01em;text-transform:uppercase;line-height:1.25;margin-top:4mm;max-width:45mm}
-  .step .d{font-size:8pt;line-height:1.5;color:#C9C9D1;margin-top:2mm;max-width:45mm}
-
-  .claim{margin-top:24mm;font-family:'Space Grotesk',sans-serif;font-size:14pt;font-weight:600;line-height:1.5;max-width:200mm}
-  .claim b{color:var(--yellow)}
-
-  .foot{
-    position:absolute;left:0;right:0;bottom:0;
-    background:linear-gradient(160deg,#1c1c22,#050507);
-    border-top:1.2mm solid var(--yellow);
-    padding:13mm 22mm 15mm;display:flex;justify-content:space-between;align-items:flex-end;gap:12mm;
-  }
-  .foot .logo{width:56mm}
-  .foot .contact{text-align:right;font-size:9pt;line-height:1.7;color:#D4D4DC}
-  .foot .contact .web{font-family:'Space Grotesk',sans-serif;font-size:14pt;font-weight:700;color:var(--yellow)}
-  .foot .script{font-family:'Caveat',cursive;font-size:15pt;color:var(--white);margin-top:3mm}
+  .doc-footer{margin-top:auto;padding:0 0 20mm}
+  .frow{display:flex;justify-content:space-between;align-items:flex-end;gap:12mm;padding-top:5mm}
+  .frow .contact{font-size:10pt;line-height:1.7}
+  .frow .contact b{font-weight:800;font-size:12pt}
+  .frow .meta{text-align:right;font-size:8pt;color:var(--mute);line-height:1.7}
 </style>
 </head>
 <body>
@@ -50,38 +43,63 @@
 </div>
 
 <div class="sheet poster">
-  <div class="photo"></div><div class="glow"></div><div class="scrim"></div>
-  <span class="bracket tl"></span><span class="bracket tr"></span>
-  <span class="bracket bl"></span><span class="bracket br"></span>
-
-  <div class="top layer">
-    <div class="logo poster"><img src="assets/site-logo.jpg" alt="happyhunterdigital"></div>
-    <div class="lab" contenteditable="true" data-field="lab">Web development and marketing<br>engineering / Pretoria ZA</div>
-  </div>
-
-  <div class="head layer text-grad" contenteditable="true" data-field="headline">Don't just<br>be found.<br><span class="w">Be the answer.</span></div>
-  <div class="rule layer" aria-hidden="true"></div>
-
-  <div class="steps layer">
-    <div class="step"><div class="n" contenteditable="true" data-field="n1">01</div><div class="l" contenteditable="true" data-field="l1">Health check</div><div class="d" contenteditable="true" data-field="d1">Scan the whole footprint</div></div>
-    <div class="step"><div class="n" contenteditable="true" data-field="n2">02</div><div class="l" contenteditable="true" data-field="l2">Entity SEO</div><div class="d" contenteditable="true" data-field="d2">One consistent business record</div></div>
-    <div class="step"><div class="n" contenteditable="true" data-field="n3">03</div><div class="l" contenteditable="true" data-field="l3">Web development</div><div class="d" contenteditable="true" data-field="d3">Fast sites built to be understood</div></div>
-    <div class="step"><div class="n" contenteditable="true" data-field="n4">04</div><div class="l" contenteditable="true" data-field="l4">AEO content</div><div class="d" contenteditable="true" data-field="d4">Written to be cited by AI</div></div>
-    <div class="step"><div class="n" contenteditable="true" data-field="n5">05</div><div class="l" contenteditable="true" data-field="l5">WhatsApp automation</div><div class="d" contenteditable="true" data-field="d5">Qualify leads, book appointments</div></div>
-  </div>
-
-  <div class="claim layer" contenteditable="true" data-field="claim">Google to find you. AI to recommend you. <b>WhatsApp to close the loop.</b> One connected system, built on proper web development.</div>
-
-  <div class="foot layer">
-    <div>
-      <div class="logo"><img src="assets/site-logo.jpg" alt="happyhunterdigital"></div>
-      <div class="script" contenteditable="true" data-field="script">happyhunterdigital</div>
+  <header class="doc-header">
+    <div class="hrow">
+      <div>
+        <img class="logo" src="assets/logo.png" alt="happyhunterdigital logo">
+        <div class="wm" contenteditable="true" data-field="brand">happyhunterdigital</div>
+      </div>
+      <div class="lab" contenteditable="true" data-field="lab">Web development and AI-first digital marketing<br>Pretoria, South Africa</div>
     </div>
-    <div class="contact" contenteditable="true" data-field="contact">
-      <div class="web">happyhunterdigital.com</div>
-      motsumitl@happyhunterdigital.com<br>+27 (0) 60 101 6673<br>574 Fred Messenger Avenue, Andeon, Pretoria
+    <hr class="rule">
+  </header>
+
+  <main class="doc-body">
+    <h1 class="h1" contenteditable="true" data-field="headline">Be found. Be understood. Be chosen.</h1>
+    <p class="lead" contenteditable="true" data-field="lead">An AI-first digital marketing engineering agency helping South African SMEs get discovered on Google, WhatsApp and AI chatbots. We do not just do AI search visibility. We build and connect the whole system.</p>
+
+    <section class="sec">
+      <h2 class="h2">Our system, in five moves</h2>
+      <div class="steps-grid">
+        <ol class="steps">
+          <li contenteditable="true" data-field="s1"><b>Free online health check.</b> Website, Google, Facebook, directories and reviews.</li>
+          <li contenteditable="true" data-field="s2"><b>Foundation and entity SEO.</b> One consistent business record, backed by structured schema.</li>
+          <li contenteditable="true" data-field="s3"><b>Web development and engineering.</b> Fast, mobile-friendly sites built to be understood by people and machines.</li>
+        </ol>
+        <ol class="steps" style="counter-reset:step 3">
+          <li contenteditable="true" data-field="s4"><b>AI-ready content creation (AEO).</b> Service pages, articles and FAQs written to be cited by ChatGPT, Gemini and Perplexity.</li>
+          <li contenteditable="true" data-field="s5"><b>Sales and WhatsApp automation.</b> Chatbots and workflows that qualify leads and book appointments.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="sec">
+      <h2 class="h2">What each stage delivers</h2>
+      <table class="data">
+        <caption>happyhunterdigital service system</caption>
+        <thead><tr><th scope="col">Stage</th><th scope="col">Outcome</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Discover</th><td>Accurate, consistent information across search, social and directories.</td></tr>
+          <tr><th scope="row">Understand</th><td>A fast website and structured content that AI assistants can interpret and cite.</td></tr>
+          <tr><th scope="row">Convert</th><td>Qualified conversations and appointments through WhatsApp, email and SMS.</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="doc-footer">
+    <div class="frow">
+      <div class="contact" contenteditable="true" data-field="contact">
+        <b>happyhunterdigital.com</b><br>
+        motsumitl@happyhunterdigital.com &nbsp; / &nbsp; +27 (0) 60 101 6673<br>
+        574 Fred Messenger Avenue, Andeon, Pretoria West, Pretoria, South Africa
+      </div>
+      <div class="meta">
+        <div contenteditable="true" data-field="foot">Thabo Leslie Motsumi / Growth Strategist and Founder</div>
+        <div class="page-no" contenteditable="true" data-field="page">Page 1 of 1</div>
+      </div>
     </div>
-  </div>
+  </footer>
 </div>
 
 <script>

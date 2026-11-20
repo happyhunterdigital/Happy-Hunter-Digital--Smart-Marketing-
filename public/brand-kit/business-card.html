@@ -7,35 +7,20 @@
 <link rel="stylesheet" href="system.css">
 <style>
   @page{size:90mm 55mm;margin:0}
-  .sheet{width:90mm;height:55mm;margin:18px auto;overflow:hidden}
-  .front{background:var(--ink);color:var(--white);padding:5mm}
-  .front .photo{background-image:url('assets/photos/graded/founder.jpg');opacity:.34}
-  .front .glow{opacity:.85}
-  .back{background:linear-gradient(135deg,#FDE047,#FACC15 55%,#EAB308);color:var(--ink);padding:5mm}
-  .front .bracket,.back .bracket{width:4.5mm;height:4.5mm;border-width:.6mm}
-  .front .bracket.tl,.back .bracket.tl{top:2.5mm;left:2.5mm}
-  .front .bracket.tr,.back .bracket.tr{top:2.5mm;right:2.5mm}
-  .front .bracket.bl,.back .bracket.bl{bottom:2.5mm;left:2.5mm}
-  .front .bracket.br,.back .bracket.br{bottom:2.5mm;right:2.5mm}
+  .sheet{width:90mm;height:55mm;margin:18px auto;overflow:hidden;padding:7mm 8mm;background:#fff}
+  img.logo{width:12mm}
+  .rule{height:.7mm;margin:3mm 0}
+  .wm{font-size:9.5pt;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+  .tag{font-size:6pt;font-weight:650;line-height:1.45;color:var(--mute);max-width:46mm}
+  .foot{position:absolute;left:8mm;right:8mm;bottom:6mm;font-size:6pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
 
-  .front .logo{width:42mm;position:absolute;left:6mm;top:6mm;z-index:2}
-  .front .strap{position:absolute;left:6mm;top:36mm;z-index:2;font-family:'JetBrains Mono',monospace;font-size:5.2pt;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow)}
-  .front .tag{
-    position:absolute;left:6mm;right:6mm;bottom:6mm;z-index:2;
-    padding-top:2mm;border-top:.4mm solid var(--yellow);
-    display:flex;justify-content:space-between;
-    font-family:'JetBrains Mono',monospace;font-size:5.4pt;letter-spacing:.13em;text-transform:uppercase;color:var(--yellow);
-  }
-
-  .back .plate{position:absolute;right:6mm;top:5mm;width:24mm;background:linear-gradient(160deg,#16161b,#050507);border-radius:1.5mm;padding:2mm;z-index:2}
-  .back .plate img{display:block;width:100%}
-  .name{font-family:'Space Grotesk',sans-serif;font-size:10.5pt;font-weight:700;letter-spacing:-.04em;line-height:1}
-  .role{font-family:'JetBrains Mono',monospace;font-size:5.4pt;letter-spacing:.13em;text-transform:uppercase;margin-top:1.8mm}
-  .rule{height:.4mm;background:var(--ink);width:14mm;margin:3.5mm 0 3mm}
-  .det{font-size:6.1pt;line-height:1.6;font-weight:600;max-width:52mm}
-  .det b{font-weight:800}
-  .bweb{position:absolute;left:6mm;right:6mm;bottom:5mm;border-top:.4mm solid var(--ink);padding-top:1.8mm;font-family:'JetBrains Mono',monospace;font-size:5.4pt;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
-  .script{position:absolute;right:6mm;bottom:12mm;font-family:'Caveat',cursive;font-size:12pt;color:var(--ink)}
+  .back img.logo{position:absolute;right:8mm;top:6mm;width:10mm}
+  .name{font-size:11pt;font-weight:800;letter-spacing:-.03em;line-height:1.1;max-width:48mm}
+  .role{font-size:6.2pt;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--mute);margin-top:1.5mm}
+  .rule-k{height:.35mm;background:var(--ink);width:14mm;margin:3.5mm 0 3mm}
+  .det{font-size:6.4pt;line-height:1.55;max-width:52mm}
+  .det b{font-weight:750}
+  .web{position:absolute;left:8mm;right:8mm;bottom:5.5mm;border-top:.35mm solid var(--amber);padding-top:2mm;font-size:6.4pt;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 
   @media print{.sheet{margin:0}.front{break-after:page;page-break-after:always}}
 </style>
@@ -49,27 +34,20 @@
 </div>
 
 <div class="sheet front">
-  <div class="photo"></div><div class="glow"></div><div class="scrim"></div>
-  <span class="bracket tl"></span><span class="bracket tr"></span>
-  <span class="bracket bl"></span><span class="bracket br"></span>
-  <div class="logo"><img src="assets/site-logo.jpg" alt="happyhunterdigital"></div>
-  <div class="strap layer" contenteditable="true" data-field="strap">Smart Marketing / Pretoria ZA</div>
-  <div class="tag layer">
-    <span contenteditable="true" data-field="f1">Web development / AI marketing</span>
-    <span contenteditable="true" data-field="f2">Pretoria ZA</span>
-  </div>
+  <img class="logo" src="assets/logo.png" alt="happyhunterdigital logo">
+  <div class="wm" contenteditable="true" data-field="wm">happyhunterdigital</div>
+  <div class="rule" aria-hidden="true"></div>
+  <div class="tag" contenteditable="true" data-field="tag">Web development and AI-first digital marketing engineering for South African SMEs.</div>
+  <div class="foot" contenteditable="true" data-field="loc">Pretoria / South Africa</div>
 </div>
 
 <div class="sheet back">
-  <span class="bracket tl"></span><span class="bracket tr"></span>
-  <span class="bracket bl"></span><span class="bracket br"></span>
-  <div class="plate"><img src="assets/site-logo.jpg" alt="happyhunterdigital"></div>
+  <img class="logo" src="assets/logo.png" alt="happyhunterdigital logo">
   <div class="name" contenteditable="true" data-field="name">Thabo Leslie Motsumi</div>
   <div class="role" contenteditable="true" data-field="role">Growth Strategist and Founder</div>
-  <div class="rule" aria-hidden="true"></div>
-  <div class="det" contenteditable="true" data-field="det"><b>motsumitl@happyhunterdigital.com</b><br>+27 (0) 60 101 6673<br>574 Fred Messenger Avenue, Andeon<br>Pretoria West, South Africa</div>
-  <div class="script" contenteditable="true" data-field="script">happyhunterdigital</div>
-  <div class="bweb" contenteditable="true" data-field="bweb">happyhunterdigital.com</div>
+  <div class="rule-k" aria-hidden="true"></div>
+  <div class="det" contenteditable="true" data-field="det"><b>motsumitl@happyhunterdigital.com</b><br>+27 (0) 60 101 6673<br>574 Fred Messenger Avenue, Andeon<br>Pretoria West, Pretoria, South Africa</div>
+  <div class="web" contenteditable="true" data-field="web">happyhunterdigital.com</div>
 </div>
 
 <script>

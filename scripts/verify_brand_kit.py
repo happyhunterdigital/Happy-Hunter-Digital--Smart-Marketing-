@@ -1,4 +1,4 @@
-"""Verify the brand kit: real browser layout, PDF geometry, DOCX integrity."""
+"""Verify the professional document kit: layout, logo, copy and print output."""
 import re
 import zipfile
 from pathlib import Path
@@ -13,7 +13,7 @@ EXPECTED = {
     "letterhead": (793.7, 1122.5, 1),
     "flyer": (793.7, 1122.5, 1),
     "poster": (1122.5, 1587.4, 1),
-    "business-card": (340.16, 207.87, 2),  # 90 x 55 mm at 96 CSS px/inch
+    "business-card": (340.16, 207.87, 2),
 }
 
 with sync_playwright() as pw:
@@ -25,15 +25,13 @@ with sync_playwright() as pw:
         page.goto((KIT / (name + ".html")).as_uri(), wait_until="networkidle")
         page.evaluate("document.fonts.ready")
 
-        m = page.evaluate("""() => {
-          return [].slice.call(document.querySelectorAll('.sheet')).map(s => ({
-            w: s.getBoundingClientRect().width,
-            h: s.getBoundingClientRect().height,
-            sw: s.scrollWidth, sh: s.scrollHeight,
-            cw: s.clientWidth, ch: s.clientHeight,
-            editable: s.querySelectorAll('[contenteditable]').length
-          }));
-        }""")
+        m = page.evaluate("""() => [].slice.call(document.querySelectorAll('.sheet')).map(s => ({
+          w: s.getBoundingClientRect().width,
+          h: s.getBoundingClientRect().height,
+          sw: s.scrollWidth, sh: s.scrollHeight,
+          cw: s.clientWidth, ch: s.clientHeight,
+          editable: s.querySelectorAll('[contenteditable]').length
+        }))""")
         assert len(m) == sheets_expected, (name, "sheet count", len(m))
         for i, s in enumerate(m, 1):
             assert abs(s["w"] - w) < 1.5, (name, i, "width", s["w"], w)
@@ -44,30 +42,32 @@ with sync_playwright() as pw:
 
         external = [u for u in requests if not u.startswith("file://")]
         assert not external, (name, "external requests", external)
-        fonts_ok = page.evaluate("""() =>
-          document.fonts.check('700 20px "Space Grotesk"') &&
-          document.fonts.check('600 14px "Inter"') &&
-          document.fonts.check('700 10px "JetBrains Mono"') &&
-          document.fonts.check('400 18px "Caveat"')""" )
-        assert fonts_ok, (name, "locally hosted fonts did not load")
+        assert page.evaluate("() => document.fonts.check('400 11pt Inter')"), (name, "Inter did not load")
 
         images = page.evaluate("""() => [].slice.call(document.images).map(i => ({
-          src: i.getAttribute('src'), w: i.naturalWidth
+          src: i.getAttribute('src'), w: i.naturalWidth, h: i.naturalHeight
         }))""")
-        assert images, (name, "no logo image found")
-        assert all(i["w"] > 100 for i in images), (name, "logo failed to decode", images)
-        assert all("site-logo.jpg" in i["src"] for i in images), (name, "wrong logo asset", images)
+        assert images and all(i["w"] > 300 for i in images), (name, "logo failed to decode", images)
+        assert all("logo.png" in i["src"] for i in images), (name, "wrong logo", images)
 
         text = page.locator(".sheet").first.inner_text().lower()
         assert "web development" in text, (name, "web development copy missing")
 
-        reset = page.locator("#resetBtn")
-        assert reset.count() == 1
-        print(name, "OK", m[0]["editable"], "editable, real logo, web development copy, no overflow, zero external requests")
+        html = (KIT / (name + ".html")).read_text(encoding="utf-8")
+        assert "assets/photos" not in html and "photo" not in html, (name, "photography found")
+        assert "gradient" not in html and "blend" not in html and "glow" not in html, (name, "decorative effect found")
+        assert "caveat" not in html.lower() and "jetbrains" not in html.lower(), (name, "extra font found")
+
+        if name != "business-card":
+            assert page.locator("h1").count() >= 1, (name, "no h1")
+            assert page.locator("h2").count() >= 1, (name, "no h2")
+            assert "page 1 of 1" in text, (name, "page number missing")
+            assert page.locator("table.data").count() >= 1 or name == "letterhead", (name, "no labelled table")
+
+        print(name, "OK", m[0]["editable"], "editable, real logo, web development copy, no overflow, no external requests")
         page.close()
     browser.close()
 
-# PDFs
 for name, (_, _, pages_expected) in EXPECTED.items():
     data = (KIT / (name + ".pdf")).read_bytes()
     pages = len(re.findall(rb"/Type\s*/Page\b", data))
@@ -75,17 +75,19 @@ for name, (_, _, pages_expected) in EXPECTED.items():
     assert pages == pages_expected, (name, "PDF pages", pages)
     print(name + ".pdf", "pages =", pages, "mediabox =", boxes[0].decode() if boxes else "n/a")
 
-# DOCX
 docx_path = KIT / "letterhead.docx"
 with zipfile.ZipFile(docx_path) as z:
     assert z.testzip() is None
-    h = z.read("word/header1.xml").decode()
-    f = z.read("word/footer1.xml").decode()
-    assert 'w:fill="0B0B0F"' in h, "dark masthead missing"
-    assert 'w:fill="0B0B0F"' in f, "dark footer missing"
-    assert any(n.startswith("word/media") and n.endswith(".jpg") for n in z.namelist()), "logo not embedded"
+    names = z.namelist()
+    assert any(n.startswith("word/media") and n.endswith(".png") for n in names), "transparent logo not embedded"
+    xml = z.read("word/document.xml").decode()
+    foot = z.read("word/footer1.xml").decode()
+    assert "Inter" in xml, "Inter not set in Word document"
+    assert "PAGE" in foot, "live page number missing from Word footer"
+    for extra in ("Caveat", "Space Grotesk", "JetBrains Mono", "Archivo"):
+        assert extra not in xml + foot, extra + " found in Word document"
 doc = Document(docx_path)
 assert abs(doc.sections[0].page_width.mm - 210) < 0.1
-print("letterhead.docx OK, real logo embedded, dark masthead and footer")
+print("letterhead.docx OK, single Inter typeface, real logo, live page number")
 
 print("ALL BRAND KIT CHECKS PASSED")

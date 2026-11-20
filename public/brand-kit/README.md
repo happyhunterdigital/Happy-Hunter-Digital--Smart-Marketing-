@@ -1,66 +1,49 @@
-# happyhunterdigital brand kit v3
+# happyhunterdigital professional document kit
 
-The current stationery set. It replaces every earlier letterhead design.
+Clean, print-ready stationery. This replaces all earlier branded designs,
+including the photographic and gradient versions.
 
-It is built around three corrections to the previous version:
+## Design rules
 
-1. **The real logo.** The actual `site-logo.jpg` lockup from the site is used
-   on every piece, and embedded in the Word letterhead. On dark fields it is
-   blended with `screen` so the logo's own dark backing disappears; on the
-   yellow card back it sits on a dark plate. No redrawn approximation is used.
-2. **Web development is named explicitly.** It is step 03 in the flyer and
-   poster, it leads the letterhead body copy, and it appears in the language
-   line and the card strap. The kit no longer reduces the work to AI search
-   visibility.
-3. **Professional colour grading and high-quality type.** Brand photography
-   is colour-graded, then composited with radial amber glows, linear gradients,
-   luminosity and screen blend modes, and dark scrims so type stays legible.
-   Five variable fonts are self-hosted. Previews render at 3x device scale
-   (roughly 290 DPI at final trim size).
-
-Everything is first-party. No CDN, no Google Fonts request, no tracker.
-
-## Colour and type system
-
-- Ink `#0B0B0F`, ink-2 `#16161B`, ink-3 `#232329`.
-- Yellow `#FACC15`, pale yellow `#FDE047`, amber `#EAB308`. Yellow to amber
-  linear gradients are used for rules, footer bands and display text.
-- Space Grotesk for display, Inter for body, JetBrains Mono for technical
-  labels, Caveat for the handwritten wordmark, Archivo kept for compatibility.
-- All fonts are variable TTFs in `fonts/`, loaded with `font-display:block` so
-  print never captures a fallback.
-- Graded source photographs are in `assets/photos/graded/`. Originals are in
-  `assets/photos/`. `scripts/grade_photos.py` regenerates the graded set.
+- **No photography, gradients, glows, blend modes or decorative effects.**
+- **One typeface throughout:** Inter variable, self-hosted in `fonts/`.
+  Heading weights 750–800, body 400 at 10.5 pt with 1.5–1.62 line spacing.
+- **Restrained colour:** white paper, ink `#111114`, grey `#5B5B63` for
+  supporting text, `#FACC15` used only for thin rules and the flyer contact
+  band, `#EAB308` only for list numbers.
+- **Clear hierarchy:** document title as a real `h1`, sections as `h2`,
+  numbered lists and a labelled table where information needs scanning.
+- **Generous whitespace:** 20–24 mm side margins, consistent spacing between
+  sections, left-aligned body copy with uniform paragraph spacing.
+- **Page furniture:** every document has a header, a footer with contact
+  details and a "Page 1 of 1" marker. The Word letterhead uses a live `PAGE`
+  field.
+- **Logo:** the supplied `logo-new.jpg` is keyed to a transparent
+  `assets/logo.png` so it sits cleanly on white paper. Regenerate with
+  `python scripts/make_transparent_logo.py`.
 
 ## The five moves
 
-| # | Move |
-| --- | --- |
-| 01 | Free online health check, website, Google, Facebook, directories and reviews |
-| 02 | Foundation and entity SEO, one consistent business record plus structured schema |
-| 03 | Web development and engineering, fast, mobile-friendly sites built to be understood |
-| 04 | AI-ready content (AEO), service pages, articles and FAQs written to be cited |
-| 05 | Sales and WhatsApp automation, chatbots and workflows that qualify leads and book appointments |
+1. Free online health check — website, Google, Facebook, directories, reviews.
+2. Foundation and entity SEO — one consistent record plus structured schema.
+3. Web development and engineering — fast, mobile-friendly, AI-readable sites.
+4. AI-ready content creation (AEO) — pages, articles and FAQs written to be cited.
+5. Sales and WhatsApp automation — qualify leads and book appointments.
 
 ## Pieces
 
-| Piece | Treatment | Files |
-| --- | --- | --- |
-| Letterhead A4 | white body, dark photo masthead with the real logo, amber footer band | `letterhead.html`, `letterhead.pdf`, `letterhead.docx` |
-| Flyer A4 | dark graded image field, five numbered cards plus a logo plate, gradient footer | `flyer.html`, `flyer.pdf` |
-| Poster A3 | full dark photographic field, gradient display type, five-step strip, dark footer | `poster.html`, `poster.pdf` |
-| Business card 90 x 55 mm | black front with graded founder photo and logo, gradient yellow back | `business-card.html`, `business-card.pdf` |
+| Piece | Files |
+| --- | --- |
+| Letterhead A4, editable and print | `letterhead.html`, `letterhead.pdf`, `letterhead.docx` |
+| Capability sheet A4 | `flyer.html`, `flyer.pdf` |
+| Poster A3 | `poster.html`, `poster.pdf` |
+| Business card 90 x 55 mm, front and back | `business-card.html`, `business-card.pdf` |
 
-Each HTML file is click-to-edit. Use **Print / Save PDF**, leave margins at
-none, and keep background graphics on so the gradients and blends print. The
-business card prints front, then back, as two pages.
-
-PNG previews in `previews/` are rendered at 3x scale: A4 at 2382 x 3369 px,
-A3 at 3372 x 4764 px, card at 1026 x 627 px.
+Open any HTML file in a browser, click text to edit, then use **Print / Save
+PDF** with margins set to none and background graphics on. PNG previews are in
+`previews/`, rendered at roughly 290 DPI at final trim size.
 
 ## Copy standard
-
-Every piece carries the real details:
 
 - motsumitl@happyhunterdigital.com
 - +27 (0) 60 101 6673
@@ -75,14 +58,14 @@ Every piece carries the real details:
 From the repo root:
 
 ```
-python scripts/grade_photos.py     # only needed if source photos change
+python scripts/make_transparent_logo.py   # only if the supplied JPG changes
 python scripts/build_brand_kit.py
 python scripts/verify_brand_kit.py
 node scripts/consent-audit.mjs
 ```
 
-`build_brand_kit.py` renders exact-size PDFs and 3x PNG previews, then rebuilds
-the Word letterhead with the real logo. `verify_brand_kit.py` confirms exact
-sheet dimensions, no overflow, decoded logo images, locally loaded fonts, web
-development copy in every piece, zero external requests, correct PDF page
-counts and a valid DOCX. The consent audit confirms no third-party script.
+Verification checks exact sheet dimensions, no overflow, the real logo
+decoding on every sheet, "web development" copy present, a single Inter
+typeface, no photographic or decorative effects, heading structure, page
+numbers, zero external requests, correct PDF page counts and a valid DOCX
+with a live page field.

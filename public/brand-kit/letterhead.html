@@ -7,45 +7,37 @@
 <link rel="stylesheet" href="system.css">
 <style>
   @page{size:A4;margin:0}
-  .sheet{width:210mm;min-height:297mm;display:flex;flex-direction:column;color:var(--ink)}
+  .sheet{width:210mm;height:297mm;display:flex;flex-direction:column;padding:0 22mm;overflow:hidden}
 
-  /* header: graded photo, gradient, real logo */
-  .mh{background:var(--ink);color:var(--white);padding:6mm 15mm 0;flex:none;min-height:42mm;overflow:hidden}
-  .mh .photo{background-image:url('assets/photos/graded/boardroom.jpg');opacity:.42}
-  .mh .glow{opacity:.9}
-  .mh-row{display:flex;justify-content:space-between;align-items:center;gap:8mm}
-  .logo.hd{width:46mm;flex:none}
-  .mh-contact{font-size:8.4pt;line-height:1.7;text-align:right;color:var(--grey)}
-  .mh-contact b{color:var(--white);font-weight:700}
-  .mh-strip{
-    margin:6mm -15mm 0;padding:2.2mm 15mm;
-    background:linear-gradient(90deg,#FDE047,#EAB308);color:var(--ink);
-    display:flex;justify-content:space-between;
-    font-size:6.9pt;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
-  }
+  .doc-header{padding-top:14mm}
+  .hrow{display:flex;justify-content:space-between;align-items:flex-start;gap:10mm}
+  .brandline{display:flex;align-items:center;gap:3mm}
+  img.logo{width:14mm}
+  .wm{font-size:13pt;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .tagline{margin-top:1.5mm;font-size:6.8pt;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--mute)}
+  .contact{text-align:right;font-size:8.3pt;line-height:1.55}
+  .contact b{font-weight:750}
+  .rule{margin-top:6mm}
 
-  /* body */
-  .body{flex:1;background:#fff;padding:17mm 15mm 12mm}
-  .date{text-align:right;font-size:8pt;color:var(--mute);letter-spacing:.12em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
-  .rec{margin-top:12mm;font-size:9.6pt;line-height:1.7}
-  .rec .who{font-weight:800;font-family:'Space Grotesk',sans-serif}
-  .subj{margin-top:11mm;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19pt;letter-spacing:-.045em;line-height:1.07;text-transform:uppercase;max-width:160mm;color:var(--ink)}
-  .bar-mark{width:28mm;height:1.5mm;background:linear-gradient(90deg,#FDE047,#EAB308);margin:5mm 0 7mm}
-  .sal{font-size:10pt;font-weight:800;margin-bottom:5mm}
-  p.p{font-size:10.5pt;line-height:1.72;margin:0 0 4.4mm;max-width:168mm}
-  .sign{margin-top:9mm;font-size:10pt;line-height:1.55}
-  .sign .nm{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12pt}
-  .sign .rl{font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);font-family:'JetBrains Mono',monospace}
+  .doc-body{flex:1;padding-top:10mm}
+  .meta{display:flex;justify-content:space-between;font-size:7.5pt;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
+  .recipient{margin-top:7mm;font-size:10pt;line-height:1.6}
+  .recipient b{font-weight:750}
+  .subject{margin-top:7mm;font-size:18pt;line-height:1.2}
+  .subject-rule{width:24mm;margin-top:4mm}
+  .salutation{margin-top:6mm;font-size:10.5pt;font-weight:650}
+  .copy{margin-top:5mm}
+  .sec-title{margin-top:5mm}
+  ol.steps{margin-top:4mm}
+  ol.steps li{margin-bottom:3.2mm;padding-left:10mm;font-size:9.8pt;line-height:1.5}
+  .signoff{margin-top:7mm;font-size:10.5pt;line-height:1.55}
+  .signoff .nm{font-weight:750}
+  .signoff .rl{font-size:8pt;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
 
-  /* footer with gradient and script lockup */
-  .ft{background:var(--ink);color:var(--white);padding:6mm 15mm 7mm;flex:none;overflow:hidden;position:relative}
-  .ft .glow{opacity:.7}
-  .ft-top{display:flex;justify-content:space-between;gap:10mm;font-size:8.2pt;line-height:1.65}
-  .ft-top .cap{display:block;font-size:6.6pt;font-weight:700;color:var(--yellow);margin-bottom:1.4mm;font-family:'JetBrains Mono',monospace;letter-spacing:.18em;text-transform:uppercase}
-  .ft-top .r{text-align:right}
-  .ft-bottom{display:flex;justify-content:space-between;align-items:flex-end;margin-top:5mm;padding-top:3mm;border-top:.3mm solid #3f3f46}
-  .ft-bottom .script{font-size:17pt;color:var(--white);line-height:1}
-  .ft-bottom .web{font-size:8pt;color:var(--yellow);font-family:'JetBrains Mono',monospace;letter-spacing:.08em}
+  .doc-footer{padding-bottom:12mm;margin-top:auto}
+  .frow{display:flex;justify-content:space-between;gap:8mm;padding-top:3.5mm;font-size:8pt;line-height:1.55;color:var(--mute)}
+  .frow .right{text-align:right}
+  .frow b{font-weight:700;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -58,43 +50,60 @@
 </div>
 
 <div class="sheet letterhead">
-  <header class="mh">
-    <div class="photo"></div><div class="glow"></div><div class="scrim"></div>
-    <div class="mh-row layer">
-      <div class="logo hd"><img src="assets/site-logo.jpg" alt="happyhunterdigital"></div>
-      <div class="mh-contact" contenteditable="true" data-field="mhcontact">
+  <header class="doc-header">
+    <div class="hrow">
+      <div>
+        <div class="brandline">
+          <img class="logo" src="assets/logo.png" alt="happyhunterdigital logo">
+          <div class="wm" contenteditable="true" data-field="brand">happyhunterdigital</div>
+        </div>
+        <div class="tagline" contenteditable="true" data-field="tagline">Web development and AI-first digital marketing</div>
+      </div>
+      <div class="contact" contenteditable="true" data-field="contact">
         motsumitl@happyhunterdigital.com<br>
         <b>+27 (0) 60 101 6673</b><br>
         happyhunterdigital.com
       </div>
     </div>
-    <div class="mh-strip layer">
-      <span contenteditable="true" data-field="strip1">Correspondence</span>
-      <span contenteditable="true" data-field="strip2">Pretoria / South Africa</span>
-    </div>
+    <hr class="rule">
   </header>
 
-  <main class="body">
-    <div class="date" contenteditable="true" data-section="letter" data-field="date" data-ph="Date">19 November 2026</div>
-    <div class="rec" contenteditable="true" data-section="letter" data-field="recipient" data-ph="Recipient"><span class="who">The Management</span><br>Pretoria, South Africa</div>
-    <div class="subj" contenteditable="true" data-section="letter" data-field="subject" data-ph="Subject">A complete system for being found, asked and chosen</div>
-    <div class="bar-mark" aria-hidden="true"></div>
-    <div class="sal" contenteditable="true" data-section="letter" data-field="salutation" data-ph="Salutation">Dear Sir or Madam,</div>
-    <p class="p" contenteditable="true" data-section="letter" data-field="p1" data-ph="Paragraph 1">Most agencies optimise one channel. We engineer the whole path: fast, mobile-friendly web development and marketing systems that turn a website into a 24/7 salesperson.</p>
-    <p class="p" contenteditable="true" data-section="letter" data-field="p2" data-ph="Paragraph 2">It starts with a free online health check across your website, Google, Facebook, directories and reviews. We correct what is missing, standardise your business details, add structured schema, and publish service pages, articles and FAQs that ChatGPT, Gemini and Perplexity can read and cite.</p>
-    <p class="p" contenteditable="true" data-section="letter" data-field="p3" data-ph="Paragraph 3">Then we connect AI-ready websites, smart chatbots and automated WhatsApp, email and SMS workflows that qualify leads and book appointments. Not just AI visibility. A business that is discoverable on Google, recommended by AI and reachable on WhatsApp.</p>
-    <div class="sign" contenteditable="true" data-section="letter" data-field="signoff" data-ph="Sign-off">Kind regards,<br><br><span class="nm">Thabo Leslie Motsumi</span><br><span class="rl">Growth Strategist and Founder</span></div>
+  <main class="doc-body">
+    <div class="meta">
+      <span contenteditable="true" data-section="letter" data-field="date" data-ph="Date">19 November 2026</span>
+      <span contenteditable="true" data-section="letter" data-field="ref" data-ph="Reference">Ref: HHD / 2026 / 019</span>
+    </div>
+
+    <div class="recipient" contenteditable="true" data-section="letter" data-field="recipient" data-ph="Recipient"><b>The Management</b><br>Pretoria, South Africa</div>
+
+    <h1 class="h1 subject" contenteditable="true" data-section="letter" data-field="subject" data-ph="Subject">A complete system for being found, asked and chosen</h1>
+    <hr class="rule subject-rule">
+
+    <div class="salutation" contenteditable="true" data-section="letter" data-field="salutation" data-ph="Salutation">Dear Sir or Madam,</div>
+
+    <p class="copy" contenteditable="true" data-section="letter" data-field="p1" data-ph="Opening paragraph">Most agencies optimise one channel. We engineer the whole path, from search to conversation to appointment.</p>
+    <p class="copy" contenteditable="true" data-section="letter" data-field="p2" data-ph="Paragraph 2">It begins with a free online health check across your website, Google, Facebook, directories and reviews. We correct what is missing, standardise your business details and add structured schema so search engines and AI assistants understand the business.</p>
+    <p class="copy" contenteditable="true" data-section="letter" data-field="p3" data-ph="Paragraph 3">We then build the website, publish content that can be cited, and connect automated workflows that qualify leads and book appointments. Not just AI visibility.</p>
+
+    <h2 class="h2 sec-title">Our system</h2>
+    <ol class="steps">
+      <li contenteditable="true" data-section="letter" data-field="s1"><b>Free online health check.</b> Website, Google, Facebook, directories and reviews.</li>
+      <li contenteditable="true" data-section="letter" data-field="s2"><b>Foundation and entity SEO.</b> One consistent business record, backed by structured schema.</li>
+      <li contenteditable="true" data-section="letter" data-field="s3"><b>Web development and engineering.</b> Fast, mobile-friendly sites built to be understood.</li>
+      <li contenteditable="true" data-section="letter" data-field="s4"><b>AI-ready content creation (AEO).</b> Service pages, articles and FAQs written to be cited.</li>
+      <li contenteditable="true" data-section="letter" data-field="s5"><b>Sales and WhatsApp automation.</b> Chatbots and workflows that qualify leads and book appointments.</li>
+    </ol>
+
+    <div class="signoff" contenteditable="true" data-section="letter" data-field="signoff" data-ph="Sign-off">Kind regards,<br><br><span class="nm">Thabo Leslie Motsumi</span><br><span class="rl">Growth Strategist and Founder</span></div>
   </main>
 
-  <footer class="ft">
-    <div class="glow"></div>
-    <div class="ft-top layer">
-      <div contenteditable="true" data-field="addr"><span class="cap">Studio</span>574 Fred Messenger Avenue, Andeon<br>Pretoria West, Pretoria, South Africa</div>
-      <div class="r" contenteditable="true" data-field="direct"><span class="cap">Direct</span>motsumitl@happyhunterdigital.com<br>+27 (0) 60 101 6673</div>
-    </div>
-    <div class="ft-bottom layer">
-      <div class="script" contenteditable="true" data-field="script">happyhunterdigital</div>
-      <div class="web" contenteditable="true" data-field="web">happyhunterdigital.com</div>
+  <footer class="doc-footer">
+    <div class="frow">
+      <div contenteditable="true" data-field="address"><b>Studio</b><br>574 Fred Messenger Avenue, Andeon<br>Pretoria West, Pretoria, South Africa</div>
+      <div class="right">
+        <div contenteditable="true" data-field="footcontact">motsumitl@happyhunterdigital.com<br>+27 (0) 60 101 6673</div>
+        <div class="page-no" contenteditable="true" data-field="page">Page 1 of 1</div>
+      </div>
     </div>
   </footer>
 </div>
