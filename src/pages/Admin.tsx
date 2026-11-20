@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, getDocs, limit } from 'firebase/firestore';
 import { db, auth } from '../firebaseConfig';
 import { signInWithRedirect, GoogleAuthProvider, onAuthStateChanged, signOut, getRedirectResult } from 'firebase/auth';
-import { Terminal, Search, X, Crosshair, Calendar, Mail, Globe, Activity, Database, ShieldAlert, Lock, ArrowRight, MessageCircle, BarChart3, Smartphone, ShieldCheck, LogOut, Layers, DollarSign, FileText, Clock, Users } from 'lucide-react';
+import { Terminal, Search, X, Crosshair, Calendar, Mail, Globe, Activity, Database, ShieldAlert, Lock, ArrowRight, MessageCircle, BarChart3, Smartphone, ShieldCheck, LogOut, Layers, DollarSign, FileText, Clock, Users, Building2 } from 'lucide-react';
 import { isAdminEmail } from '../utils/admin';
 import { CRM } from './Admin/CRM';
+import { Integrations } from './Admin/Integrations';
+import { MultiTenant } from './Admin/MultiTenant';
 import { Projects } from './Admin/Projects';
 import { TimeTracking } from './Admin/TimeTracking';
 import { Invoicing } from './Admin/Invoicing';
@@ -16,7 +18,7 @@ export const Admin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
-  const [activeView, setActiveView] = useState<'whatsapp' | 'web' | 'workspace' | 'crm' | 'projects' | 'time' | 'invoicing' | 'hr'>('crm');
+  const [activeView, setActiveView] = useState<'whatsapp' | 'web' | 'workspace' | 'crm' | 'projects' | 'time' | 'invoicing' | 'hr' | 'integrations' | 'orgs'>('crm');
   const [leads, setLeads] = useState<any[]>([]);
   const [prospects, setProspects] = useState<any[]>([]);
   const [workspaceTasks, setWorkspaceTasks] = useState<any[]>([]);
@@ -198,6 +200,18 @@ export const Admin: React.FC = () => {
               className={`flex items-center gap-2 px-6 py-2 text-sm font-bold uppercase tracking-widest rounded-lg transition-colors ${activeView === 'hr' ? 'bg-yellow-500 text-black' : 'text-gray-500 hover:text-white'}`}
             >
               <Users size={16} /> HR
+            </button>
+            <button
+              onClick={() => setActiveView('integrations')}
+              className={`flex items-center gap-2 px-6 py-2 text-sm font-bold uppercase tracking-widest rounded-lg transition-colors ${activeView === 'integrations' ? 'bg-yellow-500 text-black' : 'text-gray-500 hover:text-white'}`}
+            >
+              <Activity size={16} /> Integrations
+            </button>
+            <button
+              onClick={() => setActiveView('orgs')}
+              className={`flex items-center gap-2 px-6 py-2 text-sm font-bold uppercase tracking-widest rounded-lg transition-colors ${activeView === 'orgs' ? 'bg-yellow-500 text-black' : 'text-gray-500 hover:text-white'}`}
+            >
+              <Building2 size={16} /> Orgs
             </button>
           </div>
           
@@ -499,6 +513,8 @@ export const Admin: React.FC = () => {
       {activeView === 'time' && <TimeTracking />}
       {activeView === 'invoicing' && <Invoicing />}
       {activeView === 'hr' && <HR />}
+      {activeView === 'integrations' && <Integrations />}
+      {activeView === 'orgs' && <MultiTenant />}
     </div>
   );
 };
