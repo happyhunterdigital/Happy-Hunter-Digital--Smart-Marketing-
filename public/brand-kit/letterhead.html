@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>happyhunterdigital letterhead</title>
+<link rel="stylesheet" href="system.css">
+<style>
+  @page{size:A4;margin:0}
+  .sheet{width:210mm;min-height:297mm;display:flex;flex-direction:column}
+
+  /* yellow masthead */
+  .mh{background:var(--yellow);color:var(--ink);padding:9mm 15mm 8mm;flex:none;position:relative}
+  .mh-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8mm}
+  .lock{display:flex;align-items:center;gap:3.4mm}
+  .lock svg{width:11mm;height:11mm;display:block;flex:none}
+  .wn{font-size:21pt;font-weight:900;letter-spacing:-.05em;line-height:1;white-space:nowrap}
+  .desc{font-size:7pt;font-weight:800;letter-spacing:.17em;margin-top:2.4mm;text-transform:uppercase}
+  .mh-contact{text-align:right;font-size:8.5pt;line-height:1.7;font-weight:600}
+  .mh-contact b{font-weight:900}
+  .mh-strip{
+    margin:8mm -15mm -8mm;padding:2mm 15mm;
+    background:var(--ink);color:var(--yellow);
+    display:flex;justify-content:space-between;
+    font-size:6.8pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  }
+
+  /* body */
+  .body{flex:1;padding:16mm 15mm 12mm}
+  .date{text-align:right;font-size:8pt;color:var(--mute);letter-spacing:.1em;text-transform:uppercase}
+  .rec{margin-top:12mm;font-size:9.5pt;line-height:1.65}
+  .rec .who{font-weight:900}
+  .subj{margin-top:11mm;font-size:19pt;font-weight:900;letter-spacing:-.04em;line-height:1.08;text-transform:uppercase;max-width:160mm}
+  .bar-mark{width:26mm;height:1.4mm;background:var(--yellow);margin:5mm 0 7mm}
+  .sal{font-size:10pt;font-weight:800;margin-bottom:5mm}
+  p.p{font-size:10.5pt;line-height:1.72;margin:0 0 4.4mm;max-width:168mm}
+  .sign{margin-top:9mm;font-size:10pt;line-height:1.55}
+  .sign .nm{font-weight:900}
+  .sign .rl{font-size:8pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+
+  /* black footer */
+  .ft{background:var(--ink);color:var(--yellow);padding:6mm 15mm 7mm;flex:none}
+  .ft-top{display:flex;justify-content:space-between;gap:10mm;font-size:8pt;line-height:1.6}
+  .ft-top .cap{display:block;font-size:6.5pt;font-weight:900;letter-spacing:.2em;color:var(--yellow);margin-bottom:1.2mm}
+  .ft-top .r{text-align:right}
+  .ft-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:5mm;padding-top:3mm;border-top:.3mm solid #3f3f46;font-size:7pt;letter-spacing:.12em;text-transform:uppercase}
+  .ft-bottom .brand{display:flex;align-items:center;gap:2mm;font-weight:900;letter-spacing:-.03em;font-size:9pt;text-transform:none}
+  .ft-bottom .brand svg{width:5mm;height:5mm}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <b>happyhunterdigital</b><span class="tip">Letterhead. Click any text to edit, then Print and Save as PDF.</span>
+  <button class="pri" id="printBtn" type="button">Print / Save PDF</button>
+  <button id="blankBtn" type="button">New blank letter</button>
+  <button id="resetBtn" type="button">Reset sample</button>
+</div>
+
+<div class="sheet letterhead">
+  <header class="mh">
+    <div class="mh-row">
+      <div>
+        <div class="lock">
+          <svg viewBox="0 0 256 256" aria-label="happyhunterdigital mark">
+            <rect width="256" height="256" rx="58" fill="#0B0B0F"/>
+            <path d="M94 168 L78 198 L122 168 Z" fill="#FACC15"/>
+            <rect x="56" y="82" width="144" height="88" rx="26" fill="#FACC15"/>
+            <rect x="82" y="118" width="54" height="16" rx="8" fill="#0B0B0F"/>
+            <path d="M132 106 L172 126 L132 146 Z" fill="#0B0B0F"/>
+          </svg>
+          <div class="wn" contenteditable="true" data-field="brand">happyhunterdigital</div>
+        </div>
+        <div class="desc" contenteditable="true" data-field="desc">Smart Marketing / AI-first digital engineering</div>
+      </div>
+      <div class="mh-contact" contenteditable="true" data-field="mhcontact">
+        motsumitl@happyhunterdigital.com<br>
+        <b>+27 (0) 60 101 6673</b><br>
+        happyhunterdigital.com
+      </div>
+    </div>
+    <div class="mh-strip">
+      <span contenteditable="true" data-field="strip1">Correspondence</span>
+      <span contenteditable="true" data-field="strip2">Pretoria / South Africa</span>
+    </div>
+  </header>
+
+  <main class="body">
+    <div class="date" contenteditable="true" data-section="letter" data-field="date" data-ph="Date">19 November 2026</div>
+    <div class="rec" contenteditable="true" data-section="letter" data-field="recipient" data-ph="Recipient"><span class="who">The Management</span><br>Pretoria, South Africa</div>
+    <div class="subj" contenteditable="true" data-section="letter" data-field="subject" data-ph="Subject">A complete system for being found, asked and chosen</div>
+    <div class="bar-mark" aria-hidden="true"></div>
+    <div class="sal" contenteditable="true" data-section="letter" data-field="salutation" data-ph="Salutation">Dear Sir or Madam,</div>
+    <p class="p" contenteditable="true" data-section="letter" data-field="p1" data-ph="Paragraph 1">Most agencies optimise one channel. We engineer the whole path from search to conversation to appointment.</p>
+    <p class="p" contenteditable="true" data-section="letter" data-field="p2" data-ph="Paragraph 2">It starts with a free online health check across your website, Google, Facebook, directories and reviews. We correct what is missing or inconsistent, add structured schema so Google and AI assistants understand the business, and publish service pages, articles and FAQs that ChatGPT, Gemini and Perplexity can read and cite.</p>
+    <p class="p" contenteditable="true" data-section="letter" data-field="p3" data-ph="Paragraph 3">Then we connect AI-ready websites, smart chatbots and automated workflows across WhatsApp, email, SMS and direct messages that qualify leads and book appointments. The result is not more activity. It is a business that is discoverable on Google, recommended by AI and reachable on WhatsApp.</p>
+    <div class="sign" contenteditable="true" data-section="letter" data-field="signoff" data-ph="Sign-off">Kind regards,<br><br><span class="nm">Thabo Leslie Motsumi</span><br><span class="rl">Growth Strategist and Founder</span></div>
+  </main>
+
+  <footer class="ft">
+    <div class="ft-top">
+      <div contenteditable="true" data-field="addr"><span class="cap">Studio</span>574 Fred Messenger Avenue, Andeon<br>Pretoria West, Pretoria, South Africa</div>
+      <div class="r" contenteditable="true" data-field="direct"><span class="cap">Direct</span>motsumitl@happyhunterdigital.com<br>+27 (0) 60 101 6673</div>
+    </div>
+    <div class="ft-bottom">
+      <div class="brand">
+        <svg viewBox="0 0 256 256" aria-hidden="true"><rect width="256" height="256" rx="58" fill="#FACC15"/><path d="M94 168 L78 198 L122 168 Z" fill="#0B0B0F"/><rect x="56" y="82" width="144" height="88" rx="26" fill="#0B0B0F"/><rect x="82" y="118" width="54" height="16" rx="8" fill="#FACC15"/><path d="M132 106 L172 126 L132 146 Z" fill="#FACC15"/></svg>
+        <span contenteditable="true" data-field="web">happyhunterdigital.com</span>
+      </div>
+      <div contenteditable="true" data-field="locale">Pretoria / South Africa</div>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var f=[].slice.call(document.querySelectorAll('[contenteditable]')),o={};
+  f.forEach(function(x){o[x.dataset.field]=x.innerHTML});
+  document.getElementById('printBtn').onclick=function(){window.print()};
+  document.getElementById('resetBtn').onclick=function(){f.forEach(function(x){x.innerHTML=o[x.dataset.field]})};
+  document.getElementById('blankBtn').onclick=function(){
+    f.forEach(function(x){if(x.dataset.section==='letter')x.textContent=''});
+    var d=new Date(),m=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    document.querySelector('[data-field="date"]').textContent=d.getDate()+' '+m[d.getMonth()]+' '+d.getFullYear();
+    document.querySelector('[data-field="subject"]').focus();
+  };
+})();
+</script>
+</body>
+</html>

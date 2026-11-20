@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>happyhunterdigital business card</title>
+<link rel="stylesheet" href="system.css">
+<style>
+  @page{size:90mm 55mm;margin:0}
+  .sheet{width:90mm;height:55mm;margin:18px auto;overflow:hidden}
+  .front{background:var(--ink);color:var(--yellow);padding:6mm}
+  .back{background:var(--yellow);color:var(--ink);padding:6mm}
+  .front .bracket,.back .bracket{width:5mm;height:5mm;border-width:.7mm}
+  .front .bracket.tl,.back .bracket.tl{top:3mm;left:3mm}
+  .front .bracket.tr,.back .bracket.tr{top:3mm;right:3mm}
+  .front .bracket.bl,.back .bracket.bl{bottom:3mm;left:3mm}
+  .front .bracket.br,.back .bracket.br{bottom:3mm;right:3mm}
+
+  /* front */
+  .lock{display:flex;align-items:center;gap:2.4mm;margin-top:4mm}
+  .lock svg{width:9mm;height:9mm;flex:none}
+  .wn{font-size:13.5pt;font-weight:900;letter-spacing:-.055em;line-height:1;white-space:nowrap}
+  .fd{font-size:5.4pt;font-weight:900;letter-spacing:.18em;text-transform:uppercase;margin-top:3.5mm}
+  .dots{position:absolute;right:8mm;top:9mm;display:grid;grid-template-columns:repeat(2,3mm);gap:1.4mm}
+  .dots i{width:3mm;height:3mm;background:var(--yellow);display:block}
+  .dots i:nth-child(2),.dots i:nth-child(3){opacity:.42}
+  .fbottom{position:absolute;left:6mm;right:6mm;bottom:6mm;border-top:.5mm solid var(--yellow);padding-top:2.5mm;display:flex;justify-content:space-between;font-size:5.6pt;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+
+  /* back */
+  .name{font-size:11pt;font-weight:900;letter-spacing:-.04em;line-height:1}
+  .role{font-size:5.6pt;font-weight:900;letter-spacing:.15em;text-transform:uppercase;margin-top:2mm}
+  .rule{height:.5mm;background:var(--ink);width:14mm;margin:4mm 0 3.5mm}
+  .det{font-size:6.2pt;line-height:1.65;font-weight:600}
+  .det b{font-weight:900}
+  .bmark{position:absolute;right:6mm;top:6mm;width:7mm;height:7mm}
+  .bweb{position:absolute;left:6mm;right:6mm;bottom:5.5mm;border-top:.4mm solid var(--ink);padding-top:2mm;font-size:5.6pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+
+  @media print{.sheet{margin:0}.front{break-after:page;page-break-after:always}}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <b>happyhunterdigital</b><span class="tip">Business card, front and back. Edit both sides, then Print and Save as PDF. Two pages: front, then back.</span>
+  <button class="pri" id="printBtn" type="button">Print / Save PDF</button>
+  <button id="resetBtn" type="button">Reset content</button>
+</div>
+
+<div class="sheet front">
+  <span class="bracket tl"></span><span class="bracket tr"></span>
+  <span class="bracket bl"></span><span class="bracket br"></span>
+  <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="lock">
+    <svg viewBox="0 0 256 256" aria-label="happyhunterdigital mark">
+      <rect width="256" height="256" rx="58" fill="#FACC15"/>
+      <path d="M94 168 L78 198 L122 168 Z" fill="#0B0B0F"/>
+      <rect x="56" y="82" width="144" height="88" rx="26" fill="#0B0B0F"/>
+      <rect x="82" y="118" width="54" height="16" rx="8" fill="#FACC15"/>
+      <path d="M132 106 L172 126 L132 146 Z" fill="#FACC15"/>
+    </svg>
+    <div class="wn" contenteditable="true" data-field="wn">happyhunterdigital</div>
+  </div>
+  <div class="fd" contenteditable="true" data-field="fd">Smart Marketing / AI-first digital engineering</div>
+  <div class="fbottom">
+    <span contenteditable="true" data-field="f1">Google / WhatsApp / AI</span>
+    <span contenteditable="true" data-field="f2">Pretoria ZA</span>
+  </div>
+</div>
+
+<div class="sheet back">
+  <span class="bracket tl"></span><span class="bracket tr"></span>
+  <span class="bracket bl"></span><span class="bracket br"></span>
+  <svg class="bmark" viewBox="0 0 256 256" aria-hidden="true"><rect width="256" height="256" rx="58" fill="#0B0B0F"/><path d="M94 168 L78 198 L122 168 Z" fill="#FACC15"/><rect x="56" y="82" width="144" height="88" rx="26" fill="#FACC15"/><rect x="82" y="118" width="54" height="16" rx="8" fill="#0B0B0F"/><path d="M132 106 L172 126 L132 146 Z" fill="#0B0B0F"/></svg>
+  <div class="name" contenteditable="true" data-field="name">Thabo Leslie Motsumi</div>
+  <div class="role" contenteditable="true" data-field="role">Growth Strategist and Founder</div>
+  <div class="rule" aria-hidden="true"></div>
+  <div class="det" contenteditable="true" data-field="det">
+    <b>motsumitl@happyhunterdigital.com</b><br>
+    +27 (0) 60 101 6673<br>
+    574 Fred Messenger Avenue, Andeon<br>
+    Pretoria West, Pretoria, South Africa
+  </div>
+  <div class="bweb" contenteditable="true" data-field="bweb">happyhunterdigital.com</div>
+</div>
+
+<script>
+(function(){
+  var f=[].slice.call(document.querySelectorAll('[contenteditable]')),o={};
+  f.forEach(function(x){o[x.dataset.field]=x.innerHTML});
+  document.getElementById('printBtn').onclick=function(){window.print()};
+  document.getElementById('resetBtn').onclick=function(){f.forEach(function(x){x.innerHTML=o[x.dataset.field]})};
+})();
+</script>
+</body>
+</html>

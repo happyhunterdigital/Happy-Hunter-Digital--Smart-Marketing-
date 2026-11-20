@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>happyhunterdigital flyer</title>
+<link rel="stylesheet" href="system.css">
+<style>
+  @page{size:A4;margin:0}
+  .sheet{
+    width:210mm;min-height:297mm;background:var(--ink);color:var(--yellow);
+    padding:14mm;overflow:hidden;
+  }
+  .sheet .bracket.tl{top:6mm;left:6mm}
+  .sheet .bracket.tr{top:6mm;right:6mm}
+  .sheet .bracket.bl{bottom:6mm;left:6mm}
+  .sheet .bracket.br{bottom:6mm;right:6mm}
+
+  .topline{display:flex;justify-content:space-between;font-size:7pt;font-weight:800;letter-spacing:.2em;text-transform:uppercase;margin-bottom:13mm}
+  .head{font-size:41pt;font-weight:900;letter-spacing:-.055em;line-height:.9;text-transform:uppercase}
+  .head .w{color:#fff}
+  .sub{margin-top:8mm;font-size:11pt;line-height:1.55;color:#fff;max-width:150mm;font-weight:500}
+  .sub b{color:var(--yellow)}
+  .rule{height:2mm;background:var(--yellow);width:38mm;margin:10mm 0 9mm}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
+  .card{min-height:60mm;padding:6mm 6mm 5mm;display:flex;flex-direction:column}
+  .card.y{background:var(--yellow);color:var(--ink)}
+  .card.k{background:var(--ink-2);border:.4mm solid var(--yellow);color:var(--yellow)}
+  .card .num{font-size:27pt;font-weight:900;letter-spacing:-.06em;line-height:1}
+  .card h3{margin:4mm 0 2.5mm;font-size:12pt;font-weight:900;letter-spacing:-.02em;text-transform:uppercase;line-height:1.1}
+  .card p{margin:0;font-size:8.6pt;line-height:1.55;font-weight:500}
+  .card .tag{margin-top:auto;padding-top:4mm;font-size:6.6pt;font-weight:800;letter-spacing:.16em;text-transform:uppercase;opacity:.72}
+
+  .contact{
+    margin:10mm -14mm -14mm;padding:7mm 14mm 8mm;
+    background:var(--yellow);color:var(--ink);
+    display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;
+  }
+  .contact .big{font-size:16pt;font-weight:900;letter-spacing:-.045em;line-height:1}
+  .contact .small{font-size:8pt;line-height:1.6;font-weight:600;text-align:right}
+  .contact .mono{font-size:6.6pt;font-weight:800;letter-spacing:.16em;margin-bottom:2mm}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <b>happyhunterdigital</b><span class="tip">Flyer. Click any text to edit, then Print and Save as PDF.</span>
+  <button class="pri" id="printBtn" type="button">Print / Save PDF</button>
+  <button id="resetBtn" type="button">Reset content</button>
+</div>
+
+<div class="sheet flyer">
+  <span class="bracket tl"></span><span class="bracket tr"></span>
+  <span class="bracket bl"></span><span class="bracket br"></span>
+
+  <div class="topline">
+    <span contenteditable="true" data-field="top1">Happy Hunter Digital / Capability Sheet</span>
+    <span contenteditable="true" data-field="top2">Pretoria ZA / 2026</span>
+  </div>
+
+  <div class="head" contenteditable="true" data-field="headline">Get found.<br><span class="w">Get asked.</span><br>Get chosen.</div>
+
+  <div class="sub" contenteditable="true" data-field="sub">AI-first digital marketing engineering for South African SMEs. <b>Not just AI visibility.</b> One connected system from the first health check to the booked appointment.</div>
+
+  <div class="rule" aria-hidden="true"></div>
+
+  <div class="grid">
+    <div class="card y">
+      <div class="num" contenteditable="true" data-field="n1">01</div>
+      <h3 contenteditable="true" data-field="t1">Free online health check</h3>
+      <p contenteditable="true" data-field="b1">We scan your website, Google, Facebook, directories and review sites to find missing or inconsistent business information.</p>
+      <div class="tag" contenteditable="true" data-field="g1">Diagnose / No cost</div>
+    </div>
+    <div class="card k">
+      <div class="num" contenteditable="true" data-field="n2">02</div>
+      <h3 contenteditable="true" data-field="t2">Foundation and entity SEO</h3>
+      <p contenteditable="true" data-field="b2">One consistent name, address, phone number and service list across every platform, backed by structured schema code.</p>
+      <div class="tag" contenteditable="true" data-field="g2">Standardise / Structure</div>
+    </div>
+    <div class="card y">
+      <div class="num" contenteditable="true" data-field="n3">03</div>
+      <h3 contenteditable="true" data-field="t3">AI-ready content, AEO</h3>
+      <p contenteditable="true" data-field="b3">Service pages, articles and FAQs written so ChatGPT, Gemini and Perplexity can read, cite and recommend your business.</p>
+      <div class="tag" contenteditable="true" data-field="g3">Write / Be cited</div>
+    </div>
+    <div class="card k">
+      <div class="num" contenteditable="true" data-field="n4">04</div>
+      <h3 contenteditable="true" data-field="t4">Sales and WhatsApp automation</h3>
+      <p contenteditable="true" data-field="b4">AI-ready websites, smart chatbots and automated WhatsApp, email, SMS and DM workflows that qualify leads and book appointments.</p>
+      <div class="tag" contenteditable="true" data-field="g4">Respond / Convert</div>
+    </div>
+  </div>
+
+  <div class="contact">
+    <div>
+      <div class="mono" contenteditable="true" data-field="ctag">Start with the free health check</div>
+      <div class="big" contenteditable="true" data-field="cweb">happyhunterdigital.com</div>
+    </div>
+    <div class="small" contenteditable="true" data-field="cdetails">motsumitl@happyhunterdigital.com<br>+27 (0) 60 101 6673<br>574 Fred Messenger Avenue, Andeon, Pretoria</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var f=[].slice.call(document.querySelectorAll('[contenteditable]')),o={};
+  f.forEach(function(x){o[x.dataset.field]=x.innerHTML});
+  document.getElementById('printBtn').onclick=function(){window.print()};
+  document.getElementById('resetBtn').onclick=function(){f.forEach(function(x){x.innerHTML=o[x.dataset.field]})};
+})();
+</script>
+</body>
+</html>
