@@ -37,19 +37,33 @@ with sync_playwright() as pw:
         assert len(m) == sheets_expected, (name, "sheet count", len(m))
         for i, s in enumerate(m, 1):
             assert abs(s["w"] - w) < 1.5, (name, i, "width", s["w"], w)
-            assert abs(s["h"] - h) < 1.5, (name, i, "height", s["h"], h)
+            assert abs(s["h"] - h) < 0.5, (name, i, "height", s["h"], h)
             assert s["sh"] <= s["ch"] + 1, (name, i, "vertical overflow", s["sh"], s["ch"])
             assert s["sw"] <= s["cw"] + 1, (name, i, "horizontal overflow", s["sw"], s["cw"])
             assert s["editable"] >= 3, (name, i, "editable fields")
 
         external = [u for u in requests if not u.startswith("file://")]
         assert not external, (name, "external requests", external)
-        fonts_ok = page.evaluate("() => document.fonts.check('900 20px Archivo')")
-        assert fonts_ok, (name, "Archivo did not load")
+        fonts_ok = page.evaluate("""() =>
+          document.fonts.check('700 20px "Space Grotesk"') &&
+          document.fonts.check('600 14px "Inter"') &&
+          document.fonts.check('700 10px "JetBrains Mono"') &&
+          document.fonts.check('400 18px "Caveat"')""" )
+        assert fonts_ok, (name, "locally hosted fonts did not load")
+
+        images = page.evaluate("""() => [].slice.call(document.images).map(i => ({
+          src: i.getAttribute('src'), w: i.naturalWidth
+        }))""")
+        assert images, (name, "no logo image found")
+        assert all(i["w"] > 100 for i in images), (name, "logo failed to decode", images)
+        assert all("site-logo.jpg" in i["src"] for i in images), (name, "wrong logo asset", images)
+
+        text = page.locator(".sheet").first.inner_text().lower()
+        assert "web development" in text, (name, "web development copy missing")
 
         reset = page.locator("#resetBtn")
         assert reset.count() == 1
-        print(name, "OK", m[0]["editable"], "editable, no overflow, zero external requests")
+        print(name, "OK", m[0]["editable"], "editable, real logo, web development copy, no overflow, zero external requests")
         page.close()
     browser.close()
 
@@ -66,10 +80,12 @@ docx_path = KIT / "letterhead.docx"
 with zipfile.ZipFile(docx_path) as z:
     assert z.testzip() is None
     h = z.read("word/header1.xml").decode()
-    assert 'w:fill="FACC15"' in h, "yellow masthead missing"
-    assert any(n.startswith("word/media") for n in z.namelist()), "mark not embedded"
+    f = z.read("word/footer1.xml").decode()
+    assert 'w:fill="0B0B0F"' in h, "dark masthead missing"
+    assert 'w:fill="0B0B0F"' in f, "dark footer missing"
+    assert any(n.startswith("word/media") and n.endswith(".jpg") for n in z.namelist()), "logo not embedded"
 doc = Document(docx_path)
 assert abs(doc.sections[0].page_width.mm - 210) < 0.1
-print("letterhead.docx OK, yellow masthead and mark embedded")
+print("letterhead.docx OK, real logo embedded, dark masthead and footer")
 
 print("ALL BRAND KIT CHECKS PASSED")

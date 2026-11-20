@@ -7,44 +7,38 @@
 <link rel="stylesheet" href="system.css">
 <style>
   @page{size:A3;margin:0}
-  .sheet{
-    width:297mm;min-height:420mm;background:var(--yellow);color:var(--ink);
-    padding:24mm;overflow:hidden;
-  }
-  .sheet .bracket.tl{top:10mm;left:10mm}
-  .sheet .bracket.tr{top:10mm;right:10mm}
-  .sheet .bracket.bl{bottom:10mm;left:10mm}
-  .sheet .bracket.br{bottom:10mm;right:10mm}
+  .sheet{width:297mm;height:420mm;padding:22mm;overflow:hidden}
+  .sheet .photo{background-image:url('assets/photos/graded/discovery.jpg');opacity:.42}
+  .sheet .bracket.tl{top:9mm;left:9mm}.sheet .bracket.tr{top:9mm;right:9mm}
+  .sheet .bracket.bl{bottom:9mm;left:9mm}.sheet .bracket.br{bottom:9mm;right:9mm}
 
-  .top{display:flex;justify-content:space-between;align-items:flex-start;font-size:8.5pt;font-weight:900;letter-spacing:.2em;text-transform:uppercase;margin-bottom:30mm}
-  .top .right{text-align:right;font-size:7.5pt;letter-spacing:.16em}
+  .top{display:flex;justify-content:space-between;align-items:flex-start}
+  .logo.poster{width:62mm}
+  .top .lab{text-align:right;font-family:'JetBrains Mono',monospace;font-size:8pt;line-height:1.7;color:var(--yellow);letter-spacing:.14em;text-transform:uppercase}
 
-  .head{font-size:63pt;font-weight:900;letter-spacing:-.06em;line-height:.88;text-transform:uppercase;max-width:230mm}
-  .head em{font-style:normal;-webkit-text-stroke:1.4mm var(--ink);color:var(--yellow)}
+  .head{font-size:66pt;margin-top:36mm;max-width:235mm}
+  .head .w{color:var(--white)}
+  .rule{height:3mm;width:100%;background:linear-gradient(90deg,#FDE047,#FACC15 55%,#EAB308);margin:24mm 0 12mm}
 
-  .thick{height:4mm;background:var(--ink);width:100%;margin:20mm 0 12mm}
+  .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:5mm}
+  .step{border-top:.8mm solid var(--yellow);padding-top:5mm}
+  .step .n{font-family:'JetBrains Mono',monospace;font-size:18pt;color:var(--yellow);font-weight:700;line-height:1}
+  .step .l{font-family:'Space Grotesk',sans-serif;font-size:9.5pt;font-weight:700;letter-spacing:-.01em;text-transform:uppercase;line-height:1.25;margin-top:4mm;max-width:45mm}
+  .step .d{font-size:8pt;line-height:1.5;color:#C9C9D1;margin-top:2mm;max-width:45mm}
 
-  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:6mm}
-  .step .n{
-    width:16mm;height:16mm;background:var(--ink);color:var(--yellow);
-    display:flex;align-items:center;justify-content:center;
-    font-size:20pt;font-weight:900;letter-spacing:-.05em;margin-bottom:5mm;
-  }
-  .step .l{font-size:8.5pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase;line-height:1.35;max-width:48mm}
-  .step .d{font-size:7.5pt;line-height:1.5;font-weight:500;margin-top:2mm;max-width:50mm}
-
-  .claim{margin-top:20mm;font-size:13pt;font-weight:800;line-height:1.5;max-width:190mm}
-  .claim b{font-weight:900}
+  .claim{margin-top:24mm;font-family:'Space Grotesk',sans-serif;font-size:14pt;font-weight:600;line-height:1.5;max-width:200mm}
+  .claim b{color:var(--yellow)}
 
   .foot{
     position:absolute;left:0;right:0;bottom:0;
-    background:var(--ink);color:var(--yellow);padding:14mm 24mm 16mm;
-    display:flex;justify-content:space-between;align-items:flex-end;gap:12mm;
+    background:linear-gradient(160deg,#1c1c22,#050507);
+    border-top:1.2mm solid var(--yellow);
+    padding:13mm 22mm 15mm;display:flex;justify-content:space-between;align-items:flex-end;gap:12mm;
   }
-  .foot .wm{font-size:26pt;font-weight:900;letter-spacing:-.05em;line-height:1}
-  .foot .tag{font-size:7.5pt;font-weight:800;letter-spacing:.2em;text-transform:uppercase;margin-top:4mm}
-  .foot .contact{text-align:right;font-size:9pt;line-height:1.7;font-weight:600}
-  .foot .contact .web{font-size:12pt;font-weight:900;letter-spacing:-.03em}
+  .foot .logo{width:56mm}
+  .foot .contact{text-align:right;font-size:9pt;line-height:1.7;color:#D4D4DC}
+  .foot .contact .web{font-family:'Space Grotesk',sans-serif;font-size:14pt;font-weight:700;color:var(--yellow)}
+  .foot .script{font-family:'Caveat',cursive;font-size:15pt;color:var(--white);margin-top:3mm}
 </style>
 </head>
 <body>
@@ -56,47 +50,32 @@
 </div>
 
 <div class="sheet poster">
+  <div class="photo"></div><div class="glow"></div><div class="scrim"></div>
   <span class="bracket tl"></span><span class="bracket tr"></span>
   <span class="bracket bl"></span><span class="bracket br"></span>
 
-  <div class="top">
-    <span contenteditable="true" data-field="top1">Happy Hunter Digital</span>
-    <span class="right" contenteditable="true" data-field="top2">AI-first digital marketing engineering<br>Pretoria / South Africa</span>
+  <div class="top layer">
+    <div class="logo poster"><img src="assets/site-logo.jpg" alt="happyhunterdigital"></div>
+    <div class="lab" contenteditable="true" data-field="lab">Web development and marketing<br>engineering / Pretoria ZA</div>
   </div>
 
-  <div class="head" contenteditable="true" data-field="headline">Don't just<br>be found.<br><em>Be the answer.</em></div>
+  <div class="head layer text-grad" contenteditable="true" data-field="headline">Don't just<br>be found.<br><span class="w">Be the answer.</span></div>
+  <div class="rule layer" aria-hidden="true"></div>
 
-  <div class="thick" aria-hidden="true"></div>
-
-  <div class="steps">
-    <div class="step">
-      <div class="n" contenteditable="true" data-field="n1">01</div>
-      <div class="l" contenteditable="true" data-field="l1">Health check</div>
-      <div class="d" contenteditable="true" data-field="d1">Scan the whole footprint</div>
-    </div>
-    <div class="step">
-      <div class="n" contenteditable="true" data-field="n2">02</div>
-      <div class="l" contenteditable="true" data-field="l2">Entity SEO</div>
-      <div class="d" contenteditable="true" data-field="d2">One consistent business record</div>
-    </div>
-    <div class="step">
-      <div class="n" contenteditable="true" data-field="n3">03</div>
-      <div class="l" contenteditable="true" data-field="l3">AEO content</div>
-      <div class="d" contenteditable="true" data-field="d3">Written to be cited by AI</div>
-    </div>
-    <div class="step">
-      <div class="n" contenteditable="true" data-field="n4">04</div>
-      <div class="l" contenteditable="true" data-field="l4">WhatsApp automation</div>
-      <div class="d" contenteditable="true" data-field="d4">Qualify leads, book appointments</div>
-    </div>
+  <div class="steps layer">
+    <div class="step"><div class="n" contenteditable="true" data-field="n1">01</div><div class="l" contenteditable="true" data-field="l1">Health check</div><div class="d" contenteditable="true" data-field="d1">Scan the whole footprint</div></div>
+    <div class="step"><div class="n" contenteditable="true" data-field="n2">02</div><div class="l" contenteditable="true" data-field="l2">Entity SEO</div><div class="d" contenteditable="true" data-field="d2">One consistent business record</div></div>
+    <div class="step"><div class="n" contenteditable="true" data-field="n3">03</div><div class="l" contenteditable="true" data-field="l3">Web development</div><div class="d" contenteditable="true" data-field="d3">Fast sites built to be understood</div></div>
+    <div class="step"><div class="n" contenteditable="true" data-field="n4">04</div><div class="l" contenteditable="true" data-field="l4">AEO content</div><div class="d" contenteditable="true" data-field="d4">Written to be cited by AI</div></div>
+    <div class="step"><div class="n" contenteditable="true" data-field="n5">05</div><div class="l" contenteditable="true" data-field="l5">WhatsApp automation</div><div class="d" contenteditable="true" data-field="d5">Qualify leads, book appointments</div></div>
   </div>
 
-  <div class="claim" contenteditable="true" data-field="claim">Google to find you. AI to recommend you. <b>WhatsApp to close the loop.</b> Four connected moves, one system.</div>
+  <div class="claim layer" contenteditable="true" data-field="claim">Google to find you. AI to recommend you. <b>WhatsApp to close the loop.</b> One connected system, built on proper web development.</div>
 
-  <div class="foot">
+  <div class="foot layer">
     <div>
-      <div class="wm" contenteditable="true" data-field="wm">happyhunterdigital</div>
-      <div class="tag" contenteditable="true" data-field="tag">Smart Marketing / Pretoria ZA</div>
+      <div class="logo"><img src="assets/site-logo.jpg" alt="happyhunterdigital"></div>
+      <div class="script" contenteditable="true" data-field="script">happyhunterdigital</div>
     </div>
     <div class="contact" contenteditable="true" data-field="contact">
       <div class="web">happyhunterdigital.com</div>

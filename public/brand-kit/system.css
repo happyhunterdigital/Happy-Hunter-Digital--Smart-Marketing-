@@ -1,18 +1,21 @@
-/* happyhunterdigital brand kit, 2026.
-   Yellow and black system. Self-hosted type, no network requests. */
+/* happyhunterdigital brand kit, v3.
+   Real logo, graded photography, gradient and blend treatment.
+   All type and imagery is self-hosted. No network requests. */
 
-@font-face{
-  font-family:'Archivo';
-  src:url('fonts/Archivo-Variable.ttf') format('truetype-variations');
-  font-weight:100 900;font-style:normal;font-display:block;
-}
+@font-face{font-family:'Space Grotesk';src:url('fonts/SpaceGrotesk.ttf') format('truetype-variations');font-weight:300 700;font-display:block}
+@font-face{font-family:'Inter';src:url('fonts/Inter.ttf') format('truetype-variations');font-weight:100 900;font-display:block}
+@font-face{font-family:'JetBrains Mono';src:url('fonts/JetBrainsMono.ttf') format('truetype-variations');font-weight:100 800;font-display:block}
+@font-face{font-family:'Caveat';src:url('fonts/Caveat.ttf') format('truetype-variations');font-weight:400 700;font-display:block}
+@font-face{font-family:'Archivo';src:url('fonts/Archivo-Variable.ttf') format('truetype-variations');font-weight:100 900;font-display:block}
 
 :root{
   --ink:#0B0B0F;
-  --ink-2:#18181B;
+  --ink2:#16161B;
+  --ink3:#232329;
   --yellow:#FACC15;
-  --gold:#EAB308;
-  --paper:#FFFFFF;
+  --amber:#EAB308;
+  --pale:#FDE047;
+  --white:#FAFAFA;
   --grey:#A1A1AA;
   --mute:#71717A;
 }
@@ -21,9 +24,10 @@
 html,body{margin:0;padding:0}
 body{
   background:#DEDEE3;
-  font-family:'Archivo',Arial,sans-serif;
+  font-family:'Inter',Arial,sans-serif;
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
+  text-rendering:geometricPrecision;
 }
 
 /* screen-only control bar */
@@ -31,7 +35,7 @@ body{
   position:sticky;top:0;z-index:99;
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   padding:9px 16px;background:var(--ink);color:var(--grey);
-  border-bottom:3px solid var(--yellow);font-size:12px;
+  border-bottom:3px solid var(--yellow);font:12px 'Inter',sans-serif;
 }
 .bar b{color:var(--yellow);font-weight:900;letter-spacing:-.01em}
 .bar .tip{margin-right:auto;opacity:.8}
@@ -42,31 +46,68 @@ body{
 .bar button.pri{background:var(--yellow);color:var(--ink);border-color:var(--yellow)}
 .bar button:hover{filter:brightness(1.14)}
 
-/* shared sheet */
 .sheet{
-  position:relative;background:var(--paper);
-  margin:24px auto;box-shadow:0 16px 48px rgba(0,0,0,.22);
+  position:relative;background:var(--ink);color:var(--white);
+  margin:24px auto;box-shadow:0 20px 60px rgba(0,0,0,.35);
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  isolation:isolate;
 }
 
-/* type utilities */
-.mono{
-  font-family:ui-monospace,SFMono-Regular,Consolas,'Liberation Mono',monospace;
-  text-transform:uppercase;letter-spacing:.14em;
+/* gradient and blend toolkit */
+.grad-ink{background:linear-gradient(155deg,#1c1c22 0%,#0f0f14 46%,#050507 100%)}
+.grad-yellow{
+  background:linear-gradient(135deg,#FDE047 0%,#FACC15 44%,#EAB308 100%);
+  color:var(--ink);
 }
-.blk{font-weight:900;letter-spacing:-.045em;line-height:.92}
+.text-grad{
+  background:linear-gradient(105deg,#FFF6B0 0%,#FACC15 48%,#EAB308 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.glow{
+  position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(circle at 14% 12%,rgba(250,204,21,.20),transparent 46%),
+    radial-gradient(circle at 88% 86%,rgba(234,179,8,.11),transparent 52%);
+}
+.photo{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-size:cover;background-position:center;
+  filter:contrast(1.12) saturate(.82) brightness(.62);
+  mix-blend-mode:luminosity;opacity:.5;
+}
+.photo.soft{opacity:.30;filter:contrast(1.05) saturate(.7) brightness(.55)}
+.scrim{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(5,5,7,.55) 0%,rgba(5,5,7,.78) 55%,rgba(5,5,7,.94) 100%);
+}
+.layer{position:relative;z-index:1}
+
+/* real logo lockup: dark art blends into dark fields */
+.logo img{display:block;width:100%;height:auto;mix-blend-mode:screen}
+.logo.plate{
+  background:linear-gradient(160deg,#141419,#050507);
+  border:.3mm solid rgba(250,204,21,.45);
+  border-radius:2mm;padding:2.5mm;
+}
+.logo.plate img{mix-blend-mode:normal}
+
+/* type */
+.head{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:-.05em;line-height:.94}
+.body{font-family:'Inter',sans-serif}
+.mono{font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.15em}
+.script{font-family:'Caveat',cursive}
 
 /* corner reticle */
-.bracket{position:absolute;width:11mm;height:11mm;border:1.1mm solid currentColor;pointer-events:none}
-.bracket.tl{top:0;left:0;border-right:0;border-bottom:0}
-.bracket.tr{top:0;right:0;border-left:0;border-bottom:0}
-.bracket.bl{bottom:0;left:0;border-right:0;border-top:0}
-.bracket.br{bottom:0;right:0;border-left:0;border-top:0}
+.bracket{position:absolute;width:11mm;height:11mm;border:1.1mm solid var(--yellow);pointer-events:none;z-index:2}
+.bracket.tl{top:6mm;left:6mm;border-right:0;border-bottom:0}
+.bracket.tr{top:6mm;right:6mm;border-left:0;border-bottom:0}
+.bracket.bl{bottom:6mm;left:6mm;border-right:0;border-top:0}
+.bracket.br{bottom:6mm;right:6mm;border-left:0;border-top:0}
 
 /* editing affordances */
 [contenteditable]{outline:none;border-radius:2px}
-[contenteditable]:hover{box-shadow:0 0 0 1px rgba(234,179,8,.75)}
-[contenteditable]:focus{background:rgba(250,204,21,.30);box-shadow:0 0 0 1px var(--gold)}
+[contenteditable]:hover{box-shadow:0 0 0 1px rgba(250,204,21,.8)}
+[contenteditable]:focus{background:rgba(250,204,21,.18);box-shadow:0 0 0 1px var(--yellow)}
 [contenteditable]:empty::before{content:attr(data-ph);opacity:.45;font-style:italic}
 
 @media print{

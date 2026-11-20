@@ -33,9 +33,12 @@ MUTE = "71717A"
 
 
 def ensure_fonts():
-    target = FONTS / "Archivo-Variable.ttf"
-    if not target.is_file():
-        raise SystemExit("Missing " + str(target) + ". Restore the vendored font before rebuilding.")
+    required = ["Archivo-Variable.ttf", "Caveat.ttf", "Inter.ttf", "JetBrainsMono.ttf", "SpaceGrotesk.ttf"]
+    missing = [n for n in required if not (FONTS / n).is_file()]
+    if missing:
+        raise SystemExit("Missing fonts: " + ", ".join(missing))
+    if not (KIT / "assets" / "site-logo.jpg").is_file():
+        raise SystemExit("Missing the site logo asset")
 
 
 def render_sheets():
@@ -43,7 +46,7 @@ def render_sheets():
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel="msedge", headless=True)
         for name in ("letterhead", "flyer", "poster", "business-card"):
-            page = browser.new_page(viewport={"width": 1500, "height": 1800}, device_scale_factor=2)
+            page = browser.new_page(viewport={"width": 1500, "height": 1800}, device_scale_factor=3)
             page.goto((KIT / (name + ".html")).as_uri(), wait_until="networkidle")
             page.evaluate("document.fonts.ready")
             pdf = page.pdf(print_background=True, prefer_css_page_size=True)
@@ -123,7 +126,7 @@ def para_border(p, edge, color, sz):
     borders.append(el)
 
 
-def run(p, text, size, color, bold=False, tracking=None, name="Archivo"):
+def run(p, text, size, color, bold=False, tracking=None, name="Inter"):
     r = p.add_run(text)
     r.font.size = Pt(size)
     r.font.bold = bold
@@ -144,63 +147,63 @@ def run(p, text, size, color, bold=False, tracking=None, name="Archivo"):
 
 
 def build_docx():
-    mark = mark_png()
+    logo = KIT / "assets" / "site-logo.jpg"
     doc = Document()
     sec = doc.sections[0]
     sec.page_width, sec.page_height = Mm(210), Mm(297)
-    sec.top_margin, sec.bottom_margin = Mm(44), Mm(20)
+    sec.top_margin, sec.bottom_margin = Mm(46), Mm(22)
     sec.left_margin, sec.right_margin = Mm(20), Mm(20)
-    sec.header_distance, sec.footer_distance = Mm(6), Mm(7)
+    sec.header_distance, sec.footer_distance = Mm(6), Mm(6)
 
     normal = doc.styles["Normal"]
-    normal.font.name = "Archivo"
+    normal.font.name = "Inter"
     normal.font.size = Pt(10.5)
     normal.font.color.rgb = RGBColor.from_string(INK)
 
-    # yellow masthead
+    # dark masthead with the real logo
     header = sec.header
     t = header.add_table(rows=1, cols=2, width=Mm(170))
     t.autofit = False
     left, right = t.rows[0].cells
-    left.width, right.width = Mm(96), Mm(74)
+    left.width, right.width = Mm(100), Mm(70)
     for c in (left, right):
-        shade(c, YELLOW)
-        cell_pad(c, top=170, bottom=150)
+        shade(c, INK)
+        cell_pad(c, top=150, bottom=150)
     lp = left.paragraphs[0]
-    r = lp.add_run()
-    r.add_picture(mark, width=Mm(11))
-    run(lp, "  happyhunterdigital", 19, INK, bold=True, tracking=-0.9)
+    lp.add_run().add_picture(str(logo), width=Mm(40))
     ld = left.add_paragraph()
     ld.paragraph_format.space_before = Pt(2)
-    run(ld, "SMART MARKETING  /  AI-FIRST DIGITAL ENGINEERING", 7, INK, bold=True, tracking=1.6)
+    run(ld, "WEB DEVELOPMENT  /  AI-FIRST DIGITAL ENGINEERING", 7, YELLOW,
+        bold=True, tracking=1.2, name="JetBrains Mono")
     rp = right.paragraphs[0]
     rp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    run(rp, "motsumitl@happyhunterdigital.com", 8.5, INK, bold=True)
+    run(rp, "motsumitl@happyhunterdigital.com", 8.5, WHITE, bold=True)
     rp.add_run().add_break()
-    run(rp, "+27 (0) 60 101 6673", 8.5, INK, bold=True)
+    run(rp, "+27 (0) 60 101 6673", 8.5, WHITE, bold=True)
     rp.add_run().add_break()
-    run(rp, "happyhunterdigital.com", 8.5, INK)
+    run(rp, "happyhunterdigital.com", 8.5, GREY)
     rt = right.add_paragraph()
     rt.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    run(rt, "CORRESPONDENCE  /  PRETORIA ZA", 7, INK, bold=True, tracking=1.4)
-
+    run(rt, "CORRESPONDENCE  /  PRETORIA ZA", 7, YELLOW,
+        bold=True, tracking=1.2, name="JetBrains Mono")
     strip = header.add_paragraph()
     strip.paragraph_format.space_before = Pt(4)
-    para_border(strip, "bottom", INK, 18)
+    para_border(strip, "bottom", GOLD, 18)
 
     # body
     date = doc.add_paragraph()
     date.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    run(date, "19 NOVEMBER 2026", 8, MUTE, bold=True, tracking=1)
+    run(date, "19 NOVEMBER 2026", 8, MUTE, tracking=1, name="JetBrains Mono")
     rec = doc.add_paragraph()
     rec.paragraph_format.space_before = Pt(30)
-    run(rec, "The Management", 9.5, INK, bold=True)
+    run(rec, "The Management", 9.5, INK, bold=True, name="Space Grotesk")
     rec.add_run().add_break()
     run(rec, "Pretoria, South Africa", 9.5, INK)
     subj = doc.add_paragraph()
     subj.paragraph_format.space_before = Pt(30)
     subj.paragraph_format.space_after = Pt(4)
-    run(subj, "A COMPLETE SYSTEM FOR BEING FOUND, ASKED AND CHOSEN", 19, INK, bold=True, tracking=-0.7)
+    run(subj, "A COMPLETE SYSTEM FOR BEING FOUND, ASKED AND CHOSEN", 18, INK,
+        bold=True, tracking=-0.7, name="Space Grotesk")
     bar = doc.add_paragraph()
     bar.paragraph_format.right_indent = Mm(148)
     bar.paragraph_format.space_after = Pt(16)
@@ -210,38 +213,49 @@ def build_docx():
     run(sal, "Dear Sir or Madam,", 10, INK, bold=True)
 
     copy = [
-        "Most agencies optimise one channel. We engineer the whole path from search to conversation to appointment.",
-        "It starts with a free online health check across your website, Google, Facebook, directories and reviews. We correct what is missing or inconsistent, add structured schema so Google and AI assistants understand the business, and publish service pages, articles and FAQs that ChatGPT, Gemini and Perplexity can read and cite.",
-        "Then we connect AI-ready websites, smart chatbots and automated workflows across WhatsApp, email, SMS and direct messages that qualify leads and book appointments. The result is not more activity. It is a business that is discoverable on Google, recommended by AI and reachable on WhatsApp.",
+        "Most agencies optimise one channel. We engineer the whole path, starting with fast, mobile-friendly web development that turns your website into a 24/7 salesperson.",
+        "It starts with a free online health check across your website, Google, Facebook, directories and reviews. We correct what is missing, standardise your business details, add structured schema, and publish service pages, articles and FAQs that ChatGPT, Gemini and Perplexity can read and cite.",
+        "Then we connect smart chatbots and automated WhatsApp, email and SMS workflows that qualify leads and book appointments. Not just AI visibility. A business that is discoverable on Google, recommended by AI and reachable on WhatsApp.",
     ]
     for text in copy:
         p = doc.add_paragraph()
         p.paragraph_format.space_after = Pt(10)
-        p.paragraph_format.line_spacing = 1.6
-        run(p, text, 10.5, INK)
+        p.paragraph_format.line_spacing = 1.55
+        run(p, text, 10.5, INK, name="Inter")
 
     sign = doc.add_paragraph()
     sign.paragraph_format.space_before = Pt(22)
     run(sign, "Kind regards,", 10, INK)
     sign.add_run().add_break()
     sign.add_run().add_break()
-    run(sign, "Thabo Leslie Motsumi", 10, INK, bold=True)
+    run(sign, "Thabo Leslie Motsumi", 11, INK, bold=True, name="Space Grotesk")
     sign.add_run().add_break()
-    run(sign, "GROWTH STRATEGIST AND FOUNDER", 8.5, MUTE, bold=True, tracking=1.2)
+    run(sign, "GROWTH STRATEGIST AND FOUNDER", 8.5, MUTE,
+        tracking=1.2, name="JetBrains Mono")
 
-    # black footer
+    # dark footer
     foot = sec.footer
-    fp = foot.paragraphs[0]
-    para_border(fp, "top", YELLOW, 12)
-    fp.paragraph_format.tab_stops.add_tab_stop(Mm(170), WD_TAB_ALIGNMENT.RIGHT)
-    run(fp, "574 Fred Messenger Avenue, Andeon  /  Pretoria West, Pretoria, South Africa", 7.5, INK)
-    fp.add_run("\t")
-    run(fp, "motsumitl@happyhunterdigital.com", 7.5, INK, bold=True)
-    fp2 = foot.add_paragraph()
-    fp2.paragraph_format.tab_stops.add_tab_stop(Mm(170), WD_TAB_ALIGNMENT.RIGHT)
-    run(fp2, "happyhunterdigital.com", 9, INK, bold=True)
-    fp2.add_run("\t")
-    run(fp2, "+27 (0) 60 101 6673  /  PRETORIA, SOUTH AFRICA", 7.5, MUTE, tracking=0.6)
+    ft = foot.add_table(rows=1, cols=2, width=Mm(170))
+    ft.autofit = False
+    fl, fr = ft.rows[0].cells
+    fl.width, fr.width = Mm(100), Mm(70)
+    for c in (fl, fr):
+        shade(c, INK)
+        cell_pad(c, top=110, bottom=110)
+    fp = fl.paragraphs[0]
+    run(fp, "574 Fred Messenger Avenue, Andeon", 7.5, YELLOW)
+    fp.add_run().add_break()
+    run(fp, "Pretoria West, Pretoria, South Africa", 7.5, GREY)
+    fscript = fl.add_paragraph()
+    fscript.paragraph_format.space_before = Pt(2)
+    run(fscript, "happyhunterdigital", 13, WHITE, name="Caveat")
+    fp2 = fr.paragraphs[0]
+    fp2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    run(fp2, "motsumitl@happyhunterdigital.com", 7.5, YELLOW, bold=True)
+    fp2.add_run().add_break()
+    run(fp2, "+27 (0) 60 101 6673", 7.5, WHITE)
+    fp2.add_run().add_break()
+    run(fp2, "happyhunterdigital.com", 7.5, GREY)
 
     doc.core_properties.title = "happyhunterdigital letterhead"
     doc.core_properties.author = "happyhunterdigital"
