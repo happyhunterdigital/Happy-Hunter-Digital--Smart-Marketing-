@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build the happyhunterdigital professional document kit.
 
-Renders the four editable HTML sheets to print-ready PDFs and HD previews,
-then rebuilds the Word letterhead in the same clean design.
+Renders the editable HTML sheets to print-ready PDFs and HD previews,
+then rebuilds the Word documents in the same clean design.
 
 Run: python scripts/build_brand_kit.py
 """
@@ -40,7 +40,7 @@ def render_sheets():
     PREVIEWS.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel="msedge", headless=True)
-        for name in ("letterhead", "recommendation-ludoleaguesa", "flyer", "poster", "business-card"):
+        for name in ("letterhead", "recommendation-ludoleaguesa", "discovery-questionnaire", "flyer", "poster", "business-card"):
             page = browser.new_page(viewport={"width": 1500, "height": 1800}, device_scale_factor=3)
             page.goto((KIT / (name + ".html")).as_uri(), wait_until="networkidle")
             page.evaluate("document.fonts.ready")
@@ -48,7 +48,12 @@ def render_sheets():
             (KIT / (name + ".pdf")).write_bytes(pdf)
             sheets = page.locator(".sheet").all()
             for i, sheet in enumerate(sheets, start=1):
-                suffix = "" if len(sheets) == 1 else "-" + ("front" if i == 1 else "back")
+                if len(sheets) == 1:
+                    suffix = ""
+                elif name == "business-card":
+                    suffix = "-" + ("front" if i == 1 else "back")
+                else:
+                    suffix = "-" + str(i)
                 sheet.screenshot(path=str(PREVIEWS / (name + suffix + ".png")))
             print("rendered", name, len(sheets), "sheet(s),", len(pdf), "PDF bytes")
             page.close()
@@ -390,8 +395,146 @@ def build_recommendation_docx():
     save_doc(doc, path)
 
 
+def build_questionnaire_docx():
+    doc = Document()
+    sec = doc.sections[0]
+    sec.page_width, sec.page_height = Mm(210), Mm(297)
+    sec.top_margin, sec.bottom_margin = Mm(22), Mm(18)
+    sec.left_margin, sec.right_margin = Mm(22), Mm(22)
+    sec.header_distance, sec.footer_distance = Mm(8), Mm(8)
+
+    normal = doc.styles["Normal"]
+    normal.font.name = "Inter"
+    normal.font.size = Pt(9.4)
+    normal.font.color.rgb = RGBColor.from_string(INK)
+    h1 = doc.styles["Heading 1"]
+    h1.font.name = "Inter"
+    h1.font.size = Pt(19)
+    h1.font.bold = True
+    h1.font.color.rgb = RGBColor.from_string(INK)
+    h1.paragraph_format.space_after = Pt(2)
+    h2 = doc.styles["Heading 2"]
+    h2.font.name = "Inter"
+    h2.font.size = Pt(11)
+    h2.font.bold = True
+    h2.font.color.rgb = RGBColor.from_string(INK)
+    h2.paragraph_format.space_before = Pt(12)
+    h2.paragraph_format.space_after = Pt(5)
+
+    header = sec.header
+    t = header.add_table(rows=1, cols=2, width=Mm(166))
+    t.autofit = False
+    left, right = t.rows[0].cells
+    left.width, right.width = Mm(100), Mm(66)
+    lp = left.paragraphs[0]
+    lp.add_run().add_picture(str(KIT / "assets" / "logo.png"), width=Mm(11))
+    run(lp, "  happyhunterdigital", 11.5, INK, bold=True, tracking=-0.4)
+    ld = left.add_paragraph()
+    ld.paragraph_format.space_before = Pt(1)
+    run(ld, "WEB DEVELOPMENT AND AI-FIRST DIGITAL MARKETING", 6.4, MUTE, tracking=0.7)
+    rp = right.paragraphs[0]
+    rp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    run(rp, "motsumitl@happyhunterdigital.com", 7.8, INK, bold=True)
+    rp.add_run().add_break()
+    run(rp, "+27 (0) 60 101 6673", 7.8, INK)
+    rp.add_run().add_break()
+    run(rp, "happyhunterdigital.com", 7.8, MUTE)
+    hrule = header.add_paragraph()
+    hrule.paragraph_format.space_before = Pt(3)
+    para_border(hrule, "bottom", YELLOW, 16)
+
+    title = doc.add_paragraph(style="Heading 1")
+    run(title, "happyhunterdigital Discovery Questionnaire", 19, INK, bold=True, tracking=-0.5)
+    sub = doc.add_paragraph()
+    sub.paragraph_format.space_after = Pt(8)
+    run(sub, "CONTENT ONBOARDING  /  SMART MARKETING", 7.5, MUTE, tracking=0.9)
+    intro = doc.add_paragraph()
+    intro.paragraph_format.space_after = Pt(4)
+    intro.paragraph_format.line_spacing = 1.45
+    run(intro, "To create effective content, you need to understand your client's business, audience, and goals before writing a single word. Ask questions organized into five core areas: goals, audience, brand voice, logistics, and competition. Use this practical onboarding questionnaire with your client.", 9.8, INK)
+
+    sections = [
+        ("01  Business & Goals", [
+            "What is the primary goal of this content? (e.g., brand awareness, lead generation, direct sales, or educating existing customers)",
+            "What specific action do you want the reader to take after consuming the content? (e.g., book a call, sign up for a newsletter, buy a product)",
+            "What are your main products or services, and which ones should we prioritize right now?",
+            "How will we measure success? (e.g., website traffic, engagement rates, conversions)",
+        ]),
+        ("02  Target Audience", [
+            "Who is your ideal customer? (Ask for demographics like age, location, and job title, as well as interests)",
+            "What are their biggest pain points or challenges that your business solves?",
+            "What common questions or objections do your customers have before buying from you?",
+            "Where does your audience spend their time online? (e.g., LinkedIn, Instagram, TikTok, Google search)",
+        ]),
+    ]
+
+    def add_section(heading, questions):
+        hp = doc.add_paragraph(style="Heading 2")
+        run(hp, heading, 11, INK, bold=True)
+        for i, q in enumerate(questions, 1):
+            p = doc.add_paragraph()
+            p.paragraph_format.left_indent = Mm(8)
+            p.paragraph_format.first_line_indent = Mm(-8)
+            p.paragraph_format.space_after = Pt(2)
+            p.paragraph_format.line_spacing = 1.25
+            run(p, str(i) + ".  ", 8.4, AMBER, bold=True)
+            run(p, q, 9.4, INK)
+            ans = doc.add_paragraph()
+            ans.paragraph_format.left_indent = Mm(8)
+            ans.paragraph_format.space_after = Pt(5)
+            para_border(ans, "bottom", LINE, 4)
+            run(ans, " ", 1, INK)
+
+    for heading, questions in sections:
+        add_section(heading, questions)
+
+    doc.add_page_break()
+
+    for heading, questions in [
+        ("03  Brand Voice & Messaging", [
+            "How would you describe your brand's personality in three to five words? (e.g., professional, witty, empathetic, bold)",
+            "Do you have existing brand guidelines, a style guide, or examples of past content you love?",
+            "Are there any competitors or other brands whose style or tone you admire?",
+            "Are there specific words, phrases, or topics we should strictly avoid?",
+        ]),
+        ("04  Content Specifics & Logistics", [
+            "What formats and platforms are we creating for? (e.g., weekly blog posts, LinkedIn articles, Instagram reels, email newsletters)",
+            "What is your expected publishing frequency and turnaround time?",
+            "Do you have internal subject matter experts (SMEs) I can interview, or existing research/data I should use?",
+            "Who is the final decision-maker for approvals, and how many rounds of revisions are expected?",
+        ]),
+        ("05  Competitive Landscape", [
+            "Who are your top three direct competitors?",
+            "What makes your business different from—or better than—those competitors?",
+            "What is a common misconception about your industry that you want to clear up?",
+        ]),
+    ]:
+        add_section(heading, questions)
+
+    note = doc.add_paragraph()
+    note.paragraph_format.space_before = Pt(10)
+    para_border(note, "left", YELLOW, 16)
+    run(note, "Complete this before the first content brief. Clear answers here mean fewer revisions, sharper messaging and content that is built to be found, asked and chosen.", 8.5, MUTE)
+
+    foot = sec.footer
+    fp = foot.paragraphs[0]
+    para_border(fp, "top", LINE, 6)
+    fp.paragraph_format.tab_stops.add_tab_stop(Mm(166), WD_TAB_ALIGNMENT.RIGHT)
+    run(fp, "Client: ____________________________    Date: __________________", 7.4, MUTE)
+    fp.add_run("\t")
+    run(fp, "Page ", 7.4, MUTE)
+    add_page_number(fp)
+    run(fp, " of 2", 7.4, MUTE)
+
+    doc.core_properties.title = "happyhunterdigital Discovery Questionnaire"
+    doc.core_properties.author = "happyhunterdigital"
+    path = KIT / "discovery-questionnaire.docx"
+    save_doc(doc, path)
+
+
 if __name__ == "__main__":
     ensure_assets()
     render_sheets()
     build_docx()
     build_recommendation_docx()
+    build_questionnaire_docx()

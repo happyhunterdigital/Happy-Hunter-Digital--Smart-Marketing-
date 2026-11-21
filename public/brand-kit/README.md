@@ -15,9 +15,9 @@ including the photographic and gradient versions.
   numbered lists and a labelled table where information needs scanning.
 - **Generous whitespace:** 20–24 mm side margins, consistent spacing between
   sections, left-aligned body copy with uniform paragraph spacing.
-- **Page furniture:** every document has a header, a footer with contact
-  details and a "Page 1 of 1" marker. The Word letterhead uses a live `PAGE`
-  field.
+- **Page furniture:** every document has a header and a footer with contact
+  details and the correct "Page X of Y" marker. Multi-page documents repeat the
+  header and footer on every sheet. The Word documents use a live `PAGE` field.
 - **Logo:** the supplied `logo-new.jpg` is keyed to a transparent
   `assets/logo.png` so it sits cleanly on white paper. Regenerate with
   `python scripts/make_transparent_logo.py`.
@@ -36,6 +36,7 @@ including the photographic and gradient versions.
 | --- | --- |
 | Letterhead A4, editable and print | `letterhead.html`, `letterhead.pdf`, `letterhead.docx` |
 | Recommendation letter A4, Ludo League SA | `recommendation-ludoleaguesa.html`, `recommendation-ludoleaguesa.pdf`, `recommendation-ludoleaguesa.docx` |
+| Discovery questionnaire A4, two pages, editable answer lines | `discovery-questionnaire.html`, `discovery-questionnaire.pdf`, `discovery-questionnaire.docx` |
 | Capability sheet A4 | `flyer.html`, `flyer.pdf` |
 | Poster A3 | `poster.html`, `poster.pdf` |
 | Business card 90 x 55 mm, front and back | `business-card.html`, `business-card.pdf` |

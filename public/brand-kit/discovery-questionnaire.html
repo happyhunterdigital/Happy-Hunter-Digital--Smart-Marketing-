@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>happyhunterdigital Discovery Questionnaire</title>
+<link rel="stylesheet" href="system.css">
+<style>
+  @page{size:A4;margin:0}
+  .sheet{width:210mm;height:297mm;display:flex;flex-direction:column;padding:0 22mm;overflow:hidden}
+
+  .doc-header{padding-top:8mm}
+  .hrow{display:flex;justify-content:space-between;align-items:flex-start;gap:10mm}
+  .brandline{display:flex;align-items:center;gap:2.5mm}
+  img.logo{width:11mm}
+  .wm{font-size:11.5pt;font-weight:800;letter-spacing:-.03em;line-height:1}
+  .tagline{margin-top:1.2mm;font-size:6.4pt;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--mute)}
+  .contact{text-align:right;font-size:7.8pt;line-height:1.5}
+  .contact b{font-weight:750}
+  .rule{margin-top:3mm}
+
+  .doc-body{flex:1;padding-top:7mm}
+  .title{font-size:19pt;font-weight:800;letter-spacing:-.03em;line-height:1.15;margin:0}
+  .subtitle{margin-top:2mm;font-size:7.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+  .intro{margin-top:5mm;font-size:9.8pt;line-height:1.5;max-width:165mm}
+  .sec{margin-top:6.5mm}
+  .sec h2{font-size:11pt;font-weight:800;line-height:1.3;margin:0 0 3mm}
+  .sec h2 .n{color:var(--amber);font-weight:800;margin-right:2mm}
+  .q{display:flex;gap:2mm;margin:0 0 3.2mm}
+  .q .qn{width:6mm;flex:none;font-size:8.4pt;font-weight:800;color:var(--amber);line-height:1.4}
+  .q .qt{flex:1;font-size:9.4pt;line-height:1.38}
+  .ans{height:3mm;border-bottom:.25mm solid var(--line);margin-top:1.5mm}
+  .note{margin-top:7mm;font-size:8.5pt;line-height:1.5;color:var(--mute);border-left:.8mm solid var(--yellow);padding-left:4mm}
+
+  .doc-footer{padding-bottom:6mm;margin-top:auto}
+  .frow{display:flex;justify-content:space-between;gap:8mm;padding-top:2.5mm;font-size:7.4pt;line-height:1.5;color:var(--mute)}
+  .frow b{font-weight:700;color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <b>happyhunterdigital</b><span class="tip">Discovery Questionnaire. Click any question to edit, then Print and Save as PDF. Two pages.</span>
+  <button class="pri" id="printBtn" type="button">Print / Save PDF</button>
+  <button id="resetBtn" type="button">Reset questions</button>
+</div>
+
+<div class="sheet">
+  <header class="doc-header">
+    <div class="hrow">
+      <div>
+        <div class="brandline">
+          <img class="logo" src="assets/logo.png" alt="happyhunterdigital logo">
+          <div class="wm" contenteditable="true" data-field="brand">happyhunterdigital</div>
+        </div>
+        <div class="tagline" contenteditable="true" data-field="tagline">Web development and AI-first digital marketing</div>
+      </div>
+      <div class="contact" contenteditable="true" data-field="contact">
+        motsumitl@happyhunterdigital.com<br>
+        <b>+27 (0) 60 101 6673</b><br>
+        happyhunterdigital.com
+      </div>
+    </div>
+    <hr class="rule">
+  </header>
+
+  <main class="doc-body">
+    <h1 class="title" contenteditable="true" data-field="title">happyhunterdigital Discovery Questionnaire</h1>
+    <div class="subtitle" contenteditable="true" data-field="subtitle">Content onboarding / Smart Marketing</div>
+    <p class="intro" contenteditable="true" data-field="intro">To create effective content, you need to understand your client's business, audience, and goals before writing a single word. Ask questions organized into five core areas: goals, audience, brand voice, logistics, and competition. Use this practical onboarding questionnaire with your client.</p>
+
+    <section class="sec">
+      <h2 contenteditable="true" data-field="h1t"><span class="n">01</span>Business &amp; Goals</h2>
+      <div class="q"><span class="qn">1.</span><div class="qt" contenteditable="true" data-field="q1">What is the primary goal of this content? (e.g., brand awareness, lead generation, direct sales, or educating existing customers)<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">2.</span><div class="qt" contenteditable="true" data-field="q2">What specific action do you want the reader to take after consuming the content? (e.g., book a call, sign up for a newsletter, buy a product)<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">3.</span><div class="qt" contenteditable="true" data-field="q3">What are your main products or services, and which ones should we prioritize right now?<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">4.</span><div class="qt" contenteditable="true" data-field="q4">How will we measure success? (e.g., website traffic, engagement rates, conversions)<div class="ans"></div></div></div>
+    </section>
+
+    <section class="sec">
+      <h2 contenteditable="true" data-field="h2t"><span class="n">02</span>Target Audience</h2>
+      <div class="q"><span class="qn">1.</span><div class="qt" contenteditable="true" data-field="q5">Who is your ideal customer? (Ask for demographics like age, location, and job title, as well as interests)<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">2.</span><div class="qt" contenteditable="true" data-field="q6">What are their biggest pain points or challenges that your business solves?<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">3.</span><div class="qt" contenteditable="true" data-field="q7">What common questions or objections do your customers have before buying from you?<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">4.</span><div class="qt" contenteditable="true" data-field="q8">Where does your audience spend their time online? (e.g., LinkedIn, Instagram, TikTok, Google search)<div class="ans"></div></div></div>
+    </section>
+  </main>
+
+  <footer class="doc-footer">
+    <div class="frow">
+      <span><b>Client:</b> ______________________________ &nbsp;&nbsp; <b>Date:</b> __________________</span>
+      <span class="page-no">Page 1 of 2</span>
+    </div>
+  </footer>
+</div>
+
+<div class="sheet">
+  <header class="doc-header">
+    <div class="hrow">
+      <div>
+        <div class="brandline">
+          <img class="logo" src="assets/logo.png" alt="happyhunterdigital logo">
+          <div class="wm" contenteditable="true" data-field="brand2">happyhunterdigital</div>
+        </div>
+        <div class="tagline" contenteditable="true" data-field="tagline2">Web development and AI-first digital marketing</div>
+      </div>
+      <div class="contact" contenteditable="true" data-field="contact2">
+        motsumitl@happyhunterdigital.com<br>
+        <b>+27 (0) 60 101 6673</b><br>
+        happyhunterdigital.com
+      </div>
+    </div>
+    <hr class="rule">
+  </header>
+
+  <main class="doc-body">
+    <section class="sec" style="margin-top:2mm">
+      <h2 contenteditable="true" data-field="h3t"><span class="n">03</span>Brand Voice &amp; Messaging</h2>
+      <div class="q"><span class="qn">1.</span><div class="qt" contenteditable="true" data-field="q9">How would you describe your brand's personality in three to five words? (e.g., professional, witty, empathetic, bold)<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">2.</span><div class="qt" contenteditable="true" data-field="q10">Do you have existing brand guidelines, a style guide, or examples of past content you love?<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">3.</span><div class="qt" contenteditable="true" data-field="q11">Are there any competitors or other brands whose style or tone you admire?<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">4.</span><div class="qt" contenteditable="true" data-field="q12">Are there specific words, phrases, or topics we should strictly avoid?<div class="ans"></div></div></div>
+    </section>
+
+    <section class="sec">
+      <h2 contenteditable="true" data-field="h4t"><span class="n">04</span>Content Specifics &amp; Logistics</h2>
+      <div class="q"><span class="qn">1.</span><div class="qt" contenteditable="true" data-field="q13">What formats and platforms are we creating for? (e.g., weekly blog posts, LinkedIn articles, Instagram reels, email newsletters)<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">2.</span><div class="qt" contenteditable="true" data-field="q14">What is your expected publishing frequency and turnaround time?<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">3.</span><div class="qt" contenteditable="true" data-field="q15">Do you have internal subject matter experts (SMEs) I can interview, or existing research/data I should use?<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">4.</span><div class="qt" contenteditable="true" data-field="q16">Who is the final decision-maker for approvals, and how many rounds of revisions are expected?<div class="ans"></div></div></div>
+    </section>
+
+    <section class="sec">
+      <h2 contenteditable="true" data-field="h5t"><span class="n">05</span>Competitive Landscape</h2>
+      <div class="q"><span class="qn">1.</span><div class="qt" contenteditable="true" data-field="q17">Who are your top three direct competitors?<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">2.</span><div class="qt" contenteditable="true" data-field="q18">What makes your business different from—or better than—those competitors?<div class="ans"></div></div></div>
+      <div class="q"><span class="qn">3.</span><div class="qt" contenteditable="true" data-field="q19">What is a common misconception about your industry that you want to clear up?<div class="ans"></div></div></div>
+    </section>
+
+    <p class="note" contenteditable="true" data-field="note">Complete this before the first content brief. Clear answers here mean fewer revisions, sharper messaging and content that is built to be found, asked and chosen.</p>
+  </main>
+
+  <footer class="doc-footer">
+    <div class="frow">
+      <span><b>Client:</b> ______________________________ &nbsp;&nbsp; <b>Date:</b> __________________</span>
+      <span class="page-no">Page 2 of 2</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var f=[].slice.call(document.querySelectorAll('[contenteditable]')),o={};
+  f.forEach(function(x){o[x.dataset.field]=x.innerHTML});
+  document.getElementById('printBtn').onclick=function(){window.print()};
+  document.getElementById('resetBtn').onclick=function(){f.forEach(function(x){x.innerHTML=o[x.dataset.field]})};
+})();
+</script>
+</body>
+</html>
