@@ -35,6 +35,7 @@ including the photographic and gradient versions.
 | Piece | Files |
 | --- | --- |
 | Letterhead A4, editable and print | `letterhead.html`, `letterhead.pdf`, `letterhead.docx` |
+| Recommendation letter A4, Ludo League SA | `recommendation-ludoleaguesa.html`, `recommendation-ludoleaguesa.pdf`, `recommendation-ludoleaguesa.docx` |
 | Capability sheet A4 | `flyer.html`, `flyer.pdf` |
 | Poster A3 | `poster.html`, `poster.pdf` |
 | Business card 90 x 55 mm, front and back | `business-card.html`, `business-card.pdf` |

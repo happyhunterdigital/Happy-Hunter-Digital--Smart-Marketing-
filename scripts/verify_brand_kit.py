@@ -11,6 +11,7 @@ KIT = ROOT / "public" / "brand-kit"
 
 EXPECTED = {
     "letterhead": (793.7, 1122.5, 1),
+    "recommendation-ludoleaguesa": (793.7, 1122.5, 1),
     "flyer": (793.7, 1122.5, 1),
     "poster": (1122.5, 1587.4, 1),
     "business-card": (340.16, 207.87, 2),
@@ -51,7 +52,10 @@ with sync_playwright() as pw:
         assert all("logo.png" in i["src"] for i in images), (name, "wrong logo", images)
 
         text = page.locator(".sheet").first.inner_text().lower()
-        assert "web development" in text, (name, "web development copy missing")
+        if name == "recommendation-ludoleaguesa":
+            assert "ludoleaguesa" in text and "key strengths" in text, (name, "recommendation copy missing")
+        else:
+            assert "web development" in text, (name, "web development copy missing")
 
         html = (KIT / (name + ".html")).read_text(encoding="utf-8")
         assert "assets/photos" not in html and "photo" not in html, (name, "photography found")
@@ -62,7 +66,7 @@ with sync_playwright() as pw:
             assert page.locator("h1").count() >= 1, (name, "no h1")
             assert page.locator("h2").count() >= 1, (name, "no h2")
             assert "page 1 of 1" in text, (name, "page number missing")
-            assert page.locator("table.data").count() >= 1 or name == "letterhead", (name, "no labelled table")
+            assert page.locator("table.data").count() >= 1 or name in ("letterhead", "recommendation-ludoleaguesa"), (name, "no labelled table")
 
         print(name, "OK", m[0]["editable"], "editable, real logo, web development copy, no overflow, no external requests")
         page.close()
@@ -91,5 +95,17 @@ with zipfile.ZipFile(docx_path) as z:
 doc = Document(docx_path)
 assert abs(doc.sections[0].page_width.mm - 210) < 0.1
 print("letterhead.docx OK, single Inter typeface, real logo, live page number")
+
+rec_path = KIT / "recommendation-ludoleaguesa.docx"
+with zipfile.ZipFile(rec_path) as z:
+    assert z.testzip() is None
+    assert any(n.startswith("word/media") and n.endswith(".png") for n in z.namelist()), "logo missing from recommendation"
+    xml = z.read("word/document.xml").decode()
+    foot = z.read("word/footer1.xml").decode()
+    assert "LudoLeagueSA" in xml, "recommendation content missing from Word file"
+    assert "PAGE" in foot, "live page number missing from recommendation footer"
+rec_doc = Document(rec_path)
+assert abs(rec_doc.sections[0].page_width.mm - 210) < 0.1
+print("recommendation-ludoleaguesa.docx OK, logo, full letter copy and live page number")
 
 print("ALL BRAND KIT CHECKS PASSED")

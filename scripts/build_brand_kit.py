@@ -40,7 +40,7 @@ def render_sheets():
     PREVIEWS.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as pw:
         browser = pw.chromium.launch(channel="msedge", headless=True)
-        for name in ("letterhead", "flyer", "poster", "business-card"):
+        for name in ("letterhead", "recommendation-ludoleaguesa", "flyer", "poster", "business-card"):
             page = browser.new_page(viewport={"width": 1500, "height": 1800}, device_scale_factor=3)
             page.goto((KIT / (name + ".html")).as_uri(), wait_until="networkidle")
             page.evaluate("document.fonts.ready")
@@ -106,6 +106,15 @@ def add_page_number(p):
     r.font.size = Pt(8)
     r.font.name = "Inter"
     r.font.color.rgb = RGBColor.from_string(MUTE)
+
+
+def save_doc(doc, path):
+    try:
+        doc.save(path)
+    except PermissionError:
+        print("warn:", path.name, "is open elsewhere; existing file kept")
+        return
+    print("wrote", path.name, path.stat().st_size, "bytes")
 
 
 def build_docx():
@@ -242,11 +251,147 @@ def build_docx():
     doc.core_properties.title = "happyhunterdigital letterhead"
     doc.core_properties.author = "happyhunterdigital"
     path = KIT / "letterhead.docx"
-    doc.save(path)
-    print("wrote", path.name, path.stat().st_size, "bytes")
+    save_doc(doc, path)
+
+
+def build_recommendation_docx():
+    doc = Document()
+    sec = doc.sections[0]
+    sec.page_width, sec.page_height = Mm(210), Mm(297)
+    sec.top_margin, sec.bottom_margin = Mm(24), Mm(18)
+    sec.left_margin, sec.right_margin = Mm(22), Mm(22)
+    sec.header_distance, sec.footer_distance = Mm(8), Mm(8)
+
+    normal = doc.styles["Normal"]
+    normal.font.name = "Inter"
+    normal.font.size = Pt(10)
+    normal.font.color.rgb = RGBColor.from_string(INK)
+    for style_name, size, before, after in (
+        ("Heading 1", 16, 16, 6),
+        ("Heading 2", 11, 12, 4),
+    ):
+        st = doc.styles[style_name]
+        st.font.name = "Inter"
+        st.font.size = Pt(size)
+        st.font.bold = True
+        st.font.color.rgb = RGBColor.from_string(INK)
+        st.paragraph_format.space_before = Pt(before)
+        st.paragraph_format.space_after = Pt(after)
+
+    header = sec.header
+    t = header.add_table(rows=1, cols=2, width=Mm(166))
+    t.autofit = False
+    left, right = t.rows[0].cells
+    left.width, right.width = Mm(100), Mm(66)
+    lp = left.paragraphs[0]
+    lp.add_run().add_picture(str(KIT / "assets" / "logo.png"), width=Mm(12))
+    run(lp, "  happyhunterdigital", 12, INK, bold=True, tracking=-0.4)
+    ld = left.add_paragraph()
+    ld.paragraph_format.space_before = Pt(1)
+    run(ld, "WEB DEVELOPMENT AND AI-FIRST DIGITAL MARKETING", 6.5, MUTE, tracking=0.7)
+    rp = right.paragraphs[0]
+    rp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    run(rp, "motsumitl@happyhunterdigital.com", 8, INK, bold=True)
+    rp.add_run().add_break()
+    run(rp, "+27 (0) 60 101 6673", 8, INK)
+    rp.add_run().add_break()
+    run(rp, "happyhunterdigital.com", 8, MUTE)
+    hrule = header.add_paragraph()
+    hrule.paragraph_format.space_before = Pt(4)
+    para_border(hrule, "bottom", YELLOW, 18)
+
+    meta = doc.add_paragraph()
+    meta.paragraph_format.tab_stops.add_tab_stop(Mm(166), WD_TAB_ALIGNMENT.RIGHT)
+    run(meta, "NOVEMBER 20, 2026", 7.5, MUTE, tracking=0.6)
+    meta.add_run("\t")
+    run(meta, "REF: HHD / REC / 2026 / 020", 7.5, MUTE, tracking=0.6)
+
+    rec = doc.add_paragraph()
+    rec.paragraph_format.space_before = Pt(12)
+    run(rec, "Ludo League SA (LudoLeagueSA)", 10, INK, bold=True)
+    rec.add_run().add_break()
+    run(rec, "Strategic recommendation", 10, INK)
+
+    subj = doc.add_paragraph(style="Heading 1")
+    run(subj, "Technical & Strategic Recommendation — Ludo League SA (LudoLeagueSA)", 16, INK, bold=True, tracking=-0.3)
+    bar = doc.add_paragraph()
+    bar.paragraph_format.right_indent = Mm(140)
+    bar.paragraph_format.space_after = Pt(10)
+    para_border(bar, "bottom", YELLOW, 18)
+
+    sal = doc.add_paragraph()
+    sal.paragraph_format.space_after = Pt(6)
+    run(sal, "To Whom It May Concern,", 10, INK, bold=True)
+
+    for text in (
+        "From the perspective of the happyhunterdigital Smart Marketing architecture, I am pleased to provide a formal technical and strategic recommendation for Ludo League SA.",
+        "Within our broader ecosystem of automated conversion workflows, Answer Engine Optimization (AEO), Generative Engine Optimization (GEO), and event-driven digital infrastructure, LudoLeagueSA stands out as a high-cohesion project that bridges physical community engagement with modern web and automation engineering. Rather than treating a competitive board game league as a static informational site, the project approaches community gaming as a structured digital product ecosystem—connecting physical board sets, organized tournament brackets, automated onboarding flows, and dedicated learning pathways such as Ludo Academy.",
+    ):
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(6)
+        p.paragraph_format.line_spacing = 1.45
+        run(p, text, 10, INK)
+
+    h2p = doc.add_paragraph(style="Heading 2")
+    run(h2p, "Key Strengths Observed in LudoLeagueSA", 11, INK, bold=True)
+    for num, head, body in (
+        ("01", "Ecosystem & Funnel Cohesion:", "The architecture aligns physical touchpoints and community competition with digital capture and progression paths, creating clear entry points for players, organizers, and learners."),
+        ("02", "Automation-Ready Workflows:", "Designed to integrate smoothly with messaging, registration, and data-backed campaign pipelines, allowing community growth and bracket operations to scale without manual bottlenecks."),
+        ("03", "Search & Discovery Alignment:", "Structured to support clear entity indexing, discoverability, and structured engagement tracking across web properties and subdomains."),
+        ("04", "Practical Commercial Execution:", "Translates a familiar, high-participation game format into a repeatable digital and community model tailored for local audiences and structured tournament play."),
+    ):
+        p = doc.add_paragraph()
+        p.paragraph_format.left_indent = Mm(9)
+        p.paragraph_format.first_line_indent = Mm(-9)
+        p.paragraph_format.space_after = Pt(5)
+        p.paragraph_format.line_spacing = 1.4
+        run(p, num + "  ", 9, AMBER, bold=True)
+        run(p, head + " ", 9.7, INK, bold=True)
+        run(p, body, 9.7, INK)
+
+    h2p = doc.add_paragraph(style="Heading 2")
+    run(h2p, "Strategic Outlook", 11, INK, bold=True)
+    for text in (
+        "From a Smart Marketing standpoint, LudoLeagueSA demonstrates strong potential for compounding organic reach, high repeat engagement through bracket cycles and academy progression, and measurable conversion performance across both community events and digital channels.",
+        "We strongly endorse the continued development, deployment, and scaling of LudoLeagueSA and recommend it as a capable, well-structured initiative ready for broader campaign expansion and partnership growth.",
+    ):
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(6)
+        p.paragraph_format.line_spacing = 1.45
+        run(p, text, 10, INK)
+
+    sign = doc.add_paragraph()
+    sign.paragraph_format.space_before = Pt(12)
+    run(sign, "Sincerely,", 10, INK)
+    sign.add_run().add_break()
+    sign.add_run().add_break()
+    run(sign, "happyhunterdigital", 10.5, INK, bold=True)
+    sign.add_run().add_break()
+    run(sign, "SMART MARKETING & AUTONOMOUS GROWTH SYSTEMS", 7.5, MUTE, tracking=0.9)
+
+    foot = sec.footer
+    fp = foot.paragraphs[0]
+    para_border(fp, "top", LINE, 6)
+    fp.paragraph_format.tab_stops.add_tab_stop(Mm(166), WD_TAB_ALIGNMENT.RIGHT)
+    run(fp, "574 Fred Messenger Avenue, Andeon  /  Pretoria West, Pretoria, South Africa", 7.5, MUTE)
+    fp.add_run("\t")
+    run(fp, "motsumitl@happyhunterdigital.com", 7.5, MUTE)
+    fp2 = foot.add_paragraph()
+    fp2.paragraph_format.tab_stops.add_tab_stop(Mm(166), WD_TAB_ALIGNMENT.RIGHT)
+    run(fp2, "happyhunterdigital.com", 7.5, INK, bold=True)
+    fp2.add_run("\t")
+    run(fp2, "Page ", 7.5, MUTE)
+    add_page_number(fp2)
+    run(fp2, " of 1", 7.5, MUTE)
+
+    doc.core_properties.title = "Recommendation — Ludo League SA"
+    doc.core_properties.author = "happyhunterdigital"
+    path = KIT / "recommendation-ludoleaguesa.docx"
+    save_doc(doc, path)
 
 
 if __name__ == "__main__":
     ensure_assets()
     render_sheets()
     build_docx()
+    build_recommendation_docx()
