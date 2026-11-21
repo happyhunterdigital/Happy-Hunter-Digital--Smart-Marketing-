@@ -83,6 +83,8 @@ with zipfile.ZipFile(docx_path) as z:
     xml = z.read("word/document.xml").decode()
     foot = z.read("word/footer1.xml").decode()
     assert "Inter" in xml, "Inter not set in Word document"
+    assert 'w:pStyle w:val="Heading1"' in xml, "Heading 1 style missing from Word document"
+    assert 'w:pStyle w:val="Heading2"' in xml, "Heading 2 style missing from Word document"
     assert "PAGE" in foot, "live page number missing from Word footer"
     for extra in ("Caveat", "Space Grotesk", "JetBrains Mono", "Archivo"):
         assert extra not in xml + foot, extra + " found in Word document"

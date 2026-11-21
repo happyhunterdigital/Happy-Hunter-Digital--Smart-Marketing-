@@ -121,6 +121,22 @@ def build_docx():
     normal.font.size = Pt(10.5)
     normal.font.color.rgb = RGBColor.from_string(INK)
 
+    h1 = doc.styles["Heading 1"]
+    h1.font.name = "Inter"
+    h1.font.size = Pt(18)
+    h1.font.bold = True
+    h1.font.color.rgb = RGBColor.from_string(INK)
+    h1.paragraph_format.space_before = Pt(20)
+    h1.paragraph_format.space_after = Pt(6)
+
+    h2 = doc.styles["Heading 2"]
+    h2.font.name = "Inter"
+    h2.font.size = Pt(11.5)
+    h2.font.bold = True
+    h2.font.color.rgb = RGBColor.from_string(INK)
+    h2.paragraph_format.space_before = Pt(12)
+    h2.paragraph_format.space_after = Pt(6)
+
     # header: logo, wordmark, contact, thin yellow rule
     header = sec.header
     t = header.add_table(rows=1, cols=2, width=Mm(166))
@@ -157,9 +173,7 @@ def build_docx():
     rec.add_run().add_break()
     run(rec, "Pretoria, South Africa", 10, INK)
 
-    subj = doc.add_paragraph()
-    subj.paragraph_format.space_before = Pt(20)
-    subj.paragraph_format.space_after = Pt(6)
+    subj = doc.add_paragraph(style="Heading 1")
     run(subj, "A complete system for being found, asked and chosen", 18, INK, bold=True, tracking=-0.5)
     bar = doc.add_paragraph()
     bar.paragraph_format.right_indent = Mm(140)
@@ -180,10 +194,8 @@ def build_docx():
         p.paragraph_format.line_spacing = 1.5
         run(p, text, 10.5, INK)
 
-    h2 = doc.add_paragraph()
-    h2.paragraph_format.space_before = Pt(12)
-    h2.paragraph_format.space_after = Pt(6)
-    run(h2, "Our system", 11.5, INK, bold=True)
+    h2p = doc.add_paragraph(style="Heading 2")
+    run(h2p, "Our system", 11.5, INK, bold=True)
 
     steps = (
         ("01", "Free online health check.", "Website, Google, Facebook, directories and reviews."),
